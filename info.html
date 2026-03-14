@@ -141,93 +141,23 @@
       margin-bottom: 2.8rem;
     }
 
-    /* ── Price cards ─────────────────────────────────────────────── */
-    .price-cards {
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.4rem;
-    }
-    .price-card {
-      flex: 1;
-      border: 1px solid #1a1a1a;
-      padding: 1.4rem 1rem 1.2rem;
-      text-align: center;
-      cursor: pointer;
-      text-decoration: none;
-      color: #1a1a1a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      transition: background 0.2s, color 0.2s;
-      user-select: none;
-    }
-    .price-card:hover {
-      background: #1a1a1a;
-      color: #d6eaf8;
-    }
-    .price-card-size {
-      font-size: 0.72rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-    .price-card-price {
-      font-size: 1.35rem;
-      letter-spacing: 0.04em;
-    }
-    .price-card-subtitle {
-      font-size: 0.68rem;
-      letter-spacing: 0.08em;
-      opacity: 0.6;
-      margin-top: -0.2rem;
-    }
-    .price-card-unit {
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      opacity: 0.6;
-    }
-
     /* ── Book CTA ────────────────────────────────────────────────── */
     .book-cta {
       display: block;
-      width: 100%;
-      margin-top: 2.4rem;
+      margin-top: 3rem;
       background: #1a1a1a;
       color: #d6eaf8;
-      border: none;
+      text-decoration: none;
+      text-align: center;
       padding: 0.9rem;
       font-family: inherit;
       font-size: 0.8rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
       transition: background 0.2s, color 0.2s;
     }
     .book-cta:hover { background: #ffffff; color: #1a1a1a; }
 
-    /* ── Responsive ─────────────────────────────────────────────── */
-    @media (max-width: 500px) {
-      h1 { font-size: 1.6rem; margin-bottom: 1.8rem; }
-      .price-cards { gap: 0.6rem; }
-      .price-card { padding: 1.1rem 0.6rem 1rem; }
-      .price-card-price { font-size: 1.15rem; }
-    }
-
-    /* ═══════════════════════════════════════════════════════════════
-       DEVICE-AWARE STYLES
-       ═══════════════════════════════════════════════════════════════ */
-    html[data-device="desktop"] .nav-cloud:hover { opacity: 1; }
-    html[data-device="desktop"] .nav-menu a:hover { opacity: 0.4; }
-
-    html[data-touch="true"] .nav-cloud:hover { opacity: 0.6; }
-    html[data-touch="true"] .nav-cloud:active { opacity: 1; }
-    html[data-touch="true"] .nav-menu a:hover { opacity: 1; }
-    html[data-touch="true"] .nav-menu a:active { opacity: 0.4; }
-    html[data-touch="true"] .price-card:hover { background: transparent; color: #1a1a1a; }
-    html[data-touch="true"] .price-card:active { background: #1a1a1a; color: #d6eaf8; }
     html[data-touch="true"] .book-cta:hover { background: #1a1a1a; color: #d6eaf8; }
     html[data-touch="true"] .book-cta:active { background: #ffffff; color: #1a1a1a; }
 
@@ -326,25 +256,15 @@
     <!-- Pricing -->
     <div class="section">
       <h2>Pricing</h2>
-      <p style="margin-bottom: 1.4rem;">All prices are per 50-minute session. Click a tier to go straight to the booking form.</p>
-      <div class="price-cards">
-        <a class="price-card" href="booking.html?group=private">
-          <span class="price-card-size">Private</span>
-          <span class="price-card-price">CHF 120.–</span>
-          <span class="price-card-unit">per 50 min</span>
-        </a>
-        <a class="price-card" href="booking.html?group=duo">
-          <span class="price-card-size">Duo</span>
-          <span class="price-card-price">CHF 70.–</span>
-          <span class="price-card-unit">per person / 50 min</span>
-        </a>
-        <a class="price-card" href="booking.html?group=group">
-          <span class="price-card-size">Small group</span>
-          <span class="price-card-subtitle">3–5 people</span>
-          <span class="price-card-price">CHF 250.–</span>
-          <span class="price-card-unit">total / 50 min</span>
-        </a>
-      </div>
+      <p>Pricing depends on the type of course, frequency, and group size. We will include a quote in our response to your enquiry.</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Our teachers -->
+    <div class="section">
+      <h2>Our teachers</h2>
+      <p>All of our teachers have studied linguistics and hold or are working towards a formal teaching qualification (Lehrdiplom). We believe that understanding how language works — not just speaking it — makes for better, more considered teaching.</p>
     </div>
 
     <a class="book-cta" href="booking.html">make a booking enquiry →</a>
