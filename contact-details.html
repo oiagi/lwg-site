@@ -275,7 +275,6 @@
     html[data-touch="true"] button.submit:hover  { background: #1a1a1a; color: #d6eaf8; }
     html[data-touch="true"] button.submit:active { background: #ffffff; color: #1a1a1a; }
   </style>
-
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
        Detects phone / tablet / desktop using screen size + pointer type
@@ -335,20 +334,27 @@
   <div class="form-container">
     <h1>your details</h1>
 
-    <!-- ── Lead contact ─────────────────────────────────────────── -->
+    <!-- ── Booking on behalf toggle ──────────────────────────────────────
+         Shown at the very top. When ticked:
+           - lead contact loses postcode field
+           - participant 1 block appears below lead contact
+           - age group moves to after participant blocks              -->
+    <div class="field" style="margin-bottom:2rem;">
+      <div class="toggle-group">
+        <input type="checkbox" id="behalf-checkbox" name="behalf">
+        <label for="behalf-checkbox">I am booking on behalf of someone else</label>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         LEAD CONTACT
+         Always required. Full fields by default; postcode hidden when
+         booking on behalf (lead is not a participant).
+         ════════════════════════════════════════════════════════════════ -->
     <p class="section-label">lead contact</p>
 
     <div class="participant-block" id="lead-block">
 
-      <!-- Booking on own behalf? -->
-      <div class="field">
-        <div class="toggle-group">
-          <input type="checkbox" id="self-participant" name="self_participant">
-          <label for="self-participant">I am also a participant</label>
-        </div>
-      </div>
-
-      <!-- Name row -->
       <div style="display:flex; gap:1rem;">
         <div class="field" style="flex:1;">
           <label for="lead-first">first name</label>
@@ -374,25 +380,56 @@
         <div class="error" id="err-lead-phone">Please enter a phone number.</div>
       </div>
 
-      <div class="field">
+      <!-- Postcode — hidden when booking on behalf -->
+      <div class="field" id="lead-postcode-field">
         <label for="lead-postcode">postcode</label>
         <input type="text" id="lead-postcode" name="lead_postcode" autocomplete="postal-code" />
         <div class="error" id="err-lead-postcode">Please enter a postcode.</div>
       </div>
 
-      <!-- Adults or children -->
+    </div><!-- /#lead-block -->
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         PARTICIPANTS
+         Default: one block open (lead = participant 1, no block shown).
+         On behalf: participant 1 block shown below lead contact.
+         Group bookings: add button up to group size max.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="participants-section" style="display:none;">
+      <p class="section-label">participants</p>
+      <p class="hint" style="margin-bottom:1.4rem;">Details can be provided later if needed.</p>
+      <div id="participants-list"></div>
+      <button type="button" class="add-participant" id="add-participant-btn" style="display:none;">+ add participant</button>
+    </div>
+
+    <!-- Add participant button for non-behalf group bookings -->
+    <div id="group-add-section" style="display:none;">
+      <p class="section-label">additional participants</p>
+      <p class="hint" style="margin-bottom:1.4rem;">Details can be provided later if needed.</p>
+      <div id="group-participants-list"></div>
+      <button type="button" class="add-participant" id="group-add-btn">+ add participant</button>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         AGE GROUP
+         Shown after participant blocks.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="age-group-section">
+      <p class="section-label">about the student(s)</p>
+
       <div class="field">
         <label>who is this course for?</label>
         <div class="toggle-group">
-          <input type="radio" name="age_group" id="ag-adults" value="Adults">
+          <input type="radio" name="age_group" id="ag-adults"   value="Adults">
           <label for="ag-adults">Adults</label>
-          <input type="radio" name="age_group" id="ag-children" value="Children / mixed">
-          <label for="ag-children">Children / mixed</label>
+          <input type="radio" name="age_group" id="ag-children" value="Children">
+          <label for="ag-children">Children</label>
         </div>
         <div class="error" id="err-age-group">Please select an option.</div>
       </div>
 
-      <!-- Age range — shown when children selected -->
       <div class="field" id="field-age-range" style="display:none;">
         <label>age range</label>
         <div class="toggle-group">
@@ -403,22 +440,18 @@
         </div>
         <div class="error" id="err-age-range">Please select an age range.</div>
       </div>
-
-    </div><!-- /#lead-block -->
-
-    <!-- ── Participants ──────────────────────────────────────────── -->
-    <div id="participants-section" style="display:none;">
-      <p class="section-label">participants</p>
-      <div id="participants-list"></div>
-      <button type="button" class="add-participant" id="add-participant-btn" style="display:none;">+ add participant</button>
     </div>
 
-    <!-- ── Scheduling preferences ───────────────────────────────── -->
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SCHEDULING PREFERENCES
+         ════════════════════════════════════════════════════════════════ -->
     <p class="section-label">scheduling preferences</p>
 
     <div class="field">
       <label>preferred days</label>
       <div class="toggle-group">
+        <input type="checkbox" name="days" id="day-any" value="Any"><label for="day-any">Any</label>
         <input type="checkbox" name="days" id="day-mon" value="Monday"><label for="day-mon">Mon</label>
         <input type="checkbox" name="days" id="day-tue" value="Tuesday"><label for="day-tue">Tue</label>
         <input type="checkbox" name="days" id="day-wed" value="Wednesday"><label for="day-wed">Wed</label>
@@ -434,6 +467,7 @@
       <label>preferred time of day</label>
       <div class="toggle-group">
         <input type="checkbox" name="time_of_day" id="tod-morning"   value="Morning"><label for="tod-morning">Morning</label>
+        <input type="checkbox" name="time_of_day" id="tod-lunch"     value="Lunchtime"><label for="tod-lunch">Lunchtime</label>
         <input type="checkbox" name="time_of_day" id="tod-afternoon" value="Afternoon"><label for="tod-afternoon">Afternoon</label>
         <input type="checkbox" name="time_of_day" id="tod-evening"   value="Evening"><label for="tod-evening">Evening</label>
       </div>
@@ -447,7 +481,12 @@
     </div>
 
     <button class="submit" id="continue-btn">continue →</button>
-  </div>
+    <div class="error" id="submit-error" style="display:none;text-align:center;margin-top:1rem;">
+      Something went wrong — please try again or email us at
+      <a href="mailto:info@oiagi.org">info@oiagi.org</a>.
+    </div>
+
+  </div><!-- /.form-container -->
 
   <script>
     const navCloud = document.getElementById('nav-cloud');
@@ -526,229 +565,280 @@
   </script>
 
   <script>
-    /* ── Read booking data from sessionStorage ─────────────────────── */
-    const booking = JSON.parse(sessionStorage.getItem('booking') || '{}');
-    const groupSize = booking.group || 'Private (1 person)';
-    const isGroup   = groupSize === '2 people' || groupSize === '3–5 people';
-    /* maxTotal = the hard ceiling on number of people including lead */
-    const maxTotal = groupSize === '3–5 people' ? 5 : groupSize === '2 people' ? 2 : 1;
-    let   participantCount = 0;
+    /* ══════════════════════════════════════════════════════════════════
+       CONTACT DETAILS LOGIC
+       ══════════════════════════════════════════════════════════════════
 
-    /* ── Participant slot counts ────────────────────────────────────
-       maxSlots  = max additional participant blocks (total minus lead)
-       minSlots  = minimum required participant blocks              */
-    function maxSlots(selfIsTicked) {
-      if (!isGroup) return 0;
-      return maxTotal - (selfIsTicked ? 1 : 0);
-    }
-    function minSlots(selfIsTicked) {
-      if (!isGroup) return 0;
-      if (groupSize === '2 people')    return selfIsTicked ? 1 : 2;
-      if (groupSize === '3–5 people') return selfIsTicked ? 2 : 3;
-      return 0;
-    }
+       Page layout:
+         1. "Booking on behalf" checkbox  (always at top)
+         2. Lead contact fields           (postcode hidden when on behalf)
+         3. Participant block(s)          (only when on behalf)
+         4. Add participant button        (group bookings in both modes)
+         5. Age group / age range
+         6. Scheduling preferences
 
-    /* ── Build a participant block ─────────────────────────────────── */
-    function makeParticipantBlock(n, required) {
-      const req = required
-        ? ''
-        : ' <span style="font-size:0.7rem;letter-spacing:0.08em;color:#888;text-transform:none;">(optional)</span>';
+       Default mode (not on behalf):
+         - Lead = participant 1, no separate participant block
+         - Group bookings show an add button for extra participants
+
+       On behalf mode:
+         - Lead is just a contact, not a participant
+         - Participant 1 block always shown below lead
+         - Group bookings show add button below participant block(s)
+    ══════════════════════════════════════════════════════════════════ */
+
+    const booking      = JSON.parse(sessionStorage.getItem('booking') || '{}');
+    const groupSize    = booking.group || 'Private (1 person)';
+    const isGroup      = groupSize === '2 people' || groupSize === '3–5 people';
+    const maxTotal     = groupSize === '3–5 people' ? 5 : groupSize === '2 people' ? 2 : 1;
+    let   behalfParticipantCount = 0;  /* blocks in participants-section (behalf mode) */
+    let   groupParticipantCount  = 0;  /* blocks in group-add-section (default mode)  */
+
+    /* ── Build a participant block ──────────────────────────────────── */
+    function makeParticipantBlock(n, idPrefix, required) {
+      const optLabel = required ? '' :
+        ' <span style="font-size:0.7rem;letter-spacing:0.08em;color:#888;text-transform:none;">(optional)</span>';
       const div = document.createElement('div');
       div.className = 'participant-block';
-      div.id = `participant-${n}`;
+      div.id = `${idPrefix}-${n}`;
       div.innerHTML = `
-        <p class="participant-title">participant ${n}${req}</p>
+        <p class="participant-title">participant ${n}${optLabel}</p>
         <div style="display:flex; gap:1rem;">
           <div class="field" style="flex:1;">
-            <label for="p${n}-first">first name</label>
-            <input type="text" id="p${n}-first" name="p${n}_first" />
+            <label for="${idPrefix}-${n}-first">first name</label>
+            <input type="text" id="${idPrefix}-${n}-first" />
           </div>
           <div class="field" style="flex:1;">
-            <label for="p${n}-last">last name</label>
-            <input type="text" id="p${n}-last" name="p${n}_last" />
+            <label for="${idPrefix}-${n}-last">last name</label>
+            <input type="text" id="${idPrefix}-${n}-last" />
           </div>
         </div>
         <div class="field">
-          <label for="p${n}-email">email</label>
-          <input type="email" id="p${n}-email" name="p${n}_email" />
+          <label for="${idPrefix}-${n}-email">email</label>
+          <input type="email" id="${idPrefix}-${n}-email" />
         </div>
         <div class="field">
-          <label for="p${n}-phone">phone</label>
-          <input type="tel" id="p${n}-phone" name="p${n}_phone" />
+          <label for="${idPrefix}-${n}-phone">phone</label>
+          <input type="tel" id="${idPrefix}-${n}-phone" />
         </div>
         <div class="field">
-          <label for="p${n}-postcode">postcode</label>
-          <input type="text" id="p${n}-postcode" name="p${n}_postcode" />
+          <label for="${idPrefix}-${n}-postcode">postcode</label>
+          <input type="text" id="${idPrefix}-${n}-postcode" />
         </div>`;
       return div;
     }
 
-    /* ── Initialise participant section based on group size ─────────── */
-    function initParticipants() {
-      const self = document.getElementById('self-participant').checked;
-      const min  = minSlots(self);
-      const max  = maxSlots(self);
-      const list = document.getElementById('participants-list');
-      const sec  = document.getElementById('participants-section');
-      const btn  = document.getElementById('add-participant-btn');
-
-      list.innerHTML = '';
-      participantCount = 0;
-
-      if (min === 0) {
-        sec.style.display = 'none';
-        return;
-      }
-
-      sec.style.display = 'block';
-
-      for (let i = 1; i <= min; i++) {
-        list.appendChild(makeParticipantBlock(i, true));
-        participantCount++;
-      }
-
-      /* Show add button only if group size allows more slots */
-      btn.style.display = participantCount < max ? 'block' : 'none';
+    /* ── Read participant data from blocks ──────────────────────────── */
+    function readParticipantBlock(n, idPrefix) {
+      const get = id => document.getElementById(id)?.value.trim() || '';
+      const p = {
+        firstName: get(`${idPrefix}-${n}-first`),
+        lastName:  get(`${idPrefix}-${n}-last`),
+        email:     get(`${idPrefix}-${n}-email`),
+        phone:     get(`${idPrefix}-${n}-phone`),
+        postcode:  get(`${idPrefix}-${n}-postcode`),
+      };
+      return (p.firstName || p.lastName || p.email || p.phone || p.postcode) ? p : null;
     }
 
-    /* ── Add participant button ─────────────────────────────────────── */
-    document.getElementById('add-participant-btn').addEventListener('click', () => {
-      const self = document.getElementById('self-participant').checked;
-      const max  = maxSlots(self);
-      if (participantCount >= max) return;
-      participantCount++;
+    /* ── Update UI based on behalf checkbox state ───────────────────── */
+    function updateBehalfState() {
+      const behalf = document.getElementById('behalf-checkbox').checked;
+
+      /* Show/hide lead postcode */
+      document.getElementById('lead-postcode-field').style.display = behalf ? 'none' : 'block';
+
+      /* Behalf mode: show participants-section with participant 1 block */
+      const sec  = document.getElementById('participants-section');
       const list = document.getElementById('participants-list');
-      list.appendChild(makeParticipantBlock(participantCount, false));
-      const btn = document.getElementById('add-participant-btn');
-      btn.style.display = participantCount < max ? 'block' : 'none';
+      const btn  = document.getElementById('add-participant-btn');
+
+      if (behalf) {
+        sec.style.display = 'block';
+        list.innerHTML    = '';
+        behalfParticipantCount = 0;
+
+        /* Minimum required blocks */
+        const minBehalf = isGroup
+          ? (groupSize === '3–5 people' ? 3 : 2)
+          : 1;
+        const maxBehalf = maxTotal;
+
+        for (let i = 1; i <= minBehalf; i++) {
+          list.appendChild(makeParticipantBlock(i, 'bp', true));
+          behalfParticipantCount++;
+        }
+        btn.style.display = behalfParticipantCount < maxBehalf ? 'block' : 'none';
+      } else {
+        sec.style.display = 'none';
+        list.innerHTML    = '';
+        behalfParticipantCount = 0;
+        btn.style.display = 'none';
+      }
+
+      /* Non-behalf group bookings: show group-add-section */
+      const grpSec  = document.getElementById('group-add-section');
+      const grpList = document.getElementById('group-participants-list');
+      const grpBtn  = document.getElementById('group-add-btn');
+
+      if (!behalf && isGroup) {
+        grpSec.style.display   = 'block';
+        grpList.innerHTML      = '';
+        groupParticipantCount  = 0;
+        /* Max additional participants = total - 1 (lead counts as participant 1) */
+        grpBtn.style.display   = maxTotal > 1 ? 'block' : 'none';
+      } else {
+        grpSec.style.display  = 'none';
+        grpList.innerHTML     = '';
+        groupParticipantCount = 0;
+      }
+    }
+
+    /* ── Behalf add participant button ──────────────────────────────── */
+    document.getElementById('add-participant-btn').addEventListener('click', () => {
+      const maxBehalf = maxTotal;
+      if (behalfParticipantCount >= maxBehalf) return;
+      behalfParticipantCount++;
+      document.getElementById('participants-list')
+        .appendChild(makeParticipantBlock(behalfParticipantCount, 'bp', false));
+      document.getElementById('add-participant-btn').style.display =
+        behalfParticipantCount < maxBehalf ? 'block' : 'none';
     });
 
-    /* ── Self-participant checkbox ──────────────────────────────────── */
-    document.getElementById('self-participant').addEventListener('change', initParticipants);
+    /* ── Group add participant button (non-behalf) ──────────────────── */
+    document.getElementById('group-add-btn').addEventListener('click', () => {
+      const maxExtra = maxTotal - 1; /* lead takes slot 1 */
+      if (groupParticipantCount >= maxExtra) return;
+      groupParticipantCount++;
+      document.getElementById('group-participants-list')
+        .appendChild(makeParticipantBlock(groupParticipantCount, 'gp', false));
+      document.getElementById('group-add-btn').style.display =
+        groupParticipantCount < maxExtra ? 'block' : 'none';
+    });
+
+    /* ── Behalf checkbox listener ───────────────────────────────────── */
+    document.getElementById('behalf-checkbox').addEventListener('change', updateBehalfState);
 
     /* ── Age group → show/hide age range ───────────────────────────── */
     document.querySelectorAll('input[name="age_group"]').forEach(r => {
       r.addEventListener('change', () => {
-        const show = r.value === 'Children / mixed';
-        document.getElementById('field-age-range').style.display = show ? 'block' : 'none';
-        if (!show) document.querySelectorAll('input[name="age_range"]').forEach(a => a.checked = false);
+        document.getElementById('field-age-range').style.display =
+          r.value === 'Children' ? 'block' : 'none';
+        if (r.value !== 'Children')
+          document.querySelectorAll('input[name="age_range"]').forEach(a => a.checked = false);
+      });
+    });
+
+    /* ── "Any" day deselects individual days and vice versa ─────────── */
+    document.getElementById('day-any').addEventListener('change', e => {
+      if (e.target.checked)
+        ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun']
+          .forEach(id => document.getElementById(id).checked = false);
+    });
+    ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun'].forEach(id => {
+      document.getElementById(id).addEventListener('change', e => {
+        if (e.target.checked) document.getElementById('day-any').checked = false;
       });
     });
 
     /* ── Initialise on load ─────────────────────────────────────────── */
-    initParticipants();
+    updateBehalfState();
 
-    /* ── Validation & submission ────────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════════════
+       VALIDATION & SUBMISSION
+    ══════════════════════════════════════════════════════════════════ */
     document.getElementById('continue-btn').addEventListener('click', async () => {
       let valid = true;
+      const behalf = document.getElementById('behalf-checkbox').checked;
 
-      /* Lead: first name */
-      const leadFirst = document.getElementById('lead-first').value.trim();
-      const errLF = document.getElementById('err-lead-first');
-      if (!leadFirst) { errLF.style.display = 'block'; valid = false; }
-      else            { errLF.style.display = 'none'; }
-
-      /* Lead: last name */
-      const leadLast = document.getElementById('lead-last').value.trim();
-      const errLL = document.getElementById('err-lead-last');
-      if (!leadLast) { errLL.style.display = 'block'; valid = false; }
-      else           { errLL.style.display = 'none'; }
-
-      /* Lead: email */
-      const leadEmail = document.getElementById('lead-email').value.trim();
-      const errLE = document.getElementById('err-lead-email');
-      if (!leadEmail) { errLE.style.display = 'block'; valid = false; }
-      else            { errLE.style.display = 'none'; }
-
-      /* Lead: phone */
-      const leadPhone = document.getElementById('lead-phone').value.trim();
-      const errLP = document.getElementById('err-lead-phone');
-      if (!leadPhone) { errLP.style.display = 'block'; valid = false; }
-      else            { errLP.style.display = 'none'; }
-
-      /* Lead: postcode */
-      const leadPostcode = document.getElementById('lead-postcode').value.trim();
-      const errLPC = document.getElementById('err-lead-postcode');
-      if (!leadPostcode) { errLPC.style.display = 'block'; valid = false; }
-      else               { errLPC.style.display = 'none'; }
-
-      /* Age group */
-      const ageGroupSelected = document.querySelector('input[name="age_group"]:checked');
-      const errAG = document.getElementById('err-age-group');
-      if (!ageGroupSelected) { errAG.style.display = 'block'; valid = false; }
-      else                   { errAG.style.display = 'none'; }
-
-      /* Age range (if children selected) */
-      const ageRangeVisible = document.getElementById('field-age-range').style.display !== 'none';
-      if (ageRangeVisible) {
-        const ageRangeSelected = document.querySelector('input[name="age_range"]:checked');
-        const errAR = document.getElementById('err-age-range');
-        if (!ageRangeSelected) { errAR.style.display = 'block'; valid = false; }
-        else                   { errAR.style.display = 'none'; }
+      function err(id, show) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? 'block' : 'none';
       }
 
-      /* Days */
-      const daysSelected = document.querySelectorAll('input[name="days"]:checked');
-      const errDays = document.getElementById('err-days');
-      if (daysSelected.length === 0) { errDays.style.display = 'block'; valid = false; }
-      else                           { errDays.style.display = 'none'; }
+      /* ── Lead ───────────────────────────────────────────────────── */
+      const leadFirst = document.getElementById('lead-first').value.trim();
+      err('err-lead-first', !leadFirst); if (!leadFirst) valid = false;
 
-      /* Time of day */
-      const todSelected = document.querySelectorAll('input[name="time_of_day"]:checked');
-      const errTod = document.getElementById('err-time-of-day');
-      if (todSelected.length === 0) { errTod.style.display = 'block'; valid = false; }
-      else                          { errTod.style.display = 'none'; }
+      const leadLast = document.getElementById('lead-last').value.trim();
+      err('err-lead-last', !leadLast); if (!leadLast) valid = false;
+
+      const leadEmail = document.getElementById('lead-email').value.trim();
+      err('err-lead-email', !leadEmail); if (!leadEmail) valid = false;
+
+      const leadPhone = document.getElementById('lead-phone').value.trim();
+      err('err-lead-phone', !leadPhone); if (!leadPhone) valid = false;
+
+      let leadPostcode = '';
+      if (!behalf) {
+        leadPostcode = document.getElementById('lead-postcode').value.trim();
+        err('err-lead-postcode', !leadPostcode); if (!leadPostcode) valid = false;
+      }
+
+      /* ── Age group ──────────────────────────────────────────────── */
+      const ageGroupSel = document.querySelector('input[name="age_group"]:checked');
+      err('err-age-group', !ageGroupSel); if (!ageGroupSel) valid = false;
+
+      if (ageGroupSel?.value === 'Children') {
+        const ageRangeSel = document.querySelector('input[name="age_range"]:checked');
+        err('err-age-range', !ageRangeSel); if (!ageRangeSel) valid = false;
+      }
+
+      /* ── Days ───────────────────────────────────────────────────── */
+      const daysSel = document.querySelectorAll('input[name="days"]:checked');
+      err('err-days', daysSel.length === 0); if (daysSel.length === 0) valid = false;
+
+      /* ── Time of day ────────────────────────────────────────────── */
+      const todSel = document.querySelectorAll('input[name="time_of_day"]:checked');
+      err('err-time-of-day', todSel.length === 0); if (todSel.length === 0) valid = false;
 
       if (!valid) return;
 
-      /* ── Build contact object ─────────────────────────────────────── */
-      const selfIsTicked = document.getElementById('self-participant').checked;
+      /* ── Build participants array ────────────────────────────────── */
       const participants = [];
 
-      if (selfIsTicked) {
+      if (!behalf) {
+        /* Lead is participant 1 */
         participants.push({
-          firstName:  leadFirst,
-          lastName:   leadLast,
-          email:      leadEmail,
-          phone:      leadPhone,
-          postcode:   leadPostcode,
+          firstName: leadFirst, lastName: leadLast,
+          email: leadEmail,     phone: leadPhone, postcode: leadPostcode,
         });
-      }
-
-      for (let i = 1; i <= participantCount; i++) {
-        const pFirst    = document.getElementById(`p${i}-first`)?.value.trim()    || '';
-        const pLast     = document.getElementById(`p${i}-last`)?.value.trim()     || '';
-        const pEmail    = document.getElementById(`p${i}-email`)?.value.trim()    || '';
-        const pPhone    = document.getElementById(`p${i}-phone`)?.value.trim()    || '';
-        const pPostcode = document.getElementById(`p${i}-postcode`)?.value.trim() || '';
-        if (pFirst || pLast || pEmail || pPhone || pPostcode) {
-          participants.push({ firstName: pFirst, lastName: pLast, email: pEmail, phone: pPhone, postcode: pPostcode });
+        /* Any extra group participants */
+        for (let i = 1; i <= groupParticipantCount; i++) {
+          const p = readParticipantBlock(i, 'gp');
+          if (p) participants.push(p);
+        }
+      } else {
+        /* Separate participant blocks */
+        for (let i = 1; i <= behalfParticipantCount; i++) {
+          const p = readParticipantBlock(i, 'bp');
+          if (p) participants.push(p);
         }
       }
 
+      const ageRangeEl = document.querySelector('input[name="age_range"]:checked');
+
       const contact = {
         lead: {
-          firstName:  leadFirst,
-          lastName:   leadLast,
-          email:      leadEmail,
-          phone:      leadPhone,
-          postcode:   leadPostcode,
-          selfParticipant: selfIsTicked,
+          firstName:       leadFirst,
+          lastName:        leadLast,
+          email:           leadEmail,
+          phone:           leadPhone,
+          postcode:        leadPostcode || null,
+          bookingOnBehalf: behalf,
         },
-        ageGroup:    ageGroupSelected.value,
+        ageGroup:    ageGroupSel?.value || '',
         participants,
-        days:        Array.from(daysSelected).map(d => d.value),
-        timeOfDay:   Array.from(todSelected).map(t => t.value),
+        days:        Array.from(daysSel).map(d => d.value),
+        timeOfDay:   Array.from(todSel).map(t => t.value),
         notes:       document.getElementById('scheduling-notes').value.trim(),
       };
-
-      const ageRangeEl = document.querySelector('input[name="age_range"]:checked');
       if (ageRangeEl) contact.ageRange = ageRangeEl.value;
 
-      /* ── Submit to Netlify Function ───────────────────────────────── */
-      const continueBtn = document.getElementById('continue-btn');
-      continueBtn.textContent = 'sending…';
-      continueBtn.disabled = true;
+      /* ── Submit ─────────────────────────────────────────────────── */
+      const btn = document.getElementById('continue-btn');
+      btn.textContent = 'sending…';
+      btn.disabled    = true;
 
       try {
         const res = await fetch('/api/submit-enquiry', {
@@ -756,30 +846,16 @@
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ booking, contact }),
         });
-
-        if (!res.ok) {
-          throw new Error(`Server error ${res.status}`);
-        }
-
-        /* Clear sessionStorage and go to thank-you page */
+        if (!res.ok) throw new Error('Server error');
         sessionStorage.removeItem('booking');
         window.location.href = 'thankyou.html';
-
-      } catch (err) {
-        console.error('Submission error:', err);
-        continueBtn.textContent = 'continue →';
-        continueBtn.disabled = false;
-        /* Show a simple inline error */
-        let errEl = document.getElementById('submit-error');
-        if (!errEl) {
-          errEl = document.createElement('p');
-          errEl.id = 'submit-error';
-          errEl.style.cssText = 'color:#c0392b;font-size:0.78rem;margin-top:0.8rem;letter-spacing:0.04em;text-align:center;';
-          continueBtn.after(errEl);
-        }
-        errEl.textContent = 'Something went wrong — please try again or email us at info@oiagi.org.';
+      } catch {
+        btn.textContent = 'continue →';
+        btn.disabled    = false;
+        document.getElementById('submit-error').style.display = 'block';
       }
     });
+
   </script>
 
 </body>
