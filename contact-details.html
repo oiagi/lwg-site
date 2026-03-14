@@ -483,12 +483,12 @@
     <button class="submit" id="continue-btn">continue →</button>
     <div class="error" id="submit-error" style="display:none;text-align:center;margin-top:1rem;">
       Something went wrong — please try again or email us at
-      <a href="mailto:info@oiagi.org">info@oiagi.org</a>.
+      <a href="/cdn-cgi/l/email-protection#c1a8afa7ae81aea8a0a6a8efaeb3a6"><span class="__cf_email__" data-cfemail="6900070f06290600080e0047061b0e">[email&#160;protected]</span></a>.
     </div>
 
   </div><!-- /.form-container -->
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const navCloud = document.getElementById('nav-cloud');
     const navMenu  = document.getElementById('nav-menu');
     const nav      = document.getElementById('nav');
@@ -850,6 +850,7 @@
         sessionStorage.removeItem('booking');
         window.location.href = 'thankyou.html';
       } catch {
+        /* Re-enable button and show error message */
         btn.textContent = 'continue →';
         btn.disabled    = false;
         document.getElementById('submit-error').style.display = 'block';
