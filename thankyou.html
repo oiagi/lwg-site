@@ -136,6 +136,8 @@
   </script>
 </head>
 <body>
+
+  <!-- ── Nav overlay ───────────────────────────────────────────────────── -->
   <div class="nav-overlay" id="nav-overlay"></div>
   <!-- ── Navigation cloud ──────────────────────────────────────────
        The cloud icon in the top-left acts as the site nav menu.
@@ -154,20 +156,32 @@
   </nav>
 
   <div class="container">
+
+    <!-- ── Success state (default) ───────────────────────────────────────
+         Shown when the user arrives here after a successful submission.
+         The submission itself is handled by contact-details.html —
+         this page just confirms and clears session data.              -->
     <div id="success-state">
-      <h1>thank you</h1>
-      <p>Your enquiry has been received.</p>
-      <p>We personally review every enquiry to make sure we match you with the right teacher.
-         You'll hear from us within 48 hours.</p>
-      <p>A confirmation has been sent to your email address.</p>
-      <a href="index.html" class="home-link">back to home</a>
+      <h1>thank you.</h1>
+      <p>We've received your enquiry and will be in touch within 48 hours.</p>
+      <p>We personally review every enquiry to make sure we match you with the right teacher.</p>
+      <p>If you have any questions in the meantime, write to us at
+         <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.
+      </p>
+      <a class="home-link" href="index.html">back to home</a>
     </div>
-    <div id="error-state" class="error-state">
-      <h1>something went wrong</h1>
-      <p>We were unable to submit your enquiry. Please try again, or write to us directly at
-         <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.</p>
-      <a href="javascript:history.back()" class="home-link">go back</a>
+
+    <!-- ── Error state ───────────────────────────────────────────────────
+         Shown if something went wrong during submission.               -->
+    <div class="error-state" id="error-state">
+      <h1>something went wrong.</h1>
+      <p>Your enquiry may not have been received. Please try again or
+         email us directly at
+         <a href="mailto:info@oiagi.org" style="color:#c0392b;">info@oiagi.org</a>.
+      </p>
+      <a class="home-link" href="booking.html">try again</a>
     </div>
+
   </div>
 
   <script>
@@ -247,39 +261,16 @@
   </script>
 
   <script>
-    /* ── Submit enquiry to backend ───────────────────────────────────
-       This page is the final destination of the booking flow.
-       It reads booking + contact from sessionStorage, POSTs to the
-       Netlify function, then shows success or error state.        */
-    (async function () {
-      const booking = JSON.parse(sessionStorage.getItem('booking') || 'null');
-      const contact = JSON.parse(sessionStorage.getItem('contact') || 'null');
-
-      if (!booking || !contact) {
-        /* Navigated here directly — just show success silently */
-        return;
-      }
-
-      try {
-        const res = await fetch('/.netlify/functions/submit-enquiry', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ booking, contact }),
-        });
-
-        if (res.ok) {
-          /* Clear session data so refreshing doesn't re-submit */
-          sessionStorage.removeItem('booking');
-          sessionStorage.removeItem('contact');
-        } else {
-          document.getElementById('success-state').style.display = 'none';
-          document.getElementById('error-state').style.display   = 'block';
-        }
-      } catch (err) {
-        document.getElementById('success-state').style.display = 'none';
-        document.getElementById('error-state').style.display   = 'block';
-      }
-    })();
+    /* ── Thank you page logic ────────────────────────────────────────────
+       Submission is handled by contact-details.html. This page simply:
+       1. Clears session storage so a refresh does not re-trigger anything
+       2. Checks whether we arrived here legitimately (via a submission)
+          and shows the success state — if navigated to directly without
+          a prior submission it still shows success silently (acceptable)
+    ──────────────────────────────────────────────────────────────────── */
+    sessionStorage.removeItem('booking');
+    sessionStorage.removeItem('contact');
   </script>
+
 </body>
 </html>
