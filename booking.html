@@ -358,7 +358,6 @@
     html[data-touch="true"] button.submit:hover      { background: #1a1a1a; color: #d6eaf8; }
     html[data-touch="true"] button.submit:active     { background: #ffffff; color: #1a1a1a; }
   </style>
-
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
        Detects phone / tablet / desktop using screen size + pointer type
@@ -398,7 +397,9 @@
 </head>
 <body>
 
-  
+  <!-- ── Nav overlay ───────────────────────────────────────────────────
+       Dims and blurs page content when the nav menu is open.          -->
+  <div class="nav-overlay" id="nav-overlay"></div>
   <!-- ── Navigation cloud ──────────────────────────────────────────
        The cloud icon in the top-left acts as the site nav menu.
        Clicking it reveals links to 'book' and 'contact' pages
@@ -415,259 +416,127 @@
     </div>
   </nav>
 
-
   <div class="form-container">
     <h1>make a booking enquiry</h1>
 
-    <!-- ── Not sure? Contact link ────────────────────────────────── -->
+    <!-- ── Not sure? Contact hint ────────────────────────────────────── -->
     <p class="contact-hint">not sure what you need? <a href="contact.html">get in touch</a></p>
 
-    <!-- ── Service toggle ────────────────────────────────────────── -->
+    <!-- ── Service tab toggle ────────────────────────────────────────────
+         Three mutually exclusive tabs. selectTab(service) shows the
+         matching form and hides the other two.                         -->
     <div class="service-toggle" role="tablist">
       <button class="service-tab" id="tab-language" role="tab" onclick="selectTab('language')">Language course</button>
       <button class="service-tab" id="tab-exam"     role="tab" onclick="selectTab('exam')">Exam prep</button>
       <button class="service-tab" id="tab-tutoring" role="tab" onclick="selectTab('tutoring')">Tutoring</button>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════
+         LANGUAGE COURSE FORM  (id prefix: l-)
+         Shown when "Language course" tab is active.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="l-form" style="display:none;">
 
-
-  <!-- ── Tutoring form ─────────────────────────────────────────── -->
-    <div id="tutoring-form" style="display:none;">
-
-      <!-- Student grade -->
+      <!-- Language -->
       <div class="field">
-        <label>Student's grade</label>
-        <div class="toggle-group" id="grade-options">
-          <input type="radio" name="grade" id="gr-primar" value="Primar"><label for="gr-primar">Primar</label>
-          <input type="radio" name="grade" id="gr-sek"    value="Sekundar"><label for="gr-sek">Sekundar</label>
-          <input type="radio" name="grade" id="gr-lgym"   value="Langzeitgymnasium"><label for="gr-lgym">Langzeitgymnasium</label>
-          <input type="radio" name="grade" id="gr-kgym"   value="Kurzzeitgymnasium"><label for="gr-kgym">Kurzzeitgymnasium</label>
-          <input type="radio" name="grade" id="gr-bms"    value="BMS"><label for="gr-bms">BMS</label>
-          <input type="radio" name="grade" id="gr-efz"    value="EFZ"><label for="gr-efz">EFZ</label>
-          <input type="radio" name="grade" id="gr-fms"    value="FMS"><label for="gr-fms">FMS</label>
-          <input type="radio" name="grade" id="gr-eba"    value="EBA"><label for="gr-eba">EBA</label>
-        </div>
-        <div class="error" id="err-grade">Please select the student's grade.</div>
-      </div>
-
-      <!-- Subjects (multi-select checkboxes) -->
-      <div class="field">
-        <label>Which subjects</label>
+        <label>Language</label>
         <div class="toggle-group">
-          <input type="checkbox" name="subjects" id="sub-math"  value="Mathematik"><label for="sub-math">Mathematik</label>
-          <input type="checkbox" name="subjects" id="sub-phys"  value="Physik"><label for="sub-phys">Physik</label>
-          <input type="checkbox" name="subjects" id="sub-info"  value="Informatik"><label for="sub-info">Informatik</label>
-          <input type="checkbox" name="subjects" id="sub-en"    value="Englisch"><label for="sub-en">Englisch</label>
-          <input type="checkbox" name="subjects" id="sub-fr"    value="Französisch"><label for="sub-fr">Französisch</label>
-          <input type="checkbox" name="subjects" id="sub-de"    value="Deutsch"><label for="sub-de">Deutsch</label>
-          <input type="checkbox" name="subjects" id="sub-other" value="Other"><label for="sub-other">Other</label>
+          <input type="radio" name="l-language" id="l-lang-de"  value="German"><label for="l-lang-de">German</label>
+          <input type="radio" name="l-language" id="l-lang-ch"  value="Swiss German"><label for="l-lang-ch">Swiss German</label>
+          <input type="radio" name="l-language" id="l-lang-en"  value="English"><label for="l-lang-en">English</label>
+          <input type="radio" name="l-language" id="l-lang-oth" value="Other"><label for="l-lang-oth">Other</label>
         </div>
-        <div class="error" id="err-subjects">Please select at least one subject.</div>
+        <div class="error" id="l-err-language">Please select a language.</div>
       </div>
 
-      <!-- Other subject free text — shown when Other checkbox is ticked -->
-      <div class="field" id="field-subject-other" style="display:none;">
-        <label>Please specify</label>
-        <div style="margin-top: 0.8rem;">
-          <textarea id="subject-other-text" name="subject_other"
-                    placeholder="e.g. Chemistry, History, Latin…"></textarea>
-        </div>
-        <div class="error" id="err-subject-other">Please tell us which subject you need help with.</div>
-      </div>
-
-      <!-- Frequency -->
+      <!-- Background (free text) -->
       <div class="field">
-        <label>frequency</label>
-        <div class="toggle-group" id="t-frequency-options">
-          <input type="radio" name="t-frequency" id="t-freq-nweek"  value="Multiple times a week"><label for="t-freq-nweek">Multiple times a week</label>
-          <input type="radio" name="t-frequency" id="t-freq-week"   value="Once a week"><label for="t-freq-week">Once a week</label>
-          <input type="radio" name="t-frequency" id="t-freq-2weeks" value="Every two weeks"><label for="t-freq-2weeks">Every two weeks</label>
-          <input type="radio" name="t-frequency" id="t-freq-month"  value="Once a month"><label for="t-freq-month">Once a month</label>
+        <label>Current level and language background</label>
+        <textarea id="l-background" name="l_background"
+                  placeholder="e.g. A2 German, native English speaker, studied French at school…"></textarea>
+        <div class="error" id="l-err-background">Please tell us a little about your background.</div>
+      </div>
+
+      <!-- Course level -->
+      <div class="field">
+        <label>Course level</label>
+        <div class="toggle-group">
+          <input type="radio" name="l-level" id="l-lvl-a1" value="A1"><label for="l-lvl-a1">A1</label>
+          <input type="radio" name="l-level" id="l-lvl-a2" value="A2"><label for="l-lvl-a2">A2</label>
+          <input type="radio" name="l-level" id="l-lvl-b1" value="B1"><label for="l-lvl-b1">B1</label>
+          <input type="radio" name="l-level" id="l-lvl-b2" value="B2"><label for="l-lvl-b2">B2</label>
+          <input type="radio" name="l-level" id="l-lvl-c1" value="C1"><label for="l-lvl-c1">C1</label>
+          <input type="radio" name="l-level" id="l-lvl-c2" value="C2"><label for="l-lvl-c2">C2</label>
         </div>
-        <!-- shown only when "multiple times a week" is selected -->
-        <div id="t-freq-nweek-row" style="display:none; margin-top:0.8rem;">
-          <label style="text-transform:none; color:#555; font-size:0.75rem; letter-spacing:0.1em;">How many times per week?</label>
-          <div class="hours-row" style="margin-top:0.4rem;">
-            <button type="button" id="t-freq-down">−</button>
-            <span class="hours-display" id="t-freq-display">2×</span>
-            <button type="button" id="t-freq-up">+</button>
-          </div>
-        </div>
-        <div class="error" id="err-t-frequency">Please select a frequency.</div>
+        <div class="error" id="l-err-level">Please select a course level.</div>
       </div>
 
       <!-- Format -->
       <div class="field">
-        <label>format</label>
+        <label>Format</label>
         <div class="toggle-group">
-          <input type="radio" name="t-format" id="t-fmt-online"    value="Online"><label for="t-fmt-online">Online</label>
-          <input type="radio" name="t-format" id="t-fmt-inperson"  value="In-person"><label for="t-fmt-inperson">In-person</label>
-          <input type="radio" name="t-format" id="t-fmt-flexible"  value="I'm flexible"><label for="t-fmt-flexible">I'm flexible</label>
+          <input type="radio" name="l-format" id="l-fmt-online"    value="Online"><label for="l-fmt-online">Online</label>
+          <input type="radio" name="l-format" id="l-fmt-inperson"  value="In-person"><label for="l-fmt-inperson">In-person</label>
+          <input type="radio" name="l-format" id="l-fmt-flexible"  value="I'm flexible"><label for="l-fmt-flexible">I'm flexible</label>
         </div>
-        <div class="error" id="err-t-format">Please select a format.</div>
+        <div class="error" id="l-err-format">Please select a format.</div>
       </div>
 
-      <!-- Location — shown only when format is In-person -->
-      <div class="field" id="t-field-location" style="display:none;">
-        <label>location</label>
+      <!-- Location — shown only when In-person is selected -->
+      <div class="field" id="l-field-location" style="display:none;">
+        <label>Location</label>
         <div class="toggle-group">
-          <input type="radio" name="t-location" id="t-loc-company"   value="My company"><label for="t-loc-company">My company</label>
-          <input type="radio" name="t-location" id="t-loc-home"      value="My home"><label for="t-loc-home">My home</label>
-          <input type="radio" name="t-location" id="t-loc-teacher"   value="Teacher's home"><label for="t-loc-teacher">Teacher's home</label>
-          <input type="radio" name="t-location" id="t-loc-classroom" value="Classroom"><label for="t-loc-classroom">Classroom</label>
+          <input type="radio" name="l-location" id="l-loc-company"   value="My company"><label for="l-loc-company">My company</label>
+          <input type="radio" name="l-location" id="l-loc-home"      value="My home"><label for="l-loc-home">My home</label>
+          <input type="radio" name="l-location" id="l-loc-teacher"   value="Teacher's home"><label for="l-loc-teacher">Teacher's home</label>
+          <input type="radio" name="l-location" id="l-loc-classroom" value="Classroom"><label for="l-loc-classroom">Classroom</label>
         </div>
-        <div class="hint" id="t-loc-disclaimer" style="display:none;"></div>
-        <div class="error" id="err-t-location">Please select a location.</div>
+        <div class="hint" id="l-loc-hint" style="display:none;"></div>
+        <div class="error" id="l-err-location">Please select a location.</div>
       </div>
 
       <!-- Group size -->
       <div class="field">
-        <label>group size</label>
-        <div class="toggle-group" id="t-group-options">
-          <input type="radio" name="t-group" id="tgrp-1" value="Private (1 person)"><label for="tgrp-1">Private</label>
-          <input type="radio" name="t-group" id="tgrp-2" value="2 people"><label for="tgrp-2">2 people</label>
-          <input type="radio" name="t-group" id="tgrp-3" value="3–5 people"><label for="tgrp-3">3–5 people</label>
-        </div>
-        <div class="error" id="err-t-group">Please select a group size.</div>
-      </div>
-
-      <button class="submit" id="t-continue-btn">continue →</button>
-    </div>
-
-    <!-- ── Language course booking form ──────────────────────────── -->
-    <div id="booking-form" style="display:none;">
-
-      <!-- Language selection -->
-      <div class="field">
-        <label>Language you want to learn</label>
+        <label>Group size</label>
         <div class="toggle-group">
-          <input type="radio" name="language" id="lang-de" value="German">
-          <label for="lang-de">German</label>
-          <input type="radio" name="language" id="lang-ch" value="Swiss German">
-          <label for="lang-ch">Swiss German</label>
-          <input type="radio" name="language" id="lang-en" value="English">
-          <label for="lang-en">English</label>
-          <input type="radio" name="language" id="lang-other" value="Other">
-          <label for="lang-other">Other</label>
+          <input type="radio" name="l-group" id="l-grp-1" value="Private (1 person)"><label for="l-grp-1">Private</label>
+          <input type="radio" name="l-group" id="l-grp-2" value="2 people"><label for="l-grp-2">2 people</label>
+          <input type="radio" name="l-group" id="l-grp-3" value="3–5 people"><label for="l-grp-3">3–5 people</label>
         </div>
-        <div class="hint">Courses are taught in English, German and Swiss German.</div>
-        <div class="error" id="err-language">Please select a language.</div>
+        <div class="error" id="l-err-group">Please select a group size.</div>
       </div>
 
-      <!-- Current level and background -->
-      <div class="field">
-        <label>Your current level and any relevant language background</label>
-        <div style="margin-top: 0.8rem;">
-          <textarea id="lang-background" name="lang_background"
-                    placeholder="e.g. complete beginner, A2 in German, native English speaker…"></textarea>
-        </div>
-        <div class="error" id="err-lang-background" style="display:none;">Please tell us about your current level.</div>
-      </div>
-
-      <!-- Level selection (CEFR scale — the course level to book) -->
-      <div class="field">
-        <label>Course level</label>
-        <div class="toggle-group">
-          <input type="radio" name="level" id="lvl-a1" value="A1"><label for="lvl-a1">A1</label>
-          <input type="radio" name="level" id="lvl-a2" value="A2"><label for="lvl-a2">A2</label>
-          <input type="radio" name="level" id="lvl-b1" value="B1"><label for="lvl-b1">B1</label>
-          <input type="radio" name="level" id="lvl-b2" value="B2"><label for="lvl-b2">B2</label>
-          <input type="radio" name="level" id="lvl-c1" value="C1"><label for="lvl-c1">C1</label>
-          <input type="radio" name="level" id="lvl-c2" value="C2"><label for="lvl-c2">C2</label>
-        </div>
-        <div class="error" id="err-level">Please select a level.</div>
-      </div>
-
-      <!-- Frequency -->
-      <div class="field">
-        <label>frequency</label>
-        <div class="toggle-group" id="frequency-options">
-          <input type="radio" name="frequency" id="freq-nweek"  value="Multiple times a week"><label for="freq-nweek">Multiple times a week</label>
-          <input type="radio" name="frequency" id="freq-week"   value="Once a week"><label for="freq-week">Once a week</label>
-          <input type="radio" name="frequency" id="freq-2weeks" value="Every two weeks"><label for="freq-2weeks">Every two weeks</label>
-          <input type="radio" name="frequency" id="freq-month"  value="Once a month"><label for="freq-month">Once a month</label>
-        </div>
-        <!-- shown only when "multiple times a week" is selected -->
-        <div id="freq-nweek-row" style="display:none; margin-top:0.8rem;">
-          <label style="text-transform:none; color:#555; font-size:0.75rem; letter-spacing:0.1em;">How many times per week?</label>
-          <div class="hours-row" style="margin-top:0.4rem;">
-            <button type="button" id="freq-down">−</button>
-            <span class="hours-display" id="freq-display">2×</span>
-            <button type="button" id="freq-up">+</button>
-          </div>
-        </div>
-        <div class="error" id="err-frequency">please select a frequency</div>
-      </div>
-
-      <!-- Online or in-person -->
-      <div class="field">
-        <label>format</label>
-        <div class="toggle-group">
-          <input type="radio" name="format" id="fmt-online"   value="Online">
-          <label for="fmt-online">Online</label>
-          <input type="radio" name="format" id="fmt-inperson" value="In-person">
-          <label for="fmt-inperson">In-person</label>
-          <input type="radio" name="format" id="fmt-flexible" value="I'm flexible">
-          <label for="fmt-flexible">I'm flexible</label>
-        </div>
-        <div class="error" id="err-format">please select a format</div>
-      </div>
-
-      <!-- Location — shown only when format is In-person -->
-      <div class="field" id="field-location" style="display:none;">
-        <label>location</label>
-        <div class="toggle-group">
-          <input type="radio" name="location" id="loc-company"   value="My company"><label for="loc-company">My company</label>
-          <input type="radio" name="location" id="loc-home"      value="My home"><label for="loc-home">My home</label>
-          <input type="radio" name="location" id="loc-teacher"   value="Teacher's home"><label for="loc-teacher">Teacher's home</label>
-          <input type="radio" name="location" id="loc-classroom" value="Classroom"><label for="loc-classroom">Classroom</label>
-        </div>
-        <div class="hint" id="loc-disclaimer" style="display:none;"></div>
-        <div class="error" id="err-location">please select a location</div>
-      </div>
-
-      <!-- Group size -->
-      <div class="field">
-        <label>group size</label>
-        <div class="toggle-group" id="group-options">
-          <input type="radio" name="group" id="grp-1" value="Private (1 person)"><label for="grp-1">Private</label>
-          <input type="radio" name="group" id="grp-2" value="2 people"><label for="grp-2">2 people</label>
-          <input type="radio" name="group" id="grp-3" value="3–5 people"><label for="grp-3">3–5 people</label>
-        </div>
-        <div class="error" id="err-group">please select a group size</div>
-      </div>
+      <button class="submit" id="l-continue-btn">continue →</button>
+    </div><!-- /#l-form -->
 
 
-      <button class="submit" id="continue-btn">continue →</button>
-    </div>
-
-    <!-- ── Exam prep form ────────────────────────────────────────── -->
-    <div id="exam-form" style="display:none;">
+    <!-- ════════════════════════════════════════════════════════════════
+         EXAM PREP FORM  (id prefix: e-)
+         Shown when "Exam prep" tab is active.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="e-form" style="display:none;">
 
       <!-- Exam type -->
       <div class="field">
         <label>Exam</label>
         <div class="toggle-group">
-          <input type="radio" name="e-exam_type" id="e-exam-cambridge" value="Cambridge"><label for="e-exam-cambridge">Cambridge</label>
-          <input type="radio" name="e-exam_type" id="e-exam-toefl"     value="TOEFL"><label for="e-exam-toefl">TOEFL</label>
-          <input type="radio" name="e-exam_type" id="e-exam-ielts"     value="IELTS"><label for="e-exam-ielts">IELTS</label>
-          <input type="radio" name="e-exam_type" id="e-exam-telc"      value="TELC"><label for="e-exam-telc">TELC</label>
-          <input type="radio" name="e-exam_type" id="e-exam-goethe"    value="Goethe"><label for="e-exam-goethe">Goethe</label>
+          <input type="radio" name="e-exam" id="e-exam-cambridge" value="Cambridge"><label for="e-exam-cambridge">Cambridge</label>
+          <input type="radio" name="e-exam" id="e-exam-toefl"     value="TOEFL"><label for="e-exam-toefl">TOEFL</label>
+          <input type="radio" name="e-exam" id="e-exam-ielts"     value="IELTS"><label for="e-exam-ielts">IELTS</label>
+          <input type="radio" name="e-exam" id="e-exam-telc"      value="TELC"><label for="e-exam-telc">TELC</label>
+          <input type="radio" name="e-exam" id="e-exam-goethe"    value="Goethe"><label for="e-exam-goethe">Goethe</label>
         </div>
         <div class="hint">Classes are held in the exam language. Other teaching languages available on request.</div>
-        <div class="error" id="err-e-exam-type">Please select an exam.</div>
+        <div class="error" id="e-err-exam">Please select an exam.</div>
       </div>
 
       <!-- Exam date (optional) -->
       <div class="field">
         <label>Exam date <span style="font-size:0.7rem; letter-spacing:0.08em; color:#888; text-transform:none;">(optional)</span></label>
-        <input type="date" id="e-exam-date" name="e_exam_date"
-               style="width:100%; padding:0.5rem 0.6rem; font-family:inherit; font-size:0.82rem;
-                      border:1px solid #1a1a1a; background:transparent; color:#1a1a1a;
-                      letter-spacing:0.04em; margin-top:0.4rem;">
+        <input type="date" id="e-exam-date" name="e_exam_date" style="width:100%;background:transparent;border:none;border-bottom:1px solid #1a1a1a;padding:0.4rem 0;font-family:inherit;font-size:1rem;font-weight:300;color:#1a1a1a;outline:none;" />
       </div>
 
-      <!-- Level -->
+      <!-- Course level -->
       <div class="field">
         <label>Course level</label>
         <div class="toggle-group">
@@ -678,77 +547,134 @@
           <input type="radio" name="e-level" id="e-lvl-c1" value="C1"><label for="e-lvl-c1">C1</label>
           <input type="radio" name="e-level" id="e-lvl-c2" value="C2"><label for="e-lvl-c2">C2</label>
         </div>
-        <div class="error" id="err-e-level">Please select a level.</div>
-      </div>
-
-      <!-- Frequency -->
-      <div class="field">
-        <label>frequency</label>
-        <div class="toggle-group" id="e-frequency-options">
-          <input type="radio" name="e-frequency" id="e-freq-nweek"  value="Multiple times a week"><label for="e-freq-nweek">Multiple times a week</label>
-          <input type="radio" name="e-frequency" id="e-freq-week"   value="Once a week"><label for="e-freq-week">Once a week</label>
-          <input type="radio" name="e-frequency" id="e-freq-2weeks" value="Every two weeks"><label for="e-freq-2weeks">Every two weeks</label>
-          <input type="radio" name="e-frequency" id="e-freq-month"  value="Once a month"><label for="e-freq-month">Once a month</label>
-        </div>
-        <div id="e-freq-nweek-row" style="display:none; margin-top:0.8rem;">
-          <label style="text-transform:none; color:#555; font-size:0.75rem; letter-spacing:0.1em;">How many times per week?</label>
-          <div class="hours-row" style="margin-top:0.4rem;">
-            <button type="button" id="e-freq-down">−</button>
-            <span class="hours-display" id="e-freq-display">2×</span>
-            <button type="button" id="e-freq-up">+</button>
-          </div>
-        </div>
-        <div class="error" id="err-e-frequency">please select a frequency</div>
+        <div class="error" id="e-err-level">Please select a course level.</div>
       </div>
 
       <!-- Format -->
       <div class="field">
-        <label>format</label>
+        <label>Format</label>
         <div class="toggle-group">
           <input type="radio" name="e-format" id="e-fmt-online"   value="Online"><label for="e-fmt-online">Online</label>
           <input type="radio" name="e-format" id="e-fmt-inperson" value="In-person"><label for="e-fmt-inperson">In-person</label>
           <input type="radio" name="e-format" id="e-fmt-flexible" value="I'm flexible"><label for="e-fmt-flexible">I'm flexible</label>
         </div>
-        <div class="error" id="err-e-format">please select a format</div>
+        <div class="error" id="e-err-format">Please select a format.</div>
       </div>
 
-      <!-- Location — shown only when format is In-person -->
+      <!-- Location — shown only when In-person is selected -->
       <div class="field" id="e-field-location" style="display:none;">
-        <label>location</label>
+        <label>Location</label>
         <div class="toggle-group">
           <input type="radio" name="e-location" id="e-loc-company"   value="My company"><label for="e-loc-company">My company</label>
           <input type="radio" name="e-location" id="e-loc-home"      value="My home"><label for="e-loc-home">My home</label>
           <input type="radio" name="e-location" id="e-loc-teacher"   value="Teacher's home"><label for="e-loc-teacher">Teacher's home</label>
           <input type="radio" name="e-location" id="e-loc-classroom" value="Classroom"><label for="e-loc-classroom">Classroom</label>
         </div>
-        <div class="hint" id="e-loc-disclaimer" style="display:none;"></div>
-        <div class="error" id="err-e-location">please select a location</div>
+        <div class="hint" id="e-loc-hint" style="display:none;"></div>
+        <div class="error" id="e-err-location">Please select a location.</div>
       </div>
 
       <!-- Group size -->
       <div class="field">
-        <label>group size</label>
-        <div class="toggle-group" id="e-group-options">
+        <label>Group size</label>
+        <div class="toggle-group">
           <input type="radio" name="e-group" id="e-grp-1" value="Private (1 person)"><label for="e-grp-1">Private</label>
           <input type="radio" name="e-group" id="e-grp-2" value="2 people"><label for="e-grp-2">2 people</label>
           <input type="radio" name="e-group" id="e-grp-3" value="3–5 people"><label for="e-grp-3">3–5 people</label>
         </div>
-        <div class="error" id="err-e-group">please select a group size</div>
+        <div class="error" id="e-err-group">Please select a group size.</div>
       </div>
 
       <button class="submit" id="e-continue-btn">continue →</button>
-    </div>
-  </div>
+    </div><!-- /#e-form -->
 
-  
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TUTORING FORM  (id prefix: t-)
+         Shown when "Tutoring" tab is active.
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="t-form" style="display:none;">
+
+      <!-- Student grade -->
+      <div class="field">
+        <label>Student's grade</label>
+        <div class="toggle-group">
+          <input type="radio" name="t-grade" id="t-gr-primar" value="Primar"><label for="t-gr-primar">Primar</label>
+          <input type="radio" name="t-grade" id="t-gr-sek"    value="Sekundar"><label for="t-gr-sek">Sekundar</label>
+          <input type="radio" name="t-grade" id="t-gr-lgym"   value="Langzeitgymnasium"><label for="t-gr-lgym">Langzeitgymnasium</label>
+          <input type="radio" name="t-grade" id="t-gr-kgym"   value="Kurzzeitgymnasium"><label for="t-gr-kgym">Kurzzeitgymnasium</label>
+          <input type="radio" name="t-grade" id="t-gr-bms"    value="BMS"><label for="t-gr-bms">BMS</label>
+          <input type="radio" name="t-grade" id="t-gr-efz"    value="EFZ"><label for="t-gr-efz">EFZ</label>
+          <input type="radio" name="t-grade" id="t-gr-fms"    value="FMS"><label for="t-gr-fms">FMS</label>
+          <input type="radio" name="t-grade" id="t-gr-eba"    value="EBA"><label for="t-gr-eba">EBA</label>
+        </div>
+        <div class="error" id="t-err-grade">Please select the student's grade.</div>
+      </div>
+
+      <!-- Subjects (multi-select checkboxes) -->
+      <div class="field">
+        <label>Subjects</label>
+        <div class="toggle-group">
+          <input type="checkbox" name="t-subjects" id="t-sub-math"  value="Mathematik"><label for="t-sub-math">Mathematik</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-phys"  value="Physik"><label for="t-sub-phys">Physik</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-info"  value="Informatik"><label for="t-sub-info">Informatik</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-en"    value="Englisch"><label for="t-sub-en">Englisch</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-fr"    value="Französisch"><label for="t-sub-fr">Französisch</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-de"    value="Deutsch"><label for="t-sub-de">Deutsch</label>
+          <input type="checkbox" name="t-subjects" id="t-sub-other" value="Other"><label for="t-sub-other">Other</label>
+        </div>
+        <div class="error" id="t-err-subjects">Please select at least one subject.</div>
+      </div>
+
+      <!-- Other subject free text — shown when Other is ticked -->
+      <div class="field" id="t-field-subject-other" style="display:none;">
+        <label>Please specify</label>
+        <textarea id="t-subject-other" name="t_subject_other"
+                  placeholder="e.g. Chemistry, History, Latin…"></textarea>
+        <div class="error" id="t-err-subject-other">Please tell us which subject you need help with.</div>
+      </div>
+
+      <!-- Format -->
+      <div class="field">
+        <label>Format</label>
+        <div class="toggle-group">
+          <input type="radio" name="t-format" id="t-fmt-online"   value="Online"><label for="t-fmt-online">Online</label>
+          <input type="radio" name="t-format" id="t-fmt-inperson" value="In-person"><label for="t-fmt-inperson">In-person</label>
+          <input type="radio" name="t-format" id="t-fmt-flexible" value="I'm flexible"><label for="t-fmt-flexible">I'm flexible</label>
+        </div>
+        <div class="error" id="t-err-format">Please select a format.</div>
+      </div>
+
+      <!-- Location — shown only when In-person is selected -->
+      <div class="field" id="t-field-location" style="display:none;">
+        <label>Location</label>
+        <div class="toggle-group">
+          <input type="radio" name="t-location" id="t-loc-company"   value="My company"><label for="t-loc-company">My company</label>
+          <input type="radio" name="t-location" id="t-loc-home"      value="My home"><label for="t-loc-home">My home</label>
+          <input type="radio" name="t-location" id="t-loc-teacher"   value="Teacher's home"><label for="t-loc-teacher">Teacher's home</label>
+          <input type="radio" name="t-location" id="t-loc-classroom" value="Classroom"><label for="t-loc-classroom">Classroom</label>
+        </div>
+        <div class="hint" id="t-loc-hint" style="display:none;"></div>
+        <div class="error" id="t-err-location">Please select a location.</div>
+      </div>
+
+      <!-- Group size -->
+      <div class="field">
+        <label>Group size</label>
+        <div class="toggle-group">
+          <input type="radio" name="t-group" id="t-grp-1" value="Private (1 person)"><label for="t-grp-1">Private</label>
+          <input type="radio" name="t-group" id="t-grp-2" value="2 people"><label for="t-grp-2">2 people</label>
+          <input type="radio" name="t-group" id="t-grp-3" value="3–5 people"><label for="t-grp-3">3–5 people</label>
+        </div>
+        <div class="error" id="t-err-group">Please select a group size.</div>
+      </div>
+
+      <button class="submit" id="t-continue-btn">continue →</button>
+    </div><!-- /#t-form -->
+
+  </div><!-- /.form-container -->
+
   <script>
-    /* ── Navigation menu logic ───────────────────────────────────────
-       Toggles the nav menu open/closed when the cloud is clicked.
-       Also turns the page background blue when menu is open,
-       and closes the menu when clicking anywhere else on the page.
-
-       Scroll behaviour: the nav hides when the user scrolls down
-       and reappears only when they scroll back to the very top. */
     const navCloud = document.getElementById('nav-cloud');
     const navMenu  = document.getElementById('nav-menu');
     const nav      = document.getElementById('nav');
@@ -824,408 +750,292 @@
     }
   </script>
 
-
   <script>
-    /* ── Service tab toggle ─────────────────────────────────────────
-       Switches between Language course and Tutoring tabs.
-       Shows the individual/group step immediately; resets any
-       form state so the user starts fresh on each tab switch.    */
-    let serviceType  = null;
+    /* ══════════════════════════════════════════════════════════════════
+       BOOKING FORM LOGIC
+       ══════════════════════════════════════════════════════════════════
+
+       Three service tabs: Language course / Exam prep / Tutoring.
+       Each has its own form section with a consistent id prefix:
+         l-  language
+         e-  exam prep
+         t-  tutoring
+
+       On continue, the form data is validated, saved to sessionStorage
+       as 'booking', and the user is forwarded to contact-details.html.
+
+       URL pre-selection:
+         ?tab=language|exam|tutoring   opens that tab on load
+         ?group=private|duo|group      pre-ticks group size (language tab)
+    ══════════════════════════════════════════════════════════════════ */
+
+    /* ── Tab switching ───────────────────────────────────────────────── */
     function selectTab(service) {
-      /* Only reset form if switching to a different tab */
-      if (serviceType === service) return;
-      serviceType = service;
-
-      /* Highlight active tab */
-      document.getElementById('tab-language').classList.toggle('active', service === 'language');
-      document.getElementById('tab-exam').classList.toggle('active',     service === 'exam');
-      document.getElementById('tab-tutoring').classList.toggle('active', service === 'tutoring');
-
-      /* Show the correct form */
-      document.getElementById('booking-form').style.display  = service === 'language' ? 'block' : 'none';
-      document.getElementById('exam-form').style.display     = service === 'exam'     ? 'block' : 'none';
-      document.getElementById('tutoring-form').style.display = service === 'tutoring' ? 'block' : 'none';
+      /* Hide all three forms */
+      ['l-form', 'e-form', 't-form'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      /* Deactivate all tab buttons */
+      ['tab-language', 'tab-exam', 'tab-tutoring'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+      /* Show the selected form and activate its tab */
+      const formMap = { language: 'l-form', exam: 'e-form', tutoring: 't-form' };
+      const tabMap  = { language: 'tab-language', exam: 'tab-exam', tutoring: 'tab-tutoring' };
+      document.getElementById(formMap[service]).style.display = 'block';
+      document.getElementById(tabMap[service]).classList.add('active');
     }
 
-    /* ── Form validation & submission ────────────────────────────────
-       Checks all required fields, shows inline errors if missing,
-       then stores the booking data in sessionStorage and navigates
-       to the scheduling page. */
-    document.getElementById('continue-btn').addEventListener('click', () => {
+    /* ── URL pre-selection on page load ─────────────────────────────── */
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const tab    = params.get('tab') || 'language';
+      selectTab(tab);
+
+      /* Pre-tick group size in language form if ?group= is set */
+      const groupParam = params.get('group');
+      if (groupParam) {
+        const groupMap = {
+          private: 'l-grp-1',
+          duo:     'l-grp-2',
+          group:   'l-grp-3',
+        };
+        const el = document.getElementById(groupMap[groupParam]);
+        if (el) el.checked = true;
+      }
+    })();
+
+    /* ── Helper: show/hide location field when format changes ───────── */
+    function bindFormatLocation(formatName, locationFieldId, locationName, hintId) {
+      document.querySelectorAll(`input[name="${formatName}"]`).forEach(r => {
+        r.addEventListener('change', () => {
+          const locField = document.getElementById(locationFieldId);
+          const isInPerson = r.value === 'In-person';
+          locField.style.display = isInPerson ? 'block' : 'none';
+          if (!isInPerson) {
+            document.querySelectorAll(`input[name="${locationName}"]`).forEach(l => l.checked = false);
+            const hint = document.getElementById(hintId);
+            hint.style.display = 'none';
+            hint.textContent   = '';
+          }
+        });
+      });
+    }
+
+    /* ── Helper: show address hint when teacher/classroom is selected ─ */
+    function bindLocationHint(locationName, hintId) {
+      document.querySelectorAll(`input[name="${locationName}"]`).forEach(r => {
+        r.addEventListener('change', () => {
+          const hint = document.getElementById(hintId);
+          if (r.value === "Teacher's home") {
+            hint.textContent   = '8008 Zürich';
+            hint.style.display = 'block';
+          } else if (r.value === 'Classroom') {
+            hint.textContent   = '8001 Zürich';
+            hint.style.display = 'block';
+          } else {
+            hint.textContent   = '';
+            hint.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    /* Bind format/location for all three forms */
+    bindFormatLocation('l-format', 'l-field-location', 'l-location', 'l-loc-hint');
+    bindFormatLocation('e-format', 'e-field-location', 'e-location', 'e-loc-hint');
+    bindFormatLocation('t-format', 't-field-location', 't-location', 't-loc-hint');
+
+    bindLocationHint('l-location', 'l-loc-hint');
+    bindLocationHint('e-location', 'e-loc-hint');
+    bindLocationHint('t-location', 't-loc-hint');
+
+    /* ── Tutoring: show Other subject text field when ticked ─────────── */
+    document.querySelectorAll('input[name="t-subjects"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.value === 'Other') {
+          document.getElementById('t-field-subject-other').style.display =
+            cb.checked ? 'block' : 'none';
+          if (!cb.checked) document.getElementById('t-subject-other').value = '';
+        }
+      });
+    });
+
+    /* ── Helper: show/hide an error element ─────────────────────────── */
+    function setError(id, show) {
+      document.getElementById(id).style.display = show ? 'block' : 'none';
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       LANGUAGE FORM — validation & submission
+    ══════════════════════════════════════════════════════════════════ */
+    document.getElementById('l-continue-btn').addEventListener('click', () => {
       let valid = true;
 
-      /* Language, level, format, group */
-      ['language', 'level', 'format', 'group'].forEach(name => {
-        const selected = document.querySelector(`input[name="${name}"]:checked`);
-        const err = document.getElementById('err-' + name);
-        if (!selected) { err.style.display = 'block'; valid = false; }
-        else           { err.style.display = 'none'; }
-      });
+      /* Language */
+      const langSel = document.querySelector('input[name="l-language"]:checked');
+      setError('l-err-language', !langSel);
+      if (!langSel) valid = false;
 
-      /* Background textarea */
-      const bgText = document.getElementById('lang-background').value.trim();
-      const errBg  = document.getElementById('err-lang-background');
-      if (!bgText) { errBg.style.display = 'block'; valid = false; }
-      else         { errBg.style.display = 'none'; }
+      /* Background */
+      const bg = document.getElementById('l-background').value.trim();
+      setError('l-err-background', !bg);
+      if (!bg) valid = false;
 
-      /* Frequency */
-      const freqSelected = document.querySelector('input[name="frequency"]:checked');
-      const errFreq = document.getElementById('err-frequency');
-      if (!freqSelected) { errFreq.style.display = 'block'; valid = false; }
-      else               { errFreq.style.display = 'none'; }
-
-      /* Location */
-      const locVisible = document.getElementById('field-location').style.display !== 'none';
-      if (locVisible) {
-        const locSelected = document.querySelector('input[name="location"]:checked');
-        const errLoc = document.getElementById('err-location');
-        if (!locSelected) { errLoc.style.display = 'block'; valid = false; }
-        else              { errLoc.style.display = 'none'; }
-      }
-
-      if (!valid) return;
-
-      const language   = document.querySelector('input[name="language"]:checked').value;
-      const level      = document.querySelector('input[name="level"]:checked').value;
-      const format     = document.querySelector('input[name="format"]:checked').value;
-      const group      = document.querySelector('input[name="group"]:checked').value;
-      const freqVal    = freqSelected.value === 'Multiple times a week'
-                         ? freqCount + '× per week' : freqSelected.value;
-      const locEl      = document.querySelector('input[name="location"]:checked');
-      const booking = {
-        service:         'language',
-        language,
-        background:      bgText,
-        level,
-        frequency:       freqVal,
-        format,
-        group,
-      };
-      if (locEl) booking.location = locEl.value;
-      sessionStorage.setItem('booking', JSON.stringify(booking));
-      window.location.href = 'contact-details.html';
-    });
-
-
-    /* ── Frequency: show/hide "n times" stepper ─────────────────────────
-       Language form */
-    let freqCount  = 2;
-    document.getElementById('frequency-options').addEventListener('change', (e) => {
-      const show = e.target.value === 'Multiple times a week';
-      document.getElementById('freq-nweek-row').style.display = show ? 'block' : 'none';
-      if (!show) freqCount = 2;
-      document.getElementById('freq-display').textContent = freqCount + '×';
-    });
-    document.getElementById('freq-up').addEventListener('click', () => {
-      freqCount = Math.min(freqCount + 1, 7);
-      document.getElementById('freq-display').textContent = freqCount + '×';
-    });
-    document.getElementById('freq-down').addEventListener('click', () => {
-      freqCount = Math.max(freqCount - 1, 2);
-      document.getElementById('freq-display').textContent = freqCount + '×';
-    });
-
-    /* Tutoring form */
-    let tFreqCount = 2;
-    document.getElementById('t-frequency-options').addEventListener('change', (e) => {
-      const show = e.target.value === 'Multiple times a week';
-      document.getElementById('t-freq-nweek-row').style.display = show ? 'block' : 'none';
-      if (!show) tFreqCount = 2;
-      document.getElementById('t-freq-display').textContent = tFreqCount + '×';
-    });
-    document.getElementById('t-freq-up').addEventListener('click', () => {
-      tFreqCount = Math.min(tFreqCount + 1, 7);
-      document.getElementById('t-freq-display').textContent = tFreqCount + '×';
-    });
-    document.getElementById('t-freq-down').addEventListener('click', () => {
-      tFreqCount = Math.max(tFreqCount - 1, 2);
-      document.getElementById('t-freq-display').textContent = tFreqCount + '×';
-    });
-
-    /* ── Format: show/hide location field ────────────────────────────────
-       Location only relevant for in-person classes.
-       Language form */
-    document.querySelectorAll('input[name="format"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const locField = document.getElementById('field-location');
-        const isInPerson = r.value === 'In-person';
-        locField.style.display = isInPerson ? 'block' : 'none';
-        if (!isInPerson) {
-          document.querySelectorAll('input[name="location"]').forEach(l => l.checked = false);
-          document.getElementById('loc-disclaimer').style.display = 'none';
-          document.getElementById('loc-disclaimer').textContent = '';
-        }
-      });
-    });
-
-    /* ── Location disclaimer: show address for teacher/classroom ─────────
-       Language form */
-    document.querySelectorAll('input[name="location"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const disc = document.getElementById('loc-disclaimer');
-        if (r.value === "Teacher's home") {
-          disc.textContent = '8008 Zürich';
-          disc.style.display = 'block';
-        } else if (r.value === 'Classroom') {
-          disc.textContent = '8001 Zürich';
-          disc.style.display = 'block';
-        } else {
-          disc.textContent = '';
-          disc.style.display = 'none';
-        }
-      });
-    });
-
-    /* Tutoring form */
-    document.querySelectorAll('input[name="t-format"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const locField = document.getElementById('t-field-location');
-        const isInPerson = r.value === 'In-person';
-        locField.style.display = isInPerson ? 'block' : 'none';
-        if (!isInPerson) {
-          document.querySelectorAll('input[name="t-location"]').forEach(l => l.checked = false);
-          document.getElementById('t-loc-disclaimer').style.display = 'none';
-          document.getElementById('t-loc-disclaimer').textContent = '';
-        }
-      });
-    });
-
-    /* ── Location disclaimer: show address for teacher/classroom ─────────
-       Tutoring form */
-    document.querySelectorAll('input[name="t-location"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const disc = document.getElementById('t-loc-disclaimer');
-        if (r.value === "Teacher's home") {
-          disc.textContent = '8008 Zürich';
-          disc.style.display = 'block';
-        } else if (r.value === 'Classroom') {
-          disc.textContent = '8001 Zürich';
-          disc.style.display = 'block';
-        } else {
-          disc.textContent = '';
-          disc.style.display = 'none';
-        }
-      });
-    });
-
-    /* ── Subject Other free text ─────────────────────────────────────── */
-    document.addEventListener('change', (e) => {
-      if (e.target.name === 'subjects' && e.target.value === 'Other') {
-        document.getElementById('field-subject-other').style.display =
-          e.target.checked ? 'block' : 'none';
-        if (!e.target.checked) document.getElementById('subject-other-text').value = '';
-      }
-    });
-
-    /* ── Tutoring form validation & submission ───────────────────────── */
-    document.getElementById('t-continue-btn').addEventListener('click', () => {
-      let valid = true;
-
-      /* Grade — radio */
-      const gradesSelected = document.querySelectorAll('input[name="grade"]:checked');
-      const errGrade = document.getElementById('err-grade');
-      if (gradesSelected.length === 0) { errGrade.style.display = 'block'; valid = false; }
-      else                             { errGrade.style.display = 'none'; }
-
-      /* Subjects */
-      const subjectsSelected = document.querySelectorAll('input[name="subjects"]:checked');
-      const errSubjects = document.getElementById('err-subjects');
-      if (subjectsSelected.length === 0) { errSubjects.style.display = 'block'; valid = false; }
-      else                               { errSubjects.style.display = 'none'; }
-
-      /* Subject Other free text */
-      const subjectOtherVisible = document.getElementById('field-subject-other').style.display !== 'none';
-      if (subjectOtherVisible) {
-        const soText = document.getElementById('subject-other-text').value.trim();
-        const errSO  = document.getElementById('err-subject-other');
-        if (!soText) { errSO.style.display = 'block'; valid = false; }
-        else         { errSO.style.display = 'none'; }
-      }
+      /* Level */
+      const levelSel = document.querySelector('input[name="l-level"]:checked');
+      setError('l-err-level', !levelSel);
+      if (!levelSel) valid = false;
 
       /* Format */
-      const formatSelected = document.querySelector('input[name="t-format"]:checked');
-      const errFormat = document.getElementById('err-t-format');
-      if (!formatSelected) { errFormat.style.display = 'block'; valid = false; }
-      else                 { errFormat.style.display = 'none'; }
+      const formatSel = document.querySelector('input[name="l-format"]:checked');
+      setError('l-err-format', !formatSel);
+      if (!formatSel) valid = false;
 
-      /* Frequency */
-      const tFreqSelected = document.querySelector('input[name="t-frequency"]:checked');
-      const errTFreq = document.getElementById('err-t-frequency');
-      if (!tFreqSelected) { errTFreq.style.display = 'block'; valid = false; }
-      else                { errTFreq.style.display = 'none'; }
-
-      /* Location (required only when format = In-person) */
-      const tLocVisible = document.getElementById('t-field-location').style.display !== 'none';
-      if (tLocVisible) {
-        const tLocSelected = document.querySelector('input[name="t-location"]:checked');
-        const errTLoc = document.getElementById('err-t-location');
-        if (!tLocSelected) { errTLoc.style.display = 'block'; valid = false; }
-        else               { errTLoc.style.display = 'none'; }
+      /* Location (only required when In-person) */
+      const lLocVisible = document.getElementById('l-field-location').style.display !== 'none';
+      if (lLocVisible) {
+        const locSel = document.querySelector('input[name="l-location"]:checked');
+        setError('l-err-location', !locSel);
+        if (!locSel) valid = false;
       }
 
       /* Group size */
-      const tGroupSelected = document.querySelector('input[name="t-group"]:checked');
-      const errTGroup = document.getElementById('err-t-group');
-      if (!tGroupSelected) { errTGroup.style.display = 'block'; valid = false; }
-      else                 { errTGroup.style.display = 'none'; }
+      const groupSel = document.querySelector('input[name="l-group"]:checked');
+      setError('l-err-group', !groupSel);
+      if (!groupSel) valid = false;
 
       if (!valid) return;
 
-      const subjects = Array.from(subjectsSelected).map(s => s.value);
-      const subjectOtherText = document.getElementById('subject-other-text').value.trim();
-      if (subjectOtherText) subjects.push(subjectOtherText);
-      const tFreqVal  = tFreqSelected.value === 'Multiple times a week'
-                        ? tFreqCount + '× per week' : tFreqSelected.value;
-      const tLocEl    = document.querySelector('input[name="t-location"]:checked');
       const booking = {
-        service:         'tutoring',
-        grades:          Array.from(gradesSelected).map(g => g.value),
-        subjects,
-        frequency:       tFreqVal,
-        format:          formatSelected.value,
-        group:           tGroupSelected.value,
+        service:    'language course',
+        language:   langSel.value,
+        background: bg,
+        level:      levelSel.value,
+        format:     formatSel.value,
+        group:      groupSel.value,
       };
-      if (tLocEl) booking.location = tLocEl.value;
+      const locEl = document.querySelector('input[name="l-location"]:checked');
+      if (locEl) booking.location = locEl.value;
 
       sessionStorage.setItem('booking', JSON.stringify(booking));
       window.location.href = 'contact-details.html';
     });
 
-    let eFreqCount = 2;
-    function eUpdateFreqDisplay() {
-      document.getElementById('e-freq-display').textContent = eFreqCount + '×';
-    }
-        /* ── Exam form: frequency n-times stepper ─────────────────────────── */
-    document.getElementById('e-frequency-options').addEventListener('change', (e) => {
-      const show = e.target.value === 'Multiple times a week';
-      document.getElementById('e-freq-nweek-row').style.display = show ? 'block' : 'none';
-      if (!show) { eFreqCount = 2; eUpdateFreqDisplay(); }
-    });
-    document.getElementById('e-freq-up').addEventListener('click', () => {
-      eFreqCount = Math.min(eFreqCount + 1, 7);
-      eUpdateFreqDisplay();
-    });
-    document.getElementById('e-freq-down').addEventListener('click', () => {
-      eFreqCount = Math.max(eFreqCount - 1, 2);
-      eUpdateFreqDisplay();
-    });
-
-    /* ── Exam form: format → show/hide location ───────────────────────── */
-    document.querySelectorAll('input[name="e-format"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const locField = document.getElementById('e-field-location');
-        const isInPerson = r.value === 'In-person';
-        locField.style.display = isInPerson ? 'block' : 'none';
-        if (!isInPerson) {
-          document.querySelectorAll('input[name="e-location"]').forEach(l => l.checked = false);
-          document.getElementById('e-loc-disclaimer').style.display = 'none';
-          document.getElementById('e-loc-disclaimer').textContent = '';
-        }
-      });
-    });
-
-    /* ── Exam form: location disclaimer ──────────────────────────────── */
-    document.querySelectorAll('input[name="e-location"]').forEach(r => {
-      r.addEventListener('change', () => {
-        const disc = document.getElementById('e-loc-disclaimer');
-        if (r.value === "Teacher's home") { disc.textContent = '8008 Zürich'; disc.style.display = 'block'; }
-        else if (r.value === 'Classroom') { disc.textContent = '8001 Zürich'; disc.style.display = 'block'; }
-        else { disc.textContent = ''; disc.style.display = 'none'; }
-      });
-    });
-
-    /* ── Exam form: validation & submission ──────────────────────────── */
+    /* ══════════════════════════════════════════════════════════════════
+       EXAM PREP FORM — validation & submission
+    ══════════════════════════════════════════════════════════════════ */
     document.getElementById('e-continue-btn').addEventListener('click', () => {
       let valid = true;
 
-      /* Exam type, level, format, group */
-      const examSelected = document.querySelector('input[name="e-exam_type"]:checked');
-      const errExam = document.getElementById('err-e-exam-type');
-      if (!examSelected) { errExam.style.display = 'block'; valid = false; }
-      else               { errExam.style.display = 'none'; }
+      /* Exam type */
+      const examSel = document.querySelector('input[name="e-exam"]:checked');
+      setError('e-err-exam', !examSel);
+      if (!examSel) valid = false;
 
-      ['e-level', 'e-format', 'e-group'].forEach(name => {
-        const selected = document.querySelector(`input[name="${name}"]:checked`);
-        const err = document.getElementById('err-' + name);
-        if (!selected) { err.style.display = 'block'; valid = false; }
-        else           { err.style.display = 'none'; }
-      });
+      /* Level */
+      const levelSel = document.querySelector('input[name="e-level"]:checked');
+      setError('e-err-level', !levelSel);
+      if (!levelSel) valid = false;
 
-      /* Frequency */
-      const eFreqSelected = document.querySelector('input[name="e-frequency"]:checked');
-      const errEFreq = document.getElementById('err-e-frequency');
-      if (!eFreqSelected) { errEFreq.style.display = 'block'; valid = false; }
-      else                { errEFreq.style.display = 'none'; }
+      /* Format */
+      const formatSel = document.querySelector('input[name="e-format"]:checked');
+      setError('e-err-format', !formatSel);
+      if (!formatSel) valid = false;
 
-      /* Location */
+      /* Location (only required when In-person) */
       const eLocVisible = document.getElementById('e-field-location').style.display !== 'none';
       if (eLocVisible) {
-        const eLocSelected = document.querySelector('input[name="e-location"]:checked');
-        const errELoc = document.getElementById('err-e-location');
-        if (!eLocSelected) { errELoc.style.display = 'block'; valid = false; }
-        else               { errELoc.style.display = 'none'; }
+        const locSel = document.querySelector('input[name="e-location"]:checked');
+        setError('e-err-location', !locSel);
+        if (!locSel) valid = false;
       }
 
-      if (!valid) return;
-      const eFreqVal   = eFreqSelected.value === 'Multiple times a week'
-                         ? eFreqCount + '× per week' : eFreqSelected.value;
-      const eLocEl     = document.querySelector('input[name="e-location"]:checked');
-      const examDate   = document.getElementById('e-exam-date').value;
+      /* Group size */
+      const groupSel = document.querySelector('input[name="e-group"]:checked');
+      setError('e-err-group', !groupSel);
+      if (!groupSel) valid = false;
 
+      if (!valid) return;
+
+      const examDate = document.getElementById('e-exam-date').value;
       const booking = {
-        service:         'exam prep',
-        exam:            examSelected.value,
-        level:           document.querySelector('input[name="e-level"]:checked').value,
-        frequency:       eFreqVal,
-        format:          document.querySelector('input[name="e-format"]:checked').value,
-        group:           document.querySelector('input[name="e-group"]:checked').value,
+        service:  'exam prep',
+        exam:     examSel.value,
+        level:    levelSel.value,
+        format:   formatSel.value,
+        group:    groupSel.value,
       };
       if (examDate) booking.examDate = examDate;
-      if (eLocEl)   booking.location = eLocEl.value;
+      const locEl = document.querySelector('input[name="e-location"]:checked');
+      if (locEl) booking.location = locEl.value;
 
       sessionStorage.setItem('booking', JSON.stringify(booking));
       window.location.href = 'contact-details.html';
     });
 
-    /* ── URL param pre-selection ─────────────────────────────────────
-       Reads ?group=private|duo|group from the URL (set by price cards
-       on the info page) and automatically selects the Language tab
-       and ticks the matching group size radio.                          */
-    (function () {
-      const params = new URLSearchParams(window.location.search);
+    /* ══════════════════════════════════════════════════════════════════
+       TUTORING FORM — validation & submission
+    ══════════════════════════════════════════════════════════════════ */
+    document.getElementById('t-continue-btn').addEventListener('click', () => {
+      let valid = true;
 
-      /* Tab selection */
-      const tab = params.get('tab');
-      if (tab && ['language', 'exam', 'tutoring'].includes(tab)) {
-        selectTab(tab);
+      /* Grade */
+      const gradesSel = document.querySelectorAll('input[name="t-grade"]:checked');
+      setError('t-err-grade', gradesSel.length === 0);
+      if (gradesSel.length === 0) valid = false;
+
+      /* Subjects */
+      const subjectsSel = document.querySelectorAll('input[name="t-subjects"]:checked');
+      setError('t-err-subjects', subjectsSel.length === 0);
+      if (subjectsSel.length === 0) valid = false;
+
+      /* Other subject free text */
+      const otherVisible = document.getElementById('t-field-subject-other').style.display !== 'none';
+      if (otherVisible) {
+        const otherText = document.getElementById('t-subject-other').value.trim();
+        setError('t-err-subject-other', !otherText);
+        if (!otherText) valid = false;
       }
 
-      /* Group size pre-selection (language tab only) */
-      const group = params.get('group');
-      if (!group) return;
+      /* Format */
+      const formatSel = document.querySelector('input[name="t-format"]:checked');
+      setError('t-err-format', !formatSel);
+      if (!formatSel) valid = false;
 
-      const groupMap = {
-        'private': 'Private (1 person)',
-        'duo':     '2 people',
-        'group':   '3–5 people',
+      /* Location (only required when In-person) */
+      const tLocVisible = document.getElementById('t-field-location').style.display !== 'none';
+      if (tLocVisible) {
+        const locSel = document.querySelector('input[name="t-location"]:checked');
+        setError('t-err-location', !locSel);
+        if (!locSel) valid = false;
+      }
+
+      /* Group size */
+      const groupSel = document.querySelector('input[name="t-group"]:checked');
+      setError('t-err-group', !groupSel);
+      if (!groupSel) valid = false;
+
+      if (!valid) return;
+
+      const subjects = Array.from(subjectsSel).map(s => s.value);
+      const otherText = document.getElementById('t-subject-other').value.trim();
+      if (otherText) subjects.push(otherText);
+
+      const booking = {
+        service:  'tutoring',
+        grades:   Array.from(gradesSel).map(g => g.value),
+        subjects,
+        format:   formatSel.value,
+        group:    groupSel.value,
       };
-      const targetValue = groupMap[group];
-      if (!targetValue) return;
+      const locEl = document.querySelector('input[name="t-location"]:checked');
+      if (locEl) booking.location = locEl.value;
 
-      if (!tab) selectTab('language');
+      sessionStorage.setItem('booking', JSON.stringify(booking));
+      window.location.href = 'contact-details.html';
+    });
 
-      const radios = document.querySelectorAll('input[name="group"]');
-      for (const r of radios) {
-        if (r.value === targetValue) {
-          r.checked = true;
-          r.dispatchEvent(new Event('change', { bubbles: true }));
-          break;
-        }
-      }
-
-      const groupField = document.getElementById('group-options');
-      if (groupField) groupField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    })();
   </script>
 
 </body>
