@@ -174,6 +174,13 @@
       transition: background 0.15s, color 0.15s;
     }
     .save-btn:hover { background: transparent; color: #1a1a1a; }
+    .delete-btn {
+      font-family: inherit; font-size: 0.72rem; letter-spacing: 0.12em;
+      text-transform: uppercase; border: 1px solid #c0392b; background: transparent;
+      color: #c0392b; padding: 0.3rem 0.8rem; cursor: pointer; margin-left: auto;
+      transition: background 0.15s, color 0.15s;
+    }
+    .delete-btn:hover { background: #c0392b; color: #fff; }
     .notes-input {
       width: 100%; font-family: inherit; font-size: 0.82rem; font-weight: 300;
       border: none; border-bottom: 1px solid #ccc; background: transparent;
@@ -520,6 +527,7 @@
                 </select>
                 <button class="save-btn" onclick="saveStatus('${row.id}')">save</button>
                 <span class="saved-msg" id="saved-${row.id}">saved</span>
+                <button class="delete-btn" onclick="deleteEnquiry('${row.id}')">delete</button>
               </div>
               <textarea class="notes-input" id="notes-${row.id}"
                 placeholder="internal notes…">${row.notes || ''}</textarea>
@@ -582,6 +590,27 @@
           setTimeout(() => msg.style.display = 'none', 2000);
         }
       } catch (e) { console.error(e); }
+    }
+
+    /* ── Delete enquiry ─────────────────────────────────────────────── */
+    async function deleteEnquiry(id) {
+      if (!confirm('Permanently delete this enquiry? This cannot be undone.')) return;
+      try {
+        const res = await fetch('/api/delete-enquiry', {
+          method:  'DELETE',
+          headers: {
+            'Content-Type':     'application/json',
+            'x-admin-password': adminPassword,
+          },
+          body: JSON.stringify({ id }),
+        });
+        if (!res.ok) throw new Error();
+        /* Remove row from DOM immediately */
+        const row = document.getElementById('row-' + id);
+        if (row) row.remove();
+      } catch {
+        alert('Could not delete enquiry. Please try again.');
+      }
     }
   </script>
 </body>
