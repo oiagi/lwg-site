@@ -797,11 +797,10 @@
         const statusEl = document.querySelector('#row-' + enquiryId + ' .enq-status');
         if (statusEl) { statusEl.textContent = 'confirmed'; statusEl.className = 'enq-status confirmed'; }
 
-        /* Hide confirm panel after short delay */
+        /* Reload enquiries after short delay to reflect confirmed status from DB */
         setTimeout(() => {
-          const panel = document.getElementById('confirm-panel-' + enquiryId);
-          if (panel) panel.style.display = 'none';
-        }, 3000);
+          loadEnquiries(adminPassword, currentFilter);
+        }, 2000);
 
       } catch (err) {
         msgEl.textContent   = 'Error: ' + err.message;
