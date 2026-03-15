@@ -358,14 +358,19 @@ export async function onRequestPost({ request, env }) {
 
   // ── Update enquiry status to confirmed and link course ────────────────
   try {
-    await fetch(
+    const updateRes = await fetch(
       `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}`,
       {
         method:  'PATCH',
-        headers: SUPABASE_HEADERS(SUPABASE_SERVICE_KEY),
+        headers: { ...SUPABASE_HEADERS(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
         body:    JSON.stringify({ status: 'confirmed', course_id: courseId }),
       }
     );
+    if (!updateRes.ok) {
+      const err = await updateRes.text();
+      console.error('Enquiry status update failed:', err);
+      // Non-fatal — course and calendar event already created successfully
+    }
   } catch (err) {
     console.error('Enquiry update error:', err);
   }
