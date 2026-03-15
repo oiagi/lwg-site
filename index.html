@@ -403,11 +403,16 @@
 
   <script>
     /* ── Logo click opens nav ────────────────────────────────────────────
-       Clicking the central logo triggers the same nav open behaviour
-       as clicking the cloud in the top-left corner.                    */
-    document.getElementById('logo-wrap').addEventListener('click', () => {
-      const navCloudEl = document.getElementById('nav-cloud');
-      if (navCloudEl) navCloudEl.click();
+       We toggle the nav directly rather than simulating a click on the
+       cloud, because the cloud's click handler uses stopPropagation and
+       the document click listener would immediately close it again.    */
+    document.getElementById('logo-wrap').addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuOpen = !menuOpen;
+      navMenu.classList.toggle('open', menuOpen);
+      document.body.classList.toggle('nav-active', menuOpen);
+      if (overlay) overlay.classList.toggle('visible', menuOpen);
+      if (menuOpen) triggerRipple(e.clientX, e.clientY);
     });
 
     /* ── Cursor-following tooltip ────────────────────────────────────────
