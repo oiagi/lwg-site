@@ -730,7 +730,7 @@
          so read it from the stored variable first, falling back to the input field */
       const pwd = adminPassword || document.getElementById('admin-pwd')?.value || '';
       const popup = window.open(
-        '/api/auth/login?teacher_id=' + teacherId + '&pwd=' + encodeURIComponent(pwd),
+        '/api/auth-login?teacher_id=' + teacherId + '&pwd=' + encodeURIComponent(pwd),
         'gcal-auth', 'width=600,height=700,left=200,top=100'
       );
       const poll = setInterval(() => {
