@@ -711,9 +711,13 @@
             const note = document.createElement('p');
             note.className = 'auth-note';
             note.style.cssText = 'font-size:0.72rem;color:#c0392b;margin-bottom:0.6rem;';
+            /* Use data attribute + addEventListener so adminPassword is read at click time */
             note.innerHTML = 'Teacher has not authorised calendar access. ' +
-              '<a class="auth-link" href="#" onclick="event.preventDefault();' +
-              'authoriseTeacher(\''+teachers[0].id+'\')">Authorise now</a>';
+              '<a class="auth-link" href="#" data-teacher-id="' + teachers[0].id + '">Authorise now</a>';
+            note.querySelector('.auth-link').addEventListener('click', function(e) {
+              e.preventDefault();
+              authoriseTeacher(this.dataset.teacherId);
+            });
             panel.insertBefore(note, panel.querySelector('.confirm-btn'));
           }
         }
