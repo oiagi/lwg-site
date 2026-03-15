@@ -181,6 +181,42 @@
       transition: background 0.15s, color 0.15s;
     }
     .delete-btn:hover { background: #c0392b; color: #fff; }
+    .confirm-panel {
+      margin-top: 1.4rem; padding: 1.2rem; background: rgba(255,255,255,0.5);
+      border: 1px solid #ddd;
+    }
+    .confirm-panel-title {
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #888; margin-bottom: 1rem;
+    }
+    .confirm-field { margin-bottom: 1rem; }
+    .confirm-field label {
+      display: block; font-size: 0.68rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: #555; margin-bottom: 0.4rem;
+    }
+    .confirm-field input,
+    .confirm-field select {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid #1a1a1a; padding: 0.3rem 0;
+      font-family: inherit; font-size: 0.9rem; font-weight: 300;
+      color: #1a1a1a; outline: none;
+    }
+    .confirm-field select { appearance: none; cursor: pointer; }
+    .confirm-btn {
+      margin-top: 0.8rem; width: 100%; background: #1a1a1a; color: #d6eaf8;
+      border: none; padding: 0.7rem; font-family: inherit; font-size: 0.78rem;
+      letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .confirm-btn:hover { background: #fff; color: #1a1a1a; }
+    .confirm-msg { font-size: 0.75rem; margin-top: 0.6rem; display: none; }
+    .confirm-msg.ok  { color: #27ae60; }
+    .confirm-msg.err { color: #c0392b; }
+    .auth-link {
+      font-size: 0.72rem; color: #888; letter-spacing: 0.06em;
+      text-decoration: none; border-bottom: 1px solid #ccc;
+    }
+    .auth-link:hover { border-color: #888; }
     .notes-input {
       width: 100%; font-family: inherit; font-size: 0.82rem; font-weight: 300;
       border: none; border-bottom: 1px solid #ccc; background: transparent;
@@ -535,10 +571,38 @@
                 <button class="save-btn" onclick="saveNotes('${row.id}')">save notes</button>
                 <span class="saved-msg" id="notes-saved-${row.id}">saved</span>
               </div>
+
+              ${status !== 'confirmed' && status !== 'cancelled' ? `
+              <div class="confirm-panel" id="confirm-panel-${row.id}">
+                <p class="confirm-panel-title">confirm &amp; schedule</p>
+
+                <div class="confirm-field">
+                  <label>Assign teacher</label>
+                  <select id="confirm-teacher-${row.id}">
+                    <option value="">loading teachers…</option>
+                  </select>
+                </div>
+
+                <div class="confirm-field">
+                  <label>First session date &amp; time</label>
+                  <input type="datetime-local" id="confirm-datetime-${row.id}" />
+                </div>
+
+                <div class="confirm-field">
+                  <label>Sessions in block <span style="font-size:0.65rem;color:#aaa;text-transform:none;">(leave blank for open-ended)</span></label>
+                  <input type="number" id="confirm-sessions-${row.id}" min="1" placeholder="e.g. 20" />
+                </div>
+
+                <button class="confirm-btn" onclick="confirmBooking('${row.id}')">confirm booking &amp; create calendar event</button>
+                <p class="confirm-msg" id="confirm-msg-${row.id}"></p>
+              </div>
+              ` : ''}
             </div>
           </div>
         </div>`;
       }).join('');
+      /* Populate teacher selects now that DOM is updated */
+      populateTeacherSelects();
     }
 
     /* ── Toggle detail ──────────────────────────────────────────────── */
@@ -605,13 +669,140 @@
           body: JSON.stringify({ id }),
         });
         if (!res.ok) throw new Error();
-        /* Remove row from DOM immediately */
         const row = document.getElementById('row-' + id);
         if (row) row.remove();
       } catch {
         alert('Could not delete enquiry. Please try again.');
       }
     }
+
+    /* ── Teachers cache ──────────────────────────────────────────────── */
+    let teachersCache = null;
+
+    async function loadTeachers() {
+      if (teachersCache) return teachersCache;
+      try {
+        const res = await fetch('/api/get-teachers', {
+          headers: { 'x-admin-password': adminPassword },
+        });
+        if (!res.ok) return [];
+        teachersCache = await res.json();
+        return teachersCache;
+      } catch {
+        return [];
+      }
+    }
+
+    /* ── Populate teacher selects in all confirm panels ─────────────── */
+    async function populateTeacherSelects() {
+      const teachers = await loadTeachers();
+      document.querySelectorAll('[id^="confirm-teacher-"]').forEach(sel => {
+        const enquiryId = sel.id.replace('confirm-teacher-', '');
+        sel.innerHTML = teachers.map(t => {
+          const label = t.authorised ? t.name : t.name + ' (not authorised)';
+          return `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${label}</option>`;
+        }).join('');
+        /* Show auth prompt if teacher not authorised */
+        if (teachers.length > 0 && !teachers[0].authorised) {
+          const panel = document.getElementById('confirm-panel-' + enquiryId);
+          if (panel && !panel.querySelector('.auth-note')) {
+            const note = document.createElement('p');
+            note.className = 'auth-note';
+            note.style.cssText = 'font-size:0.72rem;color:#c0392b;margin-bottom:0.6rem;';
+            note.innerHTML = 'Teacher has not authorised calendar access. ' +
+              '<a class="auth-link" href="#" onclick="event.preventDefault();' +
+              'authoriseTeacher(\''+teachers[0].id+'\')">Authorise now</a>';
+            panel.insertBefore(note, panel.querySelector('.confirm-btn'));
+          }
+        }
+      });
+    }
+
+    /* ── Open Google auth in popup ───────────────────────────────────── */
+    function authoriseTeacher(teacherId) {
+      const popup = window.open(
+        '/api/auth/login?teacher_id=' + teacherId,
+        'gcal-auth', 'width=600,height=700,left=200,top=100'
+      );
+      const poll = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(poll);
+          teachersCache = null;
+          populateTeacherSelects();
+        }
+      }, 500);
+    }
+
+    /* ── Handle auth success redirect ────────────────────────────────── */
+    (function() {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('auth') === 'success') {
+        history.replaceState({}, '', '/admin.html');
+      }
+    })();
+
+    /* ── Confirm booking & create calendar event ─────────────────────── */
+    async function confirmBooking(enquiryId) {
+      const teacherId   = document.getElementById('confirm-teacher-'  + enquiryId)?.value;
+      const datetimeVal = document.getElementById('confirm-datetime-'  + enquiryId)?.value;
+      const sessionsVal = document.getElementById('confirm-sessions-'  + enquiryId)?.value;
+      const msgEl       = document.getElementById('confirm-msg-'       + enquiryId);
+      const btn         = document.querySelector('#confirm-panel-' + enquiryId + ' .confirm-btn');
+
+      if (!teacherId || !datetimeVal) {
+        msgEl.textContent   = 'Please select a teacher and set a date and time.';
+        msgEl.className     = 'confirm-msg err';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      btn.textContent = 'confirming…';
+      btn.disabled    = true;
+      msgEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/confirm-booking', {
+          method:  'POST',
+          headers: {
+            'Content-Type':     'application/json',
+            'x-admin-password': adminPassword,
+          },
+          body: JSON.stringify({
+            enquiry_id:       enquiryId,
+            teacher_id:       teacherId,
+            sessions_total:   sessionsVal ? parseInt(sessionsVal) : null,
+            first_session_at: new Date(datetimeVal).toISOString(),
+            duration_minutes: 50,
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+        msgEl.textContent   = 'Confirmed. Course: ' + result.course_code + '. Calendar event created.';
+        msgEl.className     = 'confirm-msg ok';
+        msgEl.style.display = 'block';
+        btn.textContent     = 'confirmed ✓';
+
+        /* Update status pill */
+        const statusEl = document.querySelector('#row-' + enquiryId + ' .enq-status');
+        if (statusEl) { statusEl.textContent = 'confirmed'; statusEl.className = 'enq-status confirmed'; }
+
+        /* Hide confirm panel after short delay */
+        setTimeout(() => {
+          const panel = document.getElementById('confirm-panel-' + enquiryId);
+          if (panel) panel.style.display = 'none';
+        }, 3000);
+
+      } catch (err) {
+        msgEl.textContent   = 'Error: ' + err.message;
+        msgEl.className     = 'confirm-msg err';
+        msgEl.style.display = 'block';
+        btn.textContent     = 'confirm booking & create calendar event';
+        btn.disabled        = false;
+      }
+    }
+
   </script>
 </body>
 </html>
