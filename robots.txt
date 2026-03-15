@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Flow and admin pages — not useful for search
+Disallow: /contact-details.html
+Disallow: /thankyou.html
+Disallow: /admin.html
+
+Sitemap: https://oiagi.org/sitemap.xml
