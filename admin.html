@@ -435,6 +435,8 @@
         adminPassword = pwd;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('dashboard').style.display    = 'block';
+        /* Now load and render enquiries properly */
+        loadEnquiries(adminPassword, 'all');
       } else {
         document.getElementById('pwd-error').style.display = 'block';
       }
@@ -720,8 +722,11 @@
 
     /* ── Open Google auth in popup ───────────────────────────────────── */
     function authoriseTeacher(teacherId) {
+      /* adminPassword may not be set if this is called before login completes,
+         so read it from the stored variable first, falling back to the input field */
+      const pwd = adminPassword || document.getElementById('admin-pwd')?.value || '';
       const popup = window.open(
-        '/api/auth/login?teacher_id=' + teacherId,
+        '/api/auth/login?teacher_id=' + teacherId + '&pwd=' + encodeURIComponent(pwd),
         'gcal-auth', 'width=600,height=700,left=200,top=100'
       );
       const poll = setInterval(() => {
