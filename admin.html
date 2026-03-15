@@ -112,6 +112,70 @@
     }
     .filter-btn.active { background: #1a1a1a; color: #d6eaf8; }
 
+    /* ── Main tabs ────────────────────────────────────────────────── */
+    .main-tabs {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .main-tab {
+      font-family: inherit; font-size: 0.78rem; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 0.6rem 1.4rem;
+      border: none; background: transparent; cursor: pointer;
+      color: #888; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: color 0.15s, border-color 0.15s;
+    }
+    .main-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+    .main-tab:hover  { color: #1a1a1a; }
+
+    /* ── Course list ──────────────────────────────────────────────── */
+    .course-row {
+      border-top: 1px solid #ccc; padding: 1rem 0; cursor: pointer;
+    }
+    .course-row:last-child { border-bottom: 1px solid #ccc; }
+    .course-row:hover { background: rgba(255,255,255,0.5); }
+    .course-summary {
+      display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    }
+    .course-code {
+      font-size: 0.9rem; letter-spacing: 0.08em; color: #1a1a1a; min-width: 100px;
+    }
+    .course-participants {
+      font-size: 0.85rem; color: #555; flex: 1;
+    }
+    .course-sessions {
+      font-size: 0.78rem; color: #888; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .course-status {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .course-status.active    { color: #27ae60; }
+    .course-status.paused    { color: #e67e22; }
+    .course-status.completed { color: #2980b9; }
+    .course-status.cancelled { color: #c0392b; }
+    .course-detail {
+      display: none; padding: 1rem 0 0.5rem; border-top: 1px solid #eee; margin-top: 0.8rem;
+    }
+    .course-detail.open { display: block; }
+    .session-row {
+      display: flex; gap: 1rem; align-items: center;
+      padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap;
+    }
+    .session-date { font-size: 0.82rem; color: #555; min-width: 160px; }
+    .session-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .session-status-dot.scheduled  { background: #aaa; }
+    .session-status-dot.completed  { background: #27ae60; }
+    .session-status-dot.cancelled  { background: #c0392b; }
+    .log-btn {
+      font-family: inherit; font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; border: 1px solid #27ae60; background: transparent;
+      color: #27ae60; padding: 0.2rem 0.6rem; cursor: pointer; margin-left: auto;
+      transition: background 0.15s, color 0.15s;
+    }
+    .log-btn:hover { background: #27ae60; color: #fff; }
+    .course-filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+
     /* ── Enquiry table ────────────────────────────────────────────── */
     .enquiry-list { display: flex; flex-direction: column; gap: 0; }
     .enquiry-row {
@@ -326,19 +390,44 @@
 
   <!-- ── Dashboard ─────────────────────────────────────────────────── -->
   <div id="dashboard">
-    <div class="dashboard-header">
-      <h1>enquiries</h1>
-      <div class="filter-row">
-        <button class="filter-btn active" data-status="all">all</button>
-        <button class="filter-btn" data-status="new">new</button>
-        <button class="filter-btn" data-status="contacted">contacted</button>
-        <button class="filter-btn" data-status="confirmed">confirmed</button>
-        <button class="filter-btn" data-status="cancelled">cancelled</button>
+
+    <!-- ── Main tab switcher ──────────────────────────────────────────── -->
+    <div class="main-tabs">
+      <button class="main-tab active" id="tab-enquiries" onclick="switchTab('enquiries')">enquiries</button>
+      <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
+    </div>
+
+    <!-- ── Enquiries panel ───────────────────────────────────────────── -->
+    <div id="panel-enquiries">
+      <div class="dashboard-header">
+        <div class="filter-row">
+          <button class="filter-btn active" data-status="all">all</button>
+          <button class="filter-btn" data-status="new">new</button>
+          <button class="filter-btn" data-status="contacted">contacted</button>
+          <button class="filter-btn" data-status="confirmed">confirmed</button>
+          <button class="filter-btn" data-status="cancelled">cancelled</button>
+        </div>
+      </div>
+      <div id="enquiry-list" class="enquiry-list">
+        <div class="loading-state">loading…</div>
       </div>
     </div>
-    <div id="enquiry-list" class="enquiry-list">
-      <div class="loading-state">loading…</div>
+
+    <!-- ── Courses panel ─────────────────────────────────────────────── -->
+    <div id="panel-courses" style="display:none;">
+      <div class="dashboard-header">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-course-status="active" onclick="filterCourses('active')">active</button>
+          <button class="filter-btn" data-course-status="all" onclick="filterCourses('all')">all</button>
+          <button class="filter-btn" data-course-status="completed" onclick="filterCourses('completed')">completed</button>
+          <button class="filter-btn" data-course-status="cancelled" onclick="filterCourses('cancelled')">cancelled</button>
+        </div>
+      </div>
+      <div id="course-list">
+        <div class="loading-state">loading…</div>
+      </div>
     </div>
+
   </div>
 
   <script>
@@ -656,6 +745,143 @@
           setTimeout(() => msg.style.display = 'none', 2000);
         }
       } catch (e) { console.error(e); }
+    }
+
+    /* ── Main tab switching ─────────────────────────────────────────── */
+    let currentTab = 'enquiries';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('panel-enquiries').style.display = tab === 'enquiries' ? 'block' : 'none';
+      document.getElementById('panel-courses').style.display   = tab === 'courses'   ? 'block' : 'none';
+      document.getElementById('tab-enquiries').classList.toggle('active', tab === 'enquiries');
+      document.getElementById('tab-courses').classList.toggle('active',   tab === 'courses');
+      if (tab === 'courses') loadCourses(currentCourseFilter);
+    }
+
+    /* ── Courses ─────────────────────────────────────────────────────── */
+    let currentCourseFilter = 'active';
+
+    function filterCourses(status) {
+      currentCourseFilter = status;
+      document.querySelectorAll('[data-course-status]').forEach(b => {
+        b.classList.toggle('active', b.dataset.courseStatus === status);
+      });
+      loadCourses(status);
+    }
+
+    async function loadCourses(status = 'active') {
+      const list = document.getElementById('course-list');
+      list.innerHTML = '<div class="loading-state">loading…</div>';
+      try {
+        const res = await fetch('/api/get-courses?status=' + status, {
+          headers: { 'x-admin-password': adminPassword },
+        });
+        if (!res.ok) throw new Error('Failed to load courses');
+        const courses = await res.json();
+        renderCourses(courses);
+      } catch (err) {
+        list.innerHTML = '<div class="loading-state">Could not load courses.</div>';
+      }
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleString('de-CH', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+    }
+
+    function renderCourses(courses) {
+      const list = document.getElementById('course-list');
+      if (!courses.length) {
+        list.innerHTML = '<div class="loading-state" style="padding:2rem 0;">No courses found.</div>';
+        return;
+      }
+
+      list.innerHTML = courses.map(c => {
+        const names    = (c.participant_names || []).join(', ') || '—';
+        const total    = c.sessions_total ? c.sessions_total + ' sessions' : 'open-ended';
+        const done     = c.sessions_completed || 0;
+        const sessLine = c.sessions_total
+          ? `${done} / ${c.sessions_total} sessions`
+          : `${done} sessions completed`;
+
+        const sessions = (c.sessions || []).map(s => `
+          <div class="session-row" id="sess-${s.id}">
+            <div class="session-status-dot ${s.status}"></div>
+            <div class="session-date">${fmtDate(s.scheduled_at)}</div>
+            <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
+            ${s.status === 'scheduled' ? `
+              <button class="log-btn" onclick="logSession('${s.id}', '${c.id}')">mark completed</button>
+            ` : ''}
+          </div>
+        `).join('');
+
+        const noSessions = !c.sessions?.length
+          ? '<p style="font-size:0.78rem;color:#aaa;padding:0.5rem 0;">No sessions synced yet. Sessions will appear here once Google Calendar syncs.</p>'
+          : '';
+
+        return `
+          <div class="course-row" id="course-${c.id}">
+            <div class="course-summary" onclick="toggleCourse('${c.id}')">
+              <span class="course-code">${c.course_code || '—'}</span>
+              <span class="course-participants">${names}</span>
+              <span class="course-sessions">${sessLine}</span>
+              <span class="course-status ${c.status}">${c.status}</span>
+            </div>
+            <div class="course-detail" id="course-detail-${c.id}">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                <div>
+                  <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
+                  <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+                    Service: ${c.service || '—'}<br>
+                    Level: ${c.level || '—'}<br>
+                    Group: ${c.group_type || '—'}<br>
+                    Block: ${total}
+                  </p>
+                </div>
+                <div>
+                  <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">participants</p>
+                  ${(c.participants || []).map(p => `
+                    <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+                      ${[p.firstName, p.lastName].filter(Boolean).join(' ')}
+                      ${p.email ? '· ' + p.email : ''}
+                      ${p.phone ? '· ' + p.phone : ''}
+                    </p>
+                  `).join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'}
+                </div>
+              </div>
+              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">sessions</p>
+              ${sessions}
+              ${noSessions}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function toggleCourse(id) {
+      document.getElementById('course-detail-' + id).classList.toggle('open');
+    }
+
+    async function logSession(sessionId, courseId) {
+      const notes = prompt('Add a note for this session (optional):') || '';
+      try {
+        const res = await fetch('/api/log-session', {
+          method:  'PATCH',
+          headers: {
+            'Content-Type':     'application/json',
+            'x-admin-password': adminPassword,
+          },
+          body: JSON.stringify({ session_id: sessionId, notes }),
+        });
+        if (!res.ok) throw new Error();
+        /* Reload courses to reflect updated count */
+        loadCourses(currentCourseFilter);
+      } catch {
+        alert('Could not log session. Please try again.');
+      }
     }
 
     /* ── Delete enquiry ─────────────────────────────────────────────── */
