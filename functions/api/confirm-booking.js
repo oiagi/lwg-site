@@ -249,12 +249,17 @@ export async function onRequestPost({ request, env }) {
   const startTime  = new Date(first_session_at);
   const endTime    = new Date(startTime.getTime() + duration_minutes * 60 * 1000);
 
+  const sessionsLine = sessions_total
+    ? `Sessions: ${sessions_total} × 50min\n`
+    : 'Sessions: open-ended\n';
+
   const eventBody = {
     summary:     eventTitle,
     description: `Course: ${courseCode}\nService: ${booking.service || ''}\n` +
                  (booking.level    ? `Level: ${booking.level}\n`       : '') +
                  (booking.language ? `Language: ${booking.language}\n` : '') +
                  (booking.exam     ? `Exam: ${booking.exam}\n`         : '') +
+                 sessionsLine +
                  `\nLead: ${(contact.lead?.firstName || '')} ${(contact.lead?.lastName || '')}` +
                  `\nEmail: ${contact.lead?.email || ''}` +
                  `\nPhone: ${contact.lead?.phone || ''}`,
