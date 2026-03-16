@@ -833,7 +833,7 @@
              </span>`
           : '';
 
-        const sessions = (c.sessions || []).map(s => `
+        const sessions = (c.sessions || []).filter(s => s.status !== 'cancelled').map(s => `
           <div class="session-row" id="sess-${s.id}">
             <div class="session-status-dot ${s.status}"></div>
             <div class="session-date">${fmtDate(s.scheduled_at)}</div>
