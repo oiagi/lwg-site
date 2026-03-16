@@ -772,7 +772,18 @@
 
     async function loadCourses(status = 'active') {
       const list = document.getElementById('course-list');
-      list.innerHTML = '<div class="loading-state">loading…</div>';
+
+      /* Remember which courses are currently open so we can restore them */
+      const openIds = new Set(
+        Array.from(document.querySelectorAll('.course-detail.open'))
+          .map(el => el.id.replace('course-detail-', ''))
+      );
+
+      /* Only show loading spinner on first load (list is empty) */
+      if (!list.querySelector('.course-row')) {
+        list.innerHTML = '<div class="loading-state">loading…</div>';
+      }
+
       try {
         const res = await fetch('/api/get-courses?status=' + status, {
           headers: { 'x-admin-password': adminPassword },
@@ -780,6 +791,12 @@
         if (!res.ok) throw new Error('Failed to load courses');
         const courses = await res.json();
         renderCourses(courses);
+
+        /* Re-open any courses that were open before the reload */
+        openIds.forEach(id => {
+          const detail = document.getElementById('course-detail-' + id);
+          if (detail) detail.classList.add('open');
+        });
       } catch (err) {
         list.innerHTML = '<div class="loading-state">Could not load courses.</div>';
       }
@@ -905,15 +922,16 @@
     }
 
     function toggleCourse(id) {
-      /* Sync calendar on open so sessions are always fresh */
-      const detail = document.getElementById('course-detail-' + id);
-      const wasOpen = detail.classList.contains('open');
-      detail.classList.toggle('open');
-      if (!wasOpen) syncCalendar(id, true);
+      /* Simply toggle open/close — no reload triggered */
+      document.getElementById('course-detail-' + id).classList.toggle('open');
     }
 
     /* ── On-demand calendar sync ─────────────────────────────────────── */
-    async function syncCalendar(courseId, silent = false) {
+    /* Only called when the user explicitly clicks the sync button.
+       Does NOT reload the full list — updates only the affected course
+       row so the open/closed state is preserved.                       */
+    async function syncCalendar(courseId) {
+      const msg = document.getElementById('sync-msg-' + courseId);
       try {
         const res = await fetch('/api/sync-calendar', {
           method:  'POST',
@@ -921,11 +939,8 @@
           body:    JSON.stringify({ course_id: courseId }),
         });
         if (res.ok) {
-          if (!silent) {
-            const msg = document.getElementById('sync-msg-' + courseId);
-            if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
-          }
-          /* Reload courses to reflect updated session data */
+          if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+          /* Reload full list after sync — user clicked explicitly so flash is acceptable */
           loadCourses(currentCourseFilter);
         }
       } catch (err) { console.error('Sync error:', err); }
@@ -960,8 +975,28 @@
           body: JSON.stringify({ session_id: sessionId, notes }),
         });
         if (!res.ok) throw new Error();
-        /* Reload courses to reflect updated count */
-        loadCourses(currentCourseFilter);
+        /* Update the session row in place rather than reloading the full list,
+           so the course stays open */
+        const row = document.getElementById('sess-' + sessionId);
+        if (row) {
+          row.querySelector('.session-status-dot').className = 'session-status-dot completed';
+          row.querySelector('[style*=uppercase]').textContent = 'completed';
+          const btn = row.querySelector('.log-btn');
+          if (btn) btn.remove();
+        }
+        /* Update the session count label */
+        const courseRow = document.getElementById('course-' + courseId);
+        if (courseRow) {
+          const countEl = courseRow.querySelector('.course-sessions');
+          if (countEl) {
+            const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
+            if (match) {
+              const newDone = parseInt(match[1]) + 1;
+              const total   = parseInt(match[2]);
+              countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
+            }
+          }
+        }
       } catch {
         alert('Could not log session. Please try again.');
       }
