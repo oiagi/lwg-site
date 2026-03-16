@@ -42,7 +42,7 @@ export async function onRequestGet({ request, env }) {
     const enriched = await Promise.all(courses.map(async (course) => {
       const [sessRes, enrolRes] = await Promise.all([
         fetch(
-          `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course.id}&order=scheduled_at.asc&select=*`,
+          `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course.id}&status=neq.cancelled&order=scheduled_at.asc&select=*`,
           { headers: H }
         ),
         fetch(
