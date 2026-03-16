@@ -802,11 +802,19 @@
 
       list.innerHTML = courses.map(c => {
         const names    = (c.participant_names || []).join(', ') || '—';
-        const total    = c.sessions_total ? c.sessions_total + ' sessions' : 'open-ended';
         const done     = c.sessions_completed || 0;
-        const sessLine = c.sessions_total
-          ? `${done} / ${c.sessions_total} sessions`
+        const total    = c.sessions_total;
+        const remaining = total ? total - done : null;
+        const sessLine = total
+          ? `${done} / ${total} sessions`
           : `${done} sessions completed`;
+
+        /* Rebooking flag — show when 3 or fewer sessions remain */
+        const rebookFlag = total && remaining !== null && remaining <= 3
+          ? `<span style="font-size:0.68rem;letter-spacing:0.08em;color:#e67e22;margin-left:0.5rem;">
+               ⚠ ${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}
+             </span>`
+          : '';
 
         const sessions = (c.sessions || []).map(s => `
           <div class="session-row" id="sess-${s.id}">
@@ -819,50 +827,125 @@
           </div>
         `).join('');
 
+        /* Student records with progress notes and session page link */
+        const studentBlocks = (c.students || []).map(s => `
+          <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f0f0f0;">
+            <p style="font-size:0.78rem;color:#1a1a1a;margin-bottom:0.3rem;">
+              ${[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}
+              ${s.current_level ? '<span style="color:#888;"> · ' + s.current_level + '</span>' : ''}
+              ${s.access_token ? `<a href="/sessions.html?token=${s.access_token}" target="_blank"
+                style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;
+                text-decoration:none;margin-left:0.6rem;border-bottom:1px solid #ddd;">session page ↗</a>` : ''}
+            </p>
+            <textarea id="notes-${s.id}"
+              style="width:100%;background:transparent;border:none;border-bottom:1px solid #ddd;
+              font-family:inherit;font-size:0.82rem;font-weight:300;color:#555;outline:none;
+              resize:none;height:50px;padding:0.2rem 0;margin-top:0.3rem;"
+              placeholder="progress notes…">${s.progress_notes || ''}</textarea>
+            <div style="margin-top:0.3rem;display:flex;gap:0.5rem;align-items:center;">
+              <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
+                style="background:transparent;border:none;border-bottom:1px solid #ddd;
+                font-family:inherit;font-size:0.75rem;color:#555;outline:none;width:60px;"
+                placeholder="level" />
+              <button class="save-btn" onclick="saveStudent('${s.id}')">save</button>
+              <span class="saved-msg" id="student-saved-${s.id}">saved</span>
+            </div>
+          </div>
+        `).join('') || '<p style="font-size:0.78rem;color:#aaa;">No student records yet.</p>';
+
         const noSessions = !c.sessions?.length
-          ? '<p style="font-size:0.78rem;color:#aaa;padding:0.5rem 0;">No sessions synced yet. Sessions will appear here once Google Calendar syncs.</p>'
-          : '';
+          ? `<div style="display:flex;align-items:center;gap:1rem;">
+               <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
+               <button class="save-btn" onclick="syncCalendar('${c.id}')">sync calendar</button>
+               <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
+             </div>`
+          : `<div style="text-align:right;margin-bottom:0.4rem;">
+               <button class="save-btn" style="font-size:0.65rem;" onclick="syncCalendar('${c.id}')">↻ sync</button>
+               <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
+             </div>`;
 
         return `
           <div class="course-row" id="course-${c.id}">
             <div class="course-summary" onclick="toggleCourse('${c.id}')">
               <span class="course-code">${c.course_code || '—'}</span>
               <span class="course-participants">${names}</span>
-              <span class="course-sessions">${sessLine}</span>
+              <span class="course-sessions">${sessLine}${rebookFlag}</span>
               <span class="course-status ${c.status}">${c.status}</span>
             </div>
             <div class="course-detail" id="course-detail-${c.id}">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;">
                 <div>
                   <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
                   <p style="font-size:0.82rem;color:#555;line-height:1.8;">
                     Service: ${c.service || '—'}<br>
                     Level: ${c.level || '—'}<br>
                     Group: ${c.group_type || '—'}<br>
-                    Block: ${total}
+                    Block: ${total ? total + ' sessions' : 'open-ended'}
                   </p>
                 </div>
                 <div>
-                  <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">participants</p>
+                  <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
                   ${(c.participants || []).map(p => `
                     <p style="font-size:0.82rem;color:#555;line-height:1.8;">
                       ${[p.firstName, p.lastName].filter(Boolean).join(' ')}
-                      ${p.email ? '· ' + p.email : ''}
-                      ${p.phone ? '· ' + p.phone : ''}
+                      ${p.email ? '<br><span style="color:#aaa;">' + p.email + '</span>' : ''}
+                      ${p.phone ? '<br><span style="color:#aaa;">' + p.phone + '</span>' : ''}
                     </p>
                   `).join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'}
                 </div>
               </div>
-              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">sessions</p>
-              ${sessions}
+              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.8rem;">students & progress</p>
+              ${studentBlocks}
+              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
               ${noSessions}
+              ${sessions}
             </div>
           </div>`;
       }).join('');
     }
 
     function toggleCourse(id) {
-      document.getElementById('course-detail-' + id).classList.toggle('open');
+      /* Sync calendar on open so sessions are always fresh */
+      const detail = document.getElementById('course-detail-' + id);
+      const wasOpen = detail.classList.contains('open');
+      detail.classList.toggle('open');
+      if (!wasOpen) syncCalendar(id, true);
+    }
+
+    /* ── On-demand calendar sync ─────────────────────────────────────── */
+    async function syncCalendar(courseId, silent = false) {
+      try {
+        const res = await fetch('/api/sync-calendar', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body:    JSON.stringify({ course_id: courseId }),
+        });
+        if (res.ok) {
+          if (!silent) {
+            const msg = document.getElementById('sync-msg-' + courseId);
+            if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+          }
+          /* Reload courses to reflect updated session data */
+          loadCourses(currentCourseFilter);
+        }
+      } catch (err) { console.error('Sync error:', err); }
+    }
+
+    /* ── Save student progress notes and level ───────────────────────── */
+    async function saveStudent(studentId) {
+      const notes = document.getElementById('notes-'  + studentId)?.value || '';
+      const level = document.getElementById('level-'  + studentId)?.value || '';
+      try {
+        const res = await fetch('/api/update-student', {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body:    JSON.stringify({ student_id: studentId, progress_notes: notes, current_level: level }),
+        });
+        if (res.ok) {
+          const msg = document.getElementById('student-saved-' + studentId);
+          if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+        }
+      } catch (err) { console.error('Save student error:', err); }
     }
 
     async function logSession(sessionId, courseId) {
