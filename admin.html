@@ -174,7 +174,81 @@
       transition: background 0.15s, color 0.15s;
     }
     .log-btn:hover { background: #27ae60; color: #fff; }
+    .cancel-btn {
+      font-family: inherit; font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; border: 1px solid #c0392b; background: transparent;
+      color: #c0392b; padding: 0.2rem 0.6rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .cancel-btn:hover { background: #c0392b; color: #fff; }
     .course-filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .new-course-btn {
+      font-family: inherit; font-size: 0.75rem; letter-spacing: 0.14em;
+      text-transform: uppercase; border: 1px solid #1a1a1a;
+      background: #1a1a1a; color: #d6eaf8; padding: 0.3rem 0.9rem;
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .new-course-btn:hover { background: #fff; color: #1a1a1a; }
+    .delete-course-btn {
+      font-family: inherit; font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; border: 1px solid #c0392b;
+      background: transparent; color: #c0392b; padding: 0.2rem 0.6rem;
+      cursor: pointer; margin-left: auto; transition: background 0.15s, color 0.15s;
+    }
+    .delete-course-btn:hover { background: #c0392b; color: #fff; }
+    /* ── New course modal ─────────────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(214,234,248,0.85); backdrop-filter: blur(3px);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; padding: 2rem; width: min(92vw, 500px);
+      max-height: 90vh; overflow-y: auto;
+      animation: fadeUp 0.2s ease both;
+    }
+    .modal h2 {
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: #555; margin-bottom: 1.6rem;
+    }
+    .modal-field { margin-bottom: 1.2rem; }
+    .modal-field label {
+      display: block; font-size: 0.68rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #aaa; margin-bottom: 0.4rem;
+    }
+    .modal-field input, .modal-field select {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid #ddd; font-family: inherit;
+      font-size: 0.88rem; font-weight: 300; color: #1a1a1a;
+      outline: none; padding: 0.3rem 0;
+    }
+    .modal-field select { appearance: none; cursor: pointer; }
+    .modal-actions { display: flex; gap: 0.8rem; margin-top: 1.6rem; }
+    .modal-submit {
+      font-family: inherit; font-size: 0.75rem; letter-spacing: 0.14em;
+      text-transform: uppercase; background: #1a1a1a; color: #d6eaf8;
+      border: 1px solid #1a1a1a; padding: 0.5rem 1.2rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s; flex: 1;
+    }
+    .modal-submit:hover { background: #fff; color: #1a1a1a; }
+    .modal-cancel {
+      font-family: inherit; font-size: 0.75rem; letter-spacing: 0.14em;
+      text-transform: uppercase; background: transparent; color: #aaa;
+      border: 1px solid #ddd; padding: 0.5rem 1.2rem; cursor: pointer;
+    }
+    .modal-cancel:hover { color: #1a1a1a; border-color: #1a1a1a; }
+    .modal-msg { font-size: 0.75rem; margin-top: 0.8rem; display: none; }
+    .modal-msg.err { color: #c0392b; }
+    .modal-msg.ok  { color: #27ae60; }
+    .participant-block { border-top: 1px solid #f0f0f0; padding-top: 1rem; margin-top: 0.4rem; }
+    .participant-block label { color: #888; }
+    .add-participant-btn {
+      font-family: inherit; font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; background: transparent; border: none;
+      color: #aaa; cursor: pointer; padding: 0; margin-top: 0.6rem;
+    }
+    .add-participant-btn:hover { color: #1a1a1a; }
 
     /* ── Enquiry table ────────────────────────────────────────────── */
     .enquiry-list { display: flex; flex-direction: column; gap: 0; }
@@ -414,14 +488,78 @@
     </div>
 
     <!-- ── Courses panel ─────────────────────────────────────────────── -->
+    <!-- ── New course modal ──────────────────────────────────────────── -->
+    <div class="modal-overlay" id="new-course-modal">
+      <div class="modal">
+        <h2>new course</h2>
+
+        <div class="modal-field">
+          <label>Teacher</label>
+          <select id="nc-teacher"><option value="">loading…</option></select>
+        </div>
+        <div class="modal-field">
+          <label>Service</label>
+          <select id="nc-service">
+            <option value="language course">Language course</option>
+            <option value="exam prep">Exam prep</option>
+            <option value="tutoring">Tutoring</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Level <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for tutoring)</span></label>
+          <select id="nc-level">
+            <option value="">—</option>
+            <option>A1</option><option>A2</option><option>B1</option>
+            <option>B2</option><option>C1</option><option>C2</option>
+            <option value="CH">CH (Swiss German)</option>
+            <option value="SUB">SUB (Tutoring)</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Group type</label>
+          <select id="nc-group">
+            <option value="private">Private</option>
+            <option value="duo">Duo</option>
+            <option value="group">Group</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Sessions in block <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for open-ended)</span></label>
+          <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
+        </div>
+        <div class="modal-field">
+          <label>First session date &amp; time</label>
+          <input type="datetime-local" id="nc-datetime">
+        </div>
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.8rem;">Participants</p>
+        <div id="nc-participants">
+          <div class="participant-block" id="nc-p-0">
+            <div class="modal-field"><label>First name</label><input type="text" id="nc-p0-first" placeholder="First name"></div>
+            <div class="modal-field"><label>Last name</label><input type="text" id="nc-p0-last" placeholder="Last name"></div>
+            <div class="modal-field"><label>Email</label><input type="email" id="nc-p0-email" placeholder="email@example.com"></div>
+            <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p0-phone" placeholder="+41…"></div>
+          </div>
+        </div>
+        <button class="add-participant-btn" onclick="addParticipantBlock()">+ add participant</button>
+
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeNewCourseModal()">cancel</button>
+          <button class="modal-submit" id="nc-submit" onclick="submitNewCourse()">create course &amp; calendar event</button>
+        </div>
+        <p class="modal-msg" id="nc-msg"></p>
+      </div>
+    </div>
+
     <div id="panel-courses" style="display:none;">
-      <div class="dashboard-header">
+      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
         <div class="course-filter-row">
           <button class="filter-btn active" data-course-status="active" onclick="filterCourses('active')">active</button>
           <button class="filter-btn" data-course-status="all" onclick="filterCourses('all')">all</button>
           <button class="filter-btn" data-course-status="completed" onclick="filterCourses('completed')">completed</button>
           <button class="filter-btn" data-course-status="cancelled" onclick="filterCourses('cancelled')">cancelled</button>
         </div>
+        <button class="new-course-btn" onclick="openNewCourseModal()">+ new course</button>
       </div>
       <div id="course-list">
         <div class="loading-state">loading…</div>
@@ -840,6 +978,7 @@
             <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
             ${s.status === 'scheduled' ? `
               <button class="log-btn" onclick="logSession('${s.id}', '${c.id}')">mark completed</button>
+              <button class="cancel-btn" onclick="cancelSession('${s.id}', '${c.id}')">cancel</button>
             ` : ''}
           </div>
         `).join('');
@@ -888,6 +1027,7 @@
               <span class="course-participants">${names}</span>
               <span class="course-sessions">${sessLine}${rebookFlag}</span>
               <span class="course-status ${c.status}">${c.status}</span>
+              <button class="delete-course-btn" onclick="event.stopPropagation();deleteCourse('${c.id}','${c.course_code}')">delete</button>
             </div>
             <div class="course-detail" id="course-detail-${c.id}">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;">
@@ -946,6 +1086,37 @@
       } catch (err) { console.error('Sync error:', err); }
     }
 
+    /* ── Cancel session & Google Calendar event ─────────────────────── */
+    async function cancelSession(sessionId, courseId) {
+      if (!confirm('Cancel this session? The Google Calendar event and invite will be removed.')) return;
+      try {
+        const res = await fetch('/api/cancel-session', {
+          method:  'DELETE',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body:    JSON.stringify({ session_id: sessionId }),
+        });
+        if (!res.ok) throw new Error();
+        /* Remove the session row from the DOM */
+        const row = document.getElementById('sess-' + sessionId);
+        if (row) row.remove();
+        /* Update the session count label */
+        const courseRow = document.getElementById('course-' + courseId);
+        if (courseRow) {
+          const countEl = courseRow.querySelector('.course-sessions');
+          if (countEl) {
+            const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
+            if (match) {
+              const total   = parseInt(match[2]);
+              const newDone = parseInt(match[1]);
+              countEl.firstChild.textContent = newDone + ' / ' + (total - 1) + ' sessions';
+            }
+          }
+        }
+      } catch {
+        alert('Could not cancel session. Please try again.');
+      }
+    }
+
     /* ── Save student progress notes and level ───────────────────────── */
     async function saveStudent(studentId) {
       const notes = document.getElementById('notes-'  + studentId)?.value || '';
@@ -999,6 +1170,151 @@
         }
       } catch {
         alert('Could not log session. Please try again.');
+      }
+    }
+
+    /* ── New course modal ───────────────────────────────────────────── */
+    let participantCount = 1;
+
+    function openNewCourseModal() {
+      /* Reset form */
+      ['nc-teacher','nc-service','nc-level','nc-group','nc-sessions','nc-datetime'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
+      });
+      /* Reset participants to just one block */
+      participantCount = 1;
+      const container = document.getElementById('nc-participants');
+      container.innerHTML = `
+        <div class="participant-block" id="nc-p-0">
+          <div class="modal-field"><label>First name</label><input type="text" id="nc-p0-first" placeholder="First name"></div>
+          <div class="modal-field"><label>Last name</label><input type="text" id="nc-p0-last" placeholder="Last name"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="nc-p0-email" placeholder="email@example.com"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p0-phone" placeholder="+41…"></div>
+        </div>`;
+      /* Populate teacher select */
+      const sel = document.getElementById('nc-teacher');
+      loadTeachers().then(teachers => {
+        sel.innerHTML = teachers.map(t =>
+          `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${t.name}${!t.authorised ? ' (not authorised)' : ''}</option>`
+        ).join('');
+      });
+      const msgEl = document.getElementById('nc-msg');
+      if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
+      const btn = document.getElementById('nc-submit');
+      if (btn) { btn.textContent = 'create course & calendar event'; btn.disabled = false; }
+      document.getElementById('new-course-modal').classList.add('open');
+    }
+
+    function closeNewCourseModal() {
+      document.getElementById('new-course-modal').classList.remove('open');
+    }
+
+    function addParticipantBlock() {
+      const container = document.getElementById('nc-participants');
+      const i = participantCount++;
+      const block = document.createElement('div');
+      block.className = 'participant-block';
+      block.id = `nc-p-${i}`;
+      block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;';
+      block.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+          <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
+          <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
+        </div>
+        <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
+        <div class="modal-field"><label>Last name</label><input type="text" id="nc-p${i}-last" placeholder="Last name"></div>
+        <div class="modal-field"><label>Email</label><input type="email" id="nc-p${i}-email" placeholder="email@example.com"></div>
+        <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p${i}-phone" placeholder="+41…"></div>`;
+      container.appendChild(block);
+    }
+
+    async function submitNewCourse() {
+      const btn   = document.getElementById('nc-submit');
+      const msgEl = document.getElementById('nc-msg');
+      msgEl.style.display = 'none';
+
+      const teacherId  = document.getElementById('nc-teacher').value;
+      const service    = document.getElementById('nc-service').value;
+      const level      = document.getElementById('nc-level').value;
+      const groupType  = document.getElementById('nc-group').value;
+      const sessions   = document.getElementById('nc-sessions').value;
+      const datetime   = document.getElementById('nc-datetime').value;
+
+      if (!teacherId || !datetime) {
+        msgEl.textContent   = 'Please select a teacher and set a first session date.';
+        msgEl.className     = 'modal-msg err';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      /* Collect participants */
+      const participants = [];
+      document.querySelectorAll('#nc-participants .participant-block').forEach((block, i) => {
+        const idx = block.id.replace('nc-p-', '');
+        const first = document.getElementById(`nc-p${idx}-first`)?.value?.trim();
+        const last  = document.getElementById(`nc-p${idx}-last`)?.value?.trim();
+        const email = document.getElementById(`nc-p${idx}-email`)?.value?.trim();
+        const phone = document.getElementById(`nc-p${idx}-phone`)?.value?.trim();
+        if (first || last || email) {
+          participants.push({ firstName: first||'', lastName: last||'', email: email||'', phone: phone||'' });
+        }
+      });
+
+      btn.textContent = 'creating…';
+      btn.disabled    = true;
+
+      try {
+        const res = await fetch('/api/confirm-booking', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify({
+            teacher_id:       teacherId,
+            sessions_total:   sessions ? parseInt(sessions) : null,
+            first_session_at: new Date(datetime).toISOString(),
+            duration_minutes: 50,
+            /* Pass booking and contact data manually */
+            booking_data: { service, level, group: groupType },
+            contact_data: { participants },
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+        msgEl.textContent   = `Created. Course: ${result.course_code}`;
+        msgEl.className     = 'modal-msg';
+        msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+        btn.textContent     = 'created ✓';
+
+        setTimeout(() => {
+          closeNewCourseModal();
+          loadCourses(currentCourseFilter);
+        }, 1500);
+
+      } catch (err) {
+        msgEl.textContent   = 'Error: ' + err.message;
+        msgEl.className     = 'modal-msg err';
+        msgEl.style.display = 'block';
+        btn.textContent     = 'create course & calendar event';
+        btn.disabled        = false;
+      }
+    }
+
+    /* ── Delete course ───────────────────────────────────────────────── */
+    async function deleteCourse(courseId, courseCode) {
+      if (!confirm(`Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.`)) return;
+      try {
+        const res = await fetch('/api/delete-course', {
+          method:  'DELETE',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body:    JSON.stringify({ course_id: courseId }),
+        });
+        if (!res.ok) throw new Error();
+        const row = document.getElementById('course-' + courseId);
+        if (row) row.remove();
+      } catch {
+        alert('Could not delete course. Please try again.');
       }
     }
 
