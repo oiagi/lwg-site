@@ -105,7 +105,7 @@ async function findOrCreateStudent(p, env) {
       email:      p.email     || null,
       phone:      p.phone     || null,
       postcode:   p.postcode  || null,
-      source:     'website',
+      source:     enquiry_id ? 'website' : 'manual',
     }),
   });
   if (!res.ok) throw new Error(`Student creation failed: ${await res.text()}`);
@@ -186,14 +186,16 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  // ── Course code ──────────────────────────────────────────────────────
+  // ── Derive group type and level once — used for course code and record ─
+  const groupType = getGroupType(booking.group);
+  const levelCode = getLevelCode(booking);
+
+  // ── Course code ───────────────────────────────────────────────────────
   let courseCode = course_code_override;
   if (!courseCode) {
-    const groupType = getGroupType(booking.group);
-    const prefix    = getCoursePrefix(groupType);
-    const level     = getLevelCode(booking);
+    const prefix = getCoursePrefix(groupType);
     try {
-      courseCode = await getNextCourseCode(prefix, level, env);
+      courseCode = await getNextCourseCode(prefix, levelCode, env);
     } catch (err) {
       console.error('Course code error:', err);
       return new Response(JSON.stringify({ error: 'Could not generate course code' }), {
@@ -258,14 +260,13 @@ export async function onRequestPost({ request, env }) {
   // ── Course record ────────────────────────────────────────────────────
   let courseId;
   try {
-    const groupType = getGroupType(booking.group);
     const cr = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
       method: 'POST',
       headers: { ...H(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
       body: JSON.stringify({
         course_code:        courseCode,
         service:            booking.service || null,
-        level:              getLevelCode(booking),
+        level:              levelCode,
         group_type:         groupType,
         teacher_id,
         participant_names:  participantNames,
