@@ -126,10 +126,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   let enquiry_id, teacher_id, sessions_total, first_session_at,
-      duration_minutes, course_code_override;
+      duration_minutes, course_code_override, booking_data, contact_data;
   try {
     ({ enquiry_id, teacher_id, sessions_total, first_session_at,
-       duration_minutes = 50, course_code_override } = await request.json());
+       duration_minutes = 50, course_code_override,
+       booking_data, contact_data } = await request.json());
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
@@ -142,8 +143,10 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  // ── Load enquiry ────────────────────────────────────────────────────
-  let booking = {}, contact = {};
+  // ── Load enquiry or use inline booking/contact data ─────────────────
+  // When called from the admin manual course creation form, booking_data
+  // and contact_data are passed directly instead of loading from an enquiry.
+  let booking = booking_data || {}, contact = contact_data || {};
   if (enquiry_id) {
     const r = await fetch(
       `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}&select=*`,
