@@ -122,21 +122,28 @@ export async function onRequestPost({ request, env }) {
   }
 
   const calData = await calRes.json();
-  const events  = (calData.items || []).filter(e =>
+
+  /* Active events — present and not cancelled in Google Calendar */
+  const activeEvents    = (calData.items || []).filter(e =>
     e.summary?.startsWith(course.course_code) && e.status !== 'cancelled'
   );
+  /* Cancelled events — still returned by the API with status=cancelled */
+  const cancelledEvents = (calData.items || []).filter(e =>
+    e.summary?.startsWith(course.course_code) && e.status === 'cancelled'
+  );
+  const activeEventIds    = new Set(activeEvents.map(e => e.id));
+  const cancelledEventIds = new Set(cancelledEvents.map(e => e.id));
 
-  // ── Upsert session records ────────────────────────────────────────────
+  // ── Upsert active session records ────────────────────────────────────
   const now = new Date();
   let completedCount = 0;
 
-  for (const event of events) {
+  for (const event of activeEvents) {
     const scheduledAt = event.start.dateTime || event.start.date;
     const isPast      = new Date(scheduledAt) < now;
     const status      = isPast ? 'completed' : 'scheduled';
     if (isPast) completedCount++;
 
-    /* Check if session record exists for this calendar event */
     const existRes = await fetch(
       `${SUPABASE_URL}/rest/v1/sessions?calendar_event_id=eq.${event.id}&select=id,status`,
       { headers: H(SUPABASE_SERVICE_KEY) }
@@ -144,13 +151,11 @@ export async function onRequestPost({ request, env }) {
     const existing = await existRes.json();
 
     if (existing.length) {
-      /* Update scheduled_at and status if changed */
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${existing[0].id}`, {
         method: 'PATCH', headers: H(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ scheduled_at: scheduledAt, status }),
       });
     } else {
-      /* Create new session record */
       await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
         method: 'POST', headers: H(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({
@@ -165,6 +170,23 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  // ── Remove sessions no longer in Google Calendar ─────────────────────
+  // Fetch all session records for this course from Supabase, then delete
+  // any whose calendar_event_id is not in the active events from Google.
+  // This covers both explicitly cancelled and silently deleted events.
+  const allDbRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course.id}&select=id,calendar_event_id`,
+    { headers: H(SUPABASE_SERVICE_KEY) }
+  );
+  const allDbSessions = await allDbRes.json();
+  for (const sess of allDbSessions) {
+    if (!sess.calendar_event_id || !activeEventIds.has(sess.calendar_event_id)) {
+      await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${sess.id}`, {
+        method: 'DELETE', headers: H(SUPABASE_SERVICE_KEY),
+      });
+    }
+  }
+
   // ── Update sessions_completed count on course ─────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course.id}`, {
     method: 'PATCH', headers: H(SUPABASE_SERVICE_KEY),
@@ -173,8 +195,9 @@ export async function onRequestPost({ request, env }) {
 
   return new Response(JSON.stringify({
     success:      true,
-    events_found: events.length,
+    events_found: activeEvents.length,
+    cancelled:    cancelledEvents.length,
     completed:    completedCount,
-    scheduled:    events.length - completedCount,
+    scheduled:    activeEvents.length - completedCount,
   }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }
