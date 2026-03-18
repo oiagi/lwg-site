@@ -8,24 +8,13 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+
 export async function onRequestPatch({ request, env }) {
-  const SUPABASE_URL         = env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
-  const ADMIN_PASSWORD       = env.ADMIN_PASSWORD;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const HEADERS = {
-    'Content-Type':  'application/json',
-    'apikey':        SUPABASE_SERVICE_KEY,
-    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-  };
-
-  // ── Password check ───────────────────────────────────────────────────
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   // ── Parse body ───────────────────────────────────────────────────────
   let session_id, notes;
@@ -43,10 +32,12 @@ export async function onRequestPatch({ request, env }) {
     });
   }
 
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+
   // ── Load session to get course_id ────────────────────────────────────
   const sessRes = await fetch(
     `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=id,course_id,status`,
-    { headers: HEADERS }
+    { headers: H }
   );
   const sessions = await sessRes.json();
   if (!sessions.length) {
@@ -67,7 +58,7 @@ export async function onRequestPatch({ request, env }) {
     `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`,
     {
       method:  'PATCH',
-      headers: { ...HEADERS, 'Prefer': 'return=representation' },
+      headers: { ...H, 'Prefer': 'return=representation' },
       body:    JSON.stringify(patch),
     }
   );
@@ -85,7 +76,7 @@ export async function onRequestPatch({ request, env }) {
       // First get current count
       const courseRes = await fetch(
         `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}&select=sessions_completed`,
-        { headers: HEADERS }
+        { headers: H }
       );
       const courses = await courseRes.json();
       if (courses.length) {
@@ -94,7 +85,7 @@ export async function onRequestPatch({ request, env }) {
           `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}`,
           {
             method:  'PATCH',
-            headers: HEADERS,
+            headers: H,
             body:    JSON.stringify({ sessions_completed: newCount }),
           }
         );

@@ -12,46 +12,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-const H = (key) => ({
-  'Content-Type':  'application/json',
-  'apikey':        key,
-  'Authorization': `Bearer ${key}`,
-});
-
-async function getValidAccessToken(teacher, env) {
-  const expiresAt = new Date(teacher.token_expires_at);
-  if (expiresAt > new Date(Date.now() + 5 * 60 * 1000)) return teacher.access_token;
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id:     env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      refresh_token: teacher.refresh_token,
-      grant_type:    'refresh_token',
-    }),
-  });
-  if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
-
-  const tokens = await res.json();
-  const expiry = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
-  await fetch(`${env.SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher.id}`, {
-    method: 'PATCH', headers: H(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify({ access_token: tokens.access_token, token_expires_at: expiry }),
-  });
-  return tokens.access_token;
-}
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD } = env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   let session_id;
   try {
@@ -71,7 +38,7 @@ export async function onRequestDelete({ request, env }) {
   // ── Load session ──────────────────────────────────────────────────────
   const sessRes = await fetch(
     `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=*`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const sessions = await sessRes.json();
   if (!sessions.length) {
@@ -84,7 +51,7 @@ export async function onRequestDelete({ request, env }) {
   // ── Load course ───────────────────────────────────────────────────────
   const courseRes = await fetch(
     `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}&select=*`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await courseRes.json();
   if (!courses.length) {
@@ -97,7 +64,7 @@ export async function onRequestDelete({ request, env }) {
   // ── Load teacher ──────────────────────────────────────────────────────
   const teacherRes = await fetch(
     `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const teachers = await teacherRes.json();
   if (!teachers.length || !teachers[0].refresh_token) {
@@ -131,7 +98,7 @@ export async function onRequestDelete({ request, env }) {
 
   // ── Delete session record from Supabase ───────────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, {
-    method: 'DELETE', headers: H(SUPABASE_SERVICE_KEY),
+    method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
   });
 
   // ── Adjust sessions_completed if this session was already logged ───────
@@ -139,7 +106,7 @@ export async function onRequestDelete({ request, env }) {
     try {
       const newCount = Math.max(0, (course.sessions_completed || 1) - 1);
       await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course.id}`, {
-        method: 'PATCH', headers: H(SUPABASE_SERVICE_KEY),
+        method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ sessions_completed: newCount }),
       });
     } catch (err) {

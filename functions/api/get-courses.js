@@ -7,26 +7,21 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+
 export async function onRequestGet({ request, env }) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD } = env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const H = {
-    'apikey':        SUPABASE_SERVICE_KEY,
-    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-  };
-
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   const url    = new URL(request.url);
   const status = url.searchParams.get('status') || 'all';
 
   let supabaseUrl = `${SUPABASE_URL}/rest/v1/courses?order=created_at.desc&select=*`;
   if (status !== 'all') supabaseUrl += `&status=eq.${status}`;
+
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
     const res = await fetch(supabaseUrl, { headers: H });
@@ -51,15 +46,15 @@ export async function onRequestGet({ request, env }) {
         ),
       ]);
 
-      const sessions    = sessRes.ok    ? await sessRes.json()    : [];
-      const enrolments  = enrolRes.ok   ? await enrolRes.json()   : [];
-      const studentIds  = enrolments.map(e => e.student_id);
+      const sessions   = sessRes.ok  ? await sessRes.json()  : [];
+      const enrolments = enrolRes.ok ? await enrolRes.json() : [];
+      const studentIds = enrolments.map(e => e.student_id);
 
       // Load student records
       let students = [];
       if (studentIds.length) {
-        const filter    = studentIds.map(id => `id.eq.${id}`).join(',');
-        const studRes   = await fetch(
+        const filter  = studentIds.map(id => `id.eq.${id}`).join(',');
+        const studRes = await fetch(
           `${SUPABASE_URL}/rest/v1/students?or=(${filter})&select=id,first_name,last_name,email,phone,current_level,progress_notes,access_token`,
           { headers: H }
         );

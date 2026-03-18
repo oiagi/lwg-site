@@ -12,46 +12,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-const H = (key) => ({
-  'Content-Type':  'application/json',
-  'apikey':        key,
-  'Authorization': `Bearer ${key}`,
-});
-
-async function getValidAccessToken(teacher, env) {
-  const expiresAt = new Date(teacher.token_expires_at);
-  if (expiresAt > new Date(Date.now() + 5 * 60 * 1000)) return teacher.access_token;
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id:     env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      refresh_token: teacher.refresh_token,
-      grant_type:    'refresh_token',
-    }),
-  });
-  if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
-
-  const tokens = await res.json();
-  const expiry = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
-  await fetch(`${env.SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher.id}`, {
-    method: 'PATCH', headers: H(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify({ access_token: tokens.access_token, token_expires_at: expiry }),
-  });
-  return tokens.access_token;
-}
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
 
 export async function onRequestPost({ request, env }) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD } = env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   let course_id;
   try {
@@ -71,7 +38,7 @@ export async function onRequestPost({ request, env }) {
   // ── Load course ──────────────────────────────────────────────────────
   const cr = await fetch(
     `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await cr.json();
   if (!courses.length) {
@@ -84,7 +51,7 @@ export async function onRequestPost({ request, env }) {
   // ── Load teacher ─────────────────────────────────────────────────────
   const tr = await fetch(
     `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const teachers = await tr.json();
   if (!teachers.length || !teachers[0].refresh_token) {
@@ -131,8 +98,7 @@ export async function onRequestPost({ request, env }) {
   const cancelledEvents = (calData.items || []).filter(e =>
     e.summary?.startsWith(course.course_code) && e.status === 'cancelled'
   );
-  const activeEventIds    = new Set(activeEvents.map(e => e.id));
-  const cancelledEventIds = new Set(cancelledEvents.map(e => e.id));
+  const activeEventIds = new Set(activeEvents.map(e => e.id));
 
   // ── Upsert active session records ────────────────────────────────────
   const now = new Date();
@@ -146,18 +112,18 @@ export async function onRequestPost({ request, env }) {
 
     const existRes = await fetch(
       `${SUPABASE_URL}/rest/v1/sessions?calendar_event_id=eq.${event.id}&select=id,status`,
-      { headers: H(SUPABASE_SERVICE_KEY) }
+      { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
     );
     const existing = await existRes.json();
 
     if (existing.length) {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${existing[0].id}`, {
-        method: 'PATCH', headers: H(SUPABASE_SERVICE_KEY),
+        method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ scheduled_at: scheduledAt, status }),
       });
     } else {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-        method: 'POST', headers: H(SUPABASE_SERVICE_KEY),
+        method: 'POST', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({
           course_id:         course.id,
           teacher_id:        course.teacher_id,
@@ -176,20 +142,20 @@ export async function onRequestPost({ request, env }) {
   // This covers both explicitly cancelled and silently deleted events.
   const allDbRes = await fetch(
     `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course.id}&select=id,calendar_event_id`,
-    { headers: H(SUPABASE_SERVICE_KEY) }
+    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const allDbSessions = await allDbRes.json();
   for (const sess of allDbSessions) {
     if (!sess.calendar_event_id || !activeEventIds.has(sess.calendar_event_id)) {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${sess.id}`, {
-        method: 'DELETE', headers: H(SUPABASE_SERVICE_KEY),
+        method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
       });
     }
   }
 
   // ── Update sessions_completed count on course ─────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course.id}`, {
-    method: 'PATCH', headers: H(SUPABASE_SERVICE_KEY),
+    method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
     body: JSON.stringify({ sessions_completed: completedCount }),
   });
 

@@ -8,26 +8,19 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-export async function onRequestGet({ request, env }) {
-  const SUPABASE_URL         = env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
-  const ADMIN_PASSWORD       = env.ADMIN_PASSWORD;
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
 
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+export async function onRequestGet({ request, env }) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   try {
     // Select only non-sensitive fields — never return tokens to the client
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/teachers?active=eq.true&select=id,name,email,google_account,token_expires_at,refresh_token`,
-      { headers: {
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      }},
+      { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
     );
 
     if (!res.ok) {

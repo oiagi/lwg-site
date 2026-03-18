@@ -7,6 +7,8 @@
 //   SUPABASE_SERVICE_KEY — service_role key
 //   RESEND_API_KEY       — Resend API key
 
+import { supabaseHeaders } from './_utils.js';
+
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
 
@@ -225,9 +227,7 @@ function buildNotificationEmail(booking, contact, enquiryId) {
 
 // ── Main handler (Cloudflare Pages Functions format) ─────────────────────
 export async function onRequestPost({ request, env }) {
-  const SUPABASE_URL         = env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
-  const RESEND_API_KEY       = env.RESEND_API_KEY;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
 
   // Parse request body
   let booking, contact;
@@ -249,13 +249,8 @@ export async function onRequestPost({ request, env }) {
   let enquiryId;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/enquiries`, {
-      method: 'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Prefer':        'return=representation',
-      },
+      method:  'POST',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
       body: JSON.stringify({
         service:      booking.service         || null,
         lead_first:   contact.lead.firstName  || null,
