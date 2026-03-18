@@ -8,15 +8,13 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-export async function onRequestPatch({ request, env }) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD } = env;
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
 
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+export async function onRequestPatch({ request, env }) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   let student_id, progress_notes, current_level;
   try {
@@ -48,13 +46,8 @@ export async function onRequestPatch({ request, env }) {
       `${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}`,
       {
         method:  'PATCH',
-        headers: {
-          'Content-Type':  'application/json',
-          'apikey':        SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Prefer':        'return=representation',
-        },
-        body: JSON.stringify(patch),
+        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+        body:    JSON.stringify(patch),
       }
     );
 

@@ -10,13 +10,12 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
+import { supabaseHeaders } from './_utils.js';
+
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const H = {
-    'apikey':        SUPABASE_SERVICE_KEY,
-    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-  };
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const url   = new URL(request.url);
   const token = url.searchParams.get('token');

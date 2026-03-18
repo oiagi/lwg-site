@@ -5,22 +5,15 @@
 // Returns enquiries from Supabase ordered newest first.
 //
 // Environment variables:
-//   SUPABASE_URL         — https://eedxxgbsxnuxarwiommo.supabase.co
-//   SUPABASE_SERVICE_KEY — service_role key
-//   ADMIN_PASSWORD       — password protecting the admin dashboard
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
+
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
 
 export async function onRequestGet({ request, env }) {
-  const SUPABASE_URL         = env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
-  const ADMIN_PASSWORD       = env.ADMIN_PASSWORD;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  // ── Password check ───────────────────────────────────────────────────
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   // ── Parse query params ───────────────────────────────────────────────
   const url    = new URL(request.url);
@@ -32,12 +25,7 @@ export async function onRequestGet({ request, env }) {
 
   // ── Fetch from Supabase ──────────────────────────────────────────────
   try {
-    const res = await fetch(supabaseUrl, {
-      headers: {
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      },
-    });
+    const res = await fetch(supabaseUrl, { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) });
 
     if (!res.ok) {
       const err = await res.text();

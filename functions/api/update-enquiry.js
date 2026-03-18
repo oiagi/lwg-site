@@ -6,22 +6,15 @@
 // Updates the status and/or internal notes on an enquiry record.
 //
 // Environment variables:
-//   SUPABASE_URL         — https://eedxxgbsxnuxarwiommo.supabase.co
-//   SUPABASE_SERVICE_KEY — service_role key
-//   ADMIN_PASSWORD       — password protecting the admin dashboard
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
+
+import { supabaseHeaders, requireAdminAuth } from './_utils.js';
 
 export async function onRequestPatch({ request, env }) {
-  const SUPABASE_URL         = env.SUPABASE_URL;
-  const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
-  const ADMIN_PASSWORD       = env.ADMIN_PASSWORD;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  // ── Password check ───────────────────────────────────────────────────
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const authErr = requireAdminAuth(request, env);
+  if (authErr) return authErr;
 
   // ── Parse body ───────────────────────────────────────────────────────
   let id, status, notes;
@@ -53,14 +46,9 @@ export async function onRequestPatch({ request, env }) {
   // ── Update in Supabase ───────────────────────────────────────────────
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type':  'application/json',
-        'apikey':        SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Prefer':        'return=representation',
-      },
-      body: JSON.stringify(patch),
+      method:  'PATCH',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+      body:    JSON.stringify(patch),
     });
 
     if (!res.ok) {
