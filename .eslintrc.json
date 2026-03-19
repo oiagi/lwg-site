@@ -13,5 +13,15 @@
     "eqeqeq": ["error", "always"],
     "no-var": "error",
     "prefer-const": "warn"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["functions/api/**/*.js"],
+      "env": {
+        "browser": false,
+        "node": true,
+        "es2022": true
+      }
+    }
+  ]
 }
