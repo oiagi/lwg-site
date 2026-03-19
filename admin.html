@@ -346,6 +346,58 @@
     html[data-device="mobile"] .enq-date { display: none; }
     html[data-device="mobile"] .enquiry-detail.open { grid-template-columns: 1fr; }
     html[data-device="mobile"] .detail-key { min-width: 80px; }
+
+    /* ── Company rows ──────────────────────────────────────────────── */
+    .company-row {
+      border-top: 1px solid #ccc; padding: 1rem 0; cursor: pointer;
+    }
+    .company-row:last-child { border-bottom: 1px solid #ccc; }
+    .company-row:hover { background: rgba(255,255,255,0.5); }
+    .company-summary {
+      display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    }
+    .company-name {
+      font-size: 0.95rem; color: #1a1a1a; min-width: 160px;
+    }
+    .company-contact {
+      font-size: 0.82rem; color: #555; flex: 1;
+    }
+    .company-stats {
+      font-size: 0.78rem; color: #888; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .company-detail {
+      display: none; padding: 1rem 0 0.5rem; border-top: 1px solid #eee; margin-top: 0.8rem;
+    }
+    .company-detail.open { display: block; }
+
+    /* ── Attendance checkbox row ────────────────────────────────────── */
+    .att-row {
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.6rem 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .att-row label {
+      font-size: 0.85rem; color: #1a1a1a; cursor: pointer;
+      display: flex; align-items: center; gap: 0.5rem;
+      text-transform: none; letter-spacing: 0;
+    }
+    .att-row input[type="checkbox"] {
+      width: 16px; height: 16px; cursor: pointer; accent-color: #27ae60;
+    }
+    .att-status {
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-left: auto;
+    }
+    .att-status.present { color: #27ae60; }
+    .att-status.absent  { color: #c0392b; }
+
+    /* ── Recurring / attendance action buttons ──────────────────────── */
+    .action-btn {
+      font-family: inherit; font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; border: 1px solid #2980b9; background: transparent;
+      color: #2980b9; padding: 0.2rem 0.6rem; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .action-btn:hover { background: #2980b9; color: #fff; }
   </style>
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
@@ -373,6 +425,7 @@
     <div class="main-tabs">
       <button class="main-tab active" id="tab-enquiries" onclick="switchTab('enquiries')">enquiries</button>
       <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
+      <button class="main-tab" id="tab-companies" onclick="switchTab('companies')">companies</button>
     </div>
 
     <!-- ── Enquiries panel ───────────────────────────────────────────── -->
@@ -467,6 +520,78 @@
       </div>
       <div id="course-list">
         <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Companies panel ───────────────────────────────────────────── -->
+    <div id="panel-companies" style="display:none;">
+      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-company-status="true" onclick="filterCompanies('true')">active</button>
+          <button class="filter-btn" data-company-status="all" onclick="filterCompanies('all')">all</button>
+        </div>
+        <button class="new-course-btn" onclick="openCompanyModal()">+ new company</button>
+      </div>
+      <div id="company-list">
+        <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Company modal ─────────────────────────────────────────────── -->
+    <div class="modal-overlay" id="company-modal">
+      <div class="modal">
+        <h2 id="company-modal-title">new company</h2>
+        <input type="hidden" id="cm-id" value="">
+        <div class="modal-field"><label>Company name *</label><input type="text" id="cm-name" placeholder="e.g. UBS AG"></div>
+        <div class="modal-field"><label>Contact person</label><input type="text" id="cm-contact-name" placeholder="Full name"></div>
+        <div class="modal-field"><label>Contact email</label><input type="email" id="cm-contact-email" placeholder="hr@company.com"></div>
+        <div class="modal-field"><label>Contact phone</label><input type="tel" id="cm-contact-phone" placeholder="+41…"></div>
+        <div class="modal-field"><label>Billing address</label><input type="text" id="cm-billing-address" placeholder="Street, PLZ, City"></div>
+        <div class="modal-field"><label>Billing email</label><input type="email" id="cm-billing-email" placeholder="billing@company.com"></div>
+        <div class="modal-field"><label>VAT number</label><input type="text" id="cm-vat" placeholder="CHE-…"></div>
+        <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="cm-rate" step="0.01" placeholder="e.g. 180"></div>
+        <div class="modal-field"><label>Notes</label><input type="text" id="cm-notes" placeholder="Internal notes"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeCompanyModal()">cancel</button>
+          <button class="modal-submit" id="cm-submit" onclick="submitCompany()">save company</button>
+        </div>
+        <p class="modal-msg" id="cm-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Recurring sessions modal ──────────────────────────────────── -->
+    <div class="modal-overlay" id="recurring-modal">
+      <div class="modal">
+        <h2>schedule recurring sessions</h2>
+        <input type="hidden" id="rs-course-id" value="">
+        <div class="modal-field"><label>Start date</label><input type="date" id="rs-start-date"></div>
+        <div class="modal-field"><label>Time</label><input type="time" id="rs-time" value="09:00"></div>
+        <div class="modal-field"><label>Number of sessions</label><input type="number" id="rs-count" min="1" max="52" value="20" placeholder="e.g. 20"></div>
+        <div class="modal-field"><label>Duration (minutes)</label><input type="number" id="rs-duration" min="15" max="180" value="50"></div>
+        <div class="modal-field">
+          <label>Skip dates <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(comma-separated, e.g. 2025-12-25, 2026-01-01)</span></label>
+          <input type="text" id="rs-skip" placeholder="YYYY-MM-DD, YYYY-MM-DD, …">
+        </div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeRecurringModal()">cancel</button>
+          <button class="modal-submit" id="rs-submit" onclick="submitRecurringSessions()">create sessions</button>
+        </div>
+        <p class="modal-msg" id="rs-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Attendance modal ──────────────────────────────────────────── -->
+    <div class="modal-overlay" id="attendance-modal">
+      <div class="modal">
+        <h2 id="att-title">mark attendance</h2>
+        <input type="hidden" id="att-session-id" value="">
+        <input type="hidden" id="att-course-id" value="">
+        <div id="att-students"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeAttendanceModal()">cancel</button>
+          <button class="modal-submit" id="att-submit" onclick="submitAttendance()">save attendance</button>
+        </div>
+        <p class="modal-msg" id="att-msg"></p>
       </div>
     </div>
 
@@ -721,9 +846,12 @@
       currentTab = tab;
       document.getElementById('panel-enquiries').style.display = tab === 'enquiries' ? 'block' : 'none';
       document.getElementById('panel-courses').style.display   = tab === 'courses'   ? 'block' : 'none';
+      document.getElementById('panel-companies').style.display  = tab === 'companies' ? 'block' : 'none';
       document.getElementById('tab-enquiries').classList.toggle('active', tab === 'enquiries');
       document.getElementById('tab-courses').classList.toggle('active',   tab === 'courses');
+      document.getElementById('tab-companies').classList.toggle('active',  tab === 'companies');
       if (tab === 'courses') loadCourses(currentCourseFilter);
+      if (tab === 'companies') loadCompanies(currentCompanyFilter);
     }
 
     /* ── Courses ─────────────────────────────────────────────────────── */
@@ -805,6 +933,7 @@
             <div class="session-status-dot ${s.status}"></div>
             <div class="session-date">${fmtDate(s.scheduled_at)}</div>
             <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
+            <button class="action-btn" onclick="event.stopPropagation();openAttendanceModal('${s.id}','${c.id}','${fmtDate(s.scheduled_at)}')">attendance</button>
             ${s.status === 'scheduled' ? `
               <button class="log-btn" onclick="logSession('${s.id}', '${c.id}')">mark completed</button>
               <button class="cancel-btn" onclick="cancelSession('${s.id}', '${c.id}')">cancel</button>
@@ -839,12 +968,14 @@
         `).join('') || '<p style="font-size:0.78rem;color:#aaa;">No student records yet.</p>';
 
         const noSessions = !c.sessions?.length
-          ? `<div style="display:flex;align-items:center;gap:1rem;">
+          ? `<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
                <button class="save-btn" onclick="syncCalendar('${c.id}')">sync calendar</button>
                <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
+               <button class="action-btn" onclick="openRecurringModal('${c.id}')">+ recurring sessions</button>
              </div>`
-          : `<div style="text-align:right;margin-bottom:0.4rem;">
+          : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
+               <button class="action-btn" onclick="openRecurringModal('${c.id}')">+ recurring</button>
                <button class="save-btn" style="font-size:0.65rem;" onclick="syncCalendar('${c.id}')">↻ sync</button>
                <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
              </div>`;
@@ -1238,6 +1369,376 @@
         history.replaceState({}, '', '/admin.html');
       }
     })();
+
+    /* ════════════════════════════════════════════════════════════════════
+       COMPANIES
+       ════════════════════════════════════════════════════════════════════ */
+    let currentCompanyFilter = 'true';
+
+    function filterCompanies(active) {
+      currentCompanyFilter = active;
+      document.querySelectorAll('[data-company-status]').forEach(b => {
+        b.classList.toggle('active', b.dataset.companyStatus === active);
+      });
+      loadCompanies(active);
+    }
+
+    async function loadCompanies(active = 'true') {
+      const list = document.getElementById('company-list');
+      if (!list.querySelector('.company-row')) {
+        list.innerHTML = '<div class="loading-state">loading…</div>';
+      }
+      try {
+        const qs = active !== 'all' ? `?active=${active}` : '';
+        const res = await fetch('/api/get-companies' + qs, {
+          headers: { 'x-admin-password': adminPassword },
+        });
+        if (!res.ok) throw new Error();
+        const companies = await res.json();
+        renderCompanies(companies);
+      } catch {
+        list.innerHTML = '<div class="loading-state">Could not load companies.</div>';
+      }
+    }
+
+    function renderCompanies(companies) {
+      const list = document.getElementById('company-list');
+      if (!companies.length) {
+        list.innerHTML = '<div class="empty-state">no companies found</div>';
+        return;
+      }
+
+      list.innerHTML = companies.map(c => {
+        const stats = [
+          c.active_courses_count ? c.active_courses_count + ' course' + (c.active_courses_count !== 1 ? 's' : '') : null,
+          c.active_students_count ? c.active_students_count + ' student' + (c.active_students_count !== 1 ? 's' : '') : null,
+        ].filter(Boolean).join(' · ') || 'no active courses';
+
+        return `
+        <div class="company-row" id="company-${c.id}">
+          <div class="company-summary" onclick="toggleCompany('${c.id}')">
+            <span class="company-name">${c.name}</span>
+            <span class="company-contact">${c.contact_name || '—'}</span>
+            <span class="company-stats">${stats}</span>
+          </div>
+          <div class="company-detail" id="company-detail-${c.id}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+              <div>
+                <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
+                <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+                  ${c.contact_name || '—'}<br>
+                  ${c.contact_email ? '<span style="color:#aaa;">' + c.contact_email + '</span><br>' : ''}
+                  ${c.contact_phone ? '<span style="color:#aaa;">' + c.contact_phone + '</span>' : ''}
+                </p>
+              </div>
+              <div>
+                <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
+                <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+                  ${c.billing_address || '—'}<br>
+                  ${c.billing_email ? '<span style="color:#aaa;">' + c.billing_email + '</span><br>' : ''}
+                  ${c.vat_number ? 'VAT: ' + c.vat_number + '<br>' : ''}
+                  ${c.rate_per_session ? '<strong>' + c.rate_per_session + ' ' + (c.currency || 'CHF') + '</strong> per session' : ''}
+                </p>
+              </div>
+            </div>
+            ${c.notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + c.notes + '</p>' : ''}
+            <div style="display:flex;gap:0.5rem;">
+              <button class="save-btn" onclick="event.stopPropagation();editCompany('${c.id}')">edit</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleCompany(id) {
+      document.getElementById('company-detail-' + id).classList.toggle('open');
+    }
+
+    /* ── Company modal ───────────────────────────────────────────────── */
+    function openCompanyModal(existingData) {
+      const fields = ['cm-id','cm-name','cm-contact-name','cm-contact-email','cm-contact-phone',
+                       'cm-billing-address','cm-billing-email','cm-vat','cm-rate','cm-notes'];
+      fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('company-modal-title').textContent = 'new company';
+      const btn = document.getElementById('cm-submit');
+      btn.textContent = 'save company'; btn.disabled = false;
+      const msg = document.getElementById('cm-msg');
+      msg.style.display = 'none'; msg.textContent = '';
+
+      if (existingData) {
+        document.getElementById('company-modal-title').textContent = 'edit company';
+        document.getElementById('cm-id').value             = existingData.id || '';
+        document.getElementById('cm-name').value           = existingData.name || '';
+        document.getElementById('cm-contact-name').value   = existingData.contact_name || '';
+        document.getElementById('cm-contact-email').value  = existingData.contact_email || '';
+        document.getElementById('cm-contact-phone').value  = existingData.contact_phone || '';
+        document.getElementById('cm-billing-address').value= existingData.billing_address || '';
+        document.getElementById('cm-billing-email').value  = existingData.billing_email || '';
+        document.getElementById('cm-vat').value            = existingData.vat_number || '';
+        document.getElementById('cm-rate').value           = existingData.rate_per_session || '';
+        document.getElementById('cm-notes').value          = existingData.notes || '';
+      }
+      document.getElementById('company-modal').classList.add('open');
+    }
+
+    function closeCompanyModal() {
+      document.getElementById('company-modal').classList.remove('open');
+    }
+
+    async function editCompany(companyId) {
+      try {
+        const res = await fetch('/api/get-company-detail?id=' + companyId, {
+          headers: { 'x-admin-password': adminPassword },
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        openCompanyModal(data);
+      } catch {
+        alert('Could not load company details.');
+      }
+    }
+
+    async function submitCompany() {
+      const btn   = document.getElementById('cm-submit');
+      const msgEl = document.getElementById('cm-msg');
+      msgEl.style.display = 'none';
+
+      const name = document.getElementById('cm-name').value.trim();
+      if (!name) {
+        msgEl.textContent = 'Company name is required.';
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        return;
+      }
+
+      btn.textContent = 'saving…'; btn.disabled = true;
+
+      const body = {
+        name,
+        contact_name:    document.getElementById('cm-contact-name').value.trim() || null,
+        contact_email:   document.getElementById('cm-contact-email').value.trim() || null,
+        contact_phone:   document.getElementById('cm-contact-phone').value.trim() || null,
+        billing_address: document.getElementById('cm-billing-address').value.trim() || null,
+        billing_email:   document.getElementById('cm-billing-email').value.trim() || null,
+        vat_number:      document.getElementById('cm-vat').value.trim() || null,
+        rate_per_session:document.getElementById('cm-rate').value ? parseFloat(document.getElementById('cm-rate').value) : null,
+        notes:           document.getElementById('cm-notes').value.trim() || null,
+      };
+      const id = document.getElementById('cm-id').value;
+      if (id) body.id = id;
+
+      try {
+        const res = await fetch('/api/save-company', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify(body),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+        msgEl.textContent = id ? 'Company updated.' : 'Company created.';
+        msgEl.className = 'modal-msg'; msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+        btn.textContent = 'saved ✓';
+
+        setTimeout(() => {
+          closeCompanyModal();
+          loadCompanies(currentCompanyFilter);
+        }, 1200);
+      } catch (err) {
+        msgEl.textContent = 'Error: ' + err.message;
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        btn.textContent = 'save company'; btn.disabled = false;
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       RECURRING SESSIONS
+       ════════════════════════════════════════════════════════════════════ */
+    function openRecurringModal(courseId) {
+      document.getElementById('rs-course-id').value = courseId;
+      document.getElementById('rs-start-date').value = '';
+      document.getElementById('rs-time').value = '09:00';
+      document.getElementById('rs-count').value = '20';
+      document.getElementById('rs-duration').value = '50';
+      document.getElementById('rs-skip').value = '';
+      const msg = document.getElementById('rs-msg');
+      msg.style.display = 'none'; msg.textContent = '';
+      const btn = document.getElementById('rs-submit');
+      btn.textContent = 'create sessions'; btn.disabled = false;
+      document.getElementById('recurring-modal').classList.add('open');
+    }
+
+    function closeRecurringModal() {
+      document.getElementById('recurring-modal').classList.remove('open');
+    }
+
+    async function submitRecurringSessions() {
+      const btn   = document.getElementById('rs-submit');
+      const msgEl = document.getElementById('rs-msg');
+      msgEl.style.display = 'none';
+
+      const courseId  = document.getElementById('rs-course-id').value;
+      const startDate = document.getElementById('rs-start-date').value;
+      const time      = document.getElementById('rs-time').value;
+      const count     = parseInt(document.getElementById('rs-count').value);
+      const duration  = parseInt(document.getElementById('rs-duration').value) || 50;
+      const skipRaw   = document.getElementById('rs-skip').value.trim();
+      const skipDates = skipRaw ? skipRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      if (!startDate || !time || !count) {
+        msgEl.textContent = 'Please fill in start date, time, and number of sessions.';
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        return;
+      }
+
+      btn.textContent = 'creating…'; btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/create-recurring-sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify({
+            course_id: courseId,
+            start_date: startDate,
+            time,
+            count,
+            duration_minutes: duration,
+            skip_dates: skipDates,
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+        const errCount = result.errors ? result.errors.length : 0;
+        msgEl.textContent = `Created ${result.sessions_created} sessions.` +
+          (errCount ? ` ${errCount} error(s).` : '');
+        msgEl.className = errCount ? 'modal-msg err' : 'modal-msg';
+        msgEl.style.cssText = `display:block;color:${errCount ? '#e67e22' : '#27ae60'};font-size:0.75rem;margin-top:0.8rem;`;
+        btn.textContent = 'done ✓';
+
+        setTimeout(() => {
+          closeRecurringModal();
+          loadCourses(currentCourseFilter);
+        }, 1500);
+      } catch (err) {
+        msgEl.textContent = 'Error: ' + err.message;
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        btn.textContent = 'create sessions'; btn.disabled = false;
+      }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       ATTENDANCE
+       ════════════════════════════════════════════════════════════════════ */
+    let attendanceStudents = []; /* cached student list for current modal */
+
+    async function openAttendanceModal(sessionId, courseId, dateLabel) {
+      document.getElementById('att-session-id').value = sessionId;
+      document.getElementById('att-course-id').value = courseId;
+      document.getElementById('att-title').textContent = 'attendance — ' + (dateLabel || '');
+      const container = document.getElementById('att-students');
+      container.innerHTML = '<p class="loading-state" style="padding:1rem 0;">loading students…</p>';
+      const msg = document.getElementById('att-msg');
+      msg.style.display = 'none'; msg.textContent = '';
+      const btn = document.getElementById('att-submit');
+      btn.textContent = 'save attendance'; btn.disabled = false;
+      document.getElementById('attendance-modal').classList.add('open');
+
+      /* Load enrolled students for this course */
+      try {
+        const coursesRes = await fetch('/api/get-courses?status=all', {
+          headers: { 'x-admin-password': adminPassword },
+        });
+        const courses = await coursesRes.json();
+        const course = courses.find(c => c.id === courseId);
+        attendanceStudents = course?.students || [];
+
+        /* Load existing attendance for this session */
+        let existingAttendance = [];
+        try {
+          const attRes = await fetch('/api/get-attendance?session_id=' + sessionId, {
+            headers: { 'x-admin-password': adminPassword },
+          });
+          if (attRes.ok) existingAttendance = await attRes.json();
+        } catch { /* ok, no existing attendance */ }
+
+        const attMap = {};
+        existingAttendance.forEach(a => { attMap[a.student_id] = a; });
+
+        if (!attendanceStudents.length) {
+          container.innerHTML = '<p style="font-size:0.78rem;color:#aaa;padding:1rem 0;">No students enrolled in this course.</p>';
+          return;
+        }
+
+        container.innerHTML = attendanceStudents.map(s => {
+          const name    = [s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—';
+          const existing = attMap[s.id];
+          const checked  = existing ? existing.present : true; /* default to present */
+          const statusLabel = existing
+            ? (existing.present ? '<span class="att-status present">present</span>' : '<span class="att-status absent">absent</span>')
+            : '';
+
+          return `
+          <div class="att-row">
+            <label>
+              <input type="checkbox" data-student-id="${s.id}" ${checked ? 'checked' : ''}>
+              ${name}
+            </label>
+            ${statusLabel}
+          </div>`;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<p style="font-size:0.78rem;color:#c0392b;">Could not load students.</p>';
+      }
+    }
+
+    function closeAttendanceModal() {
+      document.getElementById('attendance-modal').classList.remove('open');
+    }
+
+    async function submitAttendance() {
+      const btn       = document.getElementById('att-submit');
+      const msgEl     = document.getElementById('att-msg');
+      const sessionId = document.getElementById('att-session-id').value;
+      msgEl.style.display = 'none';
+
+      const records = [];
+      document.querySelectorAll('#att-students input[type="checkbox"]').forEach(cb => {
+        records.push({
+          student_id: cb.dataset.studentId,
+          present:    cb.checked,
+        });
+      });
+
+      if (!records.length) {
+        msgEl.textContent = 'No students to record attendance for.';
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        return;
+      }
+
+      btn.textContent = 'saving…'; btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/save-attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify({ session_id: sessionId, records }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+        msgEl.textContent = `Saved attendance for ${result.saved_count} student(s).`;
+        msgEl.className = 'modal-msg';
+        msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+        btn.textContent = 'saved ✓';
+
+        setTimeout(() => closeAttendanceModal(), 1200);
+      } catch (err) {
+        msgEl.textContent = 'Error: ' + err.message;
+        msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+        btn.textContent = 'save attendance'; btn.disabled = false;
+      }
+    }
 
     /* ── Confirm booking & create calendar event ─────────────────────── */
     async function confirmBooking(enquiryId) {
