@@ -11,7 +11,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './api/_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
