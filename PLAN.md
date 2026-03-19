@@ -5,59 +5,61 @@ This is a Cloudflare Pages site with vanilla HTML/JS frontend and 15 serverless 
 
 ---
 
-## 1. Create a shared utility module (`functions/api/_utils.js`)
+## ✅ COMPLETED: Frontend CSS/Nav/JS Deduplication
 
-Extract repeated code into a single shared file imported by all API functions:
+### Problem
+All 8 HTML pages duplicated ~120 lines of nav CSS, ~15 lines of nav HTML (including a ~3KB base64 PNG), ~70 lines of nav JavaScript, and ~25 lines of device detection script. Total: ~1,870 duplicated lines across the site.
 
-- **`getValidAccessToken(env, teacherId)`** — Duplicated identically across 4 files:
-  - `confirm-booking.js`, `sync-calendar.js`, `cancel-session.js`, `delete-course.js`
+### Solution — 4 new shared files
 
-- **`supabaseHeaders(key)`** — Header helper duplicated across 7+ files with inconsistent naming (`H`, `HEADERS`, inline). Standardize to one exported function.
+1. **`shared.css`** (151 lines) — Base reset, nav styles, overlay, ripple animation, `fadeUp`/`fadeIn` keyframes, and all device-aware nav overrides (mobile/tablet/desktop).
 
-- **`requireAdminAuth(request, env)`** — Password check pattern repeated in 12+ endpoints. Extract to one function that returns a `Response` on failure or `null` on success.
+2. **`device-detect.js`** (33 lines) — Synchronous device detection script (phone/tablet/desktop). Runs in `<head>` before first paint. Sets `data-device` and `data-touch` attributes on `<html>`.
 
-- **`jsonResponse(data, status)`** / **`errorResponse(message, status)`** — Standardize the error/success response construction repeated across all files.
+3. **`nav.js`** (87 lines) — Injects nav HTML (overlay, cloud icon, menu links) into `<body>` and handles all nav behavior: scroll-hide, cloud click toggle, ripple animation, document click-to-close, touch handler. Exposes `window.__navToggle()` for pages that need programmatic nav control (e.g. logo click on index page).
 
----
+4. **`cloud.png`** (21KB) — The cloud menu icon, extracted from the ~3KB base64 string that was duplicated in every HTML file.
 
-## 2. Update all API files to use the shared utilities
+### Bugs fixed
+- Duplicate `<div class="nav-overlay" id="nav-overlay"></div>` in 6 of 8 pages (two overlay divs with the same ID).
 
-Replace the duplicated code in each file with imports from `_utils.js`:
+### Results
 
-- `confirm-booking.js` — use shared `getValidAccessToken`, `supabaseHeaders`, `requireAdminAuth`
-- `sync-calendar.js` — use shared `getValidAccessToken`, `supabaseHeaders`, `requireAdminAuth`
-- `cancel-session.js` — use shared `getValidAccessToken`, `supabaseHeaders`, `requireAdminAuth`
-- `delete-course.js` — use shared `getValidAccessToken`, `supabaseHeaders`, `requireAdminAuth`
-- `get-courses.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `get-enquiries.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `get-teachers.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `log-session.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `update-student.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `update-enquiry.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `delete-enquiry.js` — use shared `supabaseHeaders`, `requireAdminAuth`
-- `student-sessions.js` — use shared `supabaseHeaders`
-- `submit-enquiry.js` — use shared `supabaseHeaders`
+| File               | Before | After | Saved |
+|--------------------|--------|-------|-------|
+| index.html         |    441 |   143 |   298 |
+| info.html          |    378 |   188 |   190 |
+| booking.html       |  1,059 |   783 |   276 |
+| contact.html       |    465 |   185 |   280 |
+| contact-details.html |  879 |   669 |   210 |
+| sessions.html      |    549 |   273 |   276 |
+| thankyou.html      |    293 |   123 |   170 |
+| admin.html         |  1,476 | 1,305 |   171 |
+| **TOTAL**          |**5,540**|**3,669**|**1,871**|
 
----
-
-## 3. Fix bugs
-
-- **`submit-enquiry.js`**: `enquiry_id` referenced but not defined in that scope — fix the variable reference.
-- **`confirm-booking.js`**: Same `enquiry_id` scope bug.
-
----
-
-## 4. Standardize environment variable extraction
-
-All files should use the same destructuring pattern:
-```js
-const { SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD, ... } = env;
+Each page now includes 3 lines instead of ~230 lines of duplicated code:
+```html
+<link rel="stylesheet" href="shared.css">
+<script src="device-detect.js"></script>  <!-- in <head> -->
+<script src="nav.js"></script>            <!-- in <body> -->
 ```
 
 ---
 
-## What is NOT in scope
-- HTML/CSS cleanup (large files, low risk/reward)
-- Adding tests (no existing test infrastructure)
-- Adding rate limiting or request logging
-- TypeScript migration
+## ✅ COMPLETED: Backend API shared utilities (`functions/api/_utils.js`)
+
+Extracted repeated code into a single shared file imported by all API functions:
+- `supabaseHeaders(key)` — Header helper
+- `requireAdminAuth(request, env)` — Password check
+- `getValidAccessToken(teacher, env)` — Google OAuth token refresh
+
+All API files already import from `_utils.js`.
+
+---
+
+## Remaining opportunities (not in scope for this cleanup)
+
+- **Standardize response helpers** — Add `jsonResponse(data, status)` / `errorResponse(message, status)` to `_utils.js` to replace the repeated `new Response(JSON.stringify(...))` pattern across all API files.
+- **Add TypeScript** — Would catch bugs at build time.
+- **Add tests** — No existing test infrastructure.
+- **Rate limiting / request logging** — Not currently implemented.
