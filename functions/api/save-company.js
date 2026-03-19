@@ -10,7 +10,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './api/_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -22,16 +22,10 @@ export async function onRequestPost({ request, env }) {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!body.name) {
-    return new Response(JSON.stringify({ error: 'Company name is required' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!body.name) return errorResponse('Company name is required', 400);
 
   const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' };
 
@@ -63,21 +57,14 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error('Company save error:', err);
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Company save error:', await res.text());
+      return errorResponse('Database error');
     }
 
     const rows = await res.json();
-    return new Response(JSON.stringify(rows[0] || {}), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(rows[0] || {});
   } catch (err) {
     console.error('Error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }

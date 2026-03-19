@@ -10,7 +10,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import { supabaseHeaders } from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -20,11 +20,7 @@ export async function onRequestGet({ request, env }) {
   const url   = new URL(request.url);
   const token = url.searchParams.get('token');
 
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'Missing token' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!token) return errorResponse('Missing token', 400);
 
   // ── Find student by access token ─────────────────────────────────────
   const studentRes = await fetch(
@@ -32,11 +28,7 @@ export async function onRequestGet({ request, env }) {
     { headers: H }
   );
   const students = await studentRes.json();
-  if (!students.length) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!students.length) return errorResponse('Invalid token', 404);
   const student = students[0];
 
   // ── Load enrolments → courses → sessions ─────────────────────────────
@@ -48,10 +40,10 @@ export async function onRequestGet({ request, env }) {
   const courseIds  = enrolments.map(e => e.course_id);
 
   if (!courseIds.length) {
-    return new Response(JSON.stringify({
+    return jsonResponse({
       student: { firstName: student.first_name, lastName: student.last_name, level: student.current_level },
       courses: [],
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
   }
 
   // ── Load courses ──────────────────────────────────────────────────────
@@ -72,12 +64,12 @@ export async function onRequestGet({ request, env }) {
     return { ...course, sessions };
   }));
 
-  return new Response(JSON.stringify({
+  return jsonResponse({
     student: {
       firstName: student.first_name,
       lastName:  student.last_name,
       level:     student.current_level,
     },
     courses: enriched,
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  });
 }

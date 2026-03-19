@@ -13,7 +13,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -25,16 +25,10 @@ export async function onRequestDelete({ request, env }) {
   try {
     ({ course_id } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!course_id) {
-    return new Response(JSON.stringify({ error: 'Missing course_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ───────────────────────────────────────────────────────
   const courseRes = await fetch(
@@ -42,11 +36,7 @@ export async function onRequestDelete({ request, env }) {
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await courseRes.json();
-  if (!courses.length) {
-    return new Response(JSON.stringify({ error: 'Course not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load sessions ─────────────────────────────────────────────────────
@@ -110,13 +100,7 @@ export async function onRequestDelete({ request, env }) {
     { method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
 
-  if (!deleteRes.ok) {
-    return new Response(JSON.stringify({ error: 'Could not delete course' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!deleteRes.ok) return errorResponse('Could not delete course');
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonResponse({ success: true });
 }

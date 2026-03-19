@@ -7,7 +7,7 @@
 //   SUPABASE_SERVICE_KEY — service_role key
 //   RESEND_API_KEY       — Resend API key
 
-import { supabaseHeaders } from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
@@ -234,15 +234,11 @@ export async function onRequestPost({ request, env }) {
   try {
     ({ booking, contact } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
   if (!booking || !contact || !contact.lead) {
-    return new Response(JSON.stringify({ error: 'Missing booking or contact data' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Missing booking or contact data', 400);
   }
 
   // ── 1. Write to Supabase ───────────────────────────────────────────────
@@ -264,20 +260,15 @@ export async function onRequestPost({ request, env }) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error('Supabase error:', err);
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Supabase error:', await res.text());
+      return errorResponse('Database error');
     }
 
     const rows = await res.json();
     enquiryId = rows[0]?.id || 'unknown';
   } catch (err) {
     console.error('Supabase fetch error:', err);
-    return new Response(JSON.stringify({ error: 'Database connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Database connection error');
   }
 
   // ── 2. Send emails via Resend ──────────────────────────────────────────
@@ -310,7 +301,5 @@ export async function onRequestPost({ request, env }) {
     sendEmail(NOTIFY_EMAIL, notificationEmail),
   ]);
 
-  return new Response(JSON.stringify({ success: true, id: enquiryId }), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonResponse({ success: true, id: enquiryId });
 }

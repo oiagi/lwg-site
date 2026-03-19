@@ -12,7 +12,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -24,16 +24,10 @@ export async function onRequestDelete({ request, env }) {
   try {
     ({ session_id } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!session_id) {
-    return new Response(JSON.stringify({ error: 'Missing session_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!session_id) return errorResponse('Missing session_id', 400);
 
   // ── Load session ──────────────────────────────────────────────────────
   const sessRes = await fetch(
@@ -41,11 +35,7 @@ export async function onRequestDelete({ request, env }) {
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const sessions = await sessRes.json();
-  if (!sessions.length) {
-    return new Response(JSON.stringify({ error: 'Session not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!sessions.length) return errorResponse('Session not found', 404);
   const session = sessions[0];
 
   // ── Load course ───────────────────────────────────────────────────────
@@ -54,11 +44,7 @@ export async function onRequestDelete({ request, env }) {
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await courseRes.json();
-  if (!courses.length) {
-    return new Response(JSON.stringify({ error: 'Course not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load teacher ──────────────────────────────────────────────────────
@@ -68,9 +54,7 @@ export async function onRequestDelete({ request, env }) {
   );
   const teachers = await teacherRes.json();
   if (!teachers.length || !teachers[0].refresh_token) {
-    return new Response(JSON.stringify({ error: 'Teacher not found or not authorised' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Teacher not found or not authorised', 400);
   }
   const teacher = teachers[0];
 
@@ -114,7 +98,5 @@ export async function onRequestDelete({ request, env }) {
     }
   }
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonResponse({ success: true });
 }
