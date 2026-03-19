@@ -24,100 +24,6 @@
     /* Background turns slightly deeper blue when nav is open */
     body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
 
-    /* ── Fade-up entry animation ────────────────────────────────── */
-
-    
-
-
-    /* ── Form container ─────────────────────────────────────────── */
-    .form-container {
-      width: min(90vw, 420px);
-      margin-top: 1rem;
-      animation: fadeUp 0.6s ease both;
-    }
-
-    /* ── Page heading ───────────────────────────────────────────── */
-    h1 {
-      font-size: 2rem;
-      font-weight: 300;
-      letter-spacing: 0.08em;
-      color: #1a1a1a;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
-    /* ── Form field wrapper ─────────────────────────────────────── */
-    .field { margin-bottom: 1.4rem; }
-
-    /* ── Field labels ───────────────────────────────────────────── */
-    label {
-      display: block;
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #555;
-      margin-bottom: 0.4rem;
-    }
-
-    /* ── Text inputs and textarea ───────────────────────────────── */
-    input, textarea, select {
-      width: 100%;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid #1a1a1a;
-      padding: 0.4rem 0;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 300;
-      color: #1a1a1a;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    textarea { resize: none; height: 80px; }
-    select { cursor: pointer; appearance: none; -webkit-appearance: none; }
-
-    /* ── Submit button ──────────────────────────────────────────── */
-    button[type="submit"] {
-      margin-top: 2rem;
-      display: block;
-      width: 100%;
-      background: #1a1a1a;
-      color: #d6eaf8;
-      border: none;
-      padding: 0.9rem;
-      font-family: inherit;
-      font-size: 0.8rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-    }
-    button[type="submit"]:hover { background: #ffffff; color: #1a1a1a; }
-
-    @media (max-width: 500px) {
-      h1 { font-size: 1.6rem; margin-bottom: 1.8rem; }
-      input, textarea, select { font-size: 0.9rem; }
-      button[type="submit"] { padding: 0.8rem; font-size: 0.75rem; }
-    }
-
-    html[data-device="mobile"] body      { padding: 4rem 1rem 3rem; }
-    html[data-device="mobile"] h1        { font-size: 1.55rem; margin-bottom: 1.6rem; }
-    html[data-device="mobile"] .form-container { width: 94vw; }
-    html[data-device="mobile"] input,
-    html[data-device="mobile"] select,
-    html[data-device="mobile"] textarea  { font-size: 16px; }
-    html[data-device="mobile"] button[type="submit"] { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
-    html[data-device="tablet"] body      { padding: 4.5rem 2rem 4rem; }
-    html[data-device="tablet"] h1        { font-size: 1.8rem; }
-    html[data-device="tablet"] .form-container { width: min(80vw, 460px); }
-    html[data-device="tablet"] input,
-    html[data-device="tablet"] select,
-    html[data-device="tablet"] textarea  { font-size: 16px; }
-    html[data-device="tablet"] button[type="submit"] { min-height: 48px; }
-    html[data-touch="true"] button[type="submit"]:hover  { background: #1a1a1a; color: #d6eaf8; }
-    html[data-touch="true"] button[type="submit"]:active { background: #ffffff; color: #1a1a1a; }
-  
-
     .container {
       width: min(92vw, 520px);
       margin-top: 1rem;
@@ -174,6 +80,7 @@
     .error-state { text-align: center; padding: 3rem 0; color: #888; font-size: 0.9rem; line-height: 1.8; }
     html[data-device="mobile"] .container { width: 96vw; }
     html[data-device="mobile"] h1 { font-size: 1.5rem; }
+    html[data-device="tablet"] h1 { font-size: 1.8rem; }
   </style>
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
