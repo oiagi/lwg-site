@@ -11,7 +11,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './api/_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -33,19 +33,9 @@ export async function onRequestGet({ request, env }) {
         `${SUPABASE_URL}/rest/v1/attendance?session_id=eq.${sessionId}&select=*`,
         { headers: H }
       );
-      if (!res.ok) {
-        return new Response(JSON.stringify({ error: 'Database error' }), {
-          status: 500, headers: { 'Content-Type': 'application/json' },
-        });
-      }
+      if (!res.ok) return errorResponse('Database error');
       const records = await res.json();
-
-      // Enrich with student names
-      const enriched = await enrichWithStudentNames(records, env);
-
-      return new Response(JSON.stringify(enriched), {
-        status: 200, headers: { 'Content-Type': 'application/json' },
-      });
+      return jsonResponse(await enrichWithStudentNames(records, env));
     }
 
     // ── By student ──────────────────────────────────────────────────────
@@ -54,14 +44,8 @@ export async function onRequestGet({ request, env }) {
         `${SUPABASE_URL}/rest/v1/attendance?student_id=eq.${studentId}&order=created_at.desc&select=*`,
         { headers: H }
       );
-      if (!res.ok) {
-        return new Response(JSON.stringify({ error: 'Database error' }), {
-          status: 500, headers: { 'Content-Type': 'application/json' },
-        });
-      }
-      return new Response(JSON.stringify(await res.json()), {
-        status: 200, headers: { 'Content-Type': 'application/json' },
-      });
+      if (!res.ok) return errorResponse('Database error');
+      return jsonResponse(await res.json());
     }
 
     // ── By course ───────────────────────────────────────────────────────
@@ -74,11 +58,7 @@ export async function onRequestGet({ request, env }) {
       const sessions = sessRes.ok ? await sessRes.json() : [];
       const sessionIds = sessions.map(s => s.id);
 
-      if (!sessionIds.length) {
-        return new Response(JSON.stringify([]), {
-          status: 200, headers: { 'Content-Type': 'application/json' },
-        });
-      }
+      if (!sessionIds.length) return jsonResponse([]);
 
       // Load attendance for all sessions
       const filter = sessionIds.map(id => `session_id.eq.${id}`).join(',');
@@ -91,10 +71,7 @@ export async function onRequestGet({ request, env }) {
       // Group by session
       const sessionMap = {};
       for (const sess of sessions) {
-        sessionMap[sess.id] = {
-          ...sess,
-          attendance: [],
-        };
+        sessionMap[sess.id] = { ...sess, attendance: [] };
       }
       for (const rec of attendance) {
         if (sessionMap[rec.session_id]) {
@@ -102,19 +79,13 @@ export async function onRequestGet({ request, env }) {
         }
       }
 
-      return new Response(JSON.stringify(Object.values(sessionMap)), {
-        status: 200, headers: { 'Content-Type': 'application/json' },
-      });
+      return jsonResponse(Object.values(sessionMap));
     }
 
-    return new Response(JSON.stringify({ error: 'Provide session_id, student_id, or course_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Provide session_id, student_id, or course_id', 400);
   } catch (err) {
     console.error('Error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }
 
@@ -136,8 +107,5 @@ async function enrichWithStudentNames(records, env) {
     nameMap[s.id] = { first_name: s.first_name, last_name: s.last_name, email: s.email };
   }
 
-  return records.map(r => ({
-    ...r,
-    student: nameMap[r.student_id] || null,
-  }));
+  return records.map(r => ({ ...r, student: nameMap[r.student_id] || null }));
 }

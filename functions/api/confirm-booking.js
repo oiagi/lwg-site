@@ -23,7 +23,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_CLIENT_ID,
 //   GOOGLE_CLIENT_SECRET, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
@@ -97,15 +97,11 @@ export async function onRequestPost({ request, env }) {
        duration_minutes = 50, course_code_override,
        booking_data, contact_data } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
   if (!teacher_id || !first_session_at) {
-    return new Response(JSON.stringify({ error: 'Missing teacher_id or first_session_at' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Missing teacher_id or first_session_at', 400);
   }
 
   // ── Load enquiry or use inline booking/contact data ─────────────────
@@ -118,9 +114,7 @@ export async function onRequestPost({ request, env }) {
       { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
     );
     const rows = await r.json();
-    if (!rows.length) return new Response(JSON.stringify({ error: 'Enquiry not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
+    if (!rows.length) return errorResponse('Enquiry not found', 404);
     booking = rows[0].booking_data || {};
     contact = rows[0].contact_data || {};
   }
@@ -131,14 +125,12 @@ export async function onRequestPost({ request, env }) {
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const teachers = await tr.json();
-  if (!teachers.length) return new Response(JSON.stringify({ error: 'Teacher not found' }), {
-    status: 404, headers: { 'Content-Type': 'application/json' },
-  });
+  if (!teachers.length) return errorResponse('Teacher not found', 404);
   const teacher = teachers[0];
 
-  if (!teacher.refresh_token) return new Response(JSON.stringify({
-    error: 'Teacher has not authorised Google Calendar. Please authenticate first.',
-  }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+  if (!teacher.refresh_token) {
+    return errorResponse('Teacher has not authorised Google Calendar. Please authenticate first.', 400);
+  }
 
   // ── Token ────────────────────────────────────────────────────────────
   let accessToken;
@@ -146,9 +138,7 @@ export async function onRequestPost({ request, env }) {
     accessToken = await getValidAccessToken(teacher, env);
   } catch (err) {
     console.error('Token error:', err);
-    return new Response(JSON.stringify({ error: 'Could not refresh calendar token' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Could not refresh calendar token');
   }
 
   // ── Derive group type and level once — used for course code and record ─
@@ -163,9 +153,7 @@ export async function onRequestPost({ request, env }) {
       courseCode = await getNextCourseCode(prefix, levelCode, env);
     } catch (err) {
       console.error('Course code error:', err);
-      return new Response(JSON.stringify({ error: 'Could not generate course code' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      return errorResponse('Could not generate course code');
     }
   }
 
@@ -210,16 +198,12 @@ export async function onRequestPost({ request, env }) {
     if (!calRes.ok) {
       const err = await calRes.text();
       console.error('Calendar error:', err);
-      return new Response(JSON.stringify({ error: 'Could not create calendar event', detail: err }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      return errorResponse('Could not create calendar event');
     }
     calendarEventId = (await calRes.json()).id;
   } catch (err) {
     console.error('Calendar API error:', err);
-    return new Response(JSON.stringify({ error: 'Calendar API error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Calendar API error');
   }
 
   // ── Course record ────────────────────────────────────────────────────
@@ -245,16 +229,12 @@ export async function onRequestPost({ request, env }) {
     });
     if (!cr.ok) {
       console.error('Course creation failed:', await cr.text());
-      return new Response(JSON.stringify({ error: 'Could not create course' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      return errorResponse('Could not create course');
     }
     courseId = (await cr.json())[0]?.id;
   } catch (err) {
     console.error('Course DB error:', err);
-    return new Response(JSON.stringify({ error: 'Database error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Database error');
   }
 
   // ── First session record ─────────────────────────────────────────────
@@ -297,8 +277,8 @@ export async function onRequestPost({ request, env }) {
     } catch (err) { console.error('Enquiry update error:', err); }
   }
 
-  return new Response(JSON.stringify({
+  return jsonResponse({
     success: true, course_id: courseId,
     course_code: courseCode, event_id: calendarEventId, student_ids: studentIds,
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  });
 }

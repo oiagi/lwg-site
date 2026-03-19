@@ -12,7 +12,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -24,16 +24,10 @@ export async function onRequestPost({ request, env }) {
   try {
     ({ course_id } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!course_id) {
-    return new Response(JSON.stringify({ error: 'Missing course_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ──────────────────────────────────────────────────────
   const cr = await fetch(
@@ -41,11 +35,7 @@ export async function onRequestPost({ request, env }) {
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await cr.json();
-  if (!courses.length) {
-    return new Response(JSON.stringify({ error: 'Course not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load teacher ─────────────────────────────────────────────────────
@@ -55,9 +45,7 @@ export async function onRequestPost({ request, env }) {
   );
   const teachers = await tr.json();
   if (!teachers.length || !teachers[0].refresh_token) {
-    return new Response(JSON.stringify({ error: 'Teacher not found or not authorised' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Teacher not found or not authorised', 400);
   }
   const teacher = teachers[0];
 
@@ -67,9 +55,7 @@ export async function onRequestPost({ request, env }) {
     accessToken = await getValidAccessToken(teacher, env);
   } catch (err) {
     console.error('Token error:', err);
-    return new Response(JSON.stringify({ error: 'Could not refresh token' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Could not refresh token');
   }
 
   // ── Fetch events from Google Calendar matching this course code ───────
@@ -81,11 +67,8 @@ export async function onRequestPost({ request, env }) {
   );
 
   if (!calRes.ok) {
-    const err = await calRes.text();
-    console.error('Calendar fetch error:', err);
-    return new Response(JSON.stringify({ error: 'Calendar API error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Calendar fetch error:', await calRes.text());
+    return errorResponse('Calendar API error');
   }
 
   const calData = await calRes.json();
@@ -159,11 +142,11 @@ export async function onRequestPost({ request, env }) {
     body: JSON.stringify({ sessions_completed: completedCount }),
   });
 
-  return new Response(JSON.stringify({
+  return jsonResponse({
     success:      true,
     events_found: activeEvents.length,
     cancelled:    cancelledEvents.length,
     completed:    completedCount,
     scheduled:    activeEvents.length - completedCount,
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  });
 }

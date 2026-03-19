@@ -8,7 +8,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './api/_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -18,11 +18,7 @@ export async function onRequestGet({ request, env }) {
 
   const url = new URL(request.url);
   const id  = url.searchParams.get('id');
-  if (!id) {
-    return new Response(JSON.stringify({ error: 'Missing id parameter' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!id) return errorResponse('Missing id parameter', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
@@ -33,11 +29,7 @@ export async function onRequestGet({ request, env }) {
       { headers: H }
     );
     const companies = await compRes.json();
-    if (!companies.length) {
-      return new Response(JSON.stringify({ error: 'Company not found' }), {
-        status: 404, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!companies.length) return errorResponse('Company not found', 404);
     const company = companies[0];
 
     // ── Load courses for this company ───────────────────────────────────
@@ -55,30 +47,26 @@ export async function onRequestGet({ request, env }) {
     const students = studentsRes.ok ? await studentsRes.json() : [];
 
     // ── Compute aggregate stats ─────────────────────────────────────────
-    const activeCourses   = courses.filter(c => c.status === 'active');
-    const totalSessions   = courses.reduce((sum, c) => sum + (c.sessions_completed || 0), 0);
-    const totalPlanned    = courses.reduce((sum, c) => sum + (c.sessions_total || 0), 0);
-    const activeStudents  = students.filter(s => s.active);
+    const activeCourses  = courses.filter(c => c.status === 'active');
+    const totalSessions  = courses.reduce((sum, c) => sum + (c.sessions_completed || 0), 0);
+    const totalPlanned   = courses.reduce((sum, c) => sum + (c.sessions_total || 0), 0);
+    const activeStudents = students.filter(s => s.active);
 
-    return new Response(JSON.stringify({
+    return jsonResponse({
       ...company,
       courses,
       students,
       stats: {
-        active_courses:   activeCourses.length,
-        total_courses:    courses.length,
-        active_students:  activeStudents.length,
-        total_students:   students.length,
+        active_courses:     activeCourses.length,
+        total_courses:      courses.length,
+        active_students:    activeStudents.length,
+        total_students:     students.length,
         sessions_completed: totalSessions,
         sessions_planned:   totalPlanned,
       },
-    }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error('Error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }

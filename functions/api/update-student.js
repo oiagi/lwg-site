@@ -8,7 +8,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestPatch({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -20,26 +20,16 @@ export async function onRequestPatch({ request, env }) {
   try {
     ({ student_id, progress_notes, current_level } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!student_id) {
-    return new Response(JSON.stringify({ error: 'Missing student_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!student_id) return errorResponse('Missing student_id', 400);
 
   const patch = {};
   if (progress_notes !== undefined) patch.progress_notes = progress_notes;
   if (current_level  !== undefined) patch.current_level  = current_level;
 
-  if (!Object.keys(patch).length) {
-    return new Response(JSON.stringify({ error: 'Nothing to update' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!Object.keys(patch).length) return errorResponse('Nothing to update', 400);
 
   try {
     const res = await fetch(
@@ -51,20 +41,12 @@ export async function onRequestPatch({ request, env }) {
       }
     );
 
-    if (!res.ok) {
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!res.ok) return errorResponse('Database error');
 
     const rows = await res.json();
-    return new Response(JSON.stringify(rows[0] || {}), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(rows[0] || {});
   } catch (err) {
     console.error('Error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }

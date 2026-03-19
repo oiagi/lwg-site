@@ -1,6 +1,17 @@
 // functions/api/_utils.js
 // Shared utilities for Cloudflare Pages API functions.
 
+// ── Response helpers ──────────────────────────────────────────────────────
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+export function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
+}
+
+export function errorResponse(message, status = 500) {
+  return new Response(JSON.stringify({ error: message }), { status, headers: JSON_HEADERS });
+}
+
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {
@@ -16,9 +27,7 @@ export function supabaseHeaders(key) {
 export function requireAdminAuth(request, env) {
   const pwd = request.headers.get('x-admin-password');
   if (!pwd || pwd !== env.ADMIN_PASSWORD) {
-    return new Response(JSON.stringify({ error: 'Unauthorised' }), {
-      status: 401, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Unauthorised', 401);
   }
   return null;
 }

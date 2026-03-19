@@ -18,7 +18,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './api/_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -32,21 +32,15 @@ export async function onRequestPost({ request, env }) {
     ({ course_id, start_date, time, day_of_week, count,
        duration_minutes = 50, skip_dates = [] } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
   if (!course_id || !start_date || !time || !count) {
-    return new Response(JSON.stringify({ error: 'Missing required fields: course_id, start_date, time, count' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Missing required fields: course_id, start_date, time, count', 400);
   }
 
   if (count < 1 || count > 52) {
-    return new Response(JSON.stringify({ error: 'Count must be between 1 and 52' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Count must be between 1 and 52', 400);
   }
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -58,18 +52,12 @@ export async function onRequestPost({ request, env }) {
     { headers: H }
   );
   const courses = await courseRes.json();
-  if (!courses.length) {
-    return new Response(JSON.stringify({ error: 'Course not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load teacher ─────────────────────────────────────────────────────
   if (!course.teacher_id) {
-    return new Response(JSON.stringify({ error: 'Course has no assigned teacher' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Course has no assigned teacher', 400);
   }
 
   const teacherRes = await fetch(
@@ -78,9 +66,7 @@ export async function onRequestPost({ request, env }) {
   );
   const teachers = await teacherRes.json();
   if (!teachers.length || !teachers[0].refresh_token) {
-    return new Response(JSON.stringify({ error: 'Teacher not found or not authorised' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Teacher not found or not authorised', 400);
   }
   const teacher = teachers[0];
 
@@ -90,9 +76,7 @@ export async function onRequestPost({ request, env }) {
     accessToken = await getValidAccessToken(teacher, env);
   } catch (err) {
     console.error('Token error:', err);
-    return new Response(JSON.stringify({ error: 'Could not refresh token' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Could not refresh token');
   }
 
   // ── Build attendee list from course participants ──────────────────────
@@ -155,8 +139,7 @@ export async function onRequestPost({ request, env }) {
         }
       );
       if (!calRes.ok) {
-        const err = await calRes.text();
-        console.error(`Calendar error for ${dateStr}:`, err);
+        console.error(`Calendar error for ${dateStr}:`, await calRes.text());
         errors.push({ date: dateStr, error: 'Calendar event creation failed' });
         continue;
       }
@@ -210,20 +193,18 @@ export async function onRequestPost({ request, env }) {
     await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
       method: 'PATCH', headers: H,
       body: JSON.stringify({
-        sessions_total:   existingSessions.length,
-        recurrence_rule:  rrule,
+        sessions_total:  existingSessions.length,
+        recurrence_rule: rrule,
       }),
     });
   } catch (err) {
     console.error('Course update error:', err);
   }
 
-  return new Response(JSON.stringify({
+  return jsonResponse({
     success: true,
     sessions_created: created.length,
     sessions: created,
     errors: errors.length ? errors : undefined,
-  }), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
   });
 }
