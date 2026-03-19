@@ -149,3 +149,25 @@ html[data-device="desktop"] .nav-menu {
 html[data-device="desktop"] .nav-menu a {
   font-size: 0.75rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SHARED DEVICE-AWARE PAGE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Body padding ──────────────────────────────────────────────── */
+html[data-device="mobile"] body { padding: 4rem 1rem 3rem; }
+html[data-device="tablet"] body { padding: 4.5rem 2rem 4rem; }
+
+/* ── Prevent iOS zoom on inputs ────────────────────────────────── */
+html[data-device="mobile"] input,
+html[data-device="mobile"] select,
+html[data-device="mobile"] textarea { font-size: 16px; }
+html[data-device="tablet"] input,
+html[data-device="tablet"] select,
+html[data-device="tablet"] textarea { font-size: 16px; }
+
+/* ── Touch: suppress hover, use active states on buttons ───────── */
+html[data-touch="true"] button.submit:hover,
+html[data-touch="true"] button[type="submit"]:hover  { background: #1a1a1a; color: #d6eaf8; }
+html[data-touch="true"] button.submit:active,
+html[data-touch="true"] button[type="submit"]:active { background: #ffffff; color: #1a1a1a; }
