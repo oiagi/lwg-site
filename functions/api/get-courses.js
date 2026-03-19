@@ -7,7 +7,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -25,11 +25,7 @@ export async function onRequestGet({ request, env }) {
 
   try {
     const res = await fetch(supabaseUrl, { headers: H });
-    if (!res.ok) {
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (!res.ok) return errorResponse('Database error');
 
     const courses = await res.json();
 
@@ -64,13 +60,9 @@ export async function onRequestGet({ request, env }) {
       return { ...course, sessions, students };
     }));
 
-    return new Response(JSON.stringify(enriched), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse(enriched);
   } catch (err) {
     console.error('Error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }

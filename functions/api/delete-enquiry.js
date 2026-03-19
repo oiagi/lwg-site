@@ -8,7 +8,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -21,16 +21,10 @@ export async function onRequestDelete({ request, env }) {
   try {
     ({ id } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!id) {
-    return new Response(JSON.stringify({ error: 'Missing id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!id) return errorResponse('Missing id', 400);
 
   // ── Delete from Supabase ─────────────────────────────────────────────
   try {
@@ -40,20 +34,13 @@ export async function onRequestDelete({ request, env }) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error('Supabase error:', err);
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('Supabase error:', await res.text());
+      return errorResponse('Database error');
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ success: true });
   } catch (err) {
     console.error('Fetch error:', err);
-    return new Response(JSON.stringify({ error: 'Connection error' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Connection error');
   }
 }

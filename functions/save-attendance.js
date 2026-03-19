@@ -15,7 +15,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './api/_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -27,15 +27,11 @@ export async function onRequestPost({ request, env }) {
   try {
     ({ session_id, records } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
   if (!session_id || !Array.isArray(records) || records.length === 0) {
-    return new Response(JSON.stringify({ error: 'Missing session_id or records array' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Missing session_id or records array', 400);
   }
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -46,11 +42,7 @@ export async function onRequestPost({ request, env }) {
     { headers: H }
   );
   const sessions = await sessRes.json();
-  if (!sessions.length) {
-    return new Response(JSON.stringify({ error: 'Session not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!sessions.length) return errorResponse('Session not found', 404);
 
   // ── Upsert attendance records ─────────────────────────────────────────
   const saved  = [];
@@ -84,8 +76,7 @@ export async function onRequestPost({ request, env }) {
         const rows = await res.json();
         saved.push(rows[0]);
       } else {
-        const err = await res.text();
-        console.error('Attendance upsert error:', err);
+        console.error('Attendance upsert error:', await res.text());
         errors.push({ student_id: rec.student_id, error: 'Database error' });
       }
     } catch (err) {
@@ -94,12 +85,10 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  return new Response(JSON.stringify({
+  return jsonResponse({
     success: true,
     saved_count: saved.length,
     records: saved,
     errors: errors.length ? errors : undefined,
-  }), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
   });
 }

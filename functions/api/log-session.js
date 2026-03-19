@@ -8,7 +8,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
 
 export async function onRequestPatch({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -21,16 +21,10 @@ export async function onRequestPatch({ request, env }) {
   try {
     ({ session_id, notes } = await request.json());
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Invalid JSON', 400);
   }
 
-  if (!session_id) {
-    return new Response(JSON.stringify({ error: 'Missing session_id' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!session_id) return errorResponse('Missing session_id', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
@@ -40,11 +34,7 @@ export async function onRequestPatch({ request, env }) {
     { headers: H }
   );
   const sessions = await sessRes.json();
-  if (!sessions.length) {
-    return new Response(JSON.stringify({ error: 'Session not found' }), {
-      status: 404, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!sessions.length) return errorResponse('Session not found', 404);
   const session = sessions[0];
 
   // ── Mark session as completed ────────────────────────────────────────
@@ -63,11 +53,7 @@ export async function onRequestPatch({ request, env }) {
     }
   );
 
-  if (!updateRes.ok) {
-    return new Response(JSON.stringify({ error: 'Could not update session' }), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!updateRes.ok) return errorResponse('Could not update session');
 
   // ── Increment sessions_completed on the course ───────────────────────
   // Only increment if this session wasn't already completed
@@ -96,7 +82,5 @@ export async function onRequestPatch({ request, env }) {
   }
 
   const updated = await updateRes.json();
-  return new Response(JSON.stringify(updated[0] || {}), {
-    status: 200, headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonResponse(updated[0] || {});
 }
