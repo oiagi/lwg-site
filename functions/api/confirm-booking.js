@@ -169,6 +169,14 @@ export async function onRequestPost({ request, env }) {
     ? `Sessions: ${sessions_total} × 50min\n`
     : 'Sessions: open-ended\n';
 
+  // Build recurrence rule — weekly on the same day, for sessions_total weeks
+  // (or open-ended if sessions_total is not set).
+  const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+  const rruleDay = dayNames[startTime.getDay()];
+  const recurrence = sessions_total
+    ? [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay};COUNT=${sessions_total}`]
+    : [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`];
+
   let calendarEventId;
   try {
     const calRes = await fetch(
@@ -189,6 +197,7 @@ export async function onRequestPost({ request, env }) {
             `\nPhone: ${contact.lead?.phone || ''}`,
           start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
           end:   { dateTime: endTime.toISOString(),   timeZone: 'Europe/Zurich' },
+          recurrence,
           attendees: participants
             .filter(p => p.email)
             .map(p => ({ email: p.email, displayName: `${p.firstName||''} ${p.lastName||''}`.trim() })),
@@ -222,6 +231,7 @@ export async function onRequestPost({ request, env }) {
         participants,
         sessions_total:     sessions_total || null,
         sessions_completed: 0,
+        recurrence_rule:    recurrence[0].replace('RRULE:', ''),
         calendar_event_id:  calendarEventId,
         enquiry_id:         enquiry_id || null,
         status:             'active',
@@ -237,18 +247,37 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('Database error');
   }
 
-  // ── First session record ─────────────────────────────────────────────
+  // ── Sync sessions from the recurring calendar event ──────────────────
+  // Google Calendar expands the recurrence into individual instances.
+  // Fetch them with singleEvents=true and create session records.
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-      method: 'POST', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-      body: JSON.stringify({
-        course_id: courseId, teacher_id,
-        scheduled_at: startTime.toISOString(),
-        duration_minutes, status: 'scheduled',
-        calendar_event_id: calendarEventId,
-      }),
-    });
-  } catch (err) { console.error('Session record error:', err); }
+    const syncRes = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(teacher.calendar_id)}/events?` +
+      `q=${encodeURIComponent(courseCode)}&singleEvents=true&orderBy=startTime&maxResults=250`,
+      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    );
+    if (syncRes.ok) {
+      const syncData = await syncRes.json();
+      const now = new Date();
+      const events = (syncData.items || []).filter(e =>
+        e.summary?.startsWith(courseCode) && e.status !== 'cancelled'
+      );
+      for (const event of events) {
+        const scheduledAt = event.start.dateTime || event.start.date;
+        const isPast      = new Date(scheduledAt) < now;
+        await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+          method: 'POST', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+          body: JSON.stringify({
+            course_id: courseId, teacher_id,
+            scheduled_at: scheduledAt,
+            duration_minutes,
+            status: isPast ? 'completed' : 'scheduled',
+            calendar_event_id: event.id,
+          }),
+        });
+      }
+    }
+  } catch (err) { console.error('Session sync error:', err); }
 
   // ── Students + enrolments ────────────────────────────────────────────
   const source     = enquiry_id ? 'website' : 'manual';
