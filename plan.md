@@ -1,163 +1,126 @@
-# Swiss QR Billing System — Implementation Plan
+# Admin Monolith Refactor — Plan
 
-## Context
+## Problem
 
-The LWG site is a serverless app (Cloudflare Pages Functions + Supabase + vanilla JS) for a Zürich language school. Companies already have billing fields (`rate_per_session`, `currency`, `billing_address`, `billing_email`, `vat_number`), and sessions/attendance are tracked — but there is no invoice generation, PDF export, or payment tracking.
+The admin dashboard lives in two monolithic files:
+- `admin.html` — **683 lines** (HTML structure + all CSS inlined in `<style>`)
+- `admin.js` — **1483 lines** (all JS for 4 tabs: Enquiries, Courses, Companies, Billing)
 
-The Swiss QR bill standard (IG QR-bill v2.3, effective Nov 2025) requires structured addresses, QR reference with Modulo 10 check digit, and a 46×46mm Swiss QR Code on the payment slip.
-
----
-
-## Step 1 — Database: New Supabase Tables
-
-Create two new tables via Supabase SQL:
-
-### `invoices`
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | uuid PK | |
-| `invoice_number` | text UNIQUE | Format: `INV-YYYYMM-NNN` |
-| `company_id` | uuid FK → companies | |
-| `issued_date` | date | |
-| `due_date` | date | Default: issued_date + 30 days |
-| `status` | text | `draft` / `sent` / `paid` / `cancelled` |
-| `currency` | text | `CHF` or `EUR` |
-| `total_amount` | numeric(10,2) | |
-| `vat_rate` | numeric(5,2) | Nullable (e.g. 8.1%) |
-| `vat_amount` | numeric(10,2) | |
-| `net_amount` | numeric(10,2) | |
-| `qr_reference` | text | 27-digit QR reference |
-| `qr_iban` | text | QR-IBAN for payment |
-| `notes` | text | |
-| `paid_at` | timestamptz | |
-| `created_at` | timestamptz | Default: now() |
-
-### `invoice_lines`
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | uuid PK | |
-| `invoice_id` | uuid FK → invoices | |
-| `session_id` | uuid FK → sessions | Nullable |
-| `description` | text | e.g. "German B1 – 2026-03-10" |
-| `quantity` | numeric(10,2) | |
-| `unit_price` | numeric(10,2) | |
-| `line_total` | numeric(10,2) | |
+Everything is global, tightly coupled, and hard to navigate. Adding a new feature means scrolling through 1,400+ lines of JS and 680+ lines of HTML/CSS.
 
 ---
 
-## Step 2 — Backend: New API Endpoints
+## Goal
 
-All endpoints in `functions/api/`, following existing patterns (admin password auth, Supabase service role).
-
-### `create-invoice.js` — `POST /api/create-invoice`
-- Input: `company_id`, `session_ids[]` (completed, unbilled sessions), optional `notes`
-- Logic:
-  1. Fetch company (rate, currency, VAT, billing address)
-  2. Fetch selected sessions with course info
-  3. Generate next `invoice_number` (query max existing)
-  4. Generate 27-digit QR reference (with Modulo 10 recursive check digit)
-  5. Calculate line totals, net, VAT, gross
-  6. Insert `invoices` + `invoice_lines` rows
-- Returns: created invoice object
-
-### `get-invoices.js` — `GET /api/get-invoices`
-- Query params: `company_id`, `status` (optional filters)
-- Returns: invoices list with company name, total, status
-
-### `get-invoice-detail.js` — `GET /api/get-invoice-detail?id=...`
-- Returns: full invoice + lines + company details
-
-### `update-invoice.js` — `PATCH /api/update-invoice`
-- Update `status` (mark as sent/paid/cancelled), `paid_at`, `notes`
-
-### `generate-invoice-pdf.js` — `GET /api/generate-invoice-pdf?id=...`
-- Generates a PDF with:
-  - School letterhead (name, address, contact)
-  - Invoice metadata (number, date, due date)
-  - Line items table
-  - Totals (net, VAT, gross)
-  - **Swiss QR bill payment slip** at bottom (46×46mm QR code, structured address, QR-IBAN, reference)
-- Library: **`swissqrbill`** (built on PDFKit) — the most mature Swiss QR bill JS library
-- Returns: PDF as `application/pdf` response
-
-> **Cloudflare Workers compatibility note**: `swissqrbill` + PDFKit run in Node.js. Cloudflare Workers supports the `nodejs_compat` flag which enables Node.js APIs. If any incompatibility arises, the PDF generation can be offloaded to a Supabase Edge Function instead.
+Split the monolith into **per-tab modules** while keeping the vanilla JS, no-build-tool approach. The result: each tab's logic and styles live in their own files, the shared shell stays thin, and new features are easy to add in isolation.
 
 ---
 
-## Step 3 — QR Bill Compliance (IG v2.3)
+## Step 1 — Extract CSS into separate files
 
-Implemented inside `generate-invoice-pdf.js` and a new `_qr-utils.js` helper:
+Move all `<style>` content out of `admin.html` into dedicated CSS files:
 
-- **Structured addresses only** (type "S") — street, house number, postal code, city, country as separate fields
-- **QR-IBAN** — the school's QR-IBAN stored as an environment variable (`QR_IBAN`)
-- **QR Reference** — 27-digit numeric reference with Modulo 10 recursive check digit, generated from invoice number
-- **Creditor info** — school name + address from env vars (`CREDITOR_NAME`, `CREDITOR_ADDRESS`, etc.)
-- **Currency** — CHF or EUR
-- **Amount** — from invoice total
-- **Swiss QR Code** — 46×46mm, error correction level M, Swiss cross in center
+| New file | Contains |
+|----------|----------|
+| `admin/shared.css` | Login screen, dashboard shell, tabs, modal base styles, utility classes |
+| `admin/enquiries.css` | Enquiry list, detail panel, status dots, confirm panel |
+| `admin/courses.css` | Course list, sessions, attendance modal, new-course modal |
+| `admin/companies.css` | Company list, company modal |
+| `admin/billing.css` | Invoice list, invoice detail modal, create-invoice modal |
 
----
-
-## Step 4 — Frontend: Admin Billing Tab
-
-Add a "Billing" section to `admin.html` / `admin.js`:
-
-### Invoice list view
-- Table: invoice number, company, date, amount, status
-- Filter by company and status
-- "Create Invoice" button
-
-### Create invoice flow
-1. Select company → loads unbilled completed sessions
-2. Tick sessions to include
-3. Preview totals (auto-calculated from company rate)
-4. Confirm → calls `POST /api/create-invoice`
-
-### Invoice detail view
-- Shows line items, totals, QR reference
-- "Download PDF" button → calls `/api/generate-invoice-pdf?id=...`
-- "Mark as Sent" / "Mark as Paid" buttons → calls `PATCH /api/update-invoice`
+`admin.html` replaces the `<style>` block with `<link>` tags.
 
 ---
 
-## Step 5 — Environment Variables
+## Step 2 — Split `admin.js` into per-tab modules
 
-Add to Cloudflare Pages / `.dev.vars`:
+Extract each tab's logic into its own ES module. Use native `<script type="module">` — no bundler needed.
 
-| Variable | Example |
-|----------|---------|
-| `QR_IBAN` | `CH44 3199 9123 0008 8901 2` |
-| `CREDITOR_NAME` | `Learning with Gioia` |
-| `CREDITOR_STREET` | `Musterstrasse` |
-| `CREDITOR_HOUSE_NUMBER` | `1` |
-| `CREDITOR_POSTAL_CODE` | `8001` |
-| `CREDITOR_CITY` | `Zürich` |
-| `CREDITOR_COUNTRY` | `CH` |
+| New file | Functions moved | Lines (approx) |
+|----------|----------------|-----------------|
+| `admin/api.js` | Shared `apiFetch()` helper, `adminPassword` export, login logic | ~50 |
+| `admin/enquiries.js` | `loadEnquiries`, `renderEnquiries`, `saveStatus`, `saveNotes`, `deleteEnquiry`, `toggleDetail`, `confirmBooking`, teacher helpers | ~350 |
+| `admin/courses.js` | `loadCourses`, `renderCourses`, `filterCourses`, `toggleCourse`, `syncCalendar`, `cancelSession`, `logSession`, `saveStudent`, new-course modal, `deleteCourse`, attendance modal | ~400 |
+| `admin/companies.js` | `loadCompanies`, `renderCompanies`, `filterCompanies`, `toggleCompany`, company modal CRUD | ~200 |
+| `admin/billing.js` | `loadInvoices`, `renderInvoices`, `filterInvoices`, invoice detail modal, create-invoice modal, PDF download | ~350 |
+| `admin/tabs.js` | `switchTab` logic, wires up tab buttons, imports and calls each module's loader | ~30 |
 
----
+### Module interface pattern
 
-## File Summary
+Each tab module exports an `init(apiFetch)` function and its loader:
 
-| Action | File |
-|--------|------|
-| Create | `functions/api/create-invoice.js` |
-| Create | `functions/api/get-invoices.js` |
-| Create | `functions/api/get-invoice-detail.js` |
-| Create | `functions/api/update-invoice.js` |
-| Create | `functions/api/generate-invoice-pdf.js` |
-| Create | `functions/api/_qr-utils.js` |
-| Edit   | `admin.html` — add billing tab/section |
-| Edit   | `admin.js` — add billing logic |
-| Edit   | `shared.css` — billing table styles |
-| SQL    | Supabase migration for `invoices` + `invoice_lines` tables |
+```js
+// admin/enquiries.js
+export function init(apiFetch) { /* bind event listeners */ }
+export async function loadEnquiries(status) { /* ... */ }
+```
+
+The main entry point (`admin/main.js`) imports all modules, handles login, and calls `init()` on each.
 
 ---
 
-## Implementation Order
+## Step 3 — Slim down `admin.html`
 
-1. SQL migration (tables)
-2. `_qr-utils.js` (QR reference generation + Modulo 10)
-3. `create-invoice.js` + `get-invoices.js` + `get-invoice-detail.js` + `update-invoice.js`
-4. `generate-invoice-pdf.js` (with `swissqrbill`)
-5. Frontend (admin billing tab)
-6. Testing & compliance review
+After extraction, `admin.html` becomes a thin shell:
+- `<link>` tags for each CSS file
+- HTML structure for login screen + dashboard skeleton (tab bar + empty panels)
+- `<script type="module" src="admin/main.js">`
+- Each tab's HTML markup stays inline (it's mostly structural, not logic)
+
+Estimated: **~250 lines** (down from 683).
+
+---
+
+## Step 4 — Shared helpers
+
+Move reusable utilities into `admin/helpers.js`:
+- `fmt(dateStr)` — date formatter
+- `dl(key, val)` — detail-row builder
+- `showSavedMsg(id)` — flash "saved" indicator
+- Any other shared DOM helpers
+
+---
+
+## File structure after refactor
+
+```
+admin.html                    (slim shell, ~250 lines)
+admin/
+  main.js                     (entry point: login, init modules, tab switching)
+  api.js                      (apiFetch helper, password management)
+  helpers.js                  (shared formatters & DOM utilities)
+  enquiries.js                (enquiries tab logic)
+  courses.js                  (courses tab logic)
+  companies.js                (companies tab logic)
+  billing.js                  (billing tab logic)
+  shared.css                  (login, shell, tabs, modal base)
+  enquiries.css               (enquiries styles)
+  courses.css                 (courses styles)
+  companies.css               (companies styles)
+  billing.css                 (billing styles)
+```
+
+---
+
+## Implementation order
+
+1. Create `admin/` directory and CSS files (extract styles from `admin.html`)
+2. Create `admin/api.js` and `admin/helpers.js` (shared utilities)
+3. Extract `admin/enquiries.js` (largest, most self-contained tab)
+4. Extract `admin/courses.js` (second largest, depends on teachers cache)
+5. Extract `admin/companies.js`
+6. Extract `admin/billing.js`
+7. Create `admin/main.js` and `admin/tabs.js` — wire everything together
+8. Update `admin.html` to use `<link>` + `<script type="module">`
+9. Delete `admin.js` (old monolith)
+10. Smoke-test all 4 tabs end-to-end
+
+---
+
+## Constraints & decisions
+
+- **No build tools** — stays vanilla ES modules, native `<script type="module">`
+- **No framework** — no React/Vue/Svelte, keeps the lightweight aesthetic
+- **Cloudflare Pages compatible** — static files served as-is, no SSR needed
+- **Backwards-compatible URLs** — `admin.html` stays at the same path
+- **Incremental** — each step produces a working state; can commit after each tab extraction
