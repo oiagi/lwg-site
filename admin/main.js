@@ -1,5 +1,5 @@
 /* ── Admin entry point ────────────────────────────────────────────── */
-import { getPassword, setPassword } from './api.js';
+import { initAuth, signIn, signOut, getSession } from './auth.js';
 import { loadEnquiries, init as initEnquiries, toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking } from './enquiries.js';
 import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
 import { loadCompanies, getCurrentCompanyFilter, filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany } from './companies.js';
@@ -41,29 +41,57 @@ function switchTab(tab) {
   if (tab === 'billing') loadInvoices(getCurrentInvoiceFilter());
 }
 
+/* ── Show dashboard ──────────────────────────────────────────────── */
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display    = 'block';
+  loadEnquiries('all');
+}
+
 /* ── Login ───────────────────────────────────────────────────────── */
 document.getElementById('admin-pwd').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('login-btn').click();
 });
 
 document.getElementById('login-btn').addEventListener('click', async () => {
-  const pwd = document.getElementById('admin-pwd').value;
-  if (!pwd) return;
-  setPassword(pwd);
-  const ok = await loadEnquiries('all', true);
-  if (ok) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('dashboard').style.display    = 'block';
-    loadEnquiries('all');
-  } else {
-    setPassword('');
+  const email = document.getElementById('admin-email').value.trim();
+  const pwd   = document.getElementById('admin-pwd').value;
+  if (!email || !pwd) return;
+
+  try {
+    await signIn(email, pwd);
+    document.getElementById('pwd-error').style.display = 'none';
+    showDashboard();
+  } catch {
     document.getElementById('pwd-error').style.display = 'block';
   }
 });
 
-/* ── Init modules ────────────────────────────────────────────────── */
+/* ── Logout ──────────────────────────────────────────────────────── */
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await signOut();
+  document.getElementById('dashboard').style.display    = 'none';
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('admin-email').value = '';
+  document.getElementById('admin-pwd').value   = '';
+});
+
+/* ── Init ────────────────────────────────────────────────────────── */
 initEnquiries();
 initVatListener();
+
+/* ── Bootstrap: init Supabase, check existing session ────────────── */
+(async function() {
+  try {
+    await initAuth();
+    const session = await getSession();
+    if (session) {
+      showDashboard();
+    }
+  } catch (err) {
+    console.error('Auth init failed:', err);
+  }
+})();
 
 /* ── Handle auth success redirect ────────────────────────────────── */
 (function() {

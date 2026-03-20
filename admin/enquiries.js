@@ -1,5 +1,5 @@
 /* ── Enquiries tab ────────────────────────────────────────────────── */
-import { apiFetch, getPassword } from './api.js';
+import { apiFetch } from './api.js';
 import { fmt, dl } from './helpers.js';
 import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teachers.js';
 
@@ -17,12 +17,9 @@ export function init() {
 }
 
 export async function loadEnquiries(status, probe = false) {
-  const pwd = getPassword();
   const qs = status && status !== 'all' ? `?status=${status}` : '';
   try {
-    const res = await fetch(`/api/get-enquiries${qs}`, {
-      headers: { 'x-admin-password': pwd }
-    });
+    const res = await apiFetch(`/api/get-enquiries${qs}`);
     if (res.status === 401) return false;
     if (!res.ok) return false;
     const data = await res.json();

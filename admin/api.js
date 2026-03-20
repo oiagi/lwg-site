@@ -1,15 +1,13 @@
-/* ── Shared API helper & password management ──────────────────────── */
-let adminPassword = '';
-
-export function getPassword() { return adminPassword; }
-export function setPassword(pwd) { adminPassword = pwd; }
+/* ── Shared API helper ────────────────────────────────────────────── */
+import { getAccessToken } from './auth.js';
 
 export async function apiFetch(path, opts = {}) {
   const { method = 'GET', body, headers = {} } = opts;
+  const token = await getAccessToken();
   const init = {
     method,
     headers: {
-      'x-admin-password': adminPassword,
+      'Authorization': `Bearer ${token}`,
       ...headers,
     },
   };

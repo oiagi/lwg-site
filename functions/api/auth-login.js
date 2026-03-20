@@ -1,27 +1,29 @@
 // functions/api/auth/login.js
-// GET /api/auth/login?teacher_id=<uuid>&pwd=<admin_password>
+// GET /api/auth/login?teacher_id=<uuid>&token=<supabase_jwt>
 //
 // Initiates the Google OAuth flow for a teacher.
 // Redirects to Google's consent screen requesting Calendar access.
 // After consent, Google redirects to /api/auth/callback.
 //
-// Password is passed as a query parameter because this endpoint is
+// Token is passed as a query parameter because this endpoint is
 // opened in a browser popup window which cannot send custom headers.
 //
 // Environment variables:
 //   GOOGLE_CLIENT_ID — OAuth client ID from Google Cloud Console
-//   ADMIN_PASSWORD   — guards this endpoint from public access
+//   SUPABASE_URL     — Supabase project URL (for JWT verification)
+
+import { verifySupabaseToken } from './_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
-  const ADMIN_PASSWORD   = env.ADMIN_PASSWORD;
 
   const url        = new URL(request.url);
   const teacher_id = url.searchParams.get('teacher_id');
 
-  // ── Password check (via query param for popup compatibility) ─────────
-  const pwd = url.searchParams.get('pwd');
-  if (!pwd || pwd !== ADMIN_PASSWORD) {
+  // ── JWT check (via query param for popup compatibility) ──────────────
+  const token = url.searchParams.get('token');
+  const user = await verifySupabaseToken(token, env);
+  if (!user) {
     return new Response('Unauthorised', { status: 401 });
   }
 
