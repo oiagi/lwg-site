@@ -5,6 +5,8 @@ import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncC
 import { loadCompanies, getCurrentCompanyFilter, filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany } from './companies.js';
 import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, initVatListener } from './billing.js';
 import { authoriseTeacher } from './teachers.js';
+import { loadReport, getCurrentReportType, filterReport } from './reports.js';
+import { loadAvailability, onTeacherSelect } from './availability.js';
 
 /* ── Register globals for onclick handlers in HTML templates ──────── */
 Object.assign(window, {
@@ -22,23 +24,26 @@ Object.assign(window, {
   toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice,
   // Teachers
   authoriseTeacher,
+  // Reports
+  filterReport,
+  // Availability
+  onTeacherSelect,
   // Tab switching
   switchTab,
 });
 
 /* ── Tab switching ───────────────────────────────────────────────── */
 function switchTab(tab) {
-  document.getElementById('panel-enquiries').style.display = tab === 'enquiries' ? 'block' : 'none';
-  document.getElementById('panel-courses').style.display   = tab === 'courses'   ? 'block' : 'none';
-  document.getElementById('panel-companies').style.display  = tab === 'companies' ? 'block' : 'none';
-  document.getElementById('panel-billing').style.display    = tab === 'billing'   ? 'block' : 'none';
-  document.getElementById('tab-enquiries').classList.toggle('active', tab === 'enquiries');
-  document.getElementById('tab-courses').classList.toggle('active',   tab === 'courses');
-  document.getElementById('tab-companies').classList.toggle('active',  tab === 'companies');
-  document.getElementById('tab-billing').classList.toggle('active',    tab === 'billing');
+  const tabs = ['enquiries', 'courses', 'companies', 'billing', 'reports', 'teachers'];
+  for (const t of tabs) {
+    document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', tab === t);
+  }
   if (tab === 'courses') loadCourses(getCurrentCourseFilter());
   if (tab === 'companies') loadCompanies(getCurrentCompanyFilter());
   if (tab === 'billing') loadInvoices(getCurrentInvoiceFilter());
+  if (tab === 'reports') loadReport(getCurrentReportType());
+  if (tab === 'teachers') loadAvailability();
 }
 
 /* ── Show dashboard ──────────────────────────────────────────────── */
