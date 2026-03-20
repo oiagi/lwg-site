@@ -64,51 +64,53 @@
     <!-- ── Courses panel ─────────────────────────────────────────────── -->
     <!-- ── New course modal ──────────────────────────────────────────── -->
     <div class="modal-overlay" id="new-course-modal">
-      <div class="modal">
+      <div class="modal modal-wide">
         <h2>new course</h2>
 
-        <div class="modal-field">
-          <label>Teacher</label>
-          <select id="nc-teacher"><option value="">loading…</option></select>
-        </div>
-        <div class="modal-field">
-          <label>Service</label>
-          <select id="nc-service">
-            <option value="language course">Language course</option>
-            <option value="exam prep">Exam prep</option>
-            <option value="tutoring">Tutoring</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Level <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for tutoring)</span></label>
-          <select id="nc-level">
-            <option value="">—</option>
-            <option>A1</option><option>A2</option><option>B1</option>
-            <option>B2</option><option>C1</option><option>C2</option>
-            <option value="CH">CH (Swiss German)</option>
-            <option value="SUB">SUB (Tutoring)</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Group type</label>
-          <select id="nc-group">
-            <option value="private">Private</option>
-            <option value="duo">Duo</option>
-            <option value="group">Group</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Sessions in block <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for open-ended)</span></label>
-          <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
-        </div>
-        <div class="modal-field">
-          <label>First session date &amp; time</label>
-          <input type="datetime-local" id="nc-datetime">
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Teacher</label>
+            <select id="nc-teacher"><option value="">loading…</option></select>
+          </div>
+          <div class="modal-field">
+            <label>Service</label>
+            <select id="nc-service">
+              <option value="language course">Language course</option>
+              <option value="exam prep">Exam prep</option>
+              <option value="tutoring">Tutoring</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Level <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for tutoring)</span></label>
+            <select id="nc-level">
+              <option value="">—</option>
+              <option>A1</option><option>A2</option><option>B1</option>
+              <option>B2</option><option>C1</option><option>C2</option>
+              <option value="CH">CH (Swiss German)</option>
+              <option value="SUB">SUB (Tutoring)</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Group type</label>
+            <select id="nc-group">
+              <option value="private">Private</option>
+              <option value="duo">Duo</option>
+              <option value="group">Group</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Sessions in block <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for open-ended)</span></label>
+            <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
+          </div>
+          <div class="modal-field">
+            <label>First session date &amp; time</label>
+            <input type="datetime-local" id="nc-datetime">
+          </div>
         </div>
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.8rem;">Participants</p>
         <div id="nc-participants">
-          <div class="participant-block" id="nc-p-0">
+          <div class="participant-block modal-grid" id="nc-p-0">
             <div class="modal-field"><label>First name</label><input type="text" id="nc-p0-first" placeholder="First name"></div>
             <div class="modal-field"><label>Last name</label><input type="text" id="nc-p0-last" placeholder="Last name"></div>
             <div class="modal-field"><label>Email</label><input type="email" id="nc-p0-email" placeholder="email@example.com"></div>
@@ -172,19 +174,21 @@
 
     <!-- ── Create invoice modal ────────────────────────────────────────── -->
     <div class="modal-overlay" id="create-invoice-modal">
-      <div class="modal">
+      <div class="modal modal-wide">
         <h2>create invoice</h2>
-        <div class="modal-field">
-          <label>Company *</label>
-          <select id="inv-company"><option value="">select company…</option></select>
-        </div>
-        <div class="modal-field">
-          <label>VAT rate % <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for no VAT)</span></label>
-          <input type="number" id="inv-vat-rate" step="0.1" placeholder="e.g. 8.1">
-        </div>
-        <div class="modal-field">
-          <label>Notes</label>
-          <input type="text" id="inv-notes" placeholder="Optional notes">
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Company *</label>
+            <select id="inv-company"><option value="">select company…</option></select>
+          </div>
+          <div class="modal-field">
+            <label>VAT rate % <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for no VAT)</span></label>
+            <input type="number" id="inv-vat-rate" step="0.1" placeholder="e.g. 8.1">
+          </div>
+          <div class="modal-field full">
+            <label>Notes</label>
+            <input type="text" id="inv-notes" placeholder="Optional notes">
+          </div>
         </div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">completed sessions (select to include)</p>
         <div id="inv-sessions" style="max-height:300px;overflow-y:auto;">
@@ -214,18 +218,20 @@
 
     <!-- ── Company modal ─────────────────────────────────────────────── -->
     <div class="modal-overlay" id="company-modal">
-      <div class="modal">
+      <div class="modal modal-wide">
         <h2 id="company-modal-title">new company</h2>
         <input type="hidden" id="cm-id" value="">
-        <div class="modal-field"><label>Company name *</label><input type="text" id="cm-name" placeholder="e.g. UBS AG"></div>
-        <div class="modal-field"><label>Contact person</label><input type="text" id="cm-contact-name" placeholder="Full name"></div>
-        <div class="modal-field"><label>Contact email</label><input type="email" id="cm-contact-email" placeholder="hr@company.com"></div>
-        <div class="modal-field"><label>Contact phone</label><input type="tel" id="cm-contact-phone" placeholder="+41…"></div>
-        <div class="modal-field"><label>Billing address</label><input type="text" id="cm-billing-address" placeholder="Street, PLZ, City"></div>
-        <div class="modal-field"><label>Billing email</label><input type="email" id="cm-billing-email" placeholder="billing@company.com"></div>
-        <div class="modal-field"><label>VAT number</label><input type="text" id="cm-vat" placeholder="CHE-…"></div>
-        <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="cm-rate" step="0.01" placeholder="e.g. 180"></div>
-        <div class="modal-field"><label>Notes</label><input type="text" id="cm-notes" placeholder="Internal notes"></div>
+        <div class="modal-grid">
+          <div class="modal-field full"><label>Company name *</label><input type="text" id="cm-name" placeholder="e.g. UBS AG"></div>
+          <div class="modal-field"><label>Contact person</label><input type="text" id="cm-contact-name" placeholder="Full name"></div>
+          <div class="modal-field"><label>Contact email</label><input type="email" id="cm-contact-email" placeholder="hr@company.com"></div>
+          <div class="modal-field"><label>Contact phone</label><input type="tel" id="cm-contact-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Billing email</label><input type="email" id="cm-billing-email" placeholder="billing@company.com"></div>
+          <div class="modal-field full"><label>Billing address</label><input type="text" id="cm-billing-address" placeholder="Street, PLZ, City"></div>
+          <div class="modal-field"><label>VAT number</label><input type="text" id="cm-vat" placeholder="CHE-…"></div>
+          <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="cm-rate" step="0.01" placeholder="e.g. 180"></div>
+          <div class="modal-field full"><label>Notes</label><input type="text" id="cm-notes" placeholder="Internal notes"></div>
+        </div>
         <div class="modal-actions">
           <button class="modal-cancel" onclick="closeCompanyModal()">cancel</button>
           <button class="modal-submit" id="cm-submit" onclick="submitCompany()">save company</button>
