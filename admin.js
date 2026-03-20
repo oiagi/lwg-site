@@ -374,10 +374,8 @@ function renderCourses(courses) {
            <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
            <button class="save-btn" onclick="syncCalendar('${c.id}')">sync calendar</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
-           <button class="action-btn" onclick="openRecurringModal('${c.id}')">+ recurring sessions</button>
          </div>`
       : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
-           <button class="action-btn" onclick="openRecurringModal('${c.id}')">+ recurring</button>
            <button class="save-btn" style="font-size:0.65rem;" onclick="syncCalendar('${c.id}')">↻ sync</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`;
@@ -949,83 +947,6 @@ async function submitCompany() {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
     btn.textContent = 'save company'; btn.disabled = false;
-  }
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   RECURRING SESSIONS
-   ════════════════════════════════════════════════════════════════════ */
-function openRecurringModal(courseId) {
-  document.getElementById('rs-course-id').value = courseId;
-  document.getElementById('rs-start-date').value = '';
-  document.getElementById('rs-time').value = '09:00';
-  document.getElementById('rs-count').value = '20';
-  document.getElementById('rs-duration').value = '50';
-  document.getElementById('rs-skip').value = '';
-  const msg = document.getElementById('rs-msg');
-  msg.style.display = 'none'; msg.textContent = '';
-  const btn = document.getElementById('rs-submit');
-  btn.textContent = 'create sessions'; btn.disabled = false;
-  document.getElementById('recurring-modal').classList.add('open');
-}
-
-function closeRecurringModal() {
-  document.getElementById('recurring-modal').classList.remove('open');
-}
-
-async function submitRecurringSessions() {
-  const btn   = document.getElementById('rs-submit');
-  const msgEl = document.getElementById('rs-msg');
-  msgEl.style.display = 'none';
-
-  const courseId  = document.getElementById('rs-course-id').value;
-  const startDate = document.getElementById('rs-start-date').value;
-  const time      = document.getElementById('rs-time').value;
-  const count     = parseInt(document.getElementById('rs-count').value);
-  const duration  = parseInt(document.getElementById('rs-duration').value) || 50;
-  const skipRaw   = document.getElementById('rs-skip').value.trim();
-  const skipDates = skipRaw ? skipRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
-
-  if (!startDate || !time || !count) {
-    msgEl.textContent = 'Please fill in start date, time, and number of sessions.';
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
-    return;
-  }
-
-  btn.textContent = 'creating…'; btn.disabled = true;
-
-  try {
-    const res = await fetch('/api/create-recurring-sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
-      body: JSON.stringify({
-        course_id: courseId,
-        start_date: startDate,
-        time,
-        count,
-        duration_minutes: duration,
-        skip_dates: skipDates,
-      }),
-    });
-
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Unknown error');
-
-    const errCount = result.errors ? result.errors.length : 0;
-    msgEl.textContent = `Created ${result.sessions_created} sessions.` +
-      (errCount ? ` ${errCount} error(s).` : '');
-    msgEl.className = errCount ? 'modal-msg err' : 'modal-msg';
-    msgEl.style.cssText = `display:block;color:${errCount ? '#e67e22' : '#27ae60'};font-size:0.75rem;margin-top:0.8rem;`;
-    btn.textContent = 'done ✓';
-
-    setTimeout(() => {
-      closeRecurringModal();
-      loadCourses(currentCourseFilter);
-    }, 1500);
-  } catch (err) {
-    msgEl.textContent = 'Error: ' + err.message;
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
-    btn.textContent = 'create sessions'; btn.disabled = false;
   }
 }
 
