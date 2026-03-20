@@ -41,6 +41,8 @@
       <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
       <button class="main-tab" id="tab-companies" onclick="switchTab('companies')">companies</button>
       <button class="main-tab" id="tab-billing" onclick="switchTab('billing')">billing</button>
+      <button class="main-tab" id="tab-reports" onclick="switchTab('reports')">reports</button>
+      <button class="main-tab" id="tab-teachers" onclick="switchTab('teachers')">teachers</button>
     </div>
 
     <!-- ── Enquiries panel ───────────────────────────────────────────── -->
@@ -232,6 +234,35 @@
       </div>
     </div>
 
+
+    <!-- ── Reports panel ──────────────────────────────────────────────── -->
+    <div id="panel-reports" style="display:none;">
+      <div class="dashboard-header">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-report-type="overview" onclick="filterReport('overview')">overview</button>
+          <button class="filter-btn" data-report-type="revenue" onclick="filterReport('revenue')">revenue</button>
+          <button class="filter-btn" data-report-type="sessions" onclick="filterReport('sessions')">sessions</button>
+          <button class="filter-btn" data-report-type="attendance" onclick="filterReport('attendance')">attendance</button>
+        </div>
+      </div>
+      <div id="report-content">
+        <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Teachers panel ─────────────────────────────────────────────── -->
+    <div id="panel-teachers" style="display:none;">
+      <div class="dashboard-header" style="align-items:center;">
+        <div class="modal-field" style="margin-bottom:0;min-width:200px;">
+          <select id="avail-teacher" onchange="onTeacherSelect()">
+            <option value="">select teacher…</option>
+          </select>
+        </div>
+      </div>
+      <div id="availability-content">
+        <div class="empty-state">select a teacher to view their schedule</div>
+      </div>
+    </div>
 
     <!-- ── Attendance modal ──────────────────────────────────────────── -->
     <div class="modal-overlay" id="attendance-modal">
