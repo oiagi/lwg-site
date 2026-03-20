@@ -173,6 +173,9 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
   max-height: 90vh; overflow-y: auto;
   animation: fadeUp 0.2s ease both;
 }
+.modal.modal-wide { width: min(92vw, 680px); }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.6rem; }
+.modal-grid > .full { grid-column: 1 / -1; }
 .modal h2 {
   font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
   color: #555; margin-bottom: 1.6rem;
@@ -442,6 +445,8 @@ html[data-device="mobile"] .invoice-summary {
 }
 html[data-device="mobile"] .inv-company,
 html[data-device="mobile"] .inv-date { display: none; }
+html[data-device="mobile"] .modal-wide { width: min(96vw, 500px); }
+html[data-device="mobile"] .modal-grid { grid-template-columns: 1fr; }
 
 /* ── Report cards ────────────────────────────────────────────── */
 .report-grid {

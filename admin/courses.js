@@ -284,13 +284,13 @@ export function addParticipantBlock() {
   const container = document.getElementById('nc-participants');
   const i = participantCount++;
   const block = document.createElement('div');
-  block.className = 'participant-block';
+  block.className = 'participant-block modal-grid';
   block.id = `nc-p-${i}`;
   block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;';
   block.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+    <div class="full" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
       <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
-      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
+      <button onclick="this.closest('.participant-block').remove()" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
     </div>
     <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
     <div class="modal-field"><label>Last name</label><input type="text" id="nc-p${i}-last" placeholder="Last name"></div>
