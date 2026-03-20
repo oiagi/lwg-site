@@ -398,6 +398,47 @@
       transition: background 0.15s, color 0.15s;
     }
     .action-btn:hover { background: #2980b9; color: #fff; }
+
+    /* ── Invoice rows ──────────────────────────────────────────────── */
+    .invoice-row {
+      border-top: 1px solid #ccc; padding: 0.8rem 0; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .invoice-row:last-child { border-bottom: 1px solid #ccc; }
+    .invoice-row:hover { background: rgba(255,255,255,0.5); }
+    .invoice-summary {
+      display: grid;
+      grid-template-columns: 140px 1fr 100px 80px 90px;
+      gap: 0 1rem; align-items: center;
+    }
+    .inv-number  { font-size: 0.88rem; color: #1a1a1a; letter-spacing: 0.04em; }
+    .inv-company { font-size: 0.85rem; color: #555; }
+    .inv-amount  { font-size: 0.88rem; color: #1a1a1a; text-align: right; }
+    .inv-date    { font-size: 0.72rem; color: #999; text-align: right; }
+    .inv-status {
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      text-align: right;
+    }
+    .inv-status.draft     { color: #888; }
+    .inv-status.sent      { color: #e67e22; }
+    .inv-status.paid      { color: #27ae60; }
+    .inv-status.cancelled { color: #c0392b; }
+    .inv-session-check {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .inv-session-check label {
+      font-size: 0.82rem; color: #555; display: flex; align-items: center;
+      gap: 0.5rem; cursor: pointer; text-transform: none; letter-spacing: 0;
+    }
+    .inv-session-check input[type="checkbox"] {
+      width: 15px; height: 15px; cursor: pointer; accent-color: #2980b9;
+    }
+    html[data-device="mobile"] .invoice-summary {
+      grid-template-columns: 1fr 80px 70px;
+    }
+    html[data-device="mobile"] .inv-company,
+    html[data-device="mobile"] .inv-date { display: none; }
   </style>
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
@@ -426,6 +467,7 @@
       <button class="main-tab active" id="tab-enquiries" onclick="switchTab('enquiries')">enquiries</button>
       <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
       <button class="main-tab" id="tab-companies" onclick="switchTab('companies')">companies</button>
+      <button class="main-tab" id="tab-billing" onclick="switchTab('billing')">billing</button>
     </div>
 
     <!-- ── Enquiries panel ───────────────────────────────────────────── -->
@@ -534,6 +576,64 @@
       </div>
       <div id="company-list">
         <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Billing panel ──────────────────────────────────────────────── -->
+    <div id="panel-billing" style="display:none;">
+      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-inv-status="all" onclick="filterInvoices('all')">all</button>
+          <button class="filter-btn" data-inv-status="draft" onclick="filterInvoices('draft')">draft</button>
+          <button class="filter-btn" data-inv-status="sent" onclick="filterInvoices('sent')">sent</button>
+          <button class="filter-btn" data-inv-status="paid" onclick="filterInvoices('paid')">paid</button>
+        </div>
+        <button class="new-course-btn" onclick="openCreateInvoiceModal()">+ new invoice</button>
+      </div>
+      <div id="invoice-list">
+        <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Create invoice modal ────────────────────────────────────────── -->
+    <div class="modal-overlay" id="create-invoice-modal">
+      <div class="modal">
+        <h2>create invoice</h2>
+        <div class="modal-field">
+          <label>Company *</label>
+          <select id="inv-company"><option value="">select company…</option></select>
+        </div>
+        <div class="modal-field">
+          <label>VAT rate % <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for no VAT)</span></label>
+          <input type="number" id="inv-vat-rate" step="0.1" placeholder="e.g. 8.1">
+        </div>
+        <div class="modal-field">
+          <label>Notes</label>
+          <input type="text" id="inv-notes" placeholder="Optional notes">
+        </div>
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">completed sessions (select to include)</p>
+        <div id="inv-sessions" style="max-height:300px;overflow-y:auto;">
+          <p style="font-size:0.78rem;color:#aaa;">Select a company first.</p>
+        </div>
+        <div style="margin-top:1rem;padding-top:0.8rem;border-top:1px solid #eee;">
+          <span style="font-size:0.82rem;color:#555;" id="inv-total-preview">Total: —</span>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeCreateInvoiceModal()">cancel</button>
+          <button class="modal-submit" id="inv-submit" onclick="submitCreateInvoice()">create invoice</button>
+        </div>
+        <p class="modal-msg" id="inv-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Invoice detail modal ────────────────────────────────────────── -->
+    <div class="modal-overlay" id="invoice-detail-modal">
+      <div class="modal" style="width:min(92vw,600px);">
+        <h2 id="inv-detail-title">invoice</h2>
+        <div id="inv-detail-content"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeInvoiceDetailModal()">close</button>
+        </div>
       </div>
     </div>
 
