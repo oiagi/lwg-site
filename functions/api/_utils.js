@@ -21,12 +21,33 @@ export function supabaseHeaders(key) {
   };
 }
 
-// ── Admin password check ──────────────────────────────────────────────────
-// Returns a 401 Response if the x-admin-password header does not match, or
+// ── Supabase JWT verification ─────────────────────────────────────────────
+// Verifies a Supabase access token by calling Supabase's auth API.
+// Returns the user object if valid, or null if invalid/expired.
+export async function verifySupabaseToken(token, env) {
+  if (!token) return null;
+  try {
+    const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'apikey': env.SUPABASE_ANON_KEY,
+      },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ── Admin auth check ─────────────────────────────────────────────────────
+// Returns a 401 Response if the Authorization Bearer token is invalid, or
 // null if authentication passes (so callers can do: const err = requireAdminAuth(...); if (err) return err;).
-export function requireAdminAuth(request, env) {
-  const pwd = request.headers.get('x-admin-password');
-  if (!pwd || pwd !== env.ADMIN_PASSWORD) {
+export async function requireAdminAuth(request, env) {
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const user = await verifySupabaseToken(token, env);
+  if (!user) {
     return errorResponse('Unauthorised', 401);
   }
   return null;

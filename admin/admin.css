@@ -29,7 +29,8 @@ label {
   display: block; font-size: 0.72rem; letter-spacing: 0.15em;
   text-transform: uppercase; color: #555; margin-bottom: 0.6rem;
 }
-input[type="password"] {
+input[type="password"],
+input[type="email"] {
   width: 100%; background: transparent; border: none;
   border-bottom: 1px solid #1a1a1a; padding: 0.4rem 0;
   font-family: inherit; font-size: 1rem; font-weight: 300;
@@ -81,6 +82,14 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
 }
 .main-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
 .main-tab:hover  { color: #1a1a1a; }
+.logout-btn {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  font-family: inherit; font-size: 0.68rem; letter-spacing: 0.12em;
+  text-transform: uppercase; background: transparent; border: 1px solid #aaa;
+  color: #888; padding: 0.3rem 0.8rem; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.logout-btn:hover { color: #1a1a1a; border-color: #1a1a1a; }
 
 /* ── Course list ──────────────────────────────────────────────── */
 .course-row {

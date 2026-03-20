@@ -1,5 +1,6 @@
 /* ── Teachers cache (shared between enquiries & courses) ──────────── */
-import { apiFetch, getPassword } from './api.js';
+import { apiFetch } from './api.js';
+import { getAccessToken } from './auth.js';
 
 let teachersCache = null;
 
@@ -45,10 +46,10 @@ export async function populateTeacherSelects() {
   });
 }
 
-export function authoriseTeacher(teacherId) {
-  const pwd = getPassword() || document.getElementById('admin-pwd')?.value || '';
+export async function authoriseTeacher(teacherId) {
+  const token = await getAccessToken();
   const popup = window.open(
-    '/api/auth-login?teacher_id=' + teacherId + '&pwd=' + encodeURIComponent(pwd),
+    '/api/auth-login?teacher_id=' + teacherId + '&token=' + encodeURIComponent(token),
     'gcal-auth', 'width=600,height=700,left=200,top=100'
   );
   const poll = setInterval(() => {

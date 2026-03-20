@@ -12,6 +12,7 @@
        Detects phone / tablet / desktop using screen size + pointer type
        + user-agent so CSS can adapt per device class.                  -->
   <script src="device-detect.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -19,9 +20,13 @@
   <div id="login-screen">
     <h1>admin</h1>
     <div class="field">
+      <label for="admin-email">email</label>
+      <input type="email" id="admin-email" autocomplete="username" />
+    </div>
+    <div class="field">
       <label for="admin-pwd">password</label>
       <input type="password" id="admin-pwd" autocomplete="current-password" />
-      <div class="error-msg" id="pwd-error">Incorrect password.</div>
+      <div class="error-msg" id="pwd-error">Invalid email or password.</div>
     </div>
     <button class="submit" id="login-btn">enter</button>
   </div>
@@ -30,7 +35,8 @@
   <div id="dashboard">
 
     <!-- ── Main tab switcher ──────────────────────────────────────────── -->
-    <div class="main-tabs">
+    <div class="main-tabs" style="position:relative;">
+      <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
       <button class="main-tab active" id="tab-enquiries" onclick="switchTab('enquiries')">enquiries</button>
       <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
       <button class="main-tab" id="tab-companies" onclick="switchTab('companies')">companies</button>

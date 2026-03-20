@@ -14,7 +14,7 @@ import { generateQrReference, nextInvoiceNumber } from './_qr-utils.js';
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const authErr = requireAdminAuth(request, env);
+  const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
   let body;
