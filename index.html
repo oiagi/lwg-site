@@ -99,6 +99,10 @@
     html[data-device="mobile"] .logo-img { width: min(88vw, 340px); }
     html[data-device="mobile"] .blurb p  { font-size: 0.95rem; line-height: 1.9; }
     html[data-touch="true"] .logo-hint { display: none; }
+
+    /* ── Entire page is clickable to open nav ──────────────────── */
+    body { cursor: pointer; }
+    body.nav-active { cursor: default; }
   </style>
   <script src="device-detect.js"></script>
 </head>
@@ -107,7 +111,7 @@
   <!-- ── Logo — clicking opens the nav ─────────────────────────────── -->
   <div class="logo-wrap" id="logo-wrap" role="button" aria-label="Open navigation">
     <img class="logo-img" src="lwg_logo.png" alt="learning with Gioia" />
-    <span class="logo-hint">use the ☁ above to navigate</span>
+    <span class="logo-hint">click anywhere to navigate</span>
   </div>
 
   <!-- ── Blurb ──────────────────────────────────────────────────────── -->
@@ -119,10 +123,17 @@
 
   <script src="nav.js"></script>
   <script>
-    /* ── Logo click opens nav ──────────────────────────────────────── */
-    document.getElementById('logo-wrap').addEventListener('click', function (e) {
+    /* ── Click anywhere on page opens nav ──────────────────────────── */
+    document.body.addEventListener('click', function (e) {
+      if (!window.__navIsOpen()) {
+        e.stopPropagation();
+        window.__navToggle(e.clientX, e.clientY);
+      }
+    });
+
+    /* nav-menu clicks should navigate, not re-trigger body click */
+    document.getElementById('nav-menu').addEventListener('click', function (e) {
       e.stopPropagation();
-      window.__navToggle(e.clientX, e.clientY);
     });
 
     /* ── Cursor-following tooltip ───────────────────────────────────── */
