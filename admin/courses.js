@@ -280,6 +280,11 @@ export function closeNewCourseModal() {
   document.getElementById('new-course-modal').classList.remove('open');
 }
 
+export function removeParticipantBlock(el) {
+  const block = el.closest('.participant-block');
+  if (block) block.remove();
+}
+
 export function addParticipantBlock() {
   const container = document.getElementById('nc-participants');
   const i = participantCount++;
@@ -290,7 +295,7 @@ export function addParticipantBlock() {
   block.innerHTML = `
     <div class="full" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
       <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
-      <button onclick="this.closest('.participant-block').remove()" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
+      <button data-action="removeParticipantBlock" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
     </div>
     <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
     <div class="modal-field"><label>Last name</label><input type="text" id="nc-p${i}-last" placeholder="Last name"></div>
