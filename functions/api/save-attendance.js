@@ -26,7 +26,8 @@ export async function onRequestPost({ request, env }) {
   let session_id, records;
   try {
     ({ session_id, records } = await request.json());
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse save-attendance request body:', err);
     return errorResponse('Invalid JSON', 400);
   }
 

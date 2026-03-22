@@ -37,12 +37,12 @@
     <!-- ── Main tab switcher ──────────────────────────────────────────── -->
     <div class="main-tabs" style="position:relative;">
       <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
-      <button class="main-tab active" id="tab-enquiries" onclick="switchTab('enquiries')">enquiries</button>
-      <button class="main-tab" id="tab-courses" onclick="switchTab('courses')">courses</button>
-      <button class="main-tab" id="tab-companies" onclick="switchTab('companies')">companies</button>
-      <button class="main-tab" id="tab-billing" onclick="switchTab('billing')">billing</button>
-      <button class="main-tab" id="tab-reports" onclick="switchTab('reports')">reports</button>
-      <button class="main-tab" id="tab-teachers" onclick="switchTab('teachers')">teachers</button>
+      <button class="main-tab active" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
+      <button class="main-tab" id="tab-courses" data-action="switchTab" data-args="courses">courses</button>
+      <button class="main-tab" id="tab-companies" data-action="switchTab" data-args="companies">companies</button>
+      <button class="main-tab" id="tab-billing" data-action="switchTab" data-args="billing">billing</button>
+      <button class="main-tab" id="tab-reports" data-action="switchTab" data-args="reports">reports</button>
+      <button class="main-tab" id="tab-teachers" data-action="switchTab" data-args="teachers">teachers</button>
     </div>
 
     <!-- ── Enquiries panel ───────────────────────────────────────────── -->
@@ -117,11 +117,11 @@
             <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p0-phone" placeholder="+41…"></div>
           </div>
         </div>
-        <button class="add-participant-btn" onclick="addParticipantBlock()">+ add participant</button>
+        <button class="add-participant-btn" data-action="addParticipantBlock">+ add participant</button>
 
         <div class="modal-actions">
-          <button class="modal-cancel" onclick="closeNewCourseModal()">cancel</button>
-          <button class="modal-submit" id="nc-submit" onclick="submitNewCourse()">create course &amp; calendar event</button>
+          <button class="modal-cancel" data-action="closeNewCourseModal">cancel</button>
+          <button class="modal-submit" id="nc-submit" data-action="submitNewCourse">create course &amp; calendar event</button>
         </div>
         <p class="modal-msg" id="nc-msg"></p>
       </div>
@@ -130,12 +130,12 @@
     <div id="panel-courses" style="display:none;">
       <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
         <div class="course-filter-row">
-          <button class="filter-btn active" data-course-status="active" onclick="filterCourses('active')">active</button>
-          <button class="filter-btn" data-course-status="all" onclick="filterCourses('all')">all</button>
-          <button class="filter-btn" data-course-status="completed" onclick="filterCourses('completed')">completed</button>
-          <button class="filter-btn" data-course-status="cancelled" onclick="filterCourses('cancelled')">cancelled</button>
+          <button class="filter-btn active" data-course-status="active" data-action="filterCourses" data-args="active">active</button>
+          <button class="filter-btn" data-course-status="all" data-action="filterCourses" data-args="all">all</button>
+          <button class="filter-btn" data-course-status="completed" data-action="filterCourses" data-args="completed">completed</button>
+          <button class="filter-btn" data-course-status="cancelled" data-action="filterCourses" data-args="cancelled">cancelled</button>
         </div>
-        <button class="new-course-btn" onclick="openNewCourseModal()">+ new course</button>
+        <button class="new-course-btn" data-action="openNewCourseModal">+ new course</button>
       </div>
       <div id="course-list">
         <div class="loading-state">loading…</div>
@@ -146,10 +146,10 @@
     <div id="panel-companies" style="display:none;">
       <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
         <div class="course-filter-row">
-          <button class="filter-btn active" data-company-status="true" onclick="filterCompanies('true')">active</button>
-          <button class="filter-btn" data-company-status="all" onclick="filterCompanies('all')">all</button>
+          <button class="filter-btn active" data-company-status="true" data-action="filterCompanies" data-args="true">active</button>
+          <button class="filter-btn" data-company-status="all" data-action="filterCompanies" data-args="all">all</button>
         </div>
-        <button class="new-course-btn" onclick="openCompanyModal()">+ new company</button>
+        <button class="new-course-btn" data-action="openCompanyModal">+ new company</button>
       </div>
       <div id="company-list">
         <div class="loading-state">loading…</div>
@@ -160,12 +160,12 @@
     <div id="panel-billing" style="display:none;">
       <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
         <div class="course-filter-row">
-          <button class="filter-btn active" data-inv-status="all" onclick="filterInvoices('all')">all</button>
-          <button class="filter-btn" data-inv-status="draft" onclick="filterInvoices('draft')">draft</button>
-          <button class="filter-btn" data-inv-status="sent" onclick="filterInvoices('sent')">sent</button>
-          <button class="filter-btn" data-inv-status="paid" onclick="filterInvoices('paid')">paid</button>
+          <button class="filter-btn active" data-inv-status="all" data-action="filterInvoices" data-args="all">all</button>
+          <button class="filter-btn" data-inv-status="draft" data-action="filterInvoices" data-args="draft">draft</button>
+          <button class="filter-btn" data-inv-status="sent" data-action="filterInvoices" data-args="sent">sent</button>
+          <button class="filter-btn" data-inv-status="paid" data-action="filterInvoices" data-args="paid">paid</button>
         </div>
-        <button class="new-course-btn" onclick="openCreateInvoiceModal()">+ new invoice</button>
+        <button class="new-course-btn" data-action="openCreateInvoiceModal">+ new invoice</button>
       </div>
       <div id="invoice-list">
         <div class="loading-state">loading…</div>
@@ -198,8 +198,8 @@
           <span style="font-size:0.82rem;color:#555;" id="inv-total-preview">Total: —</span>
         </div>
         <div class="modal-actions">
-          <button class="modal-cancel" onclick="closeCreateInvoiceModal()">cancel</button>
-          <button class="modal-submit" id="inv-submit" onclick="submitCreateInvoice()">create invoice</button>
+          <button class="modal-cancel" data-action="closeCreateInvoiceModal">cancel</button>
+          <button class="modal-submit" id="inv-submit" data-action="submitCreateInvoice">create invoice</button>
         </div>
         <p class="modal-msg" id="inv-msg"></p>
       </div>
@@ -211,7 +211,7 @@
         <h2 id="inv-detail-title">invoice</h2>
         <div id="inv-detail-content"></div>
         <div class="modal-actions">
-          <button class="modal-cancel" onclick="closeInvoiceDetailModal()">close</button>
+          <button class="modal-cancel" data-action="closeInvoiceDetailModal">close</button>
         </div>
       </div>
     </div>
@@ -233,8 +233,8 @@
           <div class="modal-field full"><label>Notes</label><input type="text" id="cm-notes" placeholder="Internal notes"></div>
         </div>
         <div class="modal-actions">
-          <button class="modal-cancel" onclick="closeCompanyModal()">cancel</button>
-          <button class="modal-submit" id="cm-submit" onclick="submitCompany()">save company</button>
+          <button class="modal-cancel" data-action="closeCompanyModal">cancel</button>
+          <button class="modal-submit" id="cm-submit" data-action="submitCompany">save company</button>
         </div>
         <p class="modal-msg" id="cm-msg"></p>
       </div>
@@ -245,10 +245,10 @@
     <div id="panel-reports" style="display:none;">
       <div class="dashboard-header">
         <div class="course-filter-row">
-          <button class="filter-btn active" data-report-type="overview" onclick="filterReport('overview')">overview</button>
-          <button class="filter-btn" data-report-type="revenue" onclick="filterReport('revenue')">revenue</button>
-          <button class="filter-btn" data-report-type="sessions" onclick="filterReport('sessions')">sessions</button>
-          <button class="filter-btn" data-report-type="attendance" onclick="filterReport('attendance')">attendance</button>
+          <button class="filter-btn active" data-report-type="overview" data-action="filterReport" data-args="overview">overview</button>
+          <button class="filter-btn" data-report-type="revenue" data-action="filterReport" data-args="revenue">revenue</button>
+          <button class="filter-btn" data-report-type="sessions" data-action="filterReport" data-args="sessions">sessions</button>
+          <button class="filter-btn" data-report-type="attendance" data-action="filterReport" data-args="attendance">attendance</button>
         </div>
       </div>
       <div id="report-content">
@@ -260,7 +260,7 @@
     <div id="panel-teachers" style="display:none;">
       <div class="dashboard-header" style="align-items:center;">
         <div class="modal-field" style="margin-bottom:0;min-width:200px;">
-          <select id="avail-teacher" onchange="onTeacherSelect()">
+          <select id="avail-teacher" data-action-change="onTeacherSelect">
             <option value="">select teacher…</option>
           </select>
         </div>
@@ -278,8 +278,8 @@
         <input type="hidden" id="att-course-id" value="">
         <div id="att-students"></div>
         <div class="modal-actions">
-          <button class="modal-cancel" onclick="closeAttendanceModal()">cancel</button>
-          <button class="modal-submit" id="att-submit" onclick="submitAttendance()">save attendance</button>
+          <button class="modal-cancel" data-action="closeAttendanceModal">cancel</button>
+          <button class="modal-submit" id="att-submit" data-action="submitAttendance">save attendance</button>
         </div>
         <p class="modal-msg" id="att-msg"></p>
       </div>

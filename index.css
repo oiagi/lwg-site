@@ -1,0 +1,80 @@
+/* ── Index page: white background (other pages use blue) ────── */
+body {
+  --page-bg: #ffffff;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 5rem 1.5rem 4rem;
+  gap: 0;
+}
+body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
+
+/* ── Logo ────────────────────────────────────────────────────── */
+.logo-wrap {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.8s ease both;
+}
+.logo-img {
+  width: min(72vw, 480px);
+  height: auto;
+  display: block;
+  opacity: 0.92;
+  transition: opacity 0.2s;
+}
+.logo-wrap:hover .logo-img { opacity: 1; }
+
+/* ── Nav hint tooltip — follows cursor ──────────────────────── */
+.logo-hint {
+  position: fixed;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #555;
+  background: rgba(255,255,255,0.92);
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #ddd;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 999;
+  transform: translate(16px, -50%);
+}
+.logo-hint.visible { opacity: 1; }
+
+/* ── Blurb ───────────────────────────────────────────────────── */
+.blurb {
+  text-align: center;
+  max-width: 420px;
+  animation: fadeUp 0.9s ease 0.15s both;
+}
+.blurb p {
+  font-size: 1rem;
+  line-height: 2;
+  font-weight: 300;
+  color: #1a1a1a;
+  letter-spacing: 0.03em;
+}
+.blurb .divider {
+  display: block;
+  width: 1px;
+  height: 1.2rem;
+  background: #ccc;
+  margin: 0.4rem auto;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+html[data-device="mobile"] body  { padding: 4.5rem 1rem 3rem; }
+html[data-device="mobile"] .logo-img { width: min(88vw, 340px); }
+html[data-device="mobile"] .blurb p  { font-size: 0.95rem; line-height: 1.9; }
+html[data-touch="true"] .logo-hint { display: none; }
+
+/* ── Entire page is clickable to open nav ──────────────────── */
+body { cursor: pointer; }
+body.nav-active { cursor: default; }

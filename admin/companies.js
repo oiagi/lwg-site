@@ -44,7 +44,7 @@ function renderCompanies(companies) {
 
     return `
     <div class="company-row" id="company-${c.id}">
-      <div class="company-summary" onclick="toggleCompany('${c.id}')">
+      <div class="company-summary" data-action="toggleCompany" data-args="${c.id}">
         <span class="company-name">${c.name}</span>
         <span class="company-contact">${c.contact_name || '—'}</span>
         <span class="company-stats">${stats}</span>
@@ -71,7 +71,7 @@ function renderCompanies(companies) {
         </div>
         ${c.notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + c.notes + '</p>' : ''}
         <div style="display:flex;gap:0.5rem;">
-          <button class="save-btn" onclick="event.stopPropagation();editCompany('${c.id}')">edit</button>
+          <button class="save-btn" data-action="editCompany" data-args="${c.id}">edit</button>
         </div>
       </div>
     </div>`;

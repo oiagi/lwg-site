@@ -71,10 +71,10 @@ function renderCourses(courses) {
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDate(s.scheduled_at)}</div>
         <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
-        <button class="action-btn" onclick="event.stopPropagation();openAttendanceModal('${s.id}','${c.id}','${fmtDate(s.scheduled_at)}')">attendance</button>
+        <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
         ${s.status === 'scheduled' ? `
-          <button class="log-btn" onclick="logSession('${s.id}', '${c.id}')">mark completed</button>
-          <button class="cancel-btn" onclick="cancelSession('${s.id}', '${c.id}')">cancel</button>
+          <button class="log-btn" data-action="logSession" data-args="${s.id},${c.id}">mark completed</button>
+          <button class="cancel-btn" data-action="cancelSession" data-args="${s.id},${c.id}">cancel</button>
         ` : ''}
       </div>
     `).join('');
@@ -98,7 +98,7 @@ function renderCourses(courses) {
             style="background:transparent;border:none;border-bottom:1px solid #ddd;
             font-family:inherit;font-size:0.75rem;color:#555;outline:none;width:60px;"
             placeholder="level" />
-          <button class="save-btn" onclick="saveStudent('${s.id}')">save</button>
+          <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
       </div>
@@ -107,22 +107,22 @@ function renderCourses(courses) {
     const noSessions = !c.sessions?.length
       ? `<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
            <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
-           <button class="save-btn" onclick="syncCalendar('${c.id}')">sync calendar</button>
+           <button class="save-btn" data-action="syncCalendar" data-args="${c.id}">sync calendar</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`
       : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
-           <button class="save-btn" style="font-size:0.65rem;" onclick="syncCalendar('${c.id}')">↻ sync</button>
+           <button class="save-btn" style="font-size:0.65rem;" data-action="syncCalendar" data-args="${c.id}">↻ sync</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`;
 
     return `
       <div class="course-row" id="course-${c.id}">
-        <div class="course-summary" onclick="toggleCourse('${c.id}')">
+        <div class="course-summary" data-action="toggleCourse" data-args="${c.id}">
           <span class="course-code">${c.course_code || '—'}</span>
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
           <span class="course-status ${c.status}">${c.status}</span>
-          <button class="delete-course-btn" onclick="event.stopPropagation();deleteCourse('${c.id}','${c.course_code}')">delete</button>
+          <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${c.course_code}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;">

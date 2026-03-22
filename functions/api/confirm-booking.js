@@ -96,7 +96,8 @@ export async function onRequestPost({ request, env }) {
     ({ enquiry_id, teacher_id, sessions_total, first_session_at,
        duration_minutes = 50, course_code_override,
        booking_data, contact_data } = await request.json());
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse confirm-booking request body:', err);
     return errorResponse('Invalid JSON', 400);
   }
 

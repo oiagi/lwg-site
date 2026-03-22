@@ -53,6 +53,23 @@ export async function requireAdminAuth(request, env) {
   return null;
 }
 
+// ── Request handler wrapper ─────────────────────────────────────────────
+// Wraps a handler function with consistent error handling and logging.
+// Usage: export const onRequestGet = withErrorHandling(async (ctx) => { ... });
+export function withErrorHandling(handler, operationName) {
+  return async (ctx) => {
+    try {
+      return await handler(ctx);
+    } catch (err) {
+      console.error(`${operationName || 'API'} error:`, err?.message || err);
+      return errorResponse(
+        err?.userMessage || 'An unexpected error occurred',
+        err?.statusCode || 500
+      );
+    }
+  };
+}
+
 // ── Google OAuth token refresh ────────────────────────────────────────────
 // Returns a valid access token for the given teacher, refreshing via OAuth
 // if the current token is within 5 minutes of expiry. Persists the new

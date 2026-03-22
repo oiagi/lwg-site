@@ -10,9 +10,9 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse, withErrorHandling } from './_utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -27,6 +27,7 @@ export async function onRequestGet({ request, env }) {
     `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=id,first_name,last_name,current_level`,
     { headers: H }
   );
+  if (!studentRes.ok) return errorResponse('Database error');
   const students = await studentRes.json();
   if (!students.length) return errorResponse('Invalid token', 404);
   const student = students[0];
@@ -36,6 +37,7 @@ export async function onRequestGet({ request, env }) {
     `${SUPABASE_URL}/rest/v1/enrolments?student_id=eq.${student.id}&select=course_id`,
     { headers: H }
   );
+  if (!enrolRes.ok) return errorResponse('Database error');
   const enrolments = await enrolRes.json();
   const courseIds  = enrolments.map(e => e.course_id);
 
@@ -46,22 +48,31 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
-  // ── Load courses ──────────────────────────────────────────────────────
+  // ── Batch load courses and sessions ──────────────────────────────────
   const courseFilter = courseIds.map(id => `id.eq.${id}`).join(',');
-  const coursesRes   = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,sessions_total,sessions_completed,status`,
-    { headers: H }
-  );
-  const courses = await coursesRes.json();
-
-  // ── Load sessions for each course ────────────────────────────────────
-  const enriched = await Promise.all(courses.map(async (course) => {
-    const sessRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course.id}&order=scheduled_at.asc&select=id,scheduled_at,status,duration_minutes`,
+  const [coursesRes, sessRes] = await Promise.all([
+    fetch(
+      `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,sessions_total,sessions_completed,status`,
       { headers: H }
-    );
-    const sessions = sessRes.ok ? await sessRes.json() : [];
-    return { ...course, sessions };
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter.replace(/id\.eq\./g, 'course_id.eq.')})&order=scheduled_at.asc&select=id,course_id,scheduled_at,status,duration_minutes`,
+      { headers: H }
+    ),
+  ]);
+
+  const courses  = coursesRes.ok ? await coursesRes.json() : [];
+  const sessions = sessRes.ok    ? await sessRes.json()    : [];
+
+  // ── Group sessions by course ─────────────────────────────────────────
+  const sessionsByCourse = {};
+  for (const s of sessions) {
+    (sessionsByCourse[s.course_id] ||= []).push(s);
+  }
+
+  const enriched = courses.map(course => ({
+    ...course,
+    sessions: sessionsByCourse[course.id] || [],
   }));
 
   return jsonResponse({
@@ -72,4 +83,4 @@ export async function onRequestGet({ request, env }) {
     },
     courses: enriched,
   });
-}
+}, 'student-sessions');
