@@ -87,7 +87,7 @@ function renderEnquiries(rows) {
 
     return `
     <div class="enquiry-row" id="row-${row.id}">
-      <div class="enquiry-summary" onclick="toggleDetail('${row.id}')">
+      <div class="enquiry-summary" data-action="toggleDetail" data-args="${row.id}">
         <span class="dot ${status}"></span>
         <div>
           <div class="enq-name">${name}</div>
@@ -111,14 +111,14 @@ function renderEnquiries(rows) {
               <option value="confirmed" ${status==='confirmed' ?'selected':''}>confirmed</option>
               <option value="cancelled" ${status==='cancelled' ?'selected':''}>cancelled</option>
             </select>
-            <button class="save-btn" onclick="saveStatus('${row.id}')">save</button>
+            <button class="save-btn" data-action="saveStatus" data-args="${row.id}">save</button>
             <span class="saved-msg" id="saved-${row.id}">saved</span>
-            <button class="delete-btn" onclick="deleteEnquiry('${row.id}')">delete</button>
+            <button class="delete-btn" data-action="deleteEnquiry" data-args="${row.id}">delete</button>
           </div>
           <textarea class="notes-input" id="notes-${row.id}"
             placeholder="internal notes…">${row.notes || ''}</textarea>
           <div style="margin-top:0.4rem;">
-            <button class="save-btn" onclick="saveNotes('${row.id}')">save notes</button>
+            <button class="save-btn" data-action="saveNotes" data-args="${row.id}">save notes</button>
             <span class="saved-msg" id="notes-saved-${row.id}">saved</span>
           </div>
 
@@ -143,7 +143,7 @@ function renderEnquiries(rows) {
               <input type="number" id="confirm-sessions-${row.id}" min="1" placeholder="e.g. 20" />
             </div>
 
-            <button class="confirm-btn" onclick="confirmBooking('${row.id}')">confirm booking &amp; create calendar event</button>
+            <button class="confirm-btn" data-action="confirmBooking" data-args="${row.id}">confirm booking &amp; create calendar event</button>
             <p class="confirm-msg" id="confirm-msg-${row.id}"></p>
           </div>
           ` : ''}

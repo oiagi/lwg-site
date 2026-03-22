@@ -1,4 +1,5 @@
 /* ── Admin entry point ────────────────────────────────────────────── */
+import { TABS } from './constants.js';
 import { initAuth, signIn, signOut, getSession } from './auth.js';
 import { loadEnquiries, init as initEnquiries, toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking } from './enquiries.js';
 import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
@@ -8,8 +9,8 @@ import { authoriseTeacher } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
 
-/* ── Register globals for onclick handlers in HTML templates ──────── */
-Object.assign(window, {
+/* ── Action registry for event delegation ─────────────────────────── */
+const actions = {
   // Enquiries
   toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking,
   // Courses
@@ -30,11 +31,33 @@ Object.assign(window, {
   onTeacherSelect,
   // Tab switching
   switchTab,
+};
+
+/* ── Event delegation: handles all data-action clicks ─────────────── */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const name = el.dataset.action;
+  const fn = actions[name];
+  if (!fn) return;
+  const args = el.dataset.args ? el.dataset.args.split(',') : [];
+  e.stopPropagation();
+  fn(...args);
+});
+
+document.addEventListener('change', (e) => {
+  const el = e.target.closest('[data-action-change]');
+  if (!el) return;
+  const name = el.dataset.actionChange;
+  const fn = actions[name];
+  if (!fn) return;
+  const args = el.dataset.args ? el.dataset.args.split(',') : [];
+  fn(...args);
 });
 
 /* ── Tab switching ───────────────────────────────────────────────── */
 function switchTab(tab) {
-  const tabs = ['enquiries', 'courses', 'companies', 'billing', 'reports', 'teachers'];
+  const tabs = TABS;
   for (const t of tabs) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);

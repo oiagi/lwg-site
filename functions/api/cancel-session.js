@@ -23,7 +23,8 @@ export async function onRequestDelete({ request, env }) {
   let session_id;
   try {
     ({ session_id } = await request.json());
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse cancel-session request body:', err);
     return errorResponse('Invalid JSON', 400);
   }
 

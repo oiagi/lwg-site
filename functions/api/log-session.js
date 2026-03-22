@@ -20,7 +20,8 @@ export async function onRequestPatch({ request, env }) {
   let session_id, notes;
   try {
     ({ session_id, notes } = await request.json());
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse log-session request body:', err);
     return errorResponse('Invalid JSON', 400);
   }
 

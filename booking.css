@@ -1,0 +1,178 @@
+body {
+  --page-bg: #d6eaf8;           /* used by nav gradient to match page bg */
+  background-color: #d6eaf8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1rem 4rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  transition: background-color 0.6s ease;
+}
+/* Background turns slightly deeper blue when nav is open */
+body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
+
+/* ── Form container ─────────────────────────────────────────── */
+.form-container {
+  width: min(92vw, 480px);
+  margin-top: 1rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+/* ── Page heading ───────────────────────────────────────────── */
+h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: #1a1a1a;
+  margin-bottom: 2.4rem;
+  text-align: center;
+}
+
+/* ── Service tab toggle ─────────────────────────────────────── */
+.service-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2.4rem;
+  border: 1px solid #1a1a1a;
+}
+.service-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  color: #1a1a1a;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  transition: background 0.2s, color 0.2s;
+  user-select: none;
+}
+.service-tab + .service-tab { border-left: 1px solid #1a1a1a; }
+.service-tab:hover { background: rgba(26,26,26,0.06); }
+.service-tab.active { background: #1a1a1a; color: #d6eaf8; }
+
+/* ── Contact link at top ─────────────────────────────────────── */
+.contact-hint {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #777;
+}
+.contact-hint a {
+  color: #1a1a1a;
+  text-decoration: none;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 1px;
+  transition: border-color 0.2s;
+}
+.contact-hint a:hover { border-color: #1a1a1a; }
+
+/* ── Form field wrapper ─────────────────────────────────────── */
+.field { margin-bottom: 1.8rem; }
+
+/* ── Field labels ───────────────────────────────────────────── */
+label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 0.6rem;
+}
+
+/* ── Helper text below fields ───────────────────────────────── */
+.hint {
+  font-size: 0.72rem;
+  color: #777;
+  margin-top: 0.4rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* ── Pill-style radio/checkbox toggles ──────────────────────── */
+.toggle-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.toggle-group input[type="radio"],
+.toggle-group input[type="checkbox"] { display: none; }
+.toggle-group label {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 0;
+}
+.toggle-group input:checked + label { background: #1a1a1a; color: #d6eaf8; }
+
+textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  resize: none;
+  height: 70px;
+}
+
+/* ── Continue button ────────────────────────────────────────── */
+button.submit {
+  margin-top: 2rem;
+  display: block;
+  width: 100%;
+  background: #1a1a1a;
+  color: #d6eaf8;
+  border: none;
+  padding: 0.9rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+button.submit:hover { background: #ffffff; color: #1a1a1a; }
+
+/* ── Inline validation error messages ───────────────────────── */
+.error {
+  font-size: 0.72rem;
+  color: #c0392b;
+  margin-top: 0.3rem;
+  letter-spacing: 0.04em;
+  display: none;
+}
+
+@media (max-width: 500px) {
+  h1 { font-size: 1.6rem; margin-bottom: 1.8rem; }
+  .toggle-group label { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+  .hours-row { flex-wrap: wrap; }
+  .hours-display { min-width: 2.5rem; }
+  button.submit { padding: 0.8rem; font-size: 0.75rem; }
+}
+
+html[data-device="mobile"] h1           { font-size: 1.5rem; margin-bottom: 1.6rem; }
+html[data-device="mobile"] .form-container { width: 96vw; margin-top: 0.4rem; }
+html[data-device="mobile"] .toggle-group label { font-size: 0.8rem; padding: 0.4rem 0.75rem; min-height: 36px; display: inline-flex; align-items: center; }
+html[data-device="mobile"] .hours-row   { flex-wrap: wrap; }
+html[data-device="mobile"] .hours-row button { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
+html[data-device="mobile"] .hours-display { min-width: 2.5rem; }
+html[data-device="mobile"] button.submit { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
+html[data-device="tablet"] h1           { font-size: 1.75rem; }
+html[data-device="tablet"] .form-container { width: min(78vw, 500px); }
+html[data-device="tablet"] .toggle-group label { min-height: 40px; display: inline-flex; align-items: center; }
+html[data-device="tablet"] .hours-row button { width: 2.4rem; height: 2.4rem; }
+html[data-device="tablet"] button.submit { min-height: 48px; }
+/* type toggle touch: inherits .service-tab touch overrides */
+html[data-touch="true"] .hours-row button:hover  { background: none; color: #1a1a1a; }
+html[data-touch="true"] .hours-row button:active { background: #1a1a1a; color: #d6eaf8; }

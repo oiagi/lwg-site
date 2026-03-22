@@ -24,7 +24,8 @@ export async function onRequestDelete({ request, env }) {
   let course_id;
   try {
     ({ course_id } = await request.json());
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse delete-course request body:', err);
     return errorResponse('Invalid JSON', 400);
   }
 

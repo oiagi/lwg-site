@@ -39,7 +39,7 @@ function renderInvoices(invoices) {
   }
 
   list.innerHTML = invoices.map(inv => `
-    <div class="invoice-row" onclick="openInvoiceDetail('${inv.id}')">
+    <div class="invoice-row" data-action="openInvoiceDetail" data-args="${inv.id}">
       <div class="invoice-summary">
         <span class="inv-number">${inv.invoice_number}</span>
         <span class="inv-company">${inv.company_name || '—'}</span>
@@ -114,10 +114,10 @@ export async function openInvoiceDetail(invoiceId) {
       ${inv.notes ? `<p style="font-size:0.78rem;color:#888;margin-top:1rem;">${inv.notes}</p>` : ''}
 
       <div style="display:flex;gap:0.5rem;margin-top:1.4rem;flex-wrap:wrap;">
-        <button class="save-btn" onclick="downloadInvoicePdf('${inv.id}','${inv.invoice_number}')">download PDF</button>
-        ${inv.status === 'draft' ? `<button class="action-btn" onclick="updateInvoiceStatus('${inv.id}','sent')">mark sent</button>` : ''}
-        ${inv.status === 'sent' ? `<button class="log-btn" onclick="updateInvoiceStatus('${inv.id}','paid')">mark paid</button>` : ''}
-        ${inv.status !== 'cancelled' && inv.status !== 'paid' ? `<button class="cancel-btn" onclick="updateInvoiceStatus('${inv.id}','cancelled')">cancel</button>` : ''}
+        <button class="save-btn" data-action="downloadInvoicePdf" data-args="${inv.id},${inv.invoice_number}">download PDF</button>
+        ${inv.status === 'draft' ? `<button class="action-btn" data-action="updateInvoiceStatus" data-args="${inv.id},sent">mark sent</button>` : ''}
+        ${inv.status === 'sent' ? `<button class="log-btn" data-action="updateInvoiceStatus" data-args="${inv.id},paid">mark paid</button>` : ''}
+        ${inv.status !== 'cancelled' && inv.status !== 'paid' ? `<button class="cancel-btn" data-action="updateInvoiceStatus" data-args="${inv.id},cancelled">cancel</button>` : ''}
       </div>
     `;
   } catch {
@@ -233,8 +233,8 @@ async function loadCompanySessions(companyId) {
 
     sessDiv.innerHTML = `
       <div style="margin-bottom:0.5rem;">
-        <button class="add-participant-btn" onclick="toggleAllInvSessions(true)">select all</button>
-        <button class="add-participant-btn" style="margin-left:0.8rem;" onclick="toggleAllInvSessions(false)">deselect all</button>
+        <button class="add-participant-btn" data-action="toggleAllInvSessions" data-args="true">select all</button>
+        <button class="add-participant-btn" style="margin-left:0.8rem;" data-action="toggleAllInvSessions" data-args="false">deselect all</button>
       </div>
     ` + invoiceSessionsCache.map(s => {
       const date = s.scheduled_at
@@ -243,7 +243,7 @@ async function loadCompanySessions(companyId) {
       return `
         <div class="inv-session-check">
           <label>
-            <input type="checkbox" value="${s.id}" checked onchange="updateInvTotalPreview()">
+            <input type="checkbox" value="${s.id}" checked data-action-change="updateInvTotalPreview">
             ${s.course_code || '—'} — ${date}
           </label>
         </div>`;
@@ -256,8 +256,9 @@ async function loadCompanySessions(companyId) {
 }
 
 export function toggleAllInvSessions(checked) {
+  const isChecked = checked === true || checked === 'true';
   document.querySelectorAll('#inv-sessions input[type="checkbox"]').forEach(cb => {
-    cb.checked = checked;
+    cb.checked = isChecked;
   });
   updateInvTotalPreview();
 }
