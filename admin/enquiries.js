@@ -6,9 +6,10 @@ import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teache
 let currentFilter = 'all';
 
 export function init() {
-  document.querySelectorAll('.filter-btn').forEach(btn => {
+  const panel = document.getElementById('panel-enquiries');
+  panel.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      panel.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.status;
       loadEnquiries(currentFilter);

@@ -2,7 +2,7 @@
 import { TABS } from './constants.js';
 import { initAuth, signIn, signOut, getSession } from './auth.js';
 import { loadEnquiries, init as initEnquiries, toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking } from './enquiries.js';
-import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
+import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, removeParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
 import { loadCompanies, getCurrentCompanyFilter, filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany } from './companies.js';
 import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, initVatListener } from './billing.js';
 import { authoriseTeacher } from './teachers.js';
@@ -15,7 +15,7 @@ const actions = {
   toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking,
   // Courses
   filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession,
-  openNewCourseModal, closeNewCourseModal, addParticipantBlock, submitNewCourse, deleteCourse,
+  openNewCourseModal, closeNewCourseModal, addParticipantBlock, removeParticipantBlock, submitNewCourse, deleteCourse,
   openAttendanceModal, closeAttendanceModal, submitAttendance,
   // Companies
   filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany,
@@ -42,7 +42,7 @@ document.addEventListener('click', (e) => {
   if (!fn) return;
   const args = el.dataset.args ? el.dataset.args.split(',') : [];
   e.stopPropagation();
-  fn(...args);
+  fn(...args, el);
 });
 
 document.addEventListener('change', (e) => {
