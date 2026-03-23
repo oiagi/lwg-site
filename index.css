@@ -16,7 +16,6 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
 .logo-wrap {
   position: relative;
   display: inline-block;
-  cursor: pointer;
   margin-bottom: 3rem;
   animation: fadeUp 0.8s ease both;
 }
@@ -28,26 +27,6 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
   transition: opacity 0.2s;
 }
 .logo-wrap:hover .logo-img { opacity: 1; }
-
-/* ── Nav hint tooltip — follows cursor ──────────────────────── */
-.logo-hint {
-  position: fixed;
-  white-space: nowrap;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #555;
-  background: rgba(255,255,255,0.92);
-  padding: 0.3rem 0.7rem;
-  border: 1px solid #ddd;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 999;
-  transform: translate(18px, -50%);
-  top: 0; left: 0;
-}
-.logo-hint.visible { opacity: 1; }
 
 /* ── Blurb ───────────────────────────────────────────────────── */
 .blurb {
@@ -74,8 +53,3 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
 html[data-device="mobile"] body  { padding: 4.5rem 1rem 3rem; }
 html[data-device="mobile"] .logo-img { width: min(88vw, 340px); }
 html[data-device="mobile"] .blurb p  { font-size: 0.95rem; line-height: 1.9; }
-html[data-touch="true"] .logo-hint { display: none; }
-
-/* ── Entire page is clickable to open nav ──────────────────── */
-body { cursor: pointer; }
-body.nav-active { cursor: default; }
