@@ -10,7 +10,10 @@
   var navHTML =
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
-      '<img class="nav-cloud" id="nav-cloud" src="cloud.png" alt="menu" />' +
+      '<picture>' +
+        '<source srcset="cloud.webp" type="image/webp">' +
+        '<img class="nav-cloud" id="nav-cloud" src="cloud.png" alt="menu" width="1369" height="868" />' +
+      '</picture>' +
       '<div class="nav-menu" id="nav-menu">' +
         '<a href="index.html">Home</a>' +
         '<a href="info.html">info</a>' +

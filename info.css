@@ -48,6 +48,8 @@ p {
 /* ── Section divider ────────────────────────────────────────── */
 .section {
   margin-bottom: 2.8rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
 }
 .divider {
   border: none;
