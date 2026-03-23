@@ -10,10 +10,9 @@
   var navHTML =
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
-      '<picture>' +
-        '<source srcset="cloud.webp" type="image/webp">' +
-        '<img class="nav-cloud" id="nav-cloud" src="cloud.png" alt="menu" width="1369" height="868" />' +
-      '</picture>' +
+      '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
+        '<span class="nav-toggle-label" id="nav-toggle-label">menu</span>' +
+      '</button>' +
       '<div class="nav-menu" id="nav-menu">' +
         '<a href="index.html">Home</a>' +
         '<a href="info.html">info</a>' +
@@ -26,11 +25,12 @@
   document.body.insertAdjacentHTML('afterbegin', navHTML);
 
   // ── References ──────────────────────────────────────────────────
-  var navCloud = document.getElementById('nav-cloud');
-  var navMenu  = document.getElementById('nav-menu');
-  var nav      = document.getElementById('nav');
-  var overlay  = document.getElementById('nav-overlay');
-  var menuOpen = false;
+  var navToggle = document.getElementById('nav-toggle');
+  var navLabel  = document.getElementById('nav-toggle-label');
+  var navMenu   = document.getElementById('nav-menu');
+  var nav       = document.getElementById('nav');
+  var overlay   = document.getElementById('nav-overlay');
+  var menuOpen  = false;
 
   // ── Ripple effect ───────────────────────────────────────────────
   function triggerRipple(x, y) {
@@ -47,6 +47,7 @@
   // ── Toggle helper ───────────────────────────────────────────────
   function toggleMenu(open, x, y) {
     menuOpen = open;
+    navLabel.textContent = menuOpen ? 'close' : 'menu';
     navMenu.classList.toggle('open', menuOpen);
     document.body.classList.toggle('nav-active', menuOpen);
     if (overlay) overlay.classList.toggle('visible', menuOpen);
@@ -64,7 +65,7 @@
   });
 
   // ── Cloud click ─────────────────────────────────────────────────
-  navCloud.addEventListener('click', function (e) {
+  navToggle.addEventListener('click', function (e) {
     e.stopPropagation();
     toggleMenu(!menuOpen, e.clientX, e.clientY);
   });
@@ -76,7 +77,7 @@
 
   // ── Touch: prevent ghost click delay ────────────────────────────
   if (document.documentElement.getAttribute('data-touch') === 'true') {
-    navCloud.addEventListener('touchend', function (e) {
+    navToggle.addEventListener('touchend', function (e) {
       e.preventDefault();
       toggleMenu(!menuOpen, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     });

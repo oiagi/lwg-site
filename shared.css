@@ -34,7 +34,7 @@ body {
 }
 .nav-overlay.visible { display: block; }
 
-/* ── Navigation cloud ──────────────────────────────────────────── */
+/* ── Navigation toggle ─────────────────────────────────────────── */
 .nav {
   position: fixed;
   top: clamp(0.8rem, 3.5vw, 1.8rem);
@@ -47,16 +47,22 @@ body {
   visibility: hidden;
   pointer-events: none;
 }
-.nav-cloud {
-  width: clamp(1.4rem, 4vw, 3.6rem);
-  height: clamp(0.7rem, 2vw, 1.8rem);
-  object-fit: contain;
+.nav-toggle {
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
   display: block;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1a1a1a;
   opacity: 0.6;
   transition: opacity 0.2s;
 }
-.nav-cloud:hover { opacity: 1; }
+.nav-toggle:hover { opacity: 1; }
 
 /* ── Nav menu links ────────────────────────────────────────────── */
 .nav-menu {
@@ -64,8 +70,7 @@ body {
   flex-direction: column;
   gap: 0.8rem;
   margin-top: 0.8rem;
-  width: clamp(1.4rem, 4vw, 3.6rem);
-  align-items: center;
+  align-items: flex-start;
 }
 .nav-menu.open {
   display: flex;
@@ -97,12 +102,12 @@ body {
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Desktop: restore hover effects ────────────────────────────── */
-html[data-device="desktop"] .nav-cloud:hover { opacity: 1; }
+html[data-device="desktop"] .nav-toggle:hover { opacity: 1; }
 html[data-device="desktop"] .nav-menu a:hover { opacity: 0.4; }
 
 /* ── Touch devices: use :active instead of :hover ──────────────── */
-html[data-touch="true"] .nav-cloud:hover { opacity: 0.6; }
-html[data-touch="true"] .nav-cloud:active { opacity: 1; }
+html[data-touch="true"] .nav-toggle:hover { opacity: 0.6; }
+html[data-touch="true"] .nav-toggle:active { opacity: 1; }
 html[data-touch="true"] .nav-menu a:hover { opacity: 1; }
 html[data-touch="true"] .nav-menu a:active { opacity: 0.4; }
 
@@ -111,9 +116,8 @@ html[data-device="mobile"] .nav {
   top: 0.9rem;
   left: 1rem;
 }
-html[data-device="mobile"] .nav-cloud {
-  width: 1.6rem;
-  height: 0.8rem;
+html[data-device="mobile"] .nav-toggle {
+  font-size: 0.7rem;
 }
 html[data-device="mobile"] .nav-menu {
   width: auto;
@@ -130,12 +134,10 @@ html[data-device="tablet"] .nav {
   top: 1.1rem;
   left: 1.4rem;
 }
-html[data-device="tablet"] .nav-cloud {
-  width: 1.75rem;
-  height: 0.88rem;
+html[data-device="tablet"] .nav-toggle {
+  font-size: 0.72rem;
 }
 html[data-device="tablet"] .nav-menu {
-  width: 1.75rem;
   gap: 0.9rem;
 }
 html[data-device="tablet"] .nav-menu a {
@@ -144,12 +146,11 @@ html[data-device="tablet"] .nav-menu a {
 }
 
 /* ── Desktop: standard nav sizing ──────────────────────────────── */
-html[data-device="desktop"] .nav-cloud {
-  width: 3.6rem;
-  height: 1.8rem;
+html[data-device="desktop"] .nav-toggle {
+  font-size: 0.75rem;
 }
 html[data-device="desktop"] .nav-menu {
-  width: 3.6rem;
+  width: auto;
 }
 html[data-device="desktop"] .nav-menu a {
   font-size: 0.75rem;
