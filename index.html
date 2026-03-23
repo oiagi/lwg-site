@@ -20,6 +20,8 @@
   <meta name="twitter:image"       content="https://oiagi.org/gioia_logo.png">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="index.css">
@@ -29,7 +31,10 @@
 
   <!-- ── Logo — clicking opens the nav ─────────────────────────────── -->
   <div class="logo-wrap" id="logo-wrap" role="button" aria-label="Open navigation">
-    <img class="logo-img" src="lwg_logo.png" alt="learning with Gioia" />
+    <picture>
+      <source srcset="lwg_logo.webp" type="image/webp">
+      <img class="logo-img" src="lwg_logo.png" alt="learning with Gioia" width="1600" height="300" fetchpriority="high" />
+    </picture>
     <span class="logo-hint">click anywhere to navigate</span>
   </div>
 
