@@ -44,7 +44,8 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
   transition: opacity 0.2s ease;
   pointer-events: none;
   z-index: 999;
-  transform: translate(16px, -50%);
+  transform: translate(18px, -50%);
+  top: 0; left: 0;
 }
 .logo-hint.visible { opacity: 1; }
 

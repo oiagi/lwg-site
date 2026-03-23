@@ -35,8 +35,8 @@
       <source srcset="lwg_logo.webp" type="image/webp">
       <img class="logo-img" src="lwg_logo.png" alt="learning with Gioia" width="1600" height="300" fetchpriority="high" />
     </picture>
-    <span class="logo-hint">click anywhere to navigate</span>
   </div>
+  <span class="logo-hint" id="cursor-hint">click anywhere to navigate · use the cloud on other pages</span>
 
   <!-- ── Blurb ──────────────────────────────────────────────────────── -->
   <div class="blurb">
@@ -61,15 +61,23 @@
     });
 
     /* ── Cursor-following tooltip ───────────────────────────────────── */
-    var logoWrap = document.getElementById('logo-wrap');
-    var hint     = logoWrap.querySelector('.logo-hint');
+    var hint = document.getElementById('cursor-hint');
 
     if (document.documentElement.getAttribute('data-touch') !== 'true') {
-      logoWrap.addEventListener('mouseenter', function () { hint.classList.add('visible'); });
-      logoWrap.addEventListener('mouseleave', function () { hint.classList.remove('visible'); });
-      logoWrap.addEventListener('mousemove', function (e) {
-        hint.style.left = e.clientX + 'px';
-        hint.style.top  = e.clientY + 'px';
+      document.body.addEventListener('mouseenter', function () {
+        if (!window.__navIsOpen()) hint.classList.add('visible');
+      });
+      document.body.addEventListener('mouseleave', function () {
+        hint.classList.remove('visible');
+      });
+      document.body.addEventListener('mousemove', function (e) {
+        if (window.__navIsOpen()) {
+          hint.classList.remove('visible');
+        } else {
+          hint.classList.add('visible');
+          hint.style.left = e.clientX + 'px';
+          hint.style.top  = e.clientY + 'px';
+        }
       });
     }
   </script>
