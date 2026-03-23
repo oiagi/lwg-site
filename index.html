@@ -29,15 +29,13 @@
 </head>
 <body>
 
-  <!-- ── Logo — clicking opens the nav ─────────────────────────────── -->
-  <div class="logo-wrap" id="logo-wrap" role="button" aria-label="Open navigation">
+  <!-- ── Logo ─────────────────────────────────────────────────────── -->
+  <div class="logo-wrap" id="logo-wrap">
     <picture>
       <source srcset="lwg_logo.webp" type="image/webp">
       <img class="logo-img" src="lwg_logo.png" alt="learning with Gioia" width="1600" height="300" fetchpriority="high" />
     </picture>
   </div>
-  <span class="logo-hint" id="cursor-hint">click anywhere to navigate · use the menu on other pages</span>
-
   <!-- ── Blurb ──────────────────────────────────────────────────────── -->
   <div class="blurb">
     <p>Small groups. Carefully prepared,<br>individually tailored lessons.</p>
@@ -46,41 +44,6 @@
   </div>
 
   <script src="nav.js"></script>
-  <script>
-    /* ── Click anywhere on page opens nav ──────────────────────────── */
-    document.body.addEventListener('click', function (e) {
-      if (!window.__navIsOpen()) {
-        e.stopPropagation();
-        window.__navToggle(e.clientX, e.clientY);
-      }
-    });
-
-    /* nav-menu clicks should navigate, not re-trigger body click */
-    document.getElementById('nav-menu').addEventListener('click', function (e) {
-      e.stopPropagation();
-    });
-
-    /* ── Cursor-following tooltip ───────────────────────────────────── */
-    var hint = document.getElementById('cursor-hint');
-
-    if (document.documentElement.getAttribute('data-touch') !== 'true') {
-      document.body.addEventListener('mouseenter', function () {
-        if (!window.__navIsOpen()) hint.classList.add('visible');
-      });
-      document.body.addEventListener('mouseleave', function () {
-        hint.classList.remove('visible');
-      });
-      document.body.addEventListener('mousemove', function (e) {
-        if (window.__navIsOpen()) {
-          hint.classList.remove('visible');
-        } else {
-          hint.classList.add('visible');
-          hint.style.left = e.clientX + 'px';
-          hint.style.top  = e.clientY + 'px';
-        }
-      });
-    }
-  </script>
 
 </body>
 </html>
