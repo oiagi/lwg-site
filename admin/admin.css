@@ -171,6 +171,7 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
 .modal-overlay.open { display: flex; }
 .modal {
   background: #fff; padding: 2rem; width: min(92vw, 600px);
+  min-height: min(85vh, 700px);
   margin: auto;
   flex-shrink: 0;
   animation: fadeUp 0.2s ease both;
