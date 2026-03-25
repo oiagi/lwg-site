@@ -25,6 +25,9 @@ function label(key) {
     group:      'Group size',
     grades:     'School year',
     subjects:   'Subjects',
+    days:       'Preferred days',
+    timeOfDay:  'Time of day',
+    notes:      'Scheduling notes',
   };
   return map[key] || key;
 }
@@ -62,7 +65,8 @@ function participantLines(participants) {
 
 // ── Customer confirmation email ───────────────────────────────────────────
 function buildCustomerEmail(booking, contact) {
-  const name         = contact.lead.firstName;
+  const lead = contact.lead || contact;
+  const name = lead.firstName || 'there';
   const bookingLines = formatBooking(booking);
 
   const bookingRows = bookingLines.map(line => {
@@ -73,19 +77,9 @@ function buildCustomerEmail(booking, contact) {
     </tr>`;
   }).join('');
 
-  const ageRangeRow = contact.ageRange
-    ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;">Age range</td>
-       <td style="padding:6px 0 6px 24px;font-size:13px;">${contact.ageRange}</td></tr>`
-    : '';
-
-  const participantsSection = contact.participants && contact.participants.length > 0
-    ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;">Participants</td>
-       <td style="padding:6px 0 6px 24px;font-size:13px;">${participantLines(contact.participants).join('<br>')}</td></tr>`
-    : '';
-
-  const notesRow = contact.notes
-    ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;">Notes</td>
-       <td style="padding:6px 0 6px 24px;font-size:13px;">${contact.notes}</td></tr>`
+  const preferredContactRow = contact.preferredContact
+    ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;">Preferred contact</td>
+       <td style="padding:6px 0 6px 24px;font-size:13px;">${contact.preferredContact}</td></tr>`
     : '';
 
   return {
@@ -114,16 +108,7 @@ function buildCustomerEmail(booking, contact) {
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Your enquiry</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
               ${bookingRows}
-              <tr><td colspan="2" style="padding:12px 0 0;border-top:1px solid #eee;"></td></tr>
-              <tr><td style="padding:6px 0;color:#888;font-size:13px;">For</td>
-                  <td style="padding:6px 0 6px 24px;font-size:13px;">${contact.ageGroup}</td></tr>
-              ${ageRangeRow}
-              ${participantsSection}
-              <tr><td style="padding:6px 0;color:#888;font-size:13px;">Available days</td>
-                  <td style="padding:6px 0 6px 24px;font-size:13px;">${formatDays(contact.days)}</td></tr>
-              <tr><td style="padding:6px 0;color:#888;font-size:13px;">Time of day</td>
-                  <td style="padding:6px 0 6px 24px;font-size:13px;">${formatTimeOfDay(contact.timeOfDay)}</td></tr>
-              ${notesRow}
+              ${preferredContactRow}
             </table>
           </td>
         </tr>
@@ -148,20 +133,16 @@ function buildCustomerEmail(booking, contact) {
 
 // ── Internal notification email to gioia ─────────────────────────────────
 function buildNotificationEmail(booking, contact, enquiryId) {
-  const lead         = contact.lead;
+  const lead         = contact.lead || contact;
   const bookingLines = formatBooking(booking);
 
   const rows = [
-    ['ID',               enquiryId],
-    ['Lead',             `${lead.firstName} ${lead.lastName}`],
-    ['Email',            lead.email],
-    ['Phone',            lead.phone],
-    ['Self-participant', lead.selfParticipant ? 'Yes' : 'No'],
-    ['For',              contact.ageGroup + (contact.ageRange ? ` (${contact.ageRange})` : '')],
+    ['ID',                enquiryId],
+    ['Lead',              `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || '—'],
+    ['Email',             lead.email],
+    ['Phone',             lead.phone],
+    ['Preferred contact', contact.preferredContact || '—'],
     ...bookingLines.map(l => { const [k, ...r] = l.split(': '); return [k, r.join(': ')]; }),
-    ['Available days',   formatDays(contact.days)],
-    ['Time of day',      formatTimeOfDay(contact.timeOfDay)],
-    ...(contact.notes ? [['Scheduling notes', contact.notes]] : []),
   ];
 
   const tableRows = rows.map(([k, v]) =>
@@ -171,27 +152,8 @@ function buildNotificationEmail(booking, contact, enquiryId) {
      </tr>`
   ).join('');
 
-  const participantBlock = contact.participants && contact.participants.length > 0
-    ? `<p style="margin:24px 0 8px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Participants</p>
-       <table width="100%" cellpadding="0" cellspacing="0">
-         ${contact.participants.map((p, i) => `
-           <tr><td colspan="2" style="padding:8px 0 4px;font-size:12px;color:#555;border-top:1px solid #f0f0f0;">
-             Participant ${i + 1}
-           </td></tr>
-           <tr><td style="padding:3px 0;color:#888;font-size:13px;">Name</td>
-               <td style="padding:3px 0 3px 20px;font-size:13px;">${[p.firstName, p.lastName].filter(Boolean).join(' ') || '—'}</td></tr>
-           <tr><td style="padding:3px 0;color:#888;font-size:13px;">Email</td>
-               <td style="padding:3px 0 3px 20px;font-size:13px;">${p.email || '—'}</td></tr>
-           <tr><td style="padding:3px 0;color:#888;font-size:13px;">Phone</td>
-               <td style="padding:3px 0 3px 20px;font-size:13px;">${p.phone || '—'}</td></tr>
-           <tr><td style="padding:3px 0;color:#888;font-size:13px;">Postcode</td>
-               <td style="padding:3px 0 3px 20px;font-size:13px;">${p.postcode || '—'}</td></tr>
-         `).join('')}
-       </table>`
-    : '';
-
   return {
-    subject: `New enquiry — ${lead.firstName} ${lead.lastName} (${booking.service || 'unknown'})`,
+    subject: `New enquiry — ${lead.firstName || ''} ${lead.lastName || ''} (${booking.service || 'unknown'})`,
     html: `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"></head>
@@ -209,7 +171,6 @@ function buildNotificationEmail(booking, contact, enquiryId) {
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
               ${tableRows}
             </table>
-            ${participantBlock}
           </td>
         </tr>
         <tr>
@@ -237,9 +198,11 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('Invalid JSON', 400);
   }
 
-  if (!booking || !contact || !contact.lead) {
+  if (!booking || !contact) {
     return errorResponse('Missing booking or contact data', 400);
   }
+
+  const lead = contact.lead || contact;
 
   // ── 1. Write to Supabase ───────────────────────────────────────────────
   let enquiryId;
@@ -248,11 +211,11 @@ export async function onRequestPost({ request, env }) {
       method:  'POST',
       headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
       body: JSON.stringify({
-        service:      booking.service         || null,
-        lead_first:   contact.lead.firstName  || null,
-        lead_last:    contact.lead.lastName   || null,
-        lead_email:   contact.lead.email      || null,
-        lead_phone:   contact.lead.phone      || null,
+        service:      booking.service      || null,
+        lead_first:   lead.firstName       || null,
+        lead_last:    lead.lastName        || null,
+        lead_email:   lead.email           || null,
+        lead_phone:   lead.phone           || null,
         booking_data: booking,
         contact_data: contact,
         status:       'new',
@@ -297,7 +260,7 @@ export async function onRequestPost({ request, env }) {
   };
 
   await Promise.allSettled([
-    sendEmail(contact.lead.email, customerEmail),
+    sendEmail(lead.email, customerEmail),
     sendEmail(NOTIFY_EMAIL, notificationEmail),
   ]);
 

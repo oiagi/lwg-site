@@ -127,7 +127,6 @@
         <div class="error" id="l-err-group">Please select a group size.</div>
       </div>
 
-      <button class="submit" id="l-continue-btn">continue →</button>
     </div><!-- /#l-form -->
 
 
@@ -206,7 +205,6 @@
         <div class="error" id="e-err-group">Please select a group size.</div>
       </div>
 
-      <button class="submit" id="e-continue-btn">continue →</button>
     </div><!-- /#e-form -->
 
 
@@ -290,8 +288,49 @@
         <div class="error" id="t-err-group">Please select a group size.</div>
       </div>
 
-      <button class="submit" id="t-continue-btn">continue →</button>
     </div><!-- /#t-form -->
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SCHEDULING PREFERENCES  (shared across all service tabs)
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="scheduling-section" style="display:none;">
+      <p class="section-label">scheduling preferences</p>
+
+      <div class="field">
+        <label>preferred days</label>
+        <div class="toggle-group">
+          <input type="checkbox" name="days" id="day-any" value="Any"><label for="day-any">Any</label>
+          <input type="checkbox" name="days" id="day-mon" value="Monday"><label for="day-mon">Mon</label>
+          <input type="checkbox" name="days" id="day-tue" value="Tuesday"><label for="day-tue">Tue</label>
+          <input type="checkbox" name="days" id="day-wed" value="Wednesday"><label for="day-wed">Wed</label>
+          <input type="checkbox" name="days" id="day-thu" value="Thursday"><label for="day-thu">Thu</label>
+          <input type="checkbox" name="days" id="day-fri" value="Friday"><label for="day-fri">Fri</label>
+          <input type="checkbox" name="days" id="day-sat" value="Saturday"><label for="day-sat">Sat</label>
+          <input type="checkbox" name="days" id="day-sun" value="Sunday"><label for="day-sun">Sun</label>
+        </div>
+        <div class="error" id="err-days">Please select at least one day.</div>
+      </div>
+
+      <div class="field">
+        <label>preferred time of day</label>
+        <div class="toggle-group">
+          <input type="checkbox" name="time_of_day" id="tod-morning"   value="Morning"><label for="tod-morning">Morning</label>
+          <input type="checkbox" name="time_of_day" id="tod-lunch"     value="Lunchtime"><label for="tod-lunch">Lunchtime</label>
+          <input type="checkbox" name="time_of_day" id="tod-afternoon" value="Afternoon"><label for="tod-afternoon">Afternoon</label>
+          <input type="checkbox" name="time_of_day" id="tod-evening"   value="Evening"><label for="tod-evening">Evening</label>
+        </div>
+        <div class="error" id="err-time-of-day">Please select at least one time of day.</div>
+      </div>
+
+      <div class="field">
+        <label for="scheduling-notes">anything else we should know? <span style="font-size:0.7rem; letter-spacing:0.08em; color:#888; text-transform:none;">(optional)</span></label>
+        <input type="text" id="scheduling-notes" name="scheduling_notes"
+               placeholder="e.g. only free after 6pm on weekdays…" />
+      </div>
+
+      <button class="submit" id="continue-btn">continue →</button>
+    </div>
 
   </div><!-- /.form-container -->
 
@@ -315,6 +354,8 @@
          ?group=private|duo|group      pre-ticks group size (language tab)
     ══════════════════════════════════════════════════════════════════ */
 
+    let activeTab = 'language';
+
     /* ── Tab switching ───────────────────────────────────────────────── */
     function selectTab(service) {
       /* Hide all three forms */
@@ -330,6 +371,9 @@
       const tabMap  = { language: 'tab-language', exam: 'tab-exam', tutoring: 'tab-tutoring' };
       document.getElementById(formMap[service]).style.display = 'block';
       document.getElementById(tabMap[service]).classList.add('active');
+      /* Show scheduling section once a tab is selected */
+      document.getElementById('scheduling-section').style.display = 'block';
+      activeTab = service;
     }
 
     /* ── URL pre-selection on page load ─────────────────────────────── */
@@ -396,6 +440,18 @@
     bindLocationHint('e-location', 'e-loc-hint');
     bindLocationHint('t-location', 't-loc-hint');
 
+    /* ── "Any" day deselects individual days and vice versa ─────────── */
+    document.getElementById('day-any').addEventListener('change', e => {
+      if (e.target.checked)
+        ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun']
+          .forEach(id => document.getElementById(id).checked = false);
+    });
+    ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun'].forEach(id => {
+      document.getElementById(id).addEventListener('change', e => {
+        if (e.target.checked) document.getElementById('day-any').checked = false;
+      });
+    });
+
     /* ── Tutoring: show Other subject text field when ticked ─────────── */
     document.querySelectorAll('input[name="t-subjects"]').forEach(cb => {
       cb.addEventListener('change', () => {
@@ -413,45 +469,33 @@
     }
 
     /* ══════════════════════════════════════════════════════════════════
-       LANGUAGE FORM — validation & submission
+       VALIDATION HELPERS — per-service
     ══════════════════════════════════════════════════════════════════ */
-    document.getElementById('l-continue-btn').addEventListener('click', () => {
+    function validateLanguage() {
       let valid = true;
 
-      /* Language */
       const langSel = document.querySelector('input[name="l-language"]:checked');
-      setError('l-err-language', !langSel);
-      if (!langSel) valid = false;
+      setError('l-err-language', !langSel); if (!langSel) valid = false;
 
-      /* Background */
       const bg = document.getElementById('l-background').value.trim();
-      setError('l-err-background', !bg);
-      if (!bg) valid = false;
+      setError('l-err-background', !bg); if (!bg) valid = false;
 
-      /* Level */
       const levelSel = document.querySelector('input[name="l-level"]:checked');
-      setError('l-err-level', !levelSel);
-      if (!levelSel) valid = false;
+      setError('l-err-level', !levelSel); if (!levelSel) valid = false;
 
-      /* Format */
       const formatSel = document.querySelector('input[name="l-format"]:checked');
-      setError('l-err-format', !formatSel);
-      if (!formatSel) valid = false;
+      setError('l-err-format', !formatSel); if (!formatSel) valid = false;
 
-      /* Location (only required when In-person) */
       const lLocVisible = document.getElementById('l-field-location').style.display !== 'none';
       if (lLocVisible) {
         const locSel = document.querySelector('input[name="l-location"]:checked');
-        setError('l-err-location', !locSel);
-        if (!locSel) valid = false;
+        setError('l-err-location', !locSel); if (!locSel) valid = false;
       }
 
-      /* Group size */
       const groupSel = document.querySelector('input[name="l-group"]:checked');
-      setError('l-err-group', !groupSel);
-      if (!groupSel) valid = false;
+      setError('l-err-group', !groupSel); if (!groupSel) valid = false;
 
-      if (!valid) return;
+      if (!valid) return null;
 
       const booking = {
         service:    'language course',
@@ -463,46 +507,31 @@
       };
       const locEl = document.querySelector('input[name="l-location"]:checked');
       if (locEl) booking.location = locEl.value;
+      return booking;
+    }
 
-      sessionStorage.setItem('booking', JSON.stringify(booking));
-      window.location.href = 'contact-details.html';
-    });
-
-    /* ══════════════════════════════════════════════════════════════════
-       EXAM PREP FORM — validation & submission
-    ══════════════════════════════════════════════════════════════════ */
-    document.getElementById('e-continue-btn').addEventListener('click', () => {
+    function validateExam() {
       let valid = true;
 
-      /* Exam type */
       const examSel = document.querySelector('input[name="e-exam"]:checked');
-      setError('e-err-exam', !examSel);
-      if (!examSel) valid = false;
+      setError('e-err-exam', !examSel); if (!examSel) valid = false;
 
-      /* Level */
       const levelSel = document.querySelector('input[name="e-level"]:checked');
-      setError('e-err-level', !levelSel);
-      if (!levelSel) valid = false;
+      setError('e-err-level', !levelSel); if (!levelSel) valid = false;
 
-      /* Format */
       const formatSel = document.querySelector('input[name="e-format"]:checked');
-      setError('e-err-format', !formatSel);
-      if (!formatSel) valid = false;
+      setError('e-err-format', !formatSel); if (!formatSel) valid = false;
 
-      /* Location (only required when In-person) */
       const eLocVisible = document.getElementById('e-field-location').style.display !== 'none';
       if (eLocVisible) {
         const locSel = document.querySelector('input[name="e-location"]:checked');
-        setError('e-err-location', !locSel);
-        if (!locSel) valid = false;
+        setError('e-err-location', !locSel); if (!locSel) valid = false;
       }
 
-      /* Group size */
       const groupSel = document.querySelector('input[name="e-group"]:checked');
-      setError('e-err-group', !groupSel);
-      if (!groupSel) valid = false;
+      setError('e-err-group', !groupSel); if (!groupSel) valid = false;
 
-      if (!valid) return;
+      if (!valid) return null;
 
       const examDate = document.getElementById('e-exam-date').value;
       const booking = {
@@ -515,54 +544,37 @@
       if (examDate) booking.examDate = examDate;
       const locEl = document.querySelector('input[name="e-location"]:checked');
       if (locEl) booking.location = locEl.value;
+      return booking;
+    }
 
-      sessionStorage.setItem('booking', JSON.stringify(booking));
-      window.location.href = 'contact-details.html';
-    });
-
-    /* ══════════════════════════════════════════════════════════════════
-       TUTORING FORM — validation & submission
-    ══════════════════════════════════════════════════════════════════ */
-    document.getElementById('t-continue-btn').addEventListener('click', () => {
+    function validateTutoring() {
       let valid = true;
 
-      /* Grade */
       const gradesSel = document.querySelectorAll('input[name="t-grade"]:checked');
-      setError('t-err-grade', gradesSel.length === 0);
-      if (gradesSel.length === 0) valid = false;
+      setError('t-err-grade', gradesSel.length === 0); if (gradesSel.length === 0) valid = false;
 
-      /* Subjects */
       const subjectsSel = document.querySelectorAll('input[name="t-subjects"]:checked');
-      setError('t-err-subjects', subjectsSel.length === 0);
-      if (subjectsSel.length === 0) valid = false;
+      setError('t-err-subjects', subjectsSel.length === 0); if (subjectsSel.length === 0) valid = false;
 
-      /* Other subject free text */
       const otherVisible = document.getElementById('t-field-subject-other').style.display !== 'none';
       if (otherVisible) {
         const otherText = document.getElementById('t-subject-other').value.trim();
-        setError('t-err-subject-other', !otherText);
-        if (!otherText) valid = false;
+        setError('t-err-subject-other', !otherText); if (!otherText) valid = false;
       }
 
-      /* Format */
       const formatSel = document.querySelector('input[name="t-format"]:checked');
-      setError('t-err-format', !formatSel);
-      if (!formatSel) valid = false;
+      setError('t-err-format', !formatSel); if (!formatSel) valid = false;
 
-      /* Location (only required when In-person) */
       const tLocVisible = document.getElementById('t-field-location').style.display !== 'none';
       if (tLocVisible) {
         const locSel = document.querySelector('input[name="t-location"]:checked');
-        setError('t-err-location', !locSel);
-        if (!locSel) valid = false;
+        setError('t-err-location', !locSel); if (!locSel) valid = false;
       }
 
-      /* Group size */
       const groupSel = document.querySelector('input[name="t-group"]:checked');
-      setError('t-err-group', !groupSel);
-      if (!groupSel) valid = false;
+      setError('t-err-group', !groupSel); if (!groupSel) valid = false;
 
-      if (!valid) return;
+      if (!valid) return null;
 
       const subjects = Array.from(subjectsSel).map(s => s.value);
       const otherText = document.getElementById('t-subject-other').value.trim();
@@ -577,6 +589,35 @@
       };
       const locEl = document.querySelector('input[name="t-location"]:checked');
       if (locEl) booking.location = locEl.value;
+      return booking;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SHARED CONTINUE BUTTON — validates active tab + scheduling
+    ══════════════════════════════════════════════════════════════════ */
+    document.getElementById('continue-btn').addEventListener('click', () => {
+      /* Validate active service tab */
+      const validators = { language: validateLanguage, exam: validateExam, tutoring: validateTutoring };
+      const booking = validators[activeTab]();
+
+      /* Validate scheduling */
+      let schedValid = true;
+
+      const daysSel = document.querySelectorAll('input[name="days"]:checked');
+      setError('err-days', daysSel.length === 0);
+      if (daysSel.length === 0) schedValid = false;
+
+      const todSel = document.querySelectorAll('input[name="time_of_day"]:checked');
+      setError('err-time-of-day', todSel.length === 0);
+      if (todSel.length === 0) schedValid = false;
+
+      if (!booking || !schedValid) return;
+
+      /* Attach scheduling to booking object */
+      booking.days      = Array.from(daysSel).map(d => d.value);
+      booking.timeOfDay = Array.from(todSel).map(t => t.value);
+      const notes = document.getElementById('scheduling-notes').value.trim();
+      if (notes) booking.notes = notes;
 
       sessionStorage.setItem('booking', JSON.stringify(booking));
       window.location.href = 'contact-details.html';

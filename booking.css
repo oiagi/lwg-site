@@ -71,6 +71,18 @@ h1 {
 }
 .contact-hint a:hover { border-color: #1a1a1a; }
 
+/* ── Section divider ──────────────────────────────────────────── */
+.section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 1.4rem;
+  margin-top: 2.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #ccc;
+}
+
 /* ── Form field wrapper ─────────────────────────────────────── */
 .field { margin-bottom: 1.8rem; }
 
@@ -110,6 +122,26 @@ label {
   margin-bottom: 0;
 }
 .toggle-group input:checked + label { background: #1a1a1a; color: #d6eaf8; }
+
+/* ── Text inputs ──────────────────────────────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="tel"] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus { border-bottom-color: #555; }
 
 textarea {
   width: 100%;
