@@ -1,10 +1,10 @@
 /* ── Base reset & typography ────────────────────────────────────── */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; cursor: url('cloud-cursor.png') 25 16, auto !important; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; cursor: url('cloud-cursor.png') 16 10, auto !important; }
 html, body { width: 100%; min-height: 100vh; }
 body {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 300;
-  cursor: url('cloud-cursor.png') 25 16, auto;
+  cursor: url('cloud-cursor.png') 16 10, auto;
   transition: background-color 0.6s ease;
   animation: pageIn 0.4s ease both;
 }
