@@ -170,12 +170,12 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
 }
 .modal-overlay.open { display: flex; }
 .modal {
-  background: #fff; padding: 2rem; width: min(92vw, 500px);
+  background: #fff; padding: 2rem; width: min(92vw, 600px);
   margin: auto;
   flex-shrink: 0;
   animation: fadeUp 0.2s ease both;
 }
-.modal.modal-wide { width: min(92vw, 680px); }
+.modal.modal-wide { width: min(92vw, 900px); }
 .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.6rem; }
 .modal-grid > .full { grid-column: 1 / -1; }
 .modal h2 {
@@ -447,7 +447,7 @@ html[data-device="mobile"] .invoice-summary {
 }
 html[data-device="mobile"] .inv-company,
 html[data-device="mobile"] .inv-date { display: none; }
-html[data-device="mobile"] .modal-wide { width: min(96vw, 500px); }
+html[data-device="mobile"] .modal-wide { width: min(96vw, 600px); }
 html[data-device="mobile"] .modal-grid { grid-template-columns: 1fr; }
 
 /* ── Report cards ────────────────────────────────────────────── */
