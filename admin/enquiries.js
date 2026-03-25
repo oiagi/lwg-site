@@ -39,6 +39,7 @@ function renderBookingDetails(b) {
     exam:'Exam', examDate:'Exam date', frequency:'Frequency',
     format:'Format', location:'Location', group:'Group size',
     grades:'School year', subjects:'Subjects',
+    days:'Preferred days', timeOfDay:'Time of day', notes:'Scheduling notes',
   };
   for (const [k, lbl] of Object.entries(labelMap)) {
     const v = b[k];
@@ -54,11 +55,14 @@ function renderContactDetails(c) {
     ${dl('Name',    [lead.firstName, lead.lastName].filter(Boolean).join(' '))}
     ${dl('Email',   lead.email)}
     ${dl('Phone',   lead.phone)}
-    ${dl('Postcode',lead.postcode)}
-    ${dl('For',     c.ageGroup + (c.ageRange ? ' (' + c.ageRange + ')' : ''))}
-    ${dl('Days',    c.days)}
-    ${dl('Time',    c.timeOfDay)}
-    ${dl('Notes',   c.notes)}`;
+    ${dl('Preferred contact', c.preferredContact)}`;
+
+  /* Backward compat: old enquiries may still have these fields */
+  if (lead.postcode) html += dl('Postcode', lead.postcode);
+  if (c.ageGroup)    html += dl('For', c.ageGroup + (c.ageRange ? ' (' + c.ageRange + ')' : ''));
+  if (c.days)        html += dl('Days', c.days);
+  if (c.timeOfDay)   html += dl('Time', c.timeOfDay);
+  if (c.notes)       html += dl('Notes', c.notes);
 
   if (c.participants && c.participants.length > 0) {
     html += `<div style="margin-top:0.6rem;font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participants</div>`;

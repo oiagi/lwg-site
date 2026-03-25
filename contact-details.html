@@ -36,356 +36,67 @@
   <div class="form-container">
     <h1>your details</h1>
 
-    <!-- ── Booking on behalf toggle ──────────────────────────────────────
-         Shown at the very top. When ticked:
-           - lead contact loses postcode field
-           - participant 1 block appears below lead contact
-           - age group moves to after participant blocks              -->
-    <div class="field" style="margin-bottom:2rem;">
-      <div class="toggle-group">
-        <input type="checkbox" id="behalf-checkbox" name="behalf">
-        <label for="behalf-checkbox">I am booking on behalf of someone else</label>
+    <div style="display:flex; gap:1rem;">
+      <div class="field" style="flex:1;">
+        <label for="lead-first">first name</label>
+        <input type="text" id="lead-first" name="lead_first" autocomplete="given-name" />
+        <div class="error" id="err-lead-first">Please enter a first name.</div>
       </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════════════════════
-         LEAD CONTACT
-         Always required. Full fields by default; postcode hidden when
-         booking on behalf (lead is not a participant).
-         ════════════════════════════════════════════════════════════════ -->
-    <p class="section-label">lead contact</p>
-
-    <div class="participant-block" id="lead-block">
-
-      <div style="display:flex; gap:1rem;">
-        <div class="field" style="flex:1;">
-          <label for="lead-first">first name</label>
-          <input type="text" id="lead-first" name="lead_first" autocomplete="given-name" />
-          <div class="error" id="err-lead-first">Please enter a first name.</div>
-        </div>
-        <div class="field" style="flex:1;">
-          <label for="lead-last">last name</label>
-          <input type="text" id="lead-last" name="lead_last" autocomplete="family-name" />
-          <div class="error" id="err-lead-last">Please enter a last name.</div>
-        </div>
+      <div class="field" style="flex:1;">
+        <label for="lead-last">last name</label>
+        <input type="text" id="lead-last" name="lead_last" autocomplete="family-name" />
+        <div class="error" id="err-lead-last">Please enter a last name.</div>
       </div>
-
-      <div class="field">
-        <label for="lead-email">email</label>
-        <input type="email" id="lead-email" name="lead_email" autocomplete="email" />
-        <div class="error" id="err-lead-email">Please enter an email address.</div>
-      </div>
-
-      <div class="field">
-        <label for="lead-phone">phone</label>
-        <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" />
-        <div class="error" id="err-lead-phone">Please enter a phone number.</div>
-      </div>
-
-      <!-- Postcode — hidden when booking on behalf -->
-      <div class="field" id="lead-postcode-field">
-        <label for="lead-postcode">postcode</label>
-        <input type="text" id="lead-postcode" name="lead_postcode" autocomplete="postal-code" />
-        <div class="error" id="err-lead-postcode">Please enter a postcode.</div>
-      </div>
-
-    </div><!-- /#lead-block -->
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         PARTICIPANTS
-         Default: one block open (lead = participant 1, no block shown).
-         On behalf: participant 1 block shown below lead contact.
-         Group bookings: add button up to group size max.
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="participants-section" style="display:none;">
-      <p class="section-label">participants</p>
-      <p class="hint" style="margin-bottom:1.4rem;">Details can be provided later if needed.</p>
-      <div id="participants-list"></div>
-      <button type="button" class="add-participant" id="add-participant-btn" style="display:none;">+ add participant</button>
-    </div>
-
-    <!-- Add participant button for non-behalf group bookings -->
-    <div id="group-add-section" style="display:none;">
-      <p class="section-label">additional participants</p>
-      <p class="hint" style="margin-bottom:1.4rem;">Details can be provided later if needed.</p>
-      <div id="group-participants-list"></div>
-      <button type="button" class="add-participant" id="group-add-btn">+ add participant</button>
-    </div>
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         AGE GROUP
-         Shown after participant blocks.
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="age-group-section">
-      <p class="section-label">about the student(s)</p>
-
-      <div class="field">
-        <label>who is this course for?</label>
-        <div class="toggle-group">
-          <input type="radio" name="age_group" id="ag-adults"   value="Adults">
-          <label for="ag-adults">Adults</label>
-          <input type="radio" name="age_group" id="ag-children" value="Children">
-          <label for="ag-children">Children</label>
-        </div>
-        <div class="error" id="err-age-group">Please select an option.</div>
-      </div>
-
-      <div class="field" id="field-age-range" style="display:none;">
-        <label>age range</label>
-        <div class="toggle-group">
-          <input type="radio" name="age_range" id="ar-6-10"  value="6–10"><label for="ar-6-10">6–10</label>
-          <input type="radio" name="age_range" id="ar-11-14" value="11–14"><label for="ar-11-14">11–14</label>
-          <input type="radio" name="age_range" id="ar-15-17" value="15–17"><label for="ar-15-17">15–17</label>
-          <input type="radio" name="age_range" id="ar-mixed" value="Mixed ages"><label for="ar-mixed">Mixed ages</label>
-        </div>
-        <div class="error" id="err-age-range">Please select an age range.</div>
-      </div>
-    </div>
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         SCHEDULING PREFERENCES
-         ════════════════════════════════════════════════════════════════ -->
-    <p class="section-label">scheduling preferences</p>
-
-    <div class="field">
-      <label>preferred days</label>
-      <div class="toggle-group">
-        <input type="checkbox" name="days" id="day-any" value="Any"><label for="day-any">Any</label>
-        <input type="checkbox" name="days" id="day-mon" value="Monday"><label for="day-mon">Mon</label>
-        <input type="checkbox" name="days" id="day-tue" value="Tuesday"><label for="day-tue">Tue</label>
-        <input type="checkbox" name="days" id="day-wed" value="Wednesday"><label for="day-wed">Wed</label>
-        <input type="checkbox" name="days" id="day-thu" value="Thursday"><label for="day-thu">Thu</label>
-        <input type="checkbox" name="days" id="day-fri" value="Friday"><label for="day-fri">Fri</label>
-        <input type="checkbox" name="days" id="day-sat" value="Saturday"><label for="day-sat">Sat</label>
-        <input type="checkbox" name="days" id="day-sun" value="Sunday"><label for="day-sun">Sun</label>
-      </div>
-      <div class="error" id="err-days">Please select at least one day.</div>
     </div>
 
     <div class="field">
-      <label>preferred time of day</label>
-      <div class="toggle-group">
-        <input type="checkbox" name="time_of_day" id="tod-morning"   value="Morning"><label for="tod-morning">Morning</label>
-        <input type="checkbox" name="time_of_day" id="tod-lunch"     value="Lunchtime"><label for="tod-lunch">Lunchtime</label>
-        <input type="checkbox" name="time_of_day" id="tod-afternoon" value="Afternoon"><label for="tod-afternoon">Afternoon</label>
-        <input type="checkbox" name="time_of_day" id="tod-evening"   value="Evening"><label for="tod-evening">Evening</label>
-      </div>
-      <div class="error" id="err-time-of-day">Please select at least one time of day.</div>
+      <label for="lead-email">email</label>
+      <input type="email" id="lead-email" name="lead_email" autocomplete="email" />
+      <div class="error" id="err-lead-email">Please enter an email address.</div>
     </div>
 
     <div class="field">
-      <label for="scheduling-notes">anything else we should know? <span style="font-size:0.7rem; letter-spacing:0.08em; color:#888; text-transform:none;">(optional)</span></label>
-      <input type="text" id="scheduling-notes" name="scheduling_notes"
-             placeholder="e.g. only free after 6pm on weekdays…" />
+      <label for="lead-phone">phone</label>
+      <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" />
+      <div class="error" id="err-lead-phone">Please enter a phone number.</div>
+    </div>
+
+    <div class="field">
+      <label for="preferred-contact">preferred contact method</label>
+      <select id="preferred-contact" name="preferred_contact">
+        <option value="" disabled selected></option>
+        <option value="Email">Email</option>
+        <option value="Phone">Phone</option>
+        <option value="Either">Either</option>
+      </select>
+      <div class="error" id="err-preferred-contact">Please select a preferred contact method.</div>
     </div>
 
     <button class="submit" id="continue-btn">continue →</button>
     <div class="error" id="submit-error" style="display:none;text-align:center;margin-top:1rem;">
       Something went wrong — please try again or email us at
-      <a href="/cdn-cgi/l/email-protection#c1a8afa7ae81aea8a0a6a8efaeb3a6"><span class="__cf_email__" data-cfemail="6900070f06290600080e0047061b0e">[email&#160;protected]</span></a>.
+      <a href="mailto:info@oiagi.org">info@oiagi.org</a>.
     </div>
 
   </div><!-- /.form-container -->
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-
   <script src="nav.js"></script>
   <script>
     /* ══════════════════════════════════════════════════════════════════
-       CONTACT DETAILS LOGIC
-       ══════════════════════════════════════════════════════════════════
-
-       Page layout:
-         1. "Booking on behalf" checkbox  (always at top)
-         2. Lead contact fields           (postcode hidden when on behalf)
-         3. Participant block(s)          (only when on behalf)
-         4. Add participant button        (group bookings in both modes)
-         5. Age group / age range
-         6. Scheduling preferences
-
-       Default mode (not on behalf):
-         - Lead = participant 1, no separate participant block
-         - Group bookings show an add button for extra participants
-
-       On behalf mode:
-         - Lead is just a contact, not a participant
-         - Participant 1 block always shown below lead
-         - Group bookings show add button below participant block(s)
+       CONTACT DETAILS — simplified
+       Fields: first name, last name, email, phone, preferred contact method
     ══════════════════════════════════════════════════════════════════ */
 
-    const booking      = JSON.parse(sessionStorage.getItem('booking') || '{}');
-    const groupSize    = booking.group || 'Private (1 person)';
-    const isGroup      = groupSize === '2 people' || groupSize === '3–5 people';
-    const maxTotal     = groupSize === '3–5 people' ? 5 : groupSize === '2 people' ? 2 : 1;
-    let   behalfParticipantCount = 0;  /* blocks in participants-section (behalf mode) */
-    let   groupParticipantCount  = 0;  /* blocks in group-add-section (default mode)  */
+    const booking = JSON.parse(sessionStorage.getItem('booking') || '{}');
 
-    /* ── Build a participant block ──────────────────────────────────── */
-    function makeParticipantBlock(n, idPrefix, required) {
-      const optLabel = required ? '' :
-        ' <span style="font-size:0.7rem;letter-spacing:0.08em;color:#888;text-transform:none;">(optional)</span>';
-      const div = document.createElement('div');
-      div.className = 'participant-block';
-      div.id = `${idPrefix}-${n}`;
-      div.innerHTML = `
-        <p class="participant-title">participant ${n}${optLabel}</p>
-        <div style="display:flex; gap:1rem;">
-          <div class="field" style="flex:1;">
-            <label for="${idPrefix}-${n}-first">first name</label>
-            <input type="text" id="${idPrefix}-${n}-first" />
-          </div>
-          <div class="field" style="flex:1;">
-            <label for="${idPrefix}-${n}-last">last name</label>
-            <input type="text" id="${idPrefix}-${n}-last" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="${idPrefix}-${n}-email">email</label>
-          <input type="email" id="${idPrefix}-${n}-email" />
-        </div>
-        <div class="field">
-          <label for="${idPrefix}-${n}-phone">phone</label>
-          <input type="tel" id="${idPrefix}-${n}-phone" />
-        </div>
-        <div class="field">
-          <label for="${idPrefix}-${n}-postcode">postcode</label>
-          <input type="text" id="${idPrefix}-${n}-postcode" />
-        </div>`;
-      return div;
-    }
-
-    /* ── Read participant data from blocks ──────────────────────────── */
-    function readParticipantBlock(n, idPrefix) {
-      const get = id => document.getElementById(id)?.value.trim() || '';
-      const p = {
-        firstName: get(`${idPrefix}-${n}-first`),
-        lastName:  get(`${idPrefix}-${n}-last`),
-        email:     get(`${idPrefix}-${n}-email`),
-        phone:     get(`${idPrefix}-${n}-phone`),
-        postcode:  get(`${idPrefix}-${n}-postcode`),
-      };
-      return (p.firstName || p.lastName || p.email || p.phone || p.postcode) ? p : null;
-    }
-
-    /* ── Update UI based on behalf checkbox state ───────────────────── */
-    function updateBehalfState() {
-      const behalf = document.getElementById('behalf-checkbox').checked;
-
-      /* Show/hide lead postcode */
-      document.getElementById('lead-postcode-field').style.display = behalf ? 'none' : 'block';
-
-      /* Behalf mode: show participants-section with participant 1 block */
-      const sec  = document.getElementById('participants-section');
-      const list = document.getElementById('participants-list');
-      const btn  = document.getElementById('add-participant-btn');
-
-      if (behalf) {
-        sec.style.display = 'block';
-        list.innerHTML    = '';
-        behalfParticipantCount = 0;
-
-        /* Minimum required blocks */
-        const minBehalf = isGroup
-          ? (groupSize === '3–5 people' ? 3 : 2)
-          : 1;
-        const maxBehalf = maxTotal;
-
-        for (let i = 1; i <= minBehalf; i++) {
-          list.appendChild(makeParticipantBlock(i, 'bp', true));
-          behalfParticipantCount++;
-        }
-        btn.style.display = behalfParticipantCount < maxBehalf ? 'block' : 'none';
-      } else {
-        sec.style.display = 'none';
-        list.innerHTML    = '';
-        behalfParticipantCount = 0;
-        btn.style.display = 'none';
-      }
-
-      /* Non-behalf group bookings: show group-add-section */
-      const grpSec  = document.getElementById('group-add-section');
-      const grpList = document.getElementById('group-participants-list');
-      const grpBtn  = document.getElementById('group-add-btn');
-
-      if (!behalf && isGroup) {
-        grpSec.style.display   = 'block';
-        grpList.innerHTML      = '';
-        groupParticipantCount  = 0;
-        /* Max additional participants = total - 1 (lead counts as participant 1) */
-        grpBtn.style.display   = maxTotal > 1 ? 'block' : 'none';
-      } else {
-        grpSec.style.display  = 'none';
-        grpList.innerHTML     = '';
-        groupParticipantCount = 0;
-      }
-    }
-
-    /* ── Behalf add participant button ──────────────────────────────── */
-    document.getElementById('add-participant-btn').addEventListener('click', () => {
-      const maxBehalf = maxTotal;
-      if (behalfParticipantCount >= maxBehalf) return;
-      behalfParticipantCount++;
-      document.getElementById('participants-list')
-        .appendChild(makeParticipantBlock(behalfParticipantCount, 'bp', false));
-      document.getElementById('add-participant-btn').style.display =
-        behalfParticipantCount < maxBehalf ? 'block' : 'none';
-    });
-
-    /* ── Group add participant button (non-behalf) ──────────────────── */
-    document.getElementById('group-add-btn').addEventListener('click', () => {
-      const maxExtra = maxTotal - 1; /* lead takes slot 1 */
-      if (groupParticipantCount >= maxExtra) return;
-      groupParticipantCount++;
-      document.getElementById('group-participants-list')
-        .appendChild(makeParticipantBlock(groupParticipantCount, 'gp', false));
-      document.getElementById('group-add-btn').style.display =
-        groupParticipantCount < maxExtra ? 'block' : 'none';
-    });
-
-    /* ── Behalf checkbox listener ───────────────────────────────────── */
-    document.getElementById('behalf-checkbox').addEventListener('change', updateBehalfState);
-
-    /* ── Age group → show/hide age range ───────────────────────────── */
-    document.querySelectorAll('input[name="age_group"]').forEach(r => {
-      r.addEventListener('change', () => {
-        document.getElementById('field-age-range').style.display =
-          r.value === 'Children' ? 'block' : 'none';
-        if (r.value !== 'Children')
-          document.querySelectorAll('input[name="age_range"]').forEach(a => a.checked = false);
-      });
-    });
-
-    /* ── "Any" day deselects individual days and vice versa ─────────── */
-    document.getElementById('day-any').addEventListener('change', e => {
-      if (e.target.checked)
-        ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun']
-          .forEach(id => document.getElementById(id).checked = false);
-    });
-    ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun'].forEach(id => {
-      document.getElementById(id).addEventListener('change', e => {
-        if (e.target.checked) document.getElementById('day-any').checked = false;
-      });
-    });
-
-    /* ── Initialise on load ─────────────────────────────────────────── */
-    updateBehalfState();
-
-    /* ══════════════════════════════════════════════════════════════════
-       VALIDATION & SUBMISSION
-    ══════════════════════════════════════════════════════════════════ */
     document.getElementById('continue-btn').addEventListener('click', async () => {
       let valid = true;
-      const behalf = document.getElementById('behalf-checkbox').checked;
 
       function err(id, show) {
         const el = document.getElementById(id);
         if (el) el.style.display = show ? 'block' : 'none';
       }
 
-      /* ── Lead ───────────────────────────────────────────────────── */
       const leadFirst = document.getElementById('lead-first').value.trim();
       err('err-lead-first', !leadFirst); if (!leadFirst) valid = false;
 
@@ -398,71 +109,20 @@
       const leadPhone = document.getElementById('lead-phone').value.trim();
       err('err-lead-phone', !leadPhone); if (!leadPhone) valid = false;
 
-      let leadPostcode = '';
-      if (!behalf) {
-        leadPostcode = document.getElementById('lead-postcode').value.trim();
-        err('err-lead-postcode', !leadPostcode); if (!leadPostcode) valid = false;
-      }
-
-      /* ── Age group ──────────────────────────────────────────────── */
-      const ageGroupSel = document.querySelector('input[name="age_group"]:checked');
-      err('err-age-group', !ageGroupSel); if (!ageGroupSel) valid = false;
-
-      if (ageGroupSel?.value === 'Children') {
-        const ageRangeSel = document.querySelector('input[name="age_range"]:checked');
-        err('err-age-range', !ageRangeSel); if (!ageRangeSel) valid = false;
-      }
-
-      /* ── Days ───────────────────────────────────────────────────── */
-      const daysSel = document.querySelectorAll('input[name="days"]:checked');
-      err('err-days', daysSel.length === 0); if (daysSel.length === 0) valid = false;
-
-      /* ── Time of day ────────────────────────────────────────────── */
-      const todSel = document.querySelectorAll('input[name="time_of_day"]:checked');
-      err('err-time-of-day', todSel.length === 0); if (todSel.length === 0) valid = false;
+      const preferredContact = document.getElementById('preferred-contact').value;
+      err('err-preferred-contact', !preferredContact); if (!preferredContact) valid = false;
 
       if (!valid) return;
 
-      /* ── Build participants array ────────────────────────────────── */
-      const participants = [];
-
-      if (!behalf) {
-        /* Lead is participant 1 */
-        participants.push({
-          firstName: leadFirst, lastName: leadLast,
-          email: leadEmail,     phone: leadPhone, postcode: leadPostcode,
-        });
-        /* Any extra group participants */
-        for (let i = 1; i <= groupParticipantCount; i++) {
-          const p = readParticipantBlock(i, 'gp');
-          if (p) participants.push(p);
-        }
-      } else {
-        /* Separate participant blocks */
-        for (let i = 1; i <= behalfParticipantCount; i++) {
-          const p = readParticipantBlock(i, 'bp');
-          if (p) participants.push(p);
-        }
-      }
-
-      const ageRangeEl = document.querySelector('input[name="age_range"]:checked');
-
       const contact = {
         lead: {
-          firstName:       leadFirst,
-          lastName:        leadLast,
-          email:           leadEmail,
-          phone:           leadPhone,
-          postcode:        leadPostcode || null,
-          bookingOnBehalf: behalf,
+          firstName: leadFirst,
+          lastName:  leadLast,
+          email:     leadEmail,
+          phone:     leadPhone,
         },
-        ageGroup:    ageGroupSel?.value || '',
-        participants,
-        days:        Array.from(daysSel).map(d => d.value),
-        timeOfDay:   Array.from(todSel).map(t => t.value),
-        notes:       document.getElementById('scheduling-notes').value.trim(),
+        preferredContact,
       };
-      if (ageRangeEl) contact.ageRange = ageRangeEl.value;
 
       /* ── Submit ─────────────────────────────────────────────────── */
       const btn = document.getElementById('continue-btn');
@@ -479,7 +139,6 @@
         sessionStorage.removeItem('booking');
         window.location.href = 'thankyou.html';
       } catch {
-        /* Re-enable button and show error message */
         btn.textContent = 'continue →';
         btn.disabled    = false;
         document.getElementById('submit-error').style.display = 'block';
