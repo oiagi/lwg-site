@@ -396,6 +396,29 @@ html[data-device="mobile"] .logout-btn {
 }
 .company-detail.open { display: block; }
 
+/* ── Student rows ─────────────────────────────────────────────── */
+.student-row {
+  border-top: 1px solid #ccc; padding: 1rem 0; cursor: pointer;
+}
+.student-row:last-child { border-bottom: 1px solid #ccc; }
+.student-row:hover { background: rgba(255,255,255,0.5); }
+.student-summary {
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+}
+.student-name {
+  font-size: 0.95rem; color: #1a1a1a; min-width: 160px;
+}
+.student-email {
+  font-size: 0.82rem; color: #555; flex: 1;
+}
+.student-stats {
+  font-size: 0.78rem; color: #888; letter-spacing: 0.04em; white-space: nowrap;
+}
+.student-detail {
+  display: none; padding: 1rem 0 0.5rem; border-top: 1px solid #eee; margin-top: 0.8rem;
+}
+.student-detail.open { display: block; }
+
 /* ── Attendance checkbox row ────────────────────────────────────── */
 .att-row {
   display: flex; align-items: center; gap: 0.8rem;

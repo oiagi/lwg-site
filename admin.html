@@ -42,6 +42,7 @@
       <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
       <button class="main-tab active" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
       <button class="main-tab" id="tab-courses" data-action="switchTab" data-args="courses">courses</button>
+      <button class="main-tab" id="tab-students" data-action="switchTab" data-args="students">students</button>
       <button class="main-tab" id="tab-companies" data-action="switchTab" data-args="companies">companies</button>
       <button class="main-tab" id="tab-billing" data-action="switchTab" data-args="billing">billing</button>
       <button class="main-tab" id="tab-reports" data-action="switchTab" data-args="reports">reports</button>
@@ -142,6 +143,133 @@
       </div>
       <div id="course-list">
         <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Students panel ────────────────────────────────────────────── -->
+    <div id="panel-students" style="display:none;">
+      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-student-status="true" data-action="filterStudents" data-args="true">active</button>
+          <button class="filter-btn" data-student-status="all" data-action="filterStudents" data-args="all">all</button>
+          <button class="filter-btn" data-student-status="false" data-action="filterStudents" data-args="false">inactive</button>
+        </div>
+        <button class="new-course-btn" data-action="openStudentModal">+ new student</button>
+      </div>
+      <div id="student-list">
+        <div class="loading-state">loading…</div>
+      </div>
+    </div>
+
+    <!-- ── Student modal ──────────────────────────────────────────────── -->
+    <div class="modal-overlay" id="student-modal">
+      <div class="modal modal-wide">
+        <h2 id="student-modal-title">new student</h2>
+        <input type="hidden" id="sm-id" value="">
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">personal information</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>First name *</label><input type="text" id="sm-first-name" placeholder="First name"></div>
+          <div class="modal-field"><label>Last name *</label><input type="text" id="sm-last-name" placeholder="Last name"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="sm-email" placeholder="student@example.com"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="sm-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Date of birth</label><input type="date" id="sm-dob"></div>
+          <div class="modal-field"><label>Nationality</label><input type="text" id="sm-nationality" placeholder="e.g. Swiss"></div>
+          <div class="modal-field"><label>Postcode</label><input type="text" id="sm-postcode" placeholder="e.g. 8001"></div>
+          <div class="modal-field"><label>Emergency contact</label><input type="text" id="sm-emergency-contact" placeholder="Name, +41…"></div>
+        </div>
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">course preferences</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>Native language</label><input type="text" id="sm-native-lang" placeholder="e.g. German"></div>
+          <div class="modal-field">
+            <label>Target language</label>
+            <select id="sm-target-lang">
+              <option value="">—</option>
+              <option value="German">German</option>
+              <option value="Swiss German">Swiss German</option>
+              <option value="English">English</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Current level</label>
+            <select id="sm-level">
+              <option value="">—</option>
+              <option>A1</option><option>A2</option><option>B1</option>
+              <option>B2</option><option>C1</option><option>C2</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Course type</label>
+            <select id="sm-course-type">
+              <option value="">—</option>
+              <option value="private">Private</option>
+              <option value="duo">Duo</option>
+              <option value="group">Group</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Course format</label>
+            <select id="sm-course-format">
+              <option value="">—</option>
+              <option value="online">Online</option>
+              <option value="in-person">In-person</option>
+              <option value="flexible">Flexible</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Location</label>
+            <select id="sm-location">
+              <option value="">—</option>
+              <option value="my home">My home</option>
+              <option value="teacher's home">Teacher's home</option>
+              <option value="classroom">Classroom</option>
+              <option value="my company">My company</option>
+            </select>
+          </div>
+          <div class="modal-field"><label>Desired start date</label><input type="date" id="sm-desired-start"></div>
+          <div class="modal-field full"><label>Learning goals</label><input type="text" id="sm-learning-goals" placeholder="e.g. Improve conversational German for work"></div>
+        </div>
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">billing</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+          <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
+          <div class="modal-field full"><label>Billing address</label><input type="text" id="sm-billing-address" placeholder="Street, PLZ, City"></div>
+          <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="sm-rate" step="0.01" placeholder="e.g. 80"></div>
+          <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
+          <div class="modal-field">
+            <label>Payment method</label>
+            <select id="sm-payment-method">
+              <option value="">—</option>
+              <option value="bank">Bank transfer</option>
+              <option value="twint">Twint</option>
+            </select>
+          </div>
+        </div>
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">other</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>Referral source</label><input type="text" id="sm-referral" placeholder="e.g. Google, friend, school"></div>
+          <div class="modal-field">
+            <label>Company</label>
+            <select id="sm-company"><option value="">— none —</option></select>
+          </div>
+          <div class="modal-field full"><label>Notes</label><input type="text" id="sm-notes" placeholder="Internal notes"></div>
+          <div class="modal-field">
+            <label style="display:flex;align-items:center;gap:0.5rem;">
+              <input type="checkbox" id="sm-active" checked style="width:auto;">
+              Active
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeStudentModal">cancel</button>
+          <button class="modal-submit" id="sm-submit" data-action="submitStudent">save student</button>
+        </div>
+        <p class="modal-msg" id="sm-msg"></p>
       </div>
     </div>
 
