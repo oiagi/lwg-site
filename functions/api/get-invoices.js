@@ -31,7 +31,7 @@ export async function onRequestGet({ request, env }) {
     const invoices = await res.json();
 
     // Load company names
-    const companyIds = [...new Set(invoices.map(i => i.company_id))];
+    const companyIds = [...new Set(invoices.map(i => i.company_id).filter(Boolean))];
     const companyMap = {};
     if (companyIds.length) {
       const filter = companyIds.map(id => `id.eq.${id}`).join(',');
@@ -45,9 +45,28 @@ export async function onRequestGet({ request, env }) {
       }
     }
 
+    // Load student names
+    const studentIds = [...new Set(invoices.map(i => i.student_id).filter(Boolean))];
+    const studentMap = {};
+    if (studentIds.length) {
+      const filter = studentIds.map(id => `id.eq.${id}`).join(',');
+      const stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?or=(${filter})&select=id,first_name,last_name`,
+        { headers: H }
+      );
+      if (stuRes.ok) {
+        const students = await stuRes.json();
+        students.forEach(s => { studentMap[s.id] = `${s.first_name} ${s.last_name}`; });
+      }
+    }
+
     const enriched = invoices.map(inv => ({
       ...inv,
-      company_name: companyMap[inv.company_id] || '—',
+      company_name: inv.company_id ? (companyMap[inv.company_id] || '—') : null,
+      student_name: inv.student_id ? (studentMap[inv.student_id] || '—') : null,
+      billed_to: inv.student_id
+        ? (studentMap[inv.student_id] || '—')
+        : (companyMap[inv.company_id] || '—'),
     }));
 
     return jsonResponse(enriched);

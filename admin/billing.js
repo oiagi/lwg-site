@@ -3,7 +3,9 @@ import { apiFetch } from './api.js';
 
 let currentInvoiceFilter = 'all';
 let invoiceCompanyCache = null;
+let invoiceStudentCache = null;
 let invoiceSessionsCache = [];
+let invoiceMode = 'company'; // 'company' or 'student'
 
 export function getCurrentInvoiceFilter() { return currentInvoiceFilter; }
 
@@ -42,7 +44,7 @@ function renderInvoices(invoices) {
     <div class="invoice-row" data-action="openInvoiceDetail" data-args="${inv.id}">
       <div class="invoice-summary">
         <span class="inv-number">${inv.invoice_number}</span>
-        <span class="inv-company">${inv.company_name || '—'}</span>
+        <span class="inv-company">${inv.billed_to || inv.company_name || '—'}</span>
         <span class="inv-amount">${inv.currency} ${parseFloat(inv.total_amount).toFixed(2)}</span>
         <span class="inv-date">${inv.issued_date || '—'}</span>
         <span class="inv-status ${inv.status}">${inv.status}</span>
@@ -73,7 +75,8 @@ export async function openInvoiceDetail(invoiceId) {
       </div>
     `).join('');
 
-    const company = inv.company || {};
+    const billedTo = inv.billed_to || {};
+    const billedLabel = inv.student_id ? 'Student' : 'Company';
     const netAmt   = parseFloat(inv.net_amount).toFixed(2);
     const vatAmt   = parseFloat(inv.vat_amount).toFixed(2);
     const totalAmt = parseFloat(inv.total_amount).toFixed(2);
@@ -83,7 +86,7 @@ export async function openInvoiceDetail(invoiceId) {
         <div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
           <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-            Company: ${company.name || '—'}<br>
+            ${billedLabel}: ${billedTo.name || '—'}<br>
             Date: ${inv.issued_date}<br>
             Due: ${inv.due_date}<br>
             Status: <strong>${inv.status}</strong>
@@ -163,8 +166,34 @@ export async function downloadInvoicePdf(invoiceId, invoiceNumber) {
 }
 
 /* ── Create invoice modal ──────────────────────────────────────────── */
+
+export function switchInvoiceMode(mode) {
+  invoiceMode = mode;
+  const companyField = document.getElementById('inv-company-field');
+  const studentField = document.getElementById('inv-student-field');
+  const sessDiv = document.getElementById('inv-sessions');
+
+  document.querySelectorAll('[data-inv-mode]').forEach(b => {
+    b.classList.toggle('active', b.dataset.invMode === mode);
+  });
+
+  if (mode === 'company') {
+    companyField.style.display = 'block';
+    studentField.style.display = 'none';
+    document.getElementById('inv-student').value = '';
+  } else {
+    companyField.style.display = 'none';
+    studentField.style.display = 'block';
+    document.getElementById('inv-company').value = '';
+  }
+
+  sessDiv.innerHTML = `<p style="font-size:0.78rem;color:#aaa;">Select a ${mode} first.</p>`;
+  document.getElementById('inv-total-preview').textContent = 'Total: —';
+}
+
 export async function openCreateInvoiceModal() {
-  const sel = document.getElementById('inv-company');
+  const companySel = document.getElementById('inv-company');
+  const studentSel = document.getElementById('inv-student');
   const sessDiv = document.getElementById('inv-sessions');
   const msg = document.getElementById('inv-msg');
   const btn = document.getElementById('inv-submit');
@@ -174,20 +203,39 @@ export async function openCreateInvoiceModal() {
   document.getElementById('inv-vat-rate').value = '';
   document.getElementById('inv-notes').value = '';
   document.getElementById('inv-total-preview').textContent = 'Total: —';
-  sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#aaa;">Select a company first.</p>';
 
+  // Reset to company mode
+  invoiceMode = 'company';
+  switchInvoiceMode('company');
+
+  // Load companies
   try {
     const res = await apiFetch('/api/get-companies');
     if (res.ok) {
       invoiceCompanyCache = await res.json();
-      sel.innerHTML = '<option value="">select company…</option>' +
+      companySel.innerHTML = '<option value="">select company…</option>' +
         invoiceCompanyCache.map(c =>
           `<option value="${c.id}">${c.name}${c.rate_per_session ? ' (' + c.rate_per_session + ' ' + (c.currency || 'CHF') + '/session)' : ''}</option>`
         ).join('');
     }
   } catch { /* keep default */ }
 
-  sel.onchange = () => loadCompanySessions(sel.value);
+  // Load students
+  try {
+    const res = await apiFetch('/api/get-students?active=true');
+    if (res.ok) {
+      invoiceStudentCache = await res.json();
+      studentSel.innerHTML = '<option value="">select student…</option>' +
+        invoiceStudentCache.map(s => {
+          const name = [s.first_name, s.last_name].filter(Boolean).join(' ');
+          const rateInfo = s.rate_per_session ? ' (' + s.rate_per_session + ' ' + (s.currency || 'CHF') + '/session)' : '';
+          return `<option value="${s.id}">${name}${rateInfo}</option>`;
+        }).join('');
+    }
+  } catch { /* keep default */ }
+
+  companySel.onchange = () => loadCompanySessions(companySel.value);
+  studentSel.onchange = () => loadStudentSessions(studentSel.value);
 
   document.getElementById('create-invoice-modal').classList.add('open');
 }
@@ -224,35 +272,87 @@ async function loadCompanySessions(companyId) {
       }
     }
 
-    if (!invoiceSessionsCache.length) {
-      sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#aaa;">No completed sessions to invoice.</p>';
-      return;
-    }
-
-    invoiceSessionsCache.sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
-
-    sessDiv.innerHTML = `
-      <div style="margin-bottom:0.5rem;">
-        <button class="add-participant-btn" data-action="toggleAllInvSessions" data-args="true">select all</button>
-        <button class="add-participant-btn" style="margin-left:0.8rem;" data-action="toggleAllInvSessions" data-args="false">deselect all</button>
-      </div>
-    ` + invoiceSessionsCache.map(s => {
-      const date = s.scheduled_at
-        ? new Date(s.scheduled_at).toLocaleDateString('de-CH', { day:'2-digit', month:'2-digit', year:'numeric' })
-        : '—';
-      return `
-        <div class="inv-session-check">
-          <label>
-            <input type="checkbox" value="${s.id}" checked data-action-change="updateInvTotalPreview">
-            ${s.course_code || '—'} — ${date}
-          </label>
-        </div>`;
-    }).join('');
-
-    updateInvTotalPreview();
+    renderSessionCheckboxes();
   } catch {
     sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#c0392b;">Could not load sessions.</p>';
   }
+}
+
+async function loadStudentSessions(studentId) {
+  const sessDiv = document.getElementById('inv-sessions');
+  if (!studentId) {
+    sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#aaa;">Select a student first.</p>';
+    return;
+  }
+
+  sessDiv.innerHTML = '<p class="loading-state" style="padding:0.5rem 0;">loading sessions…</p>';
+
+  try {
+    // Load student's enrolled course IDs via get-student-detail
+    const detailRes = await apiFetch('/api/get-student-detail?id=' + studentId);
+    if (!detailRes.ok) throw new Error();
+    const detail = await detailRes.json();
+    const courseIds = (detail.courses || []).map(c => c.id);
+
+    if (!courseIds.length) {
+      sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#aaa;">No courses found for this student.</p>';
+      return;
+    }
+
+    // Load all courses to get sessions
+    const res = await apiFetch('/api/get-courses?status=all');
+    if (!res.ok) throw new Error();
+    const allCourses = await res.json();
+    const studentCourses = allCourses.filter(c => courseIds.includes(c.id));
+
+    invoiceSessionsCache = [];
+    for (const course of studentCourses) {
+      for (const s of (course.sessions || [])) {
+        if (s.status === 'completed') {
+          invoiceSessionsCache.push({
+            id: s.id,
+            course_code: course.course_code,
+            scheduled_at: s.scheduled_at,
+          });
+        }
+      }
+    }
+
+    renderSessionCheckboxes();
+  } catch {
+    sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#c0392b;">Could not load sessions.</p>';
+  }
+}
+
+function renderSessionCheckboxes() {
+  const sessDiv = document.getElementById('inv-sessions');
+
+  if (!invoiceSessionsCache.length) {
+    sessDiv.innerHTML = '<p style="font-size:0.78rem;color:#aaa;">No completed sessions to invoice.</p>';
+    return;
+  }
+
+  invoiceSessionsCache.sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+
+  sessDiv.innerHTML = `
+    <div style="margin-bottom:0.5rem;">
+      <button class="add-participant-btn" data-action="toggleAllInvSessions" data-args="true">select all</button>
+      <button class="add-participant-btn" style="margin-left:0.8rem;" data-action="toggleAllInvSessions" data-args="false">deselect all</button>
+    </div>
+  ` + invoiceSessionsCache.map(s => {
+    const date = s.scheduled_at
+      ? new Date(s.scheduled_at).toLocaleDateString('de-CH', { day:'2-digit', month:'2-digit', year:'numeric' })
+      : '—';
+    return `
+      <div class="inv-session-check">
+        <label>
+          <input type="checkbox" value="${s.id}" checked data-action-change="updateInvTotalPreview">
+          ${s.course_code || '—'} — ${date}
+        </label>
+      </div>`;
+  }).join('');
+
+  updateInvTotalPreview();
 }
 
 export function toggleAllInvSessions(checked) {
@@ -264,10 +364,21 @@ export function toggleAllInvSessions(checked) {
 }
 
 export function updateInvTotalPreview() {
-  const companyId = document.getElementById('inv-company').value;
-  const company = invoiceCompanyCache?.find(c => c.id === companyId);
-  const rate = company ? parseFloat(company.rate_per_session) || 0 : 0;
-  const currency = company?.currency || 'CHF';
+  let rate = 0;
+  let currency = 'CHF';
+
+  if (invoiceMode === 'company') {
+    const companyId = document.getElementById('inv-company').value;
+    const company = invoiceCompanyCache?.find(c => c.id === companyId);
+    rate = company ? parseFloat(company.rate_per_session) || 0 : 0;
+    currency = company?.currency || 'CHF';
+  } else {
+    const studentId = document.getElementById('inv-student').value;
+    const student = invoiceStudentCache?.find(s => s.id === studentId);
+    rate = student ? parseFloat(student.rate_per_session) || 0 : 0;
+    currency = student?.currency || 'CHF';
+  }
+
   const count = document.querySelectorAll('#inv-sessions input[type="checkbox"]:checked').length;
   const vatRate = parseFloat(document.getElementById('inv-vat-rate').value) || 0;
 
@@ -286,8 +397,15 @@ export async function submitCreateInvoice() {
   msgEl.style.display = 'none';
 
   const companyId = document.getElementById('inv-company').value;
-  if (!companyId) {
+  const studentId = document.getElementById('inv-student').value;
+
+  if (invoiceMode === 'company' && !companyId) {
     msgEl.textContent = 'Please select a company.';
+    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+    return;
+  }
+  if (invoiceMode === 'student' && !studentId) {
+    msgEl.textContent = 'Please select a student.';
     msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
     return;
   }
@@ -308,15 +426,22 @@ export async function submitCreateInvoice() {
   const vatRate = document.getElementById('inv-vat-rate').value;
   const notes   = document.getElementById('inv-notes').value.trim();
 
+  const body = {
+    session_ids: sessionIds,
+    vat_rate: vatRate ? parseFloat(vatRate) : undefined,
+    notes: notes || undefined,
+  };
+
+  if (invoiceMode === 'company') {
+    body.company_id = companyId;
+  } else {
+    body.student_id = studentId;
+  }
+
   try {
     const res = await apiFetch('/api/create-invoice', {
       method: 'POST',
-      body: {
-        company_id: companyId,
-        session_ids: sessionIds,
-        vat_rate: vatRate ? parseFloat(vatRate) : undefined,
-        notes: notes || undefined,
-      },
+      body,
     });
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');

@@ -4,7 +4,8 @@ import { initAuth, signIn, signOut, getSession } from './auth.js';
 import { loadEnquiries, init as initEnquiries, toggleDetail, saveStatus, saveNotes, deleteEnquiry, confirmBooking } from './enquiries.js';
 import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, removeParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
 import { loadCompanies, getCurrentCompanyFilter, filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany } from './companies.js';
-import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, initVatListener } from './billing.js';
+import { loadStudents, getCurrentStudentFilter, filterStudents, toggleStudent, openStudentModal, closeStudentModal, editStudent, submitStudent, copyIntakeLink } from './students.js';
+import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, switchInvoiceMode, initVatListener } from './billing.js';
 import { authoriseTeacher } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
@@ -17,12 +18,14 @@ const actions = {
   filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession,
   openNewCourseModal, closeNewCourseModal, addParticipantBlock, removeParticipantBlock, submitNewCourse, deleteCourse,
   openAttendanceModal, closeAttendanceModal, submitAttendance,
+  // Students
+  filterStudents, toggleStudent, openStudentModal, closeStudentModal, editStudent, submitStudent, copyIntakeLink,
   // Companies
   filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany,
   // Billing
   filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus,
   downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal,
-  toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice,
+  toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, switchInvoiceMode,
   // Teachers
   authoriseTeacher,
   // Reports
@@ -63,6 +66,7 @@ function switchTab(tab) {
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
   }
   if (tab === 'courses') loadCourses(getCurrentCourseFilter());
+  if (tab === 'students') loadStudents(getCurrentStudentFilter());
   if (tab === 'companies') loadCompanies(getCurrentCompanyFilter());
   if (tab === 'billing') loadInvoices(getCurrentInvoiceFilter());
   if (tab === 'reports') loadReport(getCurrentReportType());
