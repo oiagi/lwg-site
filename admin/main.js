@@ -5,7 +5,7 @@ import { loadEnquiries, init as initEnquiries, toggleDetail, saveStatus, saveNot
 import { loadCourses, getCurrentCourseFilter, filterCourses, toggleCourse, syncCalendar, cancelSession, saveStudent, logSession, openNewCourseModal, closeNewCourseModal, addParticipantBlock, removeParticipantBlock, submitNewCourse, deleteCourse, openAttendanceModal, closeAttendanceModal, submitAttendance } from './courses.js';
 import { loadCompanies, getCurrentCompanyFilter, filterCompanies, toggleCompany, openCompanyModal, closeCompanyModal, editCompany, submitCompany } from './companies.js';
 import { loadStudents, getCurrentStudentFilter, filterStudents, toggleStudent, openStudentModal, closeStudentModal, editStudent, submitStudent, copyIntakeLink } from './students.js';
-import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, initVatListener } from './billing.js';
+import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, switchInvoiceMode, initVatListener } from './billing.js';
 import { authoriseTeacher } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
@@ -25,7 +25,7 @@ const actions = {
   // Billing
   filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus,
   downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal,
-  toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice,
+  toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, switchInvoiceMode,
   // Teachers
   authoriseTeacher,
   // Reports

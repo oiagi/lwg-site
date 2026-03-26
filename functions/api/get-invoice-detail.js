@@ -38,19 +38,39 @@ export async function onRequestGet({ request, env }) {
     );
     const lines = linesRes.ok ? await linesRes.json() : [];
 
-    // ── Load company ──────────────────────────────────────────────────
-    const compRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`,
-      { headers: H }
-    );
-    const companies = await compRes.json();
-    const company = companies[0] || {};
+    // ── Load company or student ────────────────────────────────────────
+    let company = {};
+    let student = null;
+
+    if (invoice.company_id) {
+      const compRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`,
+        { headers: H }
+      );
+      const companies = await compRes.json();
+      company = companies[0] || {};
+    }
+
+    if (invoice.student_id) {
+      const stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?id=eq.${invoice.student_id}&select=*`,
+        { headers: H }
+      );
+      const students = stuRes.ok ? await stuRes.json() : [];
+      student = students[0] || null;
+    }
+
+    const billedTo = student
+      ? { name: `${student.first_name} ${student.last_name}`, billing_address: student.billing_address }
+      : { name: company.name, billing_address: company.billing_address };
 
     return jsonResponse({
       ...invoice,
       qr_reference_formatted: invoice.qr_reference ? formatQrReference(invoice.qr_reference) : null,
       lines,
       company,
+      student,
+      billed_to: billedTo,
     });
   } catch (err) {
     console.error('Error:', err);

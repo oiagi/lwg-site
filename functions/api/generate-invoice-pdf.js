@@ -221,7 +221,8 @@ class PdfBuilder {
 
 // ── Render the full invoice PDF ───────────────────────────────────────────
 
-function renderInvoicePdf(invoice, lines, company, env) {
+function renderInvoicePdf(invoice, lines, debtor, env) {
+  // debtor: { name, billing_address, vat_number } — can be a company or student
   const pdf = new PdfBuilder();
   pdf.init();
   pdf.addPage();
@@ -243,11 +244,11 @@ function renderInvoicePdf(invoice, lines, company, env) {
   if (credCity)   { pdf.text(MARGIN, y, credCity, { size: 9 }); y -= 12; }
   y -= 10;
 
-  // ── Recipient (company) ───────────────────────────────────────────
+  // ── Recipient ────────────────────────────────────────────────────
   const recipientY = PAGE_H - MARGIN - 5;
-  pdf.text(350, recipientY, company.name || '', { font: 'bold', size: 10 });
-  if (company.billing_address) {
-    pdf.text(350, recipientY - 14, company.billing_address, { size: 9 });
+  pdf.text(350, recipientY, debtor.name || '', { font: 'bold', size: 10 });
+  if (debtor.billing_address) {
+    pdf.text(350, recipientY - 14, debtor.billing_address, { size: 9 });
   }
 
   // ── Invoice title ─────────────────────────────────────────────────
@@ -262,7 +263,7 @@ function renderInvoicePdf(invoice, lines, company, env) {
     ['Currency', invoice.currency],
     ['Status', invoice.status],
   ];
-  if (company.vat_number) meta.push(['VAT No.', company.vat_number]);
+  if (debtor.vat_number) meta.push(['VAT No.', debtor.vat_number]);
 
   for (const [label, val] of meta) {
     pdf.text(MARGIN, y, `${label}:`, { font: 'bold', size: 8 });
@@ -358,13 +359,13 @@ function renderInvoicePdf(invoice, lines, company, env) {
   pdf.text(14, ry, refFormatted, { size: 8 });
   ry -= 16;
 
-  if (company.name) {
+  if (debtor.name) {
     pdf.text(14, ry, 'Payable by', { font: 'bold', size: 6 });
     ry -= 9;
-    pdf.text(14, ry, company.name, { size: 8 });
+    pdf.text(14, ry, debtor.name, { size: 8 });
     ry -= 11;
-    if (company.billing_address) {
-      pdf.text(14, ry, company.billing_address, { size: 8 });
+    if (debtor.billing_address) {
+      pdf.text(14, ry, debtor.billing_address, { size: 8 });
       ry -= 11;
     }
     ry -= 8;
@@ -426,7 +427,7 @@ function renderInvoicePdf(invoice, lines, company, env) {
 
   // Build QR payload (stored as text for reference; actual QR encoding
   // would be done by the banking app or a QR rendering library at print time)
-  const debtorAddress = parseAddress(company.billing_address || '');
+  const debtorAddress = parseAddress(debtor.billing_address || '');
   const qrPayloadText = buildQrPayload({
     qrIban,
     creditorName:        credName,
@@ -437,7 +438,7 @@ function renderInvoicePdf(invoice, lines, company, env) {
     creditorCountry:     env.CREDITOR_COUNTRY || 'CH',
     amount:              invoice.total_amount,
     currency:            invoice.currency,
-    debtorName:          company.name,
+    debtorName:          debtor.name,
     debtorStreet:        debtorAddress.street,
     debtorHouseNumber:   debtorAddress.houseNumber,
     debtorPostalCode:    debtorAddress.postalCode,
@@ -471,13 +472,13 @@ function renderInvoicePdf(invoice, lines, company, env) {
   pdf.text(TX, ty, `Invoice ${invoice.invoice_number}`, { size: 10 });
   ty -= 18;
 
-  if (company.name) {
+  if (debtor.name) {
     pdf.text(TX, ty, 'Payable by', { font: 'bold', size: 8 });
     ty -= 12;
-    pdf.text(TX, ty, company.name, { size: 10 });
+    pdf.text(TX, ty, debtor.name, { size: 10 });
     ty -= 13;
-    if (company.billing_address) {
-      pdf.text(TX, ty, company.billing_address, { size: 10 });
+    if (debtor.billing_address) {
+      pdf.text(TX, ty, debtor.billing_address, { size: 10 });
       ty -= 13;
     }
   } else {
@@ -559,13 +560,30 @@ export async function onRequestGet({ request, env }) {
     );
     const lines = linesRes.ok ? await linesRes.json() : [];
 
-    // Load company
-    const compRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`,
-      { headers: H }
-    );
-    const companies = await compRes.json();
-    const company = companies[0] || {};
+    // Load company or student as debtor
+    let debtor = {};
+
+    if (invoice.company_id) {
+      const compRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`,
+        { headers: H }
+      );
+      const companies = await compRes.json();
+      debtor = companies[0] || {};
+    } else if (invoice.student_id) {
+      const stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?id=eq.${invoice.student_id}&select=*`,
+        { headers: H }
+      );
+      const students = stuRes.ok ? await stuRes.json() : [];
+      const student = students[0] || {};
+      debtor = {
+        name: [student.first_name, student.last_name].filter(Boolean).join(' '),
+        billing_address: student.billing_address,
+        billing_email: student.billing_email,
+        vat_number: student.vat_number,
+      };
+    }
 
     // Ensure numeric types
     invoice.net_amount   = parseFloat(invoice.net_amount)   || 0;
@@ -578,7 +596,7 @@ export async function onRequestGet({ request, env }) {
       line.line_total = parseFloat(line.line_total) || 0;
     }
 
-    const { pdf, qrPayload } = renderInvoicePdf(invoice, lines, company, env);
+    const { pdf, qrPayload } = renderInvoicePdf(invoice, lines, debtor, env);
 
     return new Response(pdf, {
       status: 200,

@@ -24,24 +24,45 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('Invalid JSON', 400);
   }
 
-  const { company_id, session_ids, notes, vat_rate } = body;
-  if (!company_id) return errorResponse('Missing company_id', 400);
+  const { company_id, student_id, session_ids, notes, vat_rate } = body;
+  if (!company_id && !student_id) return errorResponse('Missing company_id or student_id', 400);
+  if (company_id && student_id) return errorResponse('Provide either company_id or student_id, not both', 400);
   if (!session_ids || !session_ids.length) return errorResponse('At least one session is required', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
-    // ── Load company ───────────────────────────────────────────────────
-    const compRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/companies?id=eq.${company_id}&select=*`,
-      { headers: H }
-    );
-    const companies = await compRes.json();
-    if (!companies.length) return errorResponse('Company not found', 404);
-    const company = companies[0];
+    // ── Load company or student ─────────────────────────────────────────
+    let rate, currency, billedEntity;
 
-    if (!company.rate_per_session) {
-      return errorResponse('Company has no rate_per_session configured', 400);
+    if (company_id) {
+      const compRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${company_id}&select=*`,
+        { headers: H }
+      );
+      const companies = await compRes.json();
+      if (!companies.length) return errorResponse('Company not found', 404);
+      billedEntity = companies[0];
+
+      if (!billedEntity.rate_per_session) {
+        return errorResponse('Company has no rate_per_session configured', 400);
+      }
+      rate = parseFloat(billedEntity.rate_per_session);
+      currency = billedEntity.currency || 'CHF';
+    } else {
+      const stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}&select=*`,
+        { headers: H }
+      );
+      const students = await stuRes.json();
+      if (!students.length) return errorResponse('Student not found', 404);
+      billedEntity = students[0];
+
+      if (!billedEntity.rate_per_session) {
+        return errorResponse('Student has no rate_per_session configured', 400);
+      }
+      rate = parseFloat(billedEntity.rate_per_session);
+      currency = billedEntity.currency || 'CHF';
     }
 
     // ── Load sessions ──────────────────────────────────────────────────
@@ -75,8 +96,6 @@ export async function onRequestPost({ request, env }) {
     const invoiceNumber = nextInvoiceNumber(existingNumbers);
 
     // ── Calculate totals ───────────────────────────────────────────────
-    const rate = parseFloat(company.rate_per_session);
-    const currency = company.currency || 'CHF';
     const vatRateVal = vat_rate !== undefined ? parseFloat(vat_rate) : null;
 
     const lines = sessions.map(s => {
@@ -106,7 +125,8 @@ export async function onRequestPost({ request, env }) {
     // ── Insert invoice ─────────────────────────────────────────────────
     const invoiceData = {
       invoice_number: invoiceNumber,
-      company_id,
+      company_id:  company_id || null,
+      student_id:  student_id || null,
       issued_date:  new Date().toISOString().slice(0, 10),
       due_date:     new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       status:       'draft',

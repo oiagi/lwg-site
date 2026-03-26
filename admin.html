@@ -307,10 +307,18 @@
     <div class="modal-overlay" id="create-invoice-modal">
       <div class="modal modal-wide">
         <h2>create invoice</h2>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+          <button class="filter-btn active" data-inv-mode="company" data-action="switchInvoiceMode" data-args="company">company</button>
+          <button class="filter-btn" data-inv-mode="student" data-action="switchInvoiceMode" data-args="student">student</button>
+        </div>
         <div class="modal-grid">
-          <div class="modal-field">
+          <div class="modal-field" id="inv-company-field">
             <label>Company *</label>
             <select id="inv-company"><option value="">select company…</option></select>
+          </div>
+          <div class="modal-field" id="inv-student-field" style="display:none;">
+            <label>Student *</label>
+            <select id="inv-student"><option value="">select student…</option></select>
           </div>
           <div class="modal-field">
             <label>VAT rate % <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for no VAT)</span></label>
