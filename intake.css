@@ -1,0 +1,247 @@
+body {
+  --page-bg: #d6eaf8;
+  background-color: #d6eaf8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1rem 4rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  transition: background-color 0.6s ease;
+}
+body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
+
+/* ── Form container ─────────────────────────────────────────── */
+.form-container {
+  width: min(92vw, 520px);
+  margin-top: 1rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+/* ── Page heading ───────────────────────────────────────────── */
+h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: #1a1a1a;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+.intro {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 2.4rem;
+  line-height: 1.6;
+}
+
+/* ── Section divider ──────────────────────────────────────────── */
+.section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 1.4rem;
+  margin-top: 2.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #ccc;
+}
+.section-label:first-of-type { margin-top: 0; }
+
+/* ── Form fields ─────────────────────────────────────────────── */
+.field { margin-bottom: 1.8rem; }
+
+label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 0.6rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus { border-bottom-color: #555; }
+
+textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  resize: none;
+  height: 70px;
+  box-sizing: border-box;
+}
+
+select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ── Two-column grid for shorter fields ──────────────────────── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
+}
+
+/* ── Pill-style toggles (reuse booking pattern) ──────────────── */
+.toggle-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.toggle-group input[type="radio"] { display: none; }
+.toggle-group label {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 0;
+}
+.toggle-group input:checked + label { background: #1a1a1a; color: #d6eaf8; }
+
+/* ── Consent checkbox ─────────────────────────────────────────── */
+.consent-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.8rem;
+}
+.consent-field input[type="checkbox"] {
+  margin-top: 0.15rem;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.consent-field label {
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #555;
+  margin-bottom: 0;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.consent-field a { color: #1a1a1a; }
+
+/* ── Submit button ──────────────────────────────────────────── */
+button.submit {
+  margin-top: 2rem;
+  display: block;
+  width: 100%;
+  background: #1a1a1a;
+  color: #d6eaf8;
+  border: none;
+  padding: 0.9rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+button.submit:hover { background: #ffffff; color: #1a1a1a; }
+button.submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Error messages ──────────────────────────────────────────── */
+.error {
+  font-size: 0.72rem;
+  color: #c0392b;
+  margin-top: 0.3rem;
+  letter-spacing: 0.04em;
+  display: none;
+}
+.form-error {
+  text-align: center;
+  color: #c0392b;
+  font-size: 0.82rem;
+  margin-top: 1rem;
+  display: none;
+}
+
+/* ── Success state ───────────────────────────────────────────── */
+.success-state {
+  text-align: center;
+  display: none;
+}
+.success-state h1 { margin-bottom: 1.2rem; }
+.success-state p {
+  font-size: 0.92rem;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+.home-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: none;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 2px;
+}
+.home-link:hover { border-color: #1a1a1a; }
+
+/* ── Loading state ───────────────────────────────────────────── */
+.loading-msg {
+  text-align: center;
+  color: #888;
+  font-size: 0.85rem;
+  padding: 2rem 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 500px) {
+  h1 { font-size: 1.6rem; margin-bottom: 0.6rem; }
+  .field-row { grid-template-columns: 1fr; }
+  .toggle-group label { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+  button.submit { padding: 0.8rem; font-size: 0.75rem; }
+}
+html[data-device="mobile"] h1 { font-size: 1.5rem; }
+html[data-device="mobile"] .form-container { width: 96vw; margin-top: 0.4rem; }
+html[data-device="mobile"] .field-row { grid-template-columns: 1fr; }
+html[data-device="mobile"] .toggle-group label { font-size: 0.8rem; padding: 0.4rem 0.75rem; min-height: 36px; display: inline-flex; align-items: center; }
+html[data-device="mobile"] button.submit { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
+html[data-device="tablet"] .form-container { width: min(78vw, 540px); }
+html[data-device="tablet"] .toggle-group label { min-height: 40px; display: inline-flex; align-items: center; }
+html[data-device="tablet"] button.submit { min-height: 48px; }
