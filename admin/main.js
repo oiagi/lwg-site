@@ -8,7 +8,7 @@ import { loadStudents, getCurrentStudentFilter, filterStudents, toggleStudent, o
 import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetail, closeInvoiceDetailModal, updateInvoiceStatus, downloadInvoicePdf, openCreateInvoiceModal, closeCreateInvoiceModal, toggleAllInvSessions, updateInvTotalPreview, submitCreateInvoice, switchInvoiceMode, initVatListener } from './billing.js';
 import { authoriseTeacher } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
-import { loadAvailability, onTeacherSelect } from './availability.js';
+import { loadAvailability, onTeacherSelect, authoriseSelectedTeacher } from './availability.js';
 
 /* ── Action registry for event delegation ─────────────────────────── */
 const actions = {
@@ -31,7 +31,7 @@ const actions = {
   // Reports
   filterReport,
   // Availability
-  onTeacherSelect,
+  onTeacherSelect, authoriseSelectedTeacher,
   // Tab switching
   switchTab,
 };

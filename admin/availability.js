@@ -1,41 +1,93 @@
 /* ── Teacher availability tab ─────────────────────────────────────── */
 import { apiFetch } from './api.js';
-
-let availabilityTeachers = null;
+import { authoriseTeacher, clearTeachersCache, loadTeachers } from './teachers.js';
 
 export async function loadAvailability() {
   const container = document.getElementById('availability-content');
   const sel = document.getElementById('avail-teacher');
+  const prev = sel.value;
 
-  // Load teachers into selector if not cached
-  if (!availabilityTeachers) {
-    try {
-      const res = await apiFetch('/api/get-teacher-availability');
-      if (!res.ok) throw new Error();
-      availabilityTeachers = await res.json();
-      sel.innerHTML = '<option value="">select teacher…</option>' +
-        availabilityTeachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-    } catch {
-      sel.innerHTML = '<option value="">could not load teachers</option>';
-    }
+  // Always reload teacher list so auth status stays current
+  try {
+    const teachers = await loadTeachers();
+    sel.innerHTML = '<option value="">select teacher…</option>' +
+      teachers.map(t => {
+        const suffix = t.authorised ? '' : ' (not authorised)';
+        return `<option value="${t.id}">${t.name}${suffix}</option>`;
+      }).join('');
+    // Restore previous selection if still valid
+    if (prev && teachers.some(t => t.id === prev)) sel.value = prev;
+  } catch {
+    sel.innerHTML = '<option value="">could not load teachers</option>';
   }
 
   // If a teacher is already selected, reload their schedule
   if (sel.value) {
+    updateAuthStatus(sel.value);
     loadTeacherSchedule(sel.value);
   } else {
+    updateAuthStatus(null);
     container.innerHTML = '<div class="empty-state">select a teacher to view their schedule</div>';
   }
 }
 
 export function onTeacherSelect() {
   const teacherId = document.getElementById('avail-teacher').value;
+  updateAuthStatus(teacherId || null);
   if (teacherId) {
     loadTeacherSchedule(teacherId);
   } else {
     document.getElementById('availability-content').innerHTML =
       '<div class="empty-state">select a teacher to view their schedule</div>';
   }
+}
+
+async function updateAuthStatus(teacherId) {
+  const statusEl = document.getElementById('avail-auth-status');
+  const btn = document.getElementById('avail-auth-btn');
+  if (!teacherId) {
+    statusEl.textContent = '';
+    btn.style.display = 'none';
+    return;
+  }
+  const teachers = await loadTeachers();
+  const teacher = teachers.find(t => t.id === teacherId);
+  if (!teacher) {
+    statusEl.textContent = '';
+    btn.style.display = 'none';
+    return;
+  }
+  if (teacher.authorised) {
+    statusEl.textContent = 'calendar connected';
+    statusEl.style.color = '#27ae60';
+    btn.textContent = 're-authorise calendar';
+    btn.style.display = '';
+  } else {
+    statusEl.textContent = 'not authorised';
+    statusEl.style.color = '#c0392b';
+    btn.textContent = 'authorise calendar';
+    btn.style.display = '';
+  }
+}
+
+export async function authoriseSelectedTeacher() {
+  const teacherId = document.getElementById('avail-teacher').value;
+  if (!teacherId) return;
+
+  authoriseTeacher(teacherId);
+
+  // authoriseTeacher opens a popup and clears the teacher cache on close.
+  // Poll until re-auth completes so we can refresh the UI.
+  const poll = setInterval(async () => {
+    clearTeachersCache();
+    const teachers = await loadTeachers();
+    const teacher = teachers.find(t => t.id === teacherId);
+    if (teacher && teacher.authorised) {
+      clearInterval(poll);
+      updateAuthStatus(teacherId);
+    }
+  }, 2000);
+  setTimeout(() => clearInterval(poll), 120000);
 }
 
 async function loadTeacherSchedule(teacherId) {
