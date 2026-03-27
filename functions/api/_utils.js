@@ -88,7 +88,30 @@ export async function getValidAccessToken(teacher, env) {
       grant_type:    'refresh_token',
     }),
   });
-  if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    let parsed;
+    try { parsed = JSON.parse(body); } catch { parsed = {}; }
+
+    if (parsed.error === 'invalid_grant') {
+      // Refresh token revoked or expired — clear stale tokens so the teacher
+      // shows as "not authorised" and the admin knows to re-authenticate.
+      await fetch(`${env.SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher.id}`, {
+        method: 'PATCH',
+        headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+        body: JSON.stringify({ access_token: null, refresh_token: null, token_expires_at: null }),
+      });
+      const err = new Error(
+        'Google Calendar authorisation has expired for this teacher. Please re-authorise via the Teachers page.'
+      );
+      err.statusCode = 401;
+      throw err;
+    }
+
+    const err = new Error(`Token refresh failed (${res.status}): ${body}`);
+    err.statusCode = 502;
+    throw err;
+  }
 
   const tokens = await res.json();
   const expiry  = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
