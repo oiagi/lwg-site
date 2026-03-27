@@ -55,7 +55,7 @@ export async function onRequestPost({ request, env }) {
     accessToken = await getValidAccessToken(teacher, env);
   } catch (err) {
     console.error('Token error:', err);
-    return errorResponse('Could not refresh token');
+    return errorResponse(err.message, err.statusCode || 500);
   }
 
   // ── Fetch events from Google Calendar matching this course code ───────
