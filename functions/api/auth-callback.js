@@ -12,15 +12,15 @@
 //   SUPABASE_SERVICE_KEY — Supabase service role key
 
 export async function onRequestGet({ request, env }) {
-  const GOOGLE_CLIENT_ID     = env.GOOGLE_CLIENT_ID;
+  const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
-  const SUPABASE_URL         = env.SUPABASE_URL;
+  const SUPABASE_URL = env.SUPABASE_URL;
   const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY;
 
-  const url        = new URL(request.url);
-  const code       = url.searchParams.get('code');
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code');
   const teacher_id = url.searchParams.get('state');
-  const error      = url.searchParams.get('error');
+  const error = url.searchParams.get('error');
 
   // ── Handle user denying consent ──────────────────────────────────────
   if (error) {
@@ -39,10 +39,10 @@ export async function onRequestGet({ request, env }) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id:     GOOGLE_CLIENT_ID,
+        client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri:  'https://oiagi.org/api/auth-callback',
-        grant_type:    'authorization_code',
+        redirect_uri: 'https://oiagi.org/api/auth-callback',
+        grant_type: 'authorization_code',
       }),
     });
 
@@ -62,7 +62,7 @@ export async function onRequestGet({ request, env }) {
 
   try {
     const patch = {
-      access_token:     tokens.access_token,
+      access_token: tokens.access_token,
       token_expires_at: expiresAt,
     };
     // Only update refresh token if Google issued a new one
@@ -71,18 +71,15 @@ export async function onRequestGet({ request, env }) {
       patch.refresh_token = tokens.refresh_token;
     }
 
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type':  'application/json',
-          'apikey':        SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        },
-        body: JSON.stringify(patch),
-      }
-    );
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      },
+      body: JSON.stringify(patch),
+    });
 
     if (!res.ok) {
       console.error('Supabase token store failed:', await res.text());

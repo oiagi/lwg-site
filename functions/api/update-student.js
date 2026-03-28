@@ -27,19 +27,16 @@ export async function onRequestPatch({ request, env }) {
 
   const patch = {};
   if (progress_notes !== undefined) patch.progress_notes = progress_notes;
-  if (current_level  !== undefined) patch.current_level  = current_level;
+  if (current_level !== undefined) patch.current_level = current_level;
 
   if (!Object.keys(patch).length) return errorResponse('Nothing to update', 400);
 
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}`,
-      {
-        method:  'PATCH',
-        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
-        body:    JSON.stringify(patch),
-      }
-    );
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}`, {
+      method: 'PATCH',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
+      body: JSON.stringify(patch),
+    });
 
     if (!res.ok) return errorResponse('Database error');
 

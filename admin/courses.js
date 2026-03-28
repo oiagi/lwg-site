@@ -7,11 +7,13 @@ let currentCourseFilter = 'active';
 let participantCount = 1;
 let attendanceStudents = [];
 
-export function getCurrentCourseFilter() { return currentCourseFilter; }
+export function getCurrentCourseFilter() {
+  return currentCourseFilter;
+}
 
 export function filterCourses(status) {
   currentCourseFilter = status;
-  document.querySelectorAll('[data-course-status]').forEach(b => {
+  document.querySelectorAll('[data-course-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.courseStatus === status);
   });
   loadCourses(status);
@@ -21,8 +23,9 @@ export async function loadCourses(status = 'active') {
   const list = document.getElementById('course-list');
 
   const openIds = new Set(
-    Array.from(document.querySelectorAll('.course-detail.open'))
-      .map(el => el.id.replace('course-detail-', ''))
+    Array.from(document.querySelectorAll('.course-detail.open')).map((el) =>
+      el.id.replace('course-detail-', '')
+    )
   );
 
   if (!list.querySelector('.course-row')) {
@@ -35,7 +38,7 @@ export async function loadCourses(status = 'active') {
     const courses = await res.json();
     renderCourses(courses);
 
-    openIds.forEach(id => {
+    openIds.forEach((id) => {
       const detail = document.getElementById('course-detail-' + id);
       if (detail) detail.classList.add('open');
     });
@@ -51,42 +54,58 @@ function renderCourses(courses) {
     return;
   }
 
-  list.innerHTML = courses.map(c => {
-    const names    = (c.participant_names || []).map(n => esc(n)).join(', ') || '—';
-    const done     = c.sessions_completed || 0;
-    const total    = c.sessions_total;
-    const remaining = total ? total - done : null;
-    const sessLine = total
-      ? `${done} / ${total} sessions`
-      : `${done} sessions completed`;
+  list.innerHTML = courses
+    .map((c) => {
+      const names = (c.participant_names || []).map((n) => esc(n)).join(', ') || '—';
+      const done = c.sessions_completed || 0;
+      const total = c.sessions_total;
+      const remaining = total ? total - done : null;
+      const sessLine = total ? `${done} / ${total} sessions` : `${done} sessions completed`;
 
-    const rebookFlag = total && remaining !== null && remaining <= 3
-      ? `<span style="font-size:0.68rem;letter-spacing:0.08em;color:#e67e22;margin-left:0.5rem;">
+      const rebookFlag =
+        total && remaining !== null && remaining <= 3
+          ? `<span style="font-size:0.68rem;letter-spacing:0.08em;color:#e67e22;margin-left:0.5rem;">
            ⚠ ${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}
          </span>`
-      : '';
+          : '';
 
-    const sessions = (c.sessions || []).filter(s => s.status !== 'cancelled').map(s => `
+      const sessions = (c.sessions || [])
+        .filter((s) => s.status !== 'cancelled')
+        .map(
+          (s) => `
       <div class="session-row" id="sess-${s.id}">
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDate(s.scheduled_at)}</div>
         <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
         <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
-        ${s.status === 'scheduled' ? `
+        ${
+          s.status === 'scheduled'
+            ? `
           <button class="log-btn" data-action="logSession" data-args="${s.id},${c.id}">mark completed</button>
           <button class="cancel-btn" data-action="cancelSession" data-args="${s.id},${c.id}">cancel</button>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
-    `).join('');
+    `
+        )
+        .join('');
 
-    const studentBlocks = (c.students || []).map(s => `
+      const studentBlocks =
+        (c.students || [])
+          .map(
+            (s) => `
       <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f0f0f0;">
         <p style="font-size:0.78rem;color:#1a1a1a;margin-bottom:0.3rem;">
           ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
           ${s.current_level ? '<span style="color:#888;"> · ' + esc(s.current_level) + '</span>' : ''}
-          ${s.access_token ? `<a href="/sessions.html?token=${s.access_token}" target="_blank"
+          ${
+            s.access_token
+              ? `<a href="/sessions.html?token=${s.access_token}" target="_blank"
             style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;
-            text-decoration:none;margin-left:0.6rem;border-bottom:1px solid #ddd;">session page ↗</a>` : ''}
+            text-decoration:none;margin-left:0.6rem;border-bottom:1px solid #ddd;">session page ↗</a>`
+              : ''
+          }
         </p>
         <textarea id="notes-${s.id}"
           style="width:100%;background:transparent;border:none;border-bottom:1px solid #ddd;
@@ -102,20 +121,22 @@ function renderCourses(courses) {
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
       </div>
-    `).join('') || '<p style="font-size:0.78rem;color:#aaa;">No student records yet.</p>';
+    `
+          )
+          .join('') || '<p style="font-size:0.78rem;color:#aaa;">No student records yet.</p>';
 
-    const noSessions = !c.sessions?.length
-      ? `<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      const noSessions = !c.sessions?.length
+        ? `<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
            <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
            <button class="save-btn" data-action="syncCalendar" data-args="${c.id}">sync calendar</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`
-      : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
+        : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
            <button class="save-btn" style="font-size:0.65rem;" data-action="syncCalendar" data-args="${c.id}">↻ sync</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`;
 
-    return `
+      return `
       <div class="course-row" id="course-${c.id}">
         <div class="course-summary" data-action="toggleCourse" data-args="${c.id}">
           <span class="course-code">${esc(c.course_code) || '—'}</span>
@@ -137,13 +158,19 @@ function renderCourses(courses) {
             </div>
             <div>
               <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
-              ${(c.participants || []).map(p => `
+              ${
+                (c.participants || [])
+                  .map(
+                    (p) => `
                 <p style="font-size:0.82rem;color:#555;line-height:1.8;">
                   ${esc([p.firstName, p.lastName].filter(Boolean).join(' '))}
                   ${p.email ? '<br><span style="color:#aaa;">' + esc(p.email) + '</span>' : ''}
                   ${p.phone ? '<br><span style="color:#aaa;">' + esc(p.phone) + '</span>' : ''}
                 </p>
-              `).join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'}
+              `
+                  )
+                  .join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'
+              }
             </div>
           </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.8rem;">students & progress</p>
@@ -153,7 +180,8 @@ function renderCourses(courses) {
           ${sessions}
         </div>
       </div>`;
-  }).join('');
+    })
+    .join('');
 }
 
 export function toggleCourse(id) {
@@ -168,14 +196,20 @@ export async function syncCalendar(courseId) {
       body: { course_id: courseId },
     });
     if (res.ok) {
-      if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+      if (msg) {
+        msg.style.display = 'inline';
+        setTimeout(() => (msg.style.display = 'none'), 2000);
+      }
       loadCourses(currentCourseFilter);
     }
-  } catch (err) { console.error('Sync error:', err); }
+  } catch (err) {
+    console.error('Sync error:', err);
+  }
 }
 
 export async function cancelSession(sessionId, courseId) {
-  if (!confirm('Cancel this session? The Google Calendar event and invite will be removed.')) return;
+  if (!confirm('Cancel this session? The Google Calendar event and invite will be removed.'))
+    return;
   try {
     const res = await apiFetch('/api/cancel-session', {
       method: 'DELETE',
@@ -190,7 +224,7 @@ export async function cancelSession(sessionId, courseId) {
       if (countEl) {
         const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
         if (match) {
-          const total   = parseInt(match[2]);
+          const total = parseInt(match[2]);
           const newDone = parseInt(match[1]);
           countEl.firstChild.textContent = newDone + ' / ' + (total - 1) + ' sessions';
         }
@@ -202,8 +236,8 @@ export async function cancelSession(sessionId, courseId) {
 }
 
 export async function saveStudent(studentId) {
-  const notes = document.getElementById('notes-'  + studentId)?.value || '';
-  const level = document.getElementById('level-'  + studentId)?.value || '';
+  const notes = document.getElementById('notes-' + studentId)?.value || '';
+  const level = document.getElementById('level-' + studentId)?.value || '';
   try {
     const res = await apiFetch('/api/update-student', {
       method: 'PATCH',
@@ -211,9 +245,14 @@ export async function saveStudent(studentId) {
     });
     if (res.ok) {
       const msg = document.getElementById('student-saved-' + studentId);
-      if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000); }
+      if (msg) {
+        msg.style.display = 'inline';
+        setTimeout(() => (msg.style.display = 'none'), 2000);
+      }
     }
-  } catch (err) { console.error('Save student error:', err); }
+  } catch (err) {
+    console.error('Save student error:', err);
+  }
 }
 
 export async function logSession(sessionId, courseId) {
@@ -238,7 +277,7 @@ export async function logSession(sessionId, courseId) {
         const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
         if (match) {
           const newDone = parseInt(match[1]) + 1;
-          const total   = parseInt(match[2]);
+          const total = parseInt(match[2]);
           countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
         }
       }
@@ -250,10 +289,12 @@ export async function logSession(sessionId, courseId) {
 
 /* ── New course modal ───────────────────────────────────────────── */
 export function openNewCourseModal() {
-  ['nc-teacher','nc-service','nc-level','nc-group','nc-sessions','nc-datetime'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
-  });
+  ['nc-teacher', 'nc-service', 'nc-level', 'nc-group', 'nc-sessions', 'nc-datetime'].forEach(
+    (id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
+    }
+  );
   participantCount = 1;
   const container = document.getElementById('nc-participants');
   container.innerHTML = `
@@ -264,15 +305,24 @@ export function openNewCourseModal() {
       <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p0-phone" placeholder="+41…"></div>
     </div>`;
   const sel = document.getElementById('nc-teacher');
-  loadTeachers().then(teachers => {
-    sel.innerHTML = teachers.map(t =>
-      `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${esc(t.name)}${!t.authorised ? ' (not authorised)' : ''}</option>`
-    ).join('');
+  loadTeachers().then((teachers) => {
+    sel.innerHTML = teachers
+      .map(
+        (t) =>
+          `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${esc(t.name)}${!t.authorised ? ' (not authorised)' : ''}</option>`
+      )
+      .join('');
   });
   const msgEl = document.getElementById('nc-msg');
-  if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
+  if (msgEl) {
+    msgEl.style.display = 'none';
+    msgEl.textContent = '';
+  }
   const btn = document.getElementById('nc-submit');
-  if (btn) { btn.textContent = 'create course & calendar event'; btn.disabled = false; }
+  if (btn) {
+    btn.textContent = 'create course & calendar event';
+    btn.disabled = false;
+  }
   document.getElementById('new-course-modal').classList.add('open');
 }
 
@@ -305,20 +355,20 @@ export function addParticipantBlock() {
 }
 
 export async function submitNewCourse() {
-  const btn   = document.getElementById('nc-submit');
+  const btn = document.getElementById('nc-submit');
   const msgEl = document.getElementById('nc-msg');
   msgEl.style.display = 'none';
 
-  const teacherId  = document.getElementById('nc-teacher').value;
-  const service    = document.getElementById('nc-service').value;
-  const level      = document.getElementById('nc-level').value;
-  const groupType  = document.getElementById('nc-group').value;
-  const sessions   = document.getElementById('nc-sessions').value;
-  const datetime   = document.getElementById('nc-datetime').value;
+  const teacherId = document.getElementById('nc-teacher').value;
+  const service = document.getElementById('nc-service').value;
+  const level = document.getElementById('nc-level').value;
+  const groupType = document.getElementById('nc-group').value;
+  const sessions = document.getElementById('nc-sessions').value;
+  const datetime = document.getElementById('nc-datetime').value;
 
   if (!teacherId || !datetime) {
-    msgEl.textContent   = 'Please select a teacher and set a first session date.';
-    msgEl.className     = 'modal-msg err';
+    msgEl.textContent = 'Please select a teacher and set a first session date.';
+    msgEl.className = 'modal-msg err';
     msgEl.style.display = 'block';
     return;
   }
@@ -327,23 +377,28 @@ export async function submitNewCourse() {
   document.querySelectorAll('#nc-participants .participant-block').forEach((block) => {
     const idx = block.id.replace('nc-p-', '');
     const first = document.getElementById(`nc-p${idx}-first`)?.value?.trim();
-    const last  = document.getElementById(`nc-p${idx}-last`)?.value?.trim();
+    const last = document.getElementById(`nc-p${idx}-last`)?.value?.trim();
     const email = document.getElementById(`nc-p${idx}-email`)?.value?.trim();
     const phone = document.getElementById(`nc-p${idx}-phone`)?.value?.trim();
     if (first || last || email) {
-      participants.push({ firstName: first||'', lastName: last||'', email: email||'', phone: phone||'' });
+      participants.push({
+        firstName: first || '',
+        lastName: last || '',
+        email: email || '',
+        phone: phone || '',
+      });
     }
   });
 
   btn.textContent = 'creating…';
-  btn.disabled    = true;
+  btn.disabled = true;
 
   try {
     const res = await apiFetch('/api/confirm-booking', {
       method: 'POST',
       body: {
-        teacher_id:       teacherId,
-        sessions_total:   sessions ? parseInt(sessions) : null,
+        teacher_id: teacherId,
+        sessions_total: sessions ? parseInt(sessions) : null,
         first_session_at: new Date(datetime).toISOString(),
         duration_minutes: 50,
         booking_data: { service, level, group: groupType },
@@ -354,27 +409,31 @@ export async function submitNewCourse() {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
-    msgEl.textContent   = `Created. Course: ${result.course_code}`;
-    msgEl.className     = 'modal-msg';
+    msgEl.textContent = `Created. Course: ${result.course_code}`;
+    msgEl.className = 'modal-msg';
     msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
-    btn.textContent     = 'created ✓';
+    btn.textContent = 'created ✓';
 
     setTimeout(() => {
       closeNewCourseModal();
       loadCourses(currentCourseFilter);
     }, 1500);
-
   } catch (err) {
-    msgEl.textContent   = 'Error: ' + err.message;
-    msgEl.className     = 'modal-msg err';
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.className = 'modal-msg err';
     msgEl.style.display = 'block';
-    btn.textContent     = 'create course & calendar event';
-    btn.disabled        = false;
+    btn.textContent = 'create course & calendar event';
+    btn.disabled = false;
   }
 }
 
 export async function deleteCourse(courseId, courseCode) {
-  if (!confirm(`Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.`)) return;
+  if (
+    !confirm(
+      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.`
+    )
+  )
+    return;
   try {
     const res = await apiFetch('/api/delete-course', {
       method: 'DELETE',
@@ -396,40 +455,50 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
   const container = document.getElementById('att-students');
   container.innerHTML = '<p class="loading-state" style="padding:1rem 0;">loading students…</p>';
   const msg = document.getElementById('att-msg');
-  msg.style.display = 'none'; msg.textContent = '';
+  msg.style.display = 'none';
+  msg.textContent = '';
   const btn = document.getElementById('att-submit');
-  btn.textContent = 'save attendance'; btn.disabled = false;
+  btn.textContent = 'save attendance';
+  btn.disabled = false;
   document.getElementById('attendance-modal').classList.add('open');
 
   try {
     const coursesRes = await apiFetch('/api/get-courses?status=all');
     const courses = await coursesRes.json();
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
     attendanceStudents = course?.students || [];
 
     let existingAttendance = [];
     try {
       const attRes = await apiFetch('/api/get-attendance?session_id=' + sessionId);
       if (attRes.ok) existingAttendance = await attRes.json();
-    } catch { /* ok, no existing attendance */ }
+    } catch {
+      /* ok, no existing attendance */
+    }
 
     const attMap = {};
-    existingAttendance.forEach(a => { attMap[a.student_id] = a; });
+    existingAttendance.forEach((a) => {
+      attMap[a.student_id] = a;
+    });
 
     if (!attendanceStudents.length) {
-      container.innerHTML = '<p style="font-size:0.78rem;color:#aaa;padding:1rem 0;">No students enrolled in this course.</p>';
+      container.innerHTML =
+        '<p style="font-size:0.78rem;color:#aaa;padding:1rem 0;">No students enrolled in this course.</p>';
       return;
     }
 
-    container.innerHTML = attendanceStudents.map(s => {
-      const name    = esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—');
-      const existing = attMap[s.id];
-      const checked  = existing ? existing.present : true;
-      const statusLabel = existing
-        ? (existing.present ? '<span class="att-status present">present</span>' : '<span class="att-status absent">absent</span>')
-        : '';
+    container.innerHTML = attendanceStudents
+      .map((s) => {
+        const name = esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—');
+        const existing = attMap[s.id];
+        const checked = existing ? existing.present : true;
+        const statusLabel = existing
+          ? existing.present
+            ? '<span class="att-status present">present</span>'
+            : '<span class="att-status absent">absent</span>'
+          : '';
 
-      return `
+        return `
       <div class="att-row">
         <label>
           <input type="checkbox" data-student-id="${s.id}" ${checked ? 'checked' : ''}>
@@ -437,9 +506,11 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
         </label>
         ${statusLabel}
       </div>`;
-    }).join('');
+      })
+      .join('');
   } catch (err) {
-    container.innerHTML = '<p style="font-size:0.78rem;color:#c0392b;">Could not load students.</p>';
+    container.innerHTML =
+      '<p style="font-size:0.78rem;color:#c0392b;">Could not load students.</p>';
   }
 }
 
@@ -448,26 +519,28 @@ export function closeAttendanceModal() {
 }
 
 export async function submitAttendance() {
-  const btn       = document.getElementById('att-submit');
-  const msgEl     = document.getElementById('att-msg');
+  const btn = document.getElementById('att-submit');
+  const msgEl = document.getElementById('att-msg');
   const sessionId = document.getElementById('att-session-id').value;
   msgEl.style.display = 'none';
 
   const records = [];
-  document.querySelectorAll('#att-students input[type="checkbox"]').forEach(cb => {
+  document.querySelectorAll('#att-students input[type="checkbox"]').forEach((cb) => {
     records.push({
       student_id: cb.dataset.studentId,
-      present:    cb.checked,
+      present: cb.checked,
     });
   });
 
   if (!records.length) {
     msgEl.textContent = 'No students to record attendance for.';
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+    msgEl.className = 'modal-msg err';
+    msgEl.style.display = 'block';
     return;
   }
 
-  btn.textContent = 'saving…'; btn.disabled = true;
+  btn.textContent = 'saving…';
+  btn.disabled = true;
 
   try {
     const res = await apiFetch('/api/save-attendance', {
@@ -485,7 +558,9 @@ export async function submitAttendance() {
     setTimeout(() => closeAttendanceModal(), 1200);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
-    btn.textContent = 'save attendance'; btn.disabled = false;
+    msgEl.className = 'modal-msg err';
+    msgEl.style.display = 'block';
+    btn.textContent = 'save attendance';
+    btn.disabled = false;
   }
 }

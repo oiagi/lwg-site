@@ -17,17 +17,16 @@ export async function onRequestGet({ request, env }) {
   if (authErr) return authErr;
 
   const url = new URL(request.url);
-  const id  = url.searchParams.get('id');
+  const id = url.searchParams.get('id');
   if (!id) return errorResponse('Missing id parameter', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
     // ── Load student ────────────────────────────────────────────────────
-    const stuRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=*`,
-      { headers: H }
-    );
+    const stuRes = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=*`, {
+      headers: H,
+    });
     const students = await stuRes.json();
     if (!students.length) return errorResponse('Student not found', 404);
     const student = students[0];
@@ -38,11 +37,11 @@ export async function onRequestGet({ request, env }) {
       { headers: H }
     );
     const enrolments = enrolRes.ok ? await enrolRes.json() : [];
-    const courseIds = enrolments.map(e => e.course_id);
+    const courseIds = enrolments.map((e) => e.course_id);
 
     let courses = [];
     if (courseIds.length) {
-      const courseFilter = courseIds.map(cid => `id.eq.${cid}`).join(',');
+      const courseFilter = courseIds.map((cid) => `id.eq.${cid}`).join(',');
       const courseRes = await fetch(
         `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,status,sessions_total,sessions_completed`,
         { headers: H }

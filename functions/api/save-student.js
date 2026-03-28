@@ -28,18 +28,40 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('First name and last name are required', 400);
   }
 
-  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' };
+  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };
 
   // Fields allowed in the payload
   const fields = [
-    'first_name', 'last_name', 'email', 'phone', 'postcode',
-    'current_level', 'progress_notes', 'company_id', 'active', 'source',
-    'billing_name', 'billing_address', 'billing_email',
-    'rate_per_session', 'currency', 'vat_number',
-    'date_of_birth', 'nationality', 'native_language', 'target_language',
-    'learning_goals', 'emergency_contact', 'desired_start_date',
-    'referral_source', 'payment_method', 'course_type', 'course_format',
-    'location', 'consent_given', 'consent_date',
+    'first_name',
+    'last_name',
+    'email',
+    'phone',
+    'postcode',
+    'current_level',
+    'progress_notes',
+    'company_id',
+    'active',
+    'source',
+    'billing_name',
+    'billing_address',
+    'billing_email',
+    'rate_per_session',
+    'currency',
+    'vat_number',
+    'date_of_birth',
+    'nationality',
+    'native_language',
+    'target_language',
+    'learning_goals',
+    'emergency_contact',
+    'desired_start_date',
+    'referral_source',
+    'payment_method',
+    'course_type',
+    'course_format',
+    'location',
+    'consent_given',
+    'consent_date',
   ];
   const data = {};
   for (const f of fields) {
@@ -50,10 +72,11 @@ export async function onRequestPost({ request, env }) {
     let res;
     if (body.id) {
       // ── Update existing student ──────────────────────────────────────
-      res = await fetch(
-        `${SUPABASE_URL}/rest/v1/students?id=eq.${body.id}`,
-        { method: 'PATCH', headers: H, body: JSON.stringify(data) }
-      );
+      res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${body.id}`, {
+        method: 'PATCH',
+        headers: H,
+        body: JSON.stringify(data),
+      });
     } else {
       // ── Create new student ───────────────────────────────────────────
       // Generate access_token for the student portal / intake form link
@@ -61,10 +84,11 @@ export async function onRequestPost({ request, env }) {
       if (!data.source) data.source = 'manual';
       if (data.active === undefined) data.active = true;
 
-      res = await fetch(
-        `${SUPABASE_URL}/rest/v1/students`,
-        { method: 'POST', headers: H, body: JSON.stringify(data) }
-      );
+      res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
+        method: 'POST',
+        headers: H,
+        body: JSON.stringify(data),
+      });
     }
 
     if (!res.ok) {

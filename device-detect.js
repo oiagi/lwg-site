@@ -3,20 +3,20 @@
 //    Detects phone / tablet / desktop using screen size + pointer type
 //    + user-agent so CSS can adapt per device class.
 (function () {
-  var ua   = navigator.userAgent;
-  var w    = window.screen.width;
-  var h    = window.screen.height;
-  var short = Math.min(w, h);
+  const ua = navigator.userAgent;
+  const w = window.screen.width;
+  const h = window.screen.height;
+  const short = Math.min(w, h);
 
   // Pointer capability: "fine" = mouse, "coarse" = touch
-  var hasCoarse  = window.matchMedia('(pointer: coarse)').matches;
-  var hasHover   = window.matchMedia('(hover: hover)').matches;
+  const hasCoarse = window.matchMedia('(pointer: coarse)').matches;
+  const hasHover = window.matchMedia('(hover: hover)').matches;
 
   // UA hints for phones and tablets
-  var uaPhone  = /iPhone|Android.*Mobile|Windows Phone|BlackBerry/i.test(ua);
-  var uaTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(ua);
+  const uaPhone = /iPhone|Android.*Mobile|Windows Phone|BlackBerry/i.test(ua);
+  const uaTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(ua);
 
-  var device;
+  let device;
   if (uaPhone || (hasCoarse && !hasHover && short < 600)) {
     device = 'mobile';
   } else if (uaTablet || (hasCoarse && !hasHover && short >= 600)) {

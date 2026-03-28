@@ -54,4 +54,12 @@ export const DEFAULT_CURRENCY = 'CHF';
 export const DEFAULT_SESSION_DURATION = 50;
 
 /* Admin dashboard tabs */
-export const TABS = ['enquiries', 'courses', 'students', 'companies', 'billing', 'reports', 'teachers'];
+export const TABS = [
+  'enquiries',
+  'courses',
+  'students',
+  'companies',
+  'billing',
+  'reports',
+  'teachers',
+];

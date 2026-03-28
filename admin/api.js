@@ -7,7 +7,7 @@ export async function apiFetch(path, opts = {}) {
   const init = {
     method,
     headers: {
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       ...headers,
     },
   };

@@ -48,15 +48,15 @@ This runs `wrangler pages dev .` which serves static files and executes the API 
 
 See `.dev.vars.example` for the full list. Key variables:
 
-| Variable | Purpose |
-|----------|---------|
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_ANON_KEY` | Supabase anonymous key (frontend) |
+| Variable               | Purpose                                   |
+| ---------------------- | ----------------------------------------- |
+| `SUPABASE_URL`         | Supabase project URL                      |
+| `SUPABASE_ANON_KEY`    | Supabase anonymous key (frontend)         |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key (API functions) |
-| `RESEND_API_KEY` | Resend email service key |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID (calendar) |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `QR_IBAN` | Swiss QR-IBAN for invoice payment slips |
+| `RESEND_API_KEY`       | Resend email service key                  |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID (calendar)         |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                |
+| `QR_IBAN`              | Swiss QR-IBAN for invoice payment slips   |
 
 ## Deployment
 

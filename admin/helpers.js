@@ -19,8 +19,11 @@ export function fmt(dateStr) {
 export function fmtDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('de-CH', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -34,24 +37,26 @@ export function showSaved(id, duration = 2000) {
   const msg = document.getElementById(id);
   if (msg) {
     msg.style.display = 'inline';
-    setTimeout(() => msg.style.display = 'none', duration);
+    setTimeout(() => (msg.style.display = 'none'), duration);
   }
 }
 
 /* ── Modal focus trap ──────────────────────────────────────────────── */
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 let _trapCleanup = null;
 
 export function trapFocus(modalEl) {
   releaseFocus(); // clean up any previous trap
-  const focusable = () => [...modalEl.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+  const focusable = () =>
+    [...modalEl.querySelectorAll(FOCUSABLE)].filter((el) => el.offsetParent !== null);
   const handler = (e) => {
     if (e.key !== 'Tab') return;
     const els = focusable();
     if (!els.length) return;
     const first = els[0];
-    const last  = els[els.length - 1];
+    const last = els[els.length - 1];
     if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
       last.focus();
@@ -68,5 +73,8 @@ export function trapFocus(modalEl) {
 }
 
 export function releaseFocus() {
-  if (_trapCleanup) { _trapCleanup(); _trapCleanup = null; }
+  if (_trapCleanup) {
+    _trapCleanup();
+    _trapCleanup = null;
+  }
 }

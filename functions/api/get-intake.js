@@ -13,7 +13,7 @@ import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
 export async function onRequestGet({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
-  const url   = new URL(request.url);
+  const url = new URL(request.url);
   const token = url.searchParams.get('token');
   if (!token) return errorResponse('Missing token', 400);
 
@@ -30,10 +30,10 @@ export async function onRequestGet({ request, env }) {
     if (!students.length) return errorResponse('Student not found', 404);
 
     // ── Token expiry check (90 days) ──────────────────────────────────
-    const student   = students[0];
+    const student = students[0];
     const tokenDate = student.token_created_at || student.created_at;
     if (tokenDate) {
-      const ageMs    = Date.now() - new Date(tokenDate).getTime();
+      const ageMs = Date.now() - new Date(tokenDate).getTime();
       const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
       if (ageMs > maxAgeMs) {
         return errorResponse('This link has expired. Please contact us for a new one.', 410);

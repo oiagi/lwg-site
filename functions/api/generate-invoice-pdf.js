@@ -21,8 +21,14 @@ function renderInvoiceBody(pdf, invoice, lines, debtor, creditor, margin, right)
   let y = PAGE_H - margin;
   pdf.text(margin, y, creditor.name, { font: 'bold', size: 14 });
   y -= 16;
-  if (creditor.street) { pdf.text(margin, y, creditor.street, { size: 9 }); y -= 12; }
-  if (creditor.city)   { pdf.text(margin, y, creditor.city, { size: 9 }); y -= 12; }
+  if (creditor.street) {
+    pdf.text(margin, y, creditor.street, { size: 9 });
+    y -= 12;
+  }
+  if (creditor.city) {
+    pdf.text(margin, y, creditor.city, { size: 9 });
+    y -= 12;
+  }
   y -= 10;
 
   // Recipient
@@ -39,8 +45,10 @@ function renderInvoiceBody(pdf, invoice, lines, debtor, creditor, margin, right)
 
   // Metadata
   const meta = [
-    ['Date', invoice.issued_date], ['Due', invoice.due_date],
-    ['Currency', invoice.currency], ['Status', invoice.status],
+    ['Date', invoice.issued_date],
+    ['Due', invoice.due_date],
+    ['Currency', invoice.currency],
+    ['Status', invoice.status],
   ];
   if (debtor.vat_number) meta.push(['VAT No.', debtor.vat_number]);
 
@@ -87,7 +95,10 @@ function renderInvoiceBody(pdf, invoice, lines, debtor, creditor, margin, right)
   pdf.line(420, y + 2, right, y + 2);
   y -= 2;
   pdf.text(420, y, 'Total:', { font: 'bold', size: 11 });
-  pdf.text(490, y, `${invoice.currency} ${invoice.total_amount.toFixed(2)}`, { font: 'bold', size: 11 });
+  pdf.text(490, y, `${invoice.currency} ${invoice.total_amount.toFixed(2)}`, {
+    font: 'bold',
+    size: 11,
+  });
   y -= 20;
 
   if (invoice.notes) {
@@ -101,11 +112,11 @@ function renderInvoiceBody(pdf, invoice, lines, debtor, creditor, margin, right)
 // ── Render the Swiss QR bill payment slip (bottom 105mm) ────────────────
 
 function renderQrSlip(pdf, invoice, debtor, creditor, env) {
-  const PAGE_W    = 595.28;
-  const SLIP_H    = 297.64;   // 105mm in points
-  const RECEIPT_W = 175.75;   // 62mm in points
-  const QR_SIZE   = 130.39;   // 46mm in points
-  const qrIban    = invoice.qr_iban || env.QR_IBAN || '';
+  const PAGE_W = 595.28;
+  const SLIP_H = 297.64; // 105mm in points
+  const RECEIPT_W = 175.75; // 62mm in points
+  const QR_SIZE = 130.39; // 46mm in points
+  const qrIban = invoice.qr_iban || env.QR_IBAN || '';
   const refFormatted = invoice.qr_reference ? formatQrReference(invoice.qr_reference) : '';
 
   // Perforation lines
@@ -119,21 +130,34 @@ function renderQrSlip(pdf, invoice, debtor, creditor, env) {
 
   pdf.text(14, ry, 'Account / Payable to', { font: 'bold', size: 6 });
   ry -= 9;
-  pdf.text(14, ry, qrIban, { size: 8 }); ry -= 11;
-  pdf.text(14, ry, creditor.name, { size: 8 }); ry -= 11;
-  if (creditor.street) { pdf.text(14, ry, creditor.street, { size: 8 }); ry -= 11; }
-  pdf.text(14, ry, creditor.city, { size: 8 }); ry -= 16;
+  pdf.text(14, ry, qrIban, { size: 8 });
+  ry -= 11;
+  pdf.text(14, ry, creditor.name, { size: 8 });
+  ry -= 11;
+  if (creditor.street) {
+    pdf.text(14, ry, creditor.street, { size: 8 });
+    ry -= 11;
+  }
+  pdf.text(14, ry, creditor.city, { size: 8 });
+  ry -= 16;
 
   pdf.text(14, ry, 'Reference', { font: 'bold', size: 6 });
   ry -= 9;
-  pdf.text(14, ry, refFormatted, { size: 8 }); ry -= 16;
+  pdf.text(14, ry, refFormatted, { size: 8 });
+  ry -= 16;
 
   if (debtor.name) {
-    pdf.text(14, ry, 'Payable by', { font: 'bold', size: 6 }); ry -= 9;
-    pdf.text(14, ry, debtor.name, { size: 8 }); ry -= 11;
-    if (debtor.billing_address) { pdf.text(14, ry, debtor.billing_address, { size: 8 }); ry -= 11; }
+    pdf.text(14, ry, 'Payable by', { font: 'bold', size: 6 });
+    ry -= 9;
+    pdf.text(14, ry, debtor.name, { size: 8 });
+    ry -= 11;
+    if (debtor.billing_address) {
+      pdf.text(14, ry, debtor.billing_address, { size: 8 });
+      ry -= 11;
+    }
   } else {
-    pdf.text(14, ry, 'Payable by (name/address)', { font: 'bold', size: 6 }); ry -= 9;
+    pdf.text(14, ry, 'Payable by (name/address)', { font: 'bold', size: 6 });
+    ry -= 9;
     pdf.rect(14, ry - 70.87, 150, 70.87);
   }
 
@@ -174,24 +198,40 @@ function renderQrSlip(pdf, invoice, debtor, creditor, env) {
   const TX = PX + QR_SIZE + 14;
   let ty = py;
 
-  pdf.text(TX, ty, 'Account / Payable to', { font: 'bold', size: 8 }); ty -= 12;
-  pdf.text(TX, ty, qrIban, { size: 10 }); ty -= 13;
-  pdf.text(TX, ty, creditor.name, { size: 10 }); ty -= 13;
-  if (creditor.street) { pdf.text(TX, ty, creditor.street, { size: 10 }); ty -= 13; }
-  pdf.text(TX, ty, creditor.city, { size: 10 }); ty -= 18;
+  pdf.text(TX, ty, 'Account / Payable to', { font: 'bold', size: 8 });
+  ty -= 12;
+  pdf.text(TX, ty, qrIban, { size: 10 });
+  ty -= 13;
+  pdf.text(TX, ty, creditor.name, { size: 10 });
+  ty -= 13;
+  if (creditor.street) {
+    pdf.text(TX, ty, creditor.street, { size: 10 });
+    ty -= 13;
+  }
+  pdf.text(TX, ty, creditor.city, { size: 10 });
+  ty -= 18;
 
-  pdf.text(TX, ty, 'Reference', { font: 'bold', size: 8 }); ty -= 12;
-  pdf.text(TX, ty, refFormatted, { size: 10 }); ty -= 18;
+  pdf.text(TX, ty, 'Reference', { font: 'bold', size: 8 });
+  ty -= 12;
+  pdf.text(TX, ty, refFormatted, { size: 10 });
+  ty -= 18;
 
-  pdf.text(TX, ty, 'Additional information', { font: 'bold', size: 8 }); ty -= 12;
-  pdf.text(TX, ty, `Invoice ${invoice.invoice_number}`, { size: 10 }); ty -= 18;
+  pdf.text(TX, ty, 'Additional information', { font: 'bold', size: 8 });
+  ty -= 12;
+  pdf.text(TX, ty, `Invoice ${invoice.invoice_number}`, { size: 10 });
+  ty -= 18;
 
   if (debtor.name) {
-    pdf.text(TX, ty, 'Payable by', { font: 'bold', size: 8 }); ty -= 12;
-    pdf.text(TX, ty, debtor.name, { size: 10 }); ty -= 13;
-    if (debtor.billing_address) { pdf.text(TX, ty, debtor.billing_address, { size: 10 }); }
+    pdf.text(TX, ty, 'Payable by', { font: 'bold', size: 8 });
+    ty -= 12;
+    pdf.text(TX, ty, debtor.name, { size: 10 });
+    ty -= 13;
+    if (debtor.billing_address) {
+      pdf.text(TX, ty, debtor.billing_address, { size: 10 });
+    }
   } else {
-    pdf.text(TX, ty, 'Payable by (name/address)', { font: 'bold', size: 8 }); ty -= 12;
+    pdf.text(TX, ty, 'Payable by (name/address)', { font: 'bold', size: 8 });
+    ty -= 12;
     pdf.rect(TX, ty - 70.87, 184.25, 70.87);
   }
 
@@ -204,21 +244,21 @@ function renderQrSlip(pdf, invoice, debtor, creditor, env) {
   const debtorAddress = parseAddress(debtor.billing_address || '');
   return buildQrPayload({
     qrIban,
-    creditorName:        creditor.name,
-    creditorStreet:      env.CREDITOR_STREET || '',
+    creditorName: creditor.name,
+    creditorStreet: env.CREDITOR_STREET || '',
     creditorHouseNumber: env.CREDITOR_HOUSE_NUMBER || '',
-    creditorPostalCode:  env.CREDITOR_POSTAL_CODE || '',
-    creditorCity:        env.CREDITOR_CITY || '',
-    creditorCountry:     env.CREDITOR_COUNTRY || 'CH',
-    amount:              invoice.total_amount,
-    currency:            invoice.currency,
-    debtorName:          debtor.name,
-    debtorStreet:        debtorAddress.street,
-    debtorHouseNumber:   debtorAddress.houseNumber,
-    debtorPostalCode:    debtorAddress.postalCode,
-    debtorCity:          debtorAddress.city,
-    debtorCountry:       'CH',
-    qrReference:         invoice.qr_reference,
+    creditorPostalCode: env.CREDITOR_POSTAL_CODE || '',
+    creditorCity: env.CREDITOR_CITY || '',
+    creditorCountry: env.CREDITOR_COUNTRY || 'CH',
+    amount: invoice.total_amount,
+    currency: invoice.currency,
+    debtorName: debtor.name,
+    debtorStreet: debtorAddress.street,
+    debtorHouseNumber: debtorAddress.houseNumber,
+    debtorPostalCode: debtorAddress.postalCode,
+    debtorCity: debtorAddress.city,
+    debtorCountry: 'CH',
+    qrReference: invoice.qr_reference,
     unstructuredMessage: `Invoice ${invoice.invoice_number}`,
   });
 }
@@ -232,7 +272,7 @@ export async function onRequestGet({ request, env }) {
   if (authErr) return authErr;
 
   const url = new URL(request.url);
-  const id  = url.searchParams.get('id');
+  const id = url.searchParams.get('id');
   if (!id) return errorResponse('Missing id parameter', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -241,7 +281,10 @@ export async function onRequestGet({ request, env }) {
     // Load invoice + lines + debtor in parallel where possible
     const [invRes, linesRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${id}&select=*`, { headers: H }),
-      fetch(`${SUPABASE_URL}/rest/v1/invoice_lines?invoice_id=eq.${id}&order=description.asc&select=*`, { headers: H }),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/invoice_lines?invoice_id=eq.${id}&order=description.asc&select=*`,
+        { headers: H }
+      ),
     ]);
 
     const invoices = await invRes.json();
@@ -253,11 +296,17 @@ export async function onRequestGet({ request, env }) {
     // Load debtor
     let debtor = {};
     if (invoice.company_id) {
-      const compRes = await fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`, { headers: H });
+      const compRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${invoice.company_id}&select=*`,
+        { headers: H }
+      );
       const companies = await compRes.json();
       debtor = companies[0] || {};
     } else if (invoice.student_id) {
-      const stuRes = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${invoice.student_id}&select=*`, { headers: H });
+      const stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?id=eq.${invoice.student_id}&select=*`,
+        { headers: H }
+      );
       const students = stuRes.ok ? await stuRes.json() : [];
       const student = students[0] || {};
       debtor = {
@@ -269,25 +318,25 @@ export async function onRequestGet({ request, env }) {
     }
 
     // Ensure numeric types
-    invoice.net_amount   = parseFloat(invoice.net_amount)   || 0;
-    invoice.vat_amount   = parseFloat(invoice.vat_amount)   || 0;
+    invoice.net_amount = parseFloat(invoice.net_amount) || 0;
+    invoice.vat_amount = parseFloat(invoice.vat_amount) || 0;
     invoice.total_amount = parseFloat(invoice.total_amount) || 0;
-    invoice.vat_rate     = invoice.vat_rate ? parseFloat(invoice.vat_rate) : null;
+    invoice.vat_rate = invoice.vat_rate ? parseFloat(invoice.vat_rate) : null;
     for (const line of lines) {
-      line.quantity   = parseFloat(line.quantity)   || 0;
+      line.quantity = parseFloat(line.quantity) || 0;
       line.unit_price = parseFloat(line.unit_price) || 0;
       line.line_total = parseFloat(line.line_total) || 0;
     }
 
     // Build PDF
     const creditor = {
-      name:   env.CREDITOR_NAME || 'Learning with Gioia',
+      name: env.CREDITOR_NAME || 'Learning with Gioia',
       street: [env.CREDITOR_STREET, env.CREDITOR_HOUSE_NUMBER].filter(Boolean).join(' '),
-      city:   [env.CREDITOR_POSTAL_CODE, env.CREDITOR_CITY].filter(Boolean).join(' '),
+      city: [env.CREDITOR_POSTAL_CODE, env.CREDITOR_CITY].filter(Boolean).join(' '),
     };
 
     const MARGIN = 56.69;
-    const RIGHT  = 595.28 - MARGIN;
+    const RIGHT = 595.28 - MARGIN;
 
     const pdf = new PdfBuilder();
     pdf.init();

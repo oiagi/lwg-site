@@ -16,17 +16,16 @@ export async function onRequestGet({ request, env }) {
   if (authErr) return authErr;
 
   const url = new URL(request.url);
-  const id  = url.searchParams.get('id');
+  const id = url.searchParams.get('id');
   if (!id) return errorResponse('Missing id parameter', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
     // ── Load invoice ──────────────────────────────────────────────────
-    const invRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/invoices?id=eq.${id}&select=*`,
-      { headers: H }
-    );
+    const invRes = await fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${id}&select=*`, {
+      headers: H,
+    });
     const invoices = await invRes.json();
     if (!invoices.length) return errorResponse('Invoice not found', 404);
     const invoice = invoices[0];
@@ -61,7 +60,10 @@ export async function onRequestGet({ request, env }) {
     }
 
     const billedTo = student
-      ? { name: `${student.first_name} ${student.last_name}`, billing_address: student.billing_address }
+      ? {
+          name: `${student.first_name} ${student.last_name}`,
+          billing_address: student.billing_address,
+        }
       : { name: company.name, billing_address: company.billing_address };
 
     return jsonResponse({

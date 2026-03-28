@@ -4,11 +4,13 @@ import { esc } from './helpers.js';
 
 let currentCompanyFilter = 'true';
 
-export function getCurrentCompanyFilter() { return currentCompanyFilter; }
+export function getCurrentCompanyFilter() {
+  return currentCompanyFilter;
+}
 
 export function filterCompanies(active) {
   currentCompanyFilter = active;
-  document.querySelectorAll('[data-company-status]').forEach(b => {
+  document.querySelectorAll('[data-company-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.companyStatus === active);
   });
   loadCompanies(active);
@@ -37,13 +39,21 @@ function renderCompanies(companies) {
     return;
   }
 
-  list.innerHTML = companies.map(c => {
-    const stats = [
-      c.active_courses_count ? c.active_courses_count + ' course' + (c.active_courses_count !== 1 ? 's' : '') : null,
-      c.active_students_count ? c.active_students_count + ' student' + (c.active_students_count !== 1 ? 's' : '') : null,
-    ].filter(Boolean).join(' · ') || 'no active courses';
+  list.innerHTML = companies
+    .map((c) => {
+      const stats =
+        [
+          c.active_courses_count
+            ? c.active_courses_count + ' course' + (c.active_courses_count !== 1 ? 's' : '')
+            : null,
+          c.active_students_count
+            ? c.active_students_count + ' student' + (c.active_students_count !== 1 ? 's' : '')
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' · ') || 'no active courses';
 
-    return `
+      return `
     <div class="company-row" id="company-${c.id}">
       <div class="company-summary" data-action="toggleCompany" data-args="${c.id}">
         <span class="company-name">${esc(c.name)}</span>
@@ -76,7 +86,8 @@ function renderCompanies(companies) {
         </div>
       </div>
     </div>`;
-  }).join('');
+    })
+    .join('');
 }
 
 export function toggleCompany(id) {
@@ -84,27 +95,42 @@ export function toggleCompany(id) {
 }
 
 export function openCompanyModal(existingData) {
-  const fields = ['cm-id','cm-name','cm-contact-name','cm-contact-email','cm-contact-phone',
-                   'cm-billing-address','cm-billing-email','cm-vat','cm-rate','cm-notes'];
-  fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fields = [
+    'cm-id',
+    'cm-name',
+    'cm-contact-name',
+    'cm-contact-email',
+    'cm-contact-phone',
+    'cm-billing-address',
+    'cm-billing-email',
+    'cm-vat',
+    'cm-rate',
+    'cm-notes',
+  ];
+  fields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
   document.getElementById('company-modal-title').textContent = 'new company';
   const btn = document.getElementById('cm-submit');
-  btn.textContent = 'save company'; btn.disabled = false;
+  btn.textContent = 'save company';
+  btn.disabled = false;
   const msg = document.getElementById('cm-msg');
-  msg.style.display = 'none'; msg.textContent = '';
+  msg.style.display = 'none';
+  msg.textContent = '';
 
   if (existingData) {
     document.getElementById('company-modal-title').textContent = 'edit company';
-    document.getElementById('cm-id').value             = existingData.id || '';
-    document.getElementById('cm-name').value           = existingData.name || '';
-    document.getElementById('cm-contact-name').value   = existingData.contact_name || '';
-    document.getElementById('cm-contact-email').value  = existingData.contact_email || '';
-    document.getElementById('cm-contact-phone').value  = existingData.contact_phone || '';
-    document.getElementById('cm-billing-address').value= existingData.billing_address || '';
-    document.getElementById('cm-billing-email').value  = existingData.billing_email || '';
-    document.getElementById('cm-vat').value            = existingData.vat_number || '';
-    document.getElementById('cm-rate').value           = existingData.rate_per_session || '';
-    document.getElementById('cm-notes').value          = existingData.notes || '';
+    document.getElementById('cm-id').value = existingData.id || '';
+    document.getElementById('cm-name').value = existingData.name || '';
+    document.getElementById('cm-contact-name').value = existingData.contact_name || '';
+    document.getElementById('cm-contact-email').value = existingData.contact_email || '';
+    document.getElementById('cm-contact-phone').value = existingData.contact_phone || '';
+    document.getElementById('cm-billing-address').value = existingData.billing_address || '';
+    document.getElementById('cm-billing-email').value = existingData.billing_email || '';
+    document.getElementById('cm-vat').value = existingData.vat_number || '';
+    document.getElementById('cm-rate').value = existingData.rate_per_session || '';
+    document.getElementById('cm-notes').value = existingData.notes || '';
   }
   document.getElementById('company-modal').classList.add('open');
 }
@@ -125,29 +151,33 @@ export async function editCompany(companyId) {
 }
 
 export async function submitCompany() {
-  const btn   = document.getElementById('cm-submit');
+  const btn = document.getElementById('cm-submit');
   const msgEl = document.getElementById('cm-msg');
   msgEl.style.display = 'none';
 
   const name = document.getElementById('cm-name').value.trim();
   if (!name) {
     msgEl.textContent = 'Company name is required.';
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
+    msgEl.className = 'modal-msg err';
+    msgEl.style.display = 'block';
     return;
   }
 
-  btn.textContent = 'saving…'; btn.disabled = true;
+  btn.textContent = 'saving…';
+  btn.disabled = true;
 
   const body = {
     name,
-    contact_name:    document.getElementById('cm-contact-name').value.trim() || null,
-    contact_email:   document.getElementById('cm-contact-email').value.trim() || null,
-    contact_phone:   document.getElementById('cm-contact-phone').value.trim() || null,
+    contact_name: document.getElementById('cm-contact-name').value.trim() || null,
+    contact_email: document.getElementById('cm-contact-email').value.trim() || null,
+    contact_phone: document.getElementById('cm-contact-phone').value.trim() || null,
     billing_address: document.getElementById('cm-billing-address').value.trim() || null,
-    billing_email:   document.getElementById('cm-billing-email').value.trim() || null,
-    vat_number:      document.getElementById('cm-vat').value.trim() || null,
-    rate_per_session:document.getElementById('cm-rate').value ? parseFloat(document.getElementById('cm-rate').value) : null,
-    notes:           document.getElementById('cm-notes').value.trim() || null,
+    billing_email: document.getElementById('cm-billing-email').value.trim() || null,
+    vat_number: document.getElementById('cm-vat').value.trim() || null,
+    rate_per_session: document.getElementById('cm-rate').value
+      ? parseFloat(document.getElementById('cm-rate').value)
+      : null,
+    notes: document.getElementById('cm-notes').value.trim() || null,
   };
   const id = document.getElementById('cm-id').value;
   if (id) body.id = id;
@@ -161,7 +191,8 @@ export async function submitCompany() {
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
     msgEl.textContent = id ? 'Company updated.' : 'Company created.';
-    msgEl.className = 'modal-msg'; msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+    msgEl.className = 'modal-msg';
+    msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
     btn.textContent = 'saved ✓';
 
     setTimeout(() => {
@@ -170,7 +201,9 @@ export async function submitCompany() {
     }, 1200);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
-    msgEl.className = 'modal-msg err'; msgEl.style.display = 'block';
-    btn.textContent = 'save company'; btn.disabled = false;
+    msgEl.className = 'modal-msg err';
+    msgEl.style.display = 'block';
+    btn.textContent = 'save company';
+    btn.disabled = false;
   }
 }

@@ -23,7 +23,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_CLIENT_ID,
 //   GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  getValidAccessToken,
+  jsonResponse,
+  errorResponse,
+} from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
@@ -40,13 +46,14 @@ function getCoursePrefix(groupType) {
 
 function getLevelCode(booking) {
   if (booking.language === 'Swiss German') return 'CH';
-  if (booking.service  === 'tutoring')     return 'SUB';
+  if (booking.service === 'tutoring') return 'SUB';
   return booking.level || 'XX';
 }
 
 async function getNextCourseCode(prefix, levelCode, env) {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/get_next_course_code`, {
-    method: 'POST', headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+    method: 'POST',
+    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
     body: JSON.stringify({ prefix, level_code: levelCode }),
   });
   if (!res.ok) throw new Error(`Course code error: ${await res.text()}`);
@@ -67,13 +74,13 @@ async function findOrCreateStudent(p, source, env) {
 
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/students`, {
     method: 'POST',
-    headers: { ...supabaseHeaders(env.SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+    headers: { ...supabaseHeaders(env.SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
     body: JSON.stringify({
       first_name: p.firstName || null,
-      last_name:  p.lastName  || null,
-      email:      p.email     || null,
-      phone:      p.phone     || null,
-      postcode:   p.postcode  || null,
+      last_name: p.lastName || null,
+      email: p.email || null,
+      phone: p.phone || null,
+      postcode: p.postcode || null,
       source,
     }),
   });
@@ -90,12 +97,25 @@ export async function onRequestPost({ request, env }) {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let enquiry_id, teacher_id, sessions_total, first_session_at,
-      duration_minutes, course_code_override, booking_data, contact_data;
+  let enquiry_id,
+    teacher_id,
+    sessions_total,
+    first_session_at,
+    duration_minutes,
+    course_code_override,
+    booking_data,
+    contact_data;
   try {
-    ({ enquiry_id, teacher_id, sessions_total, first_session_at,
-       duration_minutes = 50, course_code_override,
-       booking_data, contact_data } = await request.json());
+    ({
+      enquiry_id,
+      teacher_id,
+      sessions_total,
+      first_session_at,
+      duration_minutes = 50,
+      course_code_override,
+      booking_data,
+      contact_data,
+    } = await request.json());
   } catch (err) {
     console.error('Failed to parse confirm-booking request body:', err);
     return errorResponse('Invalid JSON', 400);
@@ -106,12 +126,12 @@ export async function onRequestPost({ request, env }) {
   }
 
   // ── Load enquiry or use inline booking/contact data ─────────────────
-  let booking = booking_data || {}, contact = contact_data || {};
+  let booking = booking_data || {},
+    contact = contact_data || {};
   if (enquiry_id) {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}&select=*`,
-      { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-    );
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}&select=*`, {
+      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    });
     const rows = await r.json();
     if (!rows.length) return errorResponse('Enquiry not found', 404);
     booking = rows[0].booking_data || {};
@@ -119,16 +139,18 @@ export async function onRequestPost({ request, env }) {
   }
 
   // ── Load teacher ────────────────────────────────────────────────────
-  const tr = await fetch(
-    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}&select=*`,
-    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const tr = await fetch(`${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const teachers = await tr.json();
   if (!teachers.length) return errorResponse('Teacher not found', 404);
   const teacher = teachers[0];
 
   if (!teacher.refresh_token) {
-    return errorResponse('Teacher has not authorised Google Calendar. Please authenticate first.', 400);
+    return errorResponse(
+      'Teacher has not authorised Google Calendar. Please authenticate first.',
+      400
+    );
   }
 
   let accessToken;
@@ -159,14 +181,14 @@ export async function onRequestPost({ request, env }) {
   try {
     ({ eventId: calendarEventId, recurrenceRule } = await createCourseCalendarEvent({
       accessToken,
-      calendarId:      teacher.calendar_id,
+      calendarId: teacher.calendar_id,
       courseCode,
       booking,
       contact,
-      teacherName:     teacher.name,
-      firstSessionAt:  first_session_at,
+      teacherName: teacher.name,
+      firstSessionAt: first_session_at,
       durationMinutes: duration_minutes,
-      sessionsTotal:   sessions_total,
+      sessionsTotal: sessions_total,
     }));
   } catch (err) {
     console.error('Calendar API error:', err);
@@ -174,28 +196,28 @@ export async function onRequestPost({ request, env }) {
   }
 
   // ── Course record ────────────────────────────────────────────────────
-  const participants     = contact.participants || [];
-  const participantNames = participants.map(p => p.firstName).filter(Boolean);
+  const participants = contact.participants || [];
+  const participantNames = participants.map((p) => p.firstName).filter(Boolean);
 
   let courseId;
   try {
     const cr = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
       method: 'POST',
-      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
-        course_code:        courseCode,
-        service:            booking.service || null,
-        level:              levelCode,
-        group_type:         groupType,
+        course_code: courseCode,
+        service: booking.service || null,
+        level: levelCode,
+        group_type: groupType,
         teacher_id,
-        participant_names:  participantNames,
+        participant_names: participantNames,
         participants,
-        sessions_total:     sessions_total || null,
+        sessions_total: sessions_total || null,
         sessions_completed: 0,
-        recurrence_rule:    recurrenceRule,
-        calendar_event_id:  calendarEventId,
-        enquiry_id:         enquiry_id || null,
-        status:             'active',
+        recurrence_rule: recurrenceRule,
+        calendar_event_id: calendarEventId,
+        enquiry_id: enquiry_id || null,
+        status: 'active',
       }),
     });
     if (!cr.ok) {
@@ -211,16 +233,20 @@ export async function onRequestPost({ request, env }) {
   // ── Sync sessions from the recurring calendar event ──────────────────
   try {
     const { active } = await fetchCourseEvents({
-      accessToken, calendarId: teacher.calendar_id, courseCode,
+      accessToken,
+      calendarId: teacher.calendar_id,
+      courseCode,
     });
     const now = new Date();
     for (const event of active) {
       const scheduledAt = event.start.dateTime || event.start.date;
-      const isPast      = new Date(scheduledAt) < now;
+      const isPast = new Date(scheduledAt) < now;
       await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-        method: 'POST', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'POST',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({
-          course_id: courseId, teacher_id,
+          course_id: courseId,
+          teacher_id,
           scheduled_at: scheduledAt,
           duration_minutes,
           status: isPast ? 'completed' : 'scheduled',
@@ -228,10 +254,12 @@ export async function onRequestPost({ request, env }) {
         }),
       });
     }
-  } catch (err) { console.error('Session sync error:', err); }
+  } catch (err) {
+    console.error('Session sync error:', err);
+  }
 
   // ── Students + enrolments ────────────────────────────────────────────
-  const source     = enquiry_id ? 'website' : 'manual';
+  const source = enquiry_id ? 'website' : 'manual';
   const studentIds = [];
   for (const p of participants) {
     try {
@@ -239,10 +267,15 @@ export async function onRequestPost({ request, env }) {
       studentIds.push(sid);
       await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
         method: 'POST',
-        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'resolution=ignore-duplicates' },
+        headers: {
+          ...supabaseHeaders(SUPABASE_SERVICE_KEY),
+          Prefer: 'resolution=ignore-duplicates',
+        },
         body: JSON.stringify({ student_id: sid, course_id: courseId }),
       });
-    } catch (err) { console.error('Student/enrolment error:', err); }
+    } catch (err) {
+      console.error('Student/enrolment error:', err);
+    }
   }
 
   // ── Update enquiry ───────────────────────────────────────────────────
@@ -250,15 +283,20 @@ export async function onRequestPost({ request, env }) {
     try {
       const ur = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}`, {
         method: 'PATCH',
-        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
         body: JSON.stringify({ status: 'confirmed', course_id: courseId }),
       });
       if (!ur.ok) console.error('Enquiry update failed:', await ur.text());
-    } catch (err) { console.error('Enquiry update error:', err); }
+    } catch (err) {
+      console.error('Enquiry update error:', err);
+    }
   }
 
   return jsonResponse({
-    success: true, course_id: courseId,
-    course_code: courseCode, event_id: calendarEventId, student_ids: studentIds,
+    success: true,
+    course_id: courseId,
+    course_code: courseCode,
+    event_id: calendarEventId,
+    student_ids: studentIds,
   });
 }

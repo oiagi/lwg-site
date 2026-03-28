@@ -7,37 +7,46 @@
 //   SUPABASE_SERVICE_KEY — service_role key
 //   RESEND_API_KEY       — Resend API key
 
-import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
+import {
+  supabaseHeaders,
+  jsonResponse,
+  errorResponse,
+  validateOrigin,
+  checkRateLimit,
+} from './_utils.js';
 import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
-const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
+const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 // ── Label map for booking fields ─────────────────────────────────────────
 function label(key) {
   const map = {
-    language:   'Language',
+    language: 'Language',
     background: 'Background',
-    level:      'Course level',
-    exam:       'Exam',
-    examDate:   'Exam date',
-    format:     'Format',
-    location:   'Location',
-    group:      'Group size',
-    grades:     'School year',
-    subjects:   'Subjects',
-    days:       'Preferred days',
-    timeOfDay:  'Time of day',
-    notes:      'Scheduling notes',
+    level: 'Course level',
+    exam: 'Exam',
+    examDate: 'Exam date',
+    format: 'Format',
+    location: 'Location',
+    group: 'Group size',
+    grades: 'School year',
+    subjects: 'Subjects',
+    days: 'Preferred days',
+    timeOfDay: 'Time of day',
+    notes: 'Scheduling notes',
   };
   return map[key] || key;
 }
 
 // ── Format booking object into display lines ──────────────────────────────
 function formatBooking(b) {
-  const svc = b.service === 'tutoring'  ? 'Tutoring'
-            : b.service === 'exam prep' ? 'Exam preparation'
-            : 'Language course';
+  const svc =
+    b.service === 'tutoring'
+      ? 'Tutoring'
+      : b.service === 'exam prep'
+        ? 'Exam preparation'
+        : 'Language course';
   const lines = [`Service: ${svc}`];
   for (const [k, v] of Object.entries(b)) {
     if (k === 'service') continue;
@@ -58,7 +67,7 @@ function formatTimeOfDay(tod) {
 function participantLines(participants) {
   if (!participants || participants.length === 0) return ['—'];
   return participants.map((p, i) => {
-    const name    = [p.firstName, p.lastName].filter(Boolean).join(' ');
+    const name = [p.firstName, p.lastName].filter(Boolean).join(' ');
     const contact = [p.email, p.phone].filter(Boolean).join(' · ');
     return `${i + 1}. ${name}${contact ? ' — ' + contact : ''}`;
   });
@@ -70,13 +79,15 @@ function buildCustomerEmail(booking, contact) {
   const name = lead.firstName || 'there';
   const bookingLines = formatBooking(booking);
 
-  const bookingRows = bookingLines.map(line => {
-    const [k, ...rest] = line.split(': ');
-    return `<tr>
+  const bookingRows = bookingLines
+    .map((line) => {
+      const [k, ...rest] = line.split(': ');
+      return `<tr>
       <td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;">${k}</td>
       <td style="padding:6px 0 6px 24px;font-size:13px;">${rest.join(': ')}</td>
     </tr>`;
-  }).join('');
+    })
+    .join('');
 
   const preferredContactRow = contact.preferredContact
     ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;">Preferred contact</td>
@@ -134,24 +145,30 @@ function buildCustomerEmail(booking, contact) {
 
 // ── Internal notification email to gioia ─────────────────────────────────
 function buildNotificationEmail(booking, contact, enquiryId) {
-  const lead         = contact.lead || contact;
+  const lead = contact.lead || contact;
   const bookingLines = formatBooking(booking);
 
   const rows = [
-    ['ID',                enquiryId],
-    ['Lead',              `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || '—'],
-    ['Email',             lead.email],
-    ['Phone',             lead.phone],
+    ['ID', enquiryId],
+    ['Lead', `${lead.firstName || ''} ${lead.lastName || ''}`.trim() || '—'],
+    ['Email', lead.email],
+    ['Phone', lead.phone],
     ['Preferred contact', contact.preferredContact || '—'],
-    ...bookingLines.map(l => { const [k, ...r] = l.split(': '); return [k, r.join(': ')]; }),
+    ...bookingLines.map((l) => {
+      const [k, ...r] = l.split(': ');
+      return [k, r.join(': ')];
+    }),
   ];
 
-  const tableRows = rows.map(([k, v]) =>
-    `<tr>
+  const tableRows = rows
+    .map(
+      ([k, v]) =>
+        `<tr>
        <td style="padding:5px 0;color:#888;font-size:13px;vertical-align:top;white-space:nowrap;">${k}</td>
        <td style="padding:5px 0 5px 20px;font-size:13px;">${v || '—'}</td>
      </tr>`
-  ).join('');
+    )
+    .join('');
 
   return {
     subject: `New enquiry — ${lead.firstName || ''} ${lead.lastName || ''} (${booking.service || 'unknown'})`,
@@ -210,7 +227,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   const bookingErr = validate(booking, {
-    service: { required: true, type: 'string', oneOf: ['language course', 'exam prep', 'tutoring'] },
+    service: {
+      required: true,
+      type: 'string',
+      oneOf: ['language course', 'exam prep', 'tutoring'],
+    },
   });
   if (bookingErr) return errorResponse(bookingErr, 400);
 
@@ -218,7 +239,7 @@ export async function onRequestPost({ request, env }) {
 
   const leadErr = validate(lead, {
     firstName: { required: true, type: 'string', maxLength: 200 },
-    email:     { required: true, type: 'string', email: true, maxLength: 320 },
+    email: { required: true, type: 'string', email: true, maxLength: 320 },
   });
   if (leadErr) return errorResponse(leadErr, 400);
 
@@ -226,17 +247,17 @@ export async function onRequestPost({ request, env }) {
   let enquiryId;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/enquiries`, {
-      method:  'POST',
-      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
+      method: 'POST',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
-        service:      booking.service      || null,
-        lead_first:   lead.firstName       || null,
-        lead_last:    lead.lastName        || null,
-        lead_email:   lead.email           || null,
-        lead_phone:   lead.phone           || null,
+        service: booking.service || null,
+        lead_first: lead.firstName || null,
+        lead_last: lead.lastName || null,
+        lead_email: lead.email || null,
+        lead_phone: lead.phone || null,
         booking_data: booking,
         contact_data: contact,
-        status:       'new',
+        status: 'new',
       }),
     });
 
@@ -255,22 +276,22 @@ export async function onRequestPost({ request, env }) {
   // ── 2. Send emails via Resend ──────────────────────────────────────────
   // Both emails are sent concurrently. Email failure does not fail the
   // request — data is already safely stored in Supabase.
-  const customerEmail     = buildCustomerEmail(booking, contact);
+  const customerEmail = buildCustomerEmail(booking, contact);
   const notificationEmail = buildNotificationEmail(booking, contact, enquiryId);
 
   const sendEmail = async (to, email) => {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from:     FROM_EMAIL,
-        to:       [to],
+        from: FROM_EMAIL,
+        to: [to],
         reply_to: NOTIFY_EMAIL,
-        subject:  email.subject,
-        html:     email.html,
+        subject: email.subject,
+        html: email.html,
       }),
     });
     if (!res.ok) console.error(`Email error (to: ${to}):`, await res.text());

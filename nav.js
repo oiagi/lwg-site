@@ -7,42 +7,44 @@
 
   // ── Inject nav HTML ─────────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
-  var navHTML =
+  const navHTML =
     '<a href="#content" class="skip-link">Skip to content</a>' +
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
-      '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
-        '<span class="nav-toggle-label" id="nav-toggle-label">menu</span>' +
-      '</button>' +
-      '<div class="nav-menu" id="nav-menu">' +
-        '<a href="index.html">Home</a>' +
-        '<a href="info.html">info</a>' +
-        '<a href="booking.html">book</a>' +
-        '<a href="contact.html">contact</a>' +
-      '</div>' +
+    '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
+    '<span class="nav-toggle-label" id="nav-toggle-label">menu</span>' +
+    '</button>' +
+    '<div class="nav-menu" id="nav-menu">' +
+    '<a href="index.html">Home</a>' +
+    '<a href="info.html">info</a>' +
+    '<a href="booking.html">book</a>' +
+    '<a href="contact.html">contact</a>' +
+    '</div>' +
     '</nav>';
 
   // Insert at the very beginning of <body>
   document.body.insertAdjacentHTML('afterbegin', navHTML);
 
   // ── References ──────────────────────────────────────────────────
-  var navToggle = document.getElementById('nav-toggle');
-  var navLabel  = document.getElementById('nav-toggle-label');
-  var navMenu   = document.getElementById('nav-menu');
-  var nav       = document.getElementById('nav');
-  var overlay   = document.getElementById('nav-overlay');
-  var menuOpen  = false;
+  const navToggle = document.getElementById('nav-toggle');
+  const navLabel = document.getElementById('nav-toggle-label');
+  const navMenu = document.getElementById('nav-menu');
+  const nav = document.getElementById('nav');
+  const overlay = document.getElementById('nav-overlay');
+  let menuOpen = false;
 
   // ── Ripple effect ───────────────────────────────────────────────
   function triggerRipple(x, y) {
-    var ripple = document.createElement('div');
+    const ripple = document.createElement('div');
     ripple.classList.add('ripple');
-    var size = Math.max(window.innerWidth, window.innerHeight) * 2.5;
+    const size = Math.max(window.innerWidth, window.innerHeight) * 2.5;
     ripple.style.width = ripple.style.height = size + 'px';
-    ripple.style.left  = (x - size / 2) + 'px';
-    ripple.style.top   = (y - size / 2) + 'px';
+    ripple.style.left = x - size / 2 + 'px';
+    ripple.style.top = y - size / 2 + 'px';
     document.body.appendChild(ripple);
-    ripple.addEventListener('animationend', function () { ripple.remove(); });
+    ripple.addEventListener('animationend', function () {
+      ripple.remove();
+    });
   }
 
   // ── Toggle helper ───────────────────────────────────────────────
@@ -86,7 +88,7 @@
 
   // ── Skip link: ensure target exists ──────────────────────────────
   if (!document.getElementById('content')) {
-    var first = nav.nextElementSibling;
+    const first = nav.nextElementSibling;
     if (first) first.id = 'content';
   }
 
@@ -94,5 +96,7 @@
   window.__navToggle = function (x, y) {
     toggleMenu(!menuOpen, x, y);
   };
-  window.__navIsOpen = function () { return menuOpen; };
+  window.__navIsOpen = function () {
+    return menuOpen;
+  };
 })();

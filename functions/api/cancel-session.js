@@ -12,7 +12,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  getValidAccessToken,
+  jsonResponse,
+  errorResponse,
+} from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -31,10 +37,9 @@ export async function onRequestDelete({ request, env }) {
   if (!session_id) return errorResponse('Missing session_id', 400);
 
   // ── Load session ──────────────────────────────────────────────────────
-  const sessRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=*`,
-    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const sessRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const sessions = await sessRes.json();
   if (!sessions.length) return errorResponse('Session not found', 404);
   const session = sessions[0];
@@ -67,7 +72,7 @@ export async function onRequestDelete({ request, env }) {
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(teacher.calendar_id)}/events/${session.calendar_event_id}`,
         {
           method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${accessToken}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
       // 204 = deleted, 410 = already gone — both acceptable
@@ -83,7 +88,8 @@ export async function onRequestDelete({ request, env }) {
 
   // ── Delete session record from Supabase ───────────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, {
-    method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    method: 'DELETE',
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
   });
 
   // ── Adjust sessions_completed if this session was already logged ───────
@@ -91,7 +97,8 @@ export async function onRequestDelete({ request, env }) {
     try {
       const newCount = Math.max(0, (course.sessions_completed || 1) - 1);
       await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course.id}`, {
-        method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'PATCH',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ sessions_completed: newCount }),
       });
     } catch (err) {

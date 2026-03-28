@@ -15,17 +15,22 @@ export async function onRequestGet({ request, env }) {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  const url  = new URL(request.url);
+  const url = new URL(request.url);
   const type = url.searchParams.get('type') || 'overview';
-  const H    = supabaseHeaders(SUPABASE_SERVICE_KEY);
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
     switch (type) {
-      case 'overview':   return jsonResponse(await buildOverview(SUPABASE_URL, H));
-      case 'revenue':    return jsonResponse(await buildRevenue(SUPABASE_URL, H));
-      case 'sessions':   return jsonResponse(await buildSessions(SUPABASE_URL, H));
-      case 'attendance': return jsonResponse(await buildAttendance(SUPABASE_URL, H));
-      default:           return errorResponse('Unknown report type', 400);
+      case 'overview':
+        return jsonResponse(await buildOverview(SUPABASE_URL, H));
+      case 'revenue':
+        return jsonResponse(await buildRevenue(SUPABASE_URL, H));
+      case 'sessions':
+        return jsonResponse(await buildSessions(SUPABASE_URL, H));
+      case 'attendance':
+        return jsonResponse(await buildAttendance(SUPABASE_URL, H));
+      default:
+        return errorResponse('Unknown report type', 400);
     }
   } catch (err) {
     console.error('Report error:', err);
@@ -42,24 +47,24 @@ async function buildOverview(base, H) {
     fetch(`${base}/rest/v1/invoices?select=id,status,total_amount,currency`, { headers: H }),
   ]);
 
-  const courses  = coursesRes.ok  ? await coursesRes.json()  : [];
+  const courses = coursesRes.ok ? await coursesRes.json() : [];
   const students = studentsRes.ok ? await studentsRes.json() : [];
   const sessions = sessionsRes.ok ? await sessionsRes.json() : [];
   const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
 
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const upcoming = sessions.filter(s => {
+  const upcoming = sessions.filter((s) => {
     const d = new Date(s.scheduled_at);
     return d >= now && d <= in30;
   });
 
   const outstanding = invoices
-    .filter(i => i.status === 'sent' || i.status === 'draft')
+    .filter((i) => i.status === 'sent' || i.status === 'draft')
     .reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
 
   const totalPaid = invoices
-    .filter(i => i.status === 'paid')
+    .filter((i) => i.status === 'paid')
     .reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
 
   return {
@@ -98,10 +103,10 @@ async function buildRevenue(base, H) {
   // Round all values
   const rows = Object.values(months).sort((a, b) => b.month.localeCompare(a.month));
   for (const r of rows) {
-    r.invoiced    = Math.round(r.invoiced * 100) / 100;
-    r.paid        = Math.round(r.paid * 100) / 100;
+    r.invoiced = Math.round(r.invoiced * 100) / 100;
+    r.paid = Math.round(r.paid * 100) / 100;
     r.outstanding = Math.round(r.outstanding * 100) / 100;
-    r.cancelled   = Math.round(r.cancelled * 100) / 100;
+    r.cancelled = Math.round(r.cancelled * 100) / 100;
   }
 
   return { currency: 'CHF', rows };
@@ -142,17 +147,13 @@ async function buildAttendance(base, H) {
   const courses = await coursesRes.json();
 
   // Get all attendance records
-  const attRes = await fetch(
-    `${base}/rest/v1/attendance?select=id,session_id,student_id,present`,
-    { headers: H }
-  );
+  const attRes = await fetch(`${base}/rest/v1/attendance?select=id,session_id,student_id,present`, {
+    headers: H,
+  });
   const allAttendance = attRes.ok ? await attRes.json() : [];
 
   // Get all sessions to map session → course
-  const sessRes = await fetch(
-    `${base}/rest/v1/sessions?select=id,course_id`,
-    { headers: H }
-  );
+  const sessRes = await fetch(`${base}/rest/v1/sessions?select=id,course_id`, { headers: H });
   const allSessions = sessRes.ok ? await sessRes.json() : [];
 
   const sessionCourse = {};
@@ -170,7 +171,7 @@ async function buildAttendance(base, H) {
     if (a.present) courseAtt[courseId].present++;
   }
 
-  const rows = courses.map(c => {
+  const rows = courses.map((c) => {
     const att = courseAtt[c.id] || { total: 0, present: 0 };
     return {
       course_code: c.course_code,
@@ -178,10 +179,10 @@ async function buildAttendance(base, H) {
       total_records: att.total,
       present: att.present,
       absent: att.total - att.present,
-      rate: att.total > 0 ? Math.round(att.present / att.total * 100) : null,
+      rate: att.total > 0 ? Math.round((att.present / att.total) * 100) : null,
     };
   });
 
   // Only include courses that have attendance data, sorted by rate
-  return rows.filter(r => r.total_records > 0).sort((a, b) => (b.rate || 0) - (a.rate || 0));
+  return rows.filter((r) => r.total_records > 0).sort((a, b) => (b.rate || 0) - (a.rate || 0));
 }

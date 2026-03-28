@@ -17,7 +17,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
-  const url   = new URL(request.url);
+  const url = new URL(request.url);
   const token = url.searchParams.get('token');
 
   if (!token) return errorResponse('Missing token', 400);
@@ -35,7 +35,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   // ── Token expiry check (90 days) ──────────────────────────────────
   const tokenDate = student.token_created_at || student.created_at;
   if (tokenDate) {
-    const ageMs    = Date.now() - new Date(tokenDate).getTime();
+    const ageMs = Date.now() - new Date(tokenDate).getTime();
     const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
     if (ageMs > maxAgeMs) {
       return errorResponse('This link has expired. Please contact us for a new one.', 410);
@@ -49,17 +49,21 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   );
   if (!enrolRes.ok) return errorResponse('Database error');
   const enrolments = await enrolRes.json();
-  const courseIds  = enrolments.map(e => e.course_id);
+  const courseIds = enrolments.map((e) => e.course_id);
 
   if (!courseIds.length) {
     return jsonResponse({
-      student: { firstName: student.first_name, lastName: student.last_name, level: student.current_level },
+      student: {
+        firstName: student.first_name,
+        lastName: student.last_name,
+        level: student.current_level,
+      },
       courses: [],
     });
   }
 
   // ── Batch load courses and sessions ──────────────────────────────────
-  const courseFilter = courseIds.map(id => `id.eq.${id}`).join(',');
+  const courseFilter = courseIds.map((id) => `id.eq.${id}`).join(',');
   const [coursesRes, sessRes] = await Promise.all([
     fetch(
       `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,sessions_total,sessions_completed,status`,
@@ -71,8 +75,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     ),
   ]);
 
-  const courses  = coursesRes.ok ? await coursesRes.json() : [];
-  const sessions = sessRes.ok    ? await sessRes.json()    : [];
+  const courses = coursesRes.ok ? await coursesRes.json() : [];
+  const sessions = sessRes.ok ? await sessRes.json() : [];
 
   // ── Group sessions by course ─────────────────────────────────────────
   const sessionsByCourse = {};
@@ -80,7 +84,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     (sessionsByCourse[s.course_id] ||= []).push(s);
   }
 
-  const enriched = courses.map(course => ({
+  const enriched = courses.map((course) => ({
     ...course,
     sessions: sessionsByCourse[course.id] || [],
   }));
@@ -88,8 +92,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   return jsonResponse({
     student: {
       firstName: student.first_name,
-      lastName:  student.last_name,
-      level:     student.current_level,
+      lastName: student.last_name,
+      level: student.current_level,
     },
     courses: enriched,
   });

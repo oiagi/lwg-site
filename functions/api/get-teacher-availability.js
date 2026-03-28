@@ -15,9 +15,9 @@ export async function onRequestGet({ request, env }) {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  const url       = new URL(request.url);
+  const url = new URL(request.url);
   const teacherId = url.searchParams.get('teacher_id');
-  const days      = parseInt(url.searchParams.get('days') || '14', 10);
+  const days = parseInt(url.searchParams.get('days') || '14', 10);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
@@ -44,12 +44,12 @@ export async function onRequestGet({ request, env }) {
     if (!courses.length) return jsonResponse({ teacher_id: teacherId, days: [] });
 
     // Get scheduled sessions for those courses within date range
-    const now   = new Date();
+    const now = new Date();
     const until = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-    const fromISO  = now.toISOString();
+    const fromISO = now.toISOString();
     const untilISO = until.toISOString();
 
-    const courseFilter = courses.map(c => `course_id.eq.${c.id}`).join(',');
+    const courseFilter = courses.map((c) => `course_id.eq.${c.id}`).join(',');
     const sessRes = await fetch(
       `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&scheduled_at=gte.${fromISO}&scheduled_at=lte.${untilISO}&order=scheduled_at.asc&select=id,course_id,scheduled_at,duration_minutes,status`,
       { headers: H }

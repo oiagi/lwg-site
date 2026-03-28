@@ -37,13 +37,14 @@ export async function onRequestPatch({ request, env }) {
 
   if (!Object.keys(patch).length) return errorResponse('No fields to update', 400);
 
-  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' };
+  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };
 
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/invoices?id=eq.${body.id}`,
-      { method: 'PATCH', headers: H, body: JSON.stringify(patch) }
-    );
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${body.id}`, {
+      method: 'PATCH',
+      headers: H,
+      body: JSON.stringify(patch),
+    });
     if (!res.ok) {
       console.error('Invoice update error:', await res.text());
       return errorResponse('Database error');
