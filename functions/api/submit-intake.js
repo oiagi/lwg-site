@@ -10,6 +10,7 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
 
 import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
+import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
@@ -30,9 +31,14 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('Invalid JSON', 400);
   }
 
-  if (!body.first_name || !body.last_name || !body.email) {
-    return errorResponse('First name, last name, and email are required', 400);
-  }
+  const validationErr = validate(body, {
+    first_name: { required: true, type: 'string', maxLength: 200 },
+    last_name:  { required: true, type: 'string', maxLength: 200 },
+    email:      { required: true, type: 'string', email: true, maxLength: 320 },
+    phone:      { type: 'string', maxLength: 50 },
+    token:      { type: 'string', maxLength: 100 },
+  });
+  if (validationErr) return errorResponse(validationErr, 400);
 
   const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' };
 
@@ -83,6 +89,7 @@ export async function onRequestPost({ request, env }) {
     } else {
       // ── Create new student ───────────────────────────────────────────
       data.access_token = crypto.randomUUID();
+      data.token_created_at = new Date().toISOString();
       data.source = 'intake';
       data.active = true;
 

@@ -58,10 +58,25 @@ export async function requireAdminAuth(request, env) {
 // Usage: export const onRequestGet = withErrorHandling(async (ctx) => { ... });
 export function withErrorHandling(handler, operationName) {
   return async (ctx) => {
+    const startTime = Date.now();
     try {
-      return await handler(ctx);
+      const response = await handler(ctx);
+      const durationMs = Date.now() - startTime;
+      const url = new URL(ctx.request.url);
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(), level: 'info',
+        operation: operationName || url.pathname,
+        method: ctx.request.method, path: url.pathname,
+        status: response.status, durationMs,
+      }));
+      return response;
     } catch (err) {
-      console.error(`${operationName || 'API'} error:`, err?.message || err);
+      const durationMs = Date.now() - startTime;
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(), level: 'error',
+        operation: operationName || 'API',
+        message: err?.message || String(err), durationMs,
+      }));
       return errorResponse(
         err?.userMessage || 'An unexpected error occurred',
         err?.statusCode || 500

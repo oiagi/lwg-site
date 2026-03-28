@@ -9,6 +9,7 @@ import { loadInvoices, getCurrentInvoiceFilter, filterInvoices, openInvoiceDetai
 import { authoriseTeacher } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
+import { trapFocus, releaseFocus } from './helpers.js';
 
 /* ── Action registry for event delegation ─────────────────────────── */
 const actions = {
@@ -132,3 +133,31 @@ initVatListener();
     history.replaceState({}, '', '/admin.html');
   }
 })();
+
+/* ── Escape key closes topmost modal; focus trap on open modals ──── */
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const openModals = document.querySelectorAll('.modal-overlay.open');
+  if (!openModals.length) return;
+  const topModal = openModals[openModals.length - 1];
+  topModal.classList.remove('open');
+  releaseFocus();
+});
+
+// Observe modal-overlay elements for open/close class changes
+const modalObserver = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
+    const el = m.target;
+    if (!el.classList.contains('modal-overlay')) continue;
+    if (el.classList.contains('open')) {
+      const modal = el.querySelector('.modal');
+      if (modal) trapFocus(modal);
+    } else {
+      releaseFocus();
+    }
+  }
+});
+for (const overlay of document.querySelectorAll('.modal-overlay')) {
+  modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+}

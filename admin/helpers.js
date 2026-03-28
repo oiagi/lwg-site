@@ -37,3 +37,36 @@ export function showSaved(id, duration = 2000) {
     setTimeout(() => msg.style.display = 'none', duration);
   }
 }
+
+/* ── Modal focus trap ──────────────────────────────────────────────── */
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+let _trapCleanup = null;
+
+export function trapFocus(modalEl) {
+  releaseFocus(); // clean up any previous trap
+  const focusable = () => [...modalEl.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+  const handler = (e) => {
+    if (e.key !== 'Tab') return;
+    const els = focusable();
+    if (!els.length) return;
+    const first = els[0];
+    const last  = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+  modalEl.addEventListener('keydown', handler);
+  _trapCleanup = () => modalEl.removeEventListener('keydown', handler);
+  // Focus first focusable element
+  const els = focusable();
+  if (els.length) els[0].focus();
+}
+
+export function releaseFocus() {
+  if (_trapCleanup) { _trapCleanup(); _trapCleanup = null; }
+}

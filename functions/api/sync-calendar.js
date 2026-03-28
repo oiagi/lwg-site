@@ -13,6 +13,7 @@
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
+import { fetchCourseEvents } from './_calendar.js';
 
 export async function onRequestPost({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -59,28 +60,14 @@ export async function onRequestPost({ request, env }) {
   }
 
   // ── Fetch events from Google Calendar matching this course code ───────
-  // Search by course code prefix so we find all sessions regardless of title
-  const calRes = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(teacher.calendar_id)}/events?` +
-    `q=${encodeURIComponent(course.course_code)}&singleEvents=true&orderBy=startTime&maxResults=250`,
-    { headers: { 'Authorization': `Bearer ${accessToken}` } }
-  );
-
-  if (!calRes.ok) {
-    console.error('Calendar fetch error:', await calRes.text());
-    return errorResponse('Calendar API error');
+  let activeEvents, cancelledEvents;
+  try {
+    ({ active: activeEvents, cancelled: cancelledEvents } = await fetchCourseEvents({
+      accessToken, calendarId: teacher.calendar_id, courseCode: course.course_code,
+    }));
+  } catch (err) {
+    return errorResponse(err.message || 'Calendar API error');
   }
-
-  const calData = await calRes.json();
-
-  /* Active events — present and not cancelled in Google Calendar */
-  const activeEvents    = (calData.items || []).filter(e =>
-    e.summary?.startsWith(course.course_code) && e.status !== 'cancelled'
-  );
-  /* Cancelled events — still returned by the API with status=cancelled */
-  const cancelledEvents = (calData.items || []).filter(e =>
-    e.summary?.startsWith(course.course_code) && e.status === 'cancelled'
-  );
   const activeEventIds = new Set(activeEvents.map(e => e.id));
 
   // ── Upsert active session records ────────────────────────────────────

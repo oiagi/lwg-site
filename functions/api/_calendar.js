@@ -1,0 +1,107 @@
+// functions/api/_calendar.js
+// Shared Google Calendar helpers for course management.
+
+/**
+ * Create a recurring Google Calendar event for a course.
+ *
+ * @param {object} opts
+ * @param {string} opts.accessToken  — Google OAuth access token
+ * @param {string} opts.calendarId   — Teacher's calendar ID
+ * @param {string} opts.courseCode   — e.g. "P-A1-001"
+ * @param {object} opts.booking      — Booking data (service, level, language, exam)
+ * @param {object} opts.contact      — Contact data (lead, participants)
+ * @param {string} opts.teacherName  — Teacher display name
+ * @param {string} opts.firstSessionAt — ISO datetime for first session
+ * @param {number} opts.durationMinutes — Session duration (default 50)
+ * @param {number|null} opts.sessionsTotal — Block size or null for open-ended
+ * @returns {Promise<string>} Calendar event ID
+ */
+export async function createCourseCalendarEvent({
+  accessToken, calendarId, courseCode, booking, contact,
+  teacherName, firstSessionAt, durationMinutes = 50, sessionsTotal,
+}) {
+  const participants     = contact.participants || [];
+  const participantNames = participants.map(p => p.firstName).filter(Boolean);
+  const startTime        = new Date(firstSessionAt);
+  const endTime          = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+
+  const eventTitle = participantNames.length
+    ? `${courseCode} — ${participantNames.join('+')} <> ${teacherName}`
+    : `${courseCode} <> ${teacherName}`;
+
+  const sessionsLine = sessionsTotal
+    ? `Sessions: ${sessionsTotal} × 50min\n`
+    : 'Sessions: open-ended\n';
+
+  const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+  const rruleDay = dayNames[startTime.getDay()];
+  const recurrence = sessionsTotal
+    ? [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay};COUNT=${sessionsTotal}`]
+    : [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`];
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+      body: JSON.stringify({
+        summary: eventTitle,
+        description:
+          `Course: ${courseCode}\nService: ${booking.service || ''}\n` +
+          (booking.level    ? `Level: ${booking.level}\n`       : '') +
+          (booking.language ? `Language: ${booking.language}\n` : '') +
+          (booking.exam     ? `Exam: ${booking.exam}\n`         : '') +
+          sessionsLine +
+          `\nLead: ${contact.lead?.firstName || ''} ${contact.lead?.lastName || ''}` +
+          `\nEmail: ${contact.lead?.email || ''}` +
+          `\nPhone: ${contact.lead?.phone || ''}`,
+        start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
+        end:   { dateTime: endTime.toISOString(),   timeZone: 'Europe/Zurich' },
+        recurrence,
+        attendees: participants
+          .filter(p => p.email)
+          .map(p => ({ email: p.email, displayName: `${p.firstName||''} ${p.lastName||''}`.trim() })),
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Calendar error:', err);
+    throw new Error('Could not create calendar event');
+  }
+
+  const data = await res.json();
+  return { eventId: data.id, recurrenceRule: recurrence[0].replace('RRULE:', '') };
+}
+
+/**
+ * Fetch expanded single events from Google Calendar matching a course code.
+ *
+ * @param {object} opts
+ * @param {string} opts.accessToken
+ * @param {string} opts.calendarId
+ * @param {string} opts.courseCode
+ * @returns {Promise<{active: object[], cancelled: object[]}>}
+ */
+export async function fetchCourseEvents({ accessToken, calendarId, courseCode }) {
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
+    `q=${encodeURIComponent(courseCode)}&singleEvents=true&orderBy=startTime&maxResults=250`,
+    { headers: { 'Authorization': `Bearer ${accessToken}` } }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Calendar fetch error:', err);
+    throw new Error('Calendar API error');
+  }
+
+  const data = await res.json();
+  const items = data.items || [];
+
+  return {
+    active:    items.filter(e => e.summary?.startsWith(courseCode) && e.status !== 'cancelled'),
+    cancelled: items.filter(e => e.summary?.startsWith(courseCode) && e.status === 'cancelled'),
+  };
+}
