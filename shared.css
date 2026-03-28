@@ -1,3 +1,19 @@
+/* ── Skip link (accessibility) ─────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+}
+
 /* ── Base reset & typography ────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; cursor: url('cloud-cursor.png') 8 5, auto !important; }
 html, body { width: 100%; min-height: 100vh; }

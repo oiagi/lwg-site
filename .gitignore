@@ -4,3 +4,19 @@
 !.dev.vars.example
 .env*
 !.env.example
+
+# dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# logs
+*.log

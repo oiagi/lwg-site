@@ -5,11 +5,14 @@
 // Environment variables:
 //   WEB3FORMS_ACCESS_KEY — Web3Forms access key
 
-import { jsonResponse, errorResponse, validateOrigin } from './_utils.js';
+import { jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const originErr = validateOrigin(request, env);
   if (originErr) return originErr;
+
+  const rateLimitErr = await checkRateLimit(request);
+  if (rateLimitErr) return rateLimitErr;
 
   let body;
   try {
