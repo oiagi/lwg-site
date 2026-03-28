@@ -1,6 +1,7 @@
 /* ── Teachers cache (shared between enquiries & courses) ──────────── */
 import { apiFetch } from './api.js';
 import { getAccessToken } from './auth.js';
+import { esc } from './helpers.js';
 
 let teachersCache = null;
 
@@ -26,7 +27,7 @@ export async function populateTeacherSelects() {
     const enquiryId = sel.id.replace('confirm-teacher-', '');
     sel.innerHTML = teachers.map(t => {
       const label = t.authorised ? t.name : t.name + ' (not authorised)';
-      return `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${label}</option>`;
+      return `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${esc(label)}</option>`;
     }).join('');
     if (teachers.length > 0 && !teachers[0].authorised) {
       const panel = document.getElementById('confirm-panel-' + enquiryId);

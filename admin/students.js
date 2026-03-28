@@ -1,5 +1,6 @@
 /* ── Students tab ─────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
+import { esc } from './helpers.js';
 
 let currentStudentFilter = 'true';
 
@@ -46,9 +47,9 @@ function renderStudents(students) {
     return `
     <div class="student-row" id="student-${s.id}">
       <div class="student-summary" data-action="toggleStudent" data-args="${s.id}">
-        <span class="student-name">${name}</span>
-        <span class="student-email">${s.email || '—'}</span>
-        <span class="student-stats">${stats}</span>
+        <span class="student-name">${esc(name)}</span>
+        <span class="student-email">${esc(s.email) || '—'}</span>
+        <span class="student-stats">${esc(stats)}</span>
       </div>
       <div class="student-detail" id="student-detail-${s.id}">
         <div class="student-detail-loading">loading…</div>
@@ -81,7 +82,7 @@ export async function toggleStudent(id) {
 function renderStudentDetail(container, s) {
   const coursesHtml = s.courses && s.courses.length
     ? s.courses.map(c =>
-      `<span style="display:inline-block;background:#f5f5f5;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.75rem;margin:0.15rem 0.2rem 0.15rem 0;">${c.course_code || '—'} · ${c.service || ''} · <em>${c.status}</em></span>`
+      `<span style="display:inline-block;background:#f5f5f5;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.75rem;margin:0.15rem 0.2rem 0.15rem 0;">${esc(c.course_code) || '—'} · ${esc(c.service)} · <em>${esc(c.status)}</em></span>`
     ).join('')
     : '<span style="color:#aaa;font-size:0.78rem;">no courses</span>';
 
@@ -90,24 +91,24 @@ function renderStudentDetail(container, s) {
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">personal</p>
         <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-          ${s.first_name || ''} ${s.last_name || ''}<br>
-          ${s.email ? '<span style="color:#aaa;">' + s.email + '</span><br>' : ''}
-          ${s.phone ? '<span style="color:#aaa;">' + s.phone + '</span><br>' : ''}
-          ${s.date_of_birth ? 'DOB: ' + s.date_of_birth + '<br>' : ''}
-          ${s.nationality ? 'Nationality: ' + s.nationality + '<br>' : ''}
-          ${s.postcode ? 'Postcode: ' + s.postcode : ''}
+          ${esc(s.first_name)} ${esc(s.last_name)}<br>
+          ${s.email ? '<span style="color:#aaa;">' + esc(s.email) + '</span><br>' : ''}
+          ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
+          ${s.date_of_birth ? 'DOB: ' + esc(s.date_of_birth) + '<br>' : ''}
+          ${s.nationality ? 'Nationality: ' + esc(s.nationality) + '<br>' : ''}
+          ${s.postcode ? 'Postcode: ' + esc(s.postcode) : ''}
         </p>
-        ${s.emergency_contact ? '<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ' + s.emergency_contact + '</p>' : ''}
+        ${s.emergency_contact ? '<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ' + esc(s.emergency_contact) + '</p>' : ''}
       </div>
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
         <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-          ${s.billing_name || '—'}<br>
-          ${s.billing_address || '—'}<br>
-          ${s.billing_email ? '<span style="color:#aaa;">' + s.billing_email + '</span><br>' : ''}
-          ${s.vat_number ? 'VAT: ' + s.vat_number + '<br>' : ''}
-          ${s.rate_per_session ? '<strong>' + s.rate_per_session + ' ' + (s.currency || 'CHF') + '</strong> per session<br>' : ''}
-          ${s.payment_method ? 'Payment: ' + s.payment_method : ''}
+          ${esc(s.billing_name) || '—'}<br>
+          ${esc(s.billing_address) || '—'}<br>
+          ${s.billing_email ? '<span style="color:#aaa;">' + esc(s.billing_email) + '</span><br>' : ''}
+          ${s.vat_number ? 'VAT: ' + esc(s.vat_number) + '<br>' : ''}
+          ${s.rate_per_session ? '<strong>' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '</strong> per session<br>' : ''}
+          ${s.payment_method ? 'Payment: ' + esc(s.payment_method) : ''}
         </p>
       </div>
     </div>
@@ -115,23 +116,23 @@ function renderStudentDetail(container, s) {
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">language</p>
         <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-          ${s.native_language ? 'Native: ' + s.native_language + '<br>' : ''}
-          ${s.target_language ? 'Target: ' + s.target_language + '<br>' : ''}
-          ${s.current_level ? 'Level: ' + s.current_level + '<br>' : ''}
-          ${s.course_type ? 'Type: ' + s.course_type + '<br>' : ''}
-          ${s.course_format ? 'Format: ' + s.course_format + '<br>' : ''}
-          ${s.location ? 'Location: ' + s.location : ''}
+          ${s.native_language ? 'Native: ' + esc(s.native_language) + '<br>' : ''}
+          ${s.target_language ? 'Target: ' + esc(s.target_language) + '<br>' : ''}
+          ${s.current_level ? 'Level: ' + esc(s.current_level) + '<br>' : ''}
+          ${s.course_type ? 'Type: ' + esc(s.course_type) + '<br>' : ''}
+          ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
+          ${s.location ? 'Location: ' + esc(s.location) : ''}
         </p>
-        ${s.learning_goals ? '<p style="font-size:0.75rem;color:#888;margin-top:0.3rem;">Goals: ' + s.learning_goals + '</p>' : ''}
-        ${s.desired_start_date ? '<p style="font-size:0.75rem;color:#888;">Start date: ' + s.desired_start_date + '</p>' : ''}
+        ${s.learning_goals ? '<p style="font-size:0.75rem;color:#888;margin-top:0.3rem;">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
+        ${s.desired_start_date ? '<p style="font-size:0.75rem;color:#888;">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
       </div>
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">courses</p>
         <div>${coursesHtml}</div>
       </div>
     </div>
-    ${s.referral_source ? '<p style="font-size:0.75rem;color:#888;margin-bottom:0.5rem;">Referral: ' + s.referral_source + '</p>' : ''}
-    ${s.progress_notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + s.progress_notes + '</p>' : ''}
+    ${s.referral_source ? '<p style="font-size:0.75rem;color:#888;margin-bottom:0.5rem;">Referral: ' + esc(s.referral_source) + '</p>' : ''}
+    ${s.progress_notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + esc(s.progress_notes) + '</p>' : ''}
     ${s.consent_given ? '<p style="font-size:0.7rem;color:#aaa;margin-bottom:0.5rem;">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
@@ -204,7 +205,7 @@ async function loadCompanyOptions() {
     if (!res.ok) return;
     const companies = await res.json();
     sel.innerHTML = '<option value="">— none —</option>' +
-      companies.map(c => `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${c.name}</option>`).join('');
+      companies.map(c => `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
   } catch { /* keep default */ }
 }
 

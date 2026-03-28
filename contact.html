@@ -36,13 +36,12 @@
 
 
   <!-- ── Contact form ───────────────────────────────────────────────
-       Submits to Web3Forms which forwards the message to info@oiagi.org.
+       Submits via JS to /api/submit-contact (which proxies to Web3Forms
+       with the API key kept server-side).
        On success, redirects to thankyou.html. -->
   <div class="form-container">
     <h1>get in touch :)</h1>
-    <form action="https://api.web3forms.com/submit" method="POST">
-      <input type="hidden" name="access_key" value="f211dfaf-e24d-45cc-b992-3b2e0d56ddd9" />
-      <input type="hidden" name="redirect" value="https://oiagi.org/thankyou.html" />
+    <form id="contact-form">
       <div class="field">
         <label for="name">name</label>
         <input type="text" id="name" name="name" required autocomplete="off" />
@@ -69,11 +68,47 @@
         <textarea id="message" name="message" required></textarea>
       </div>
       <button type="submit">send</button>
+      <p id="form-error" style="display:none;color:#c0392b;font-size:0.78rem;margin-top:0.8rem;text-align:center;"></p>
     </form>
   </div>
 
 
   <script src="nav.js"></script>
+  <script>
+  (function () {
+    var form  = document.getElementById('contact-form');
+    var btn   = form.querySelector('button[type="submit"]');
+    var errEl = document.getElementById('form-error');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      errEl.style.display = 'none';
+      btn.textContent = 'sending…';
+      btn.disabled = true;
+
+      try {
+        var res = await fetch('/api/submit-contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:              form.querySelector('#name').value,
+            email:             form.querySelector('#email').value,
+            phone:             form.querySelector('#phone').value,
+            preferred_contact: form.querySelector('#preferred-contact').value,
+            message:           form.querySelector('#message').value,
+          }),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || 'Could not send message');
+        window.location.href = 'thankyou.html';
+      } catch (err) {
+        errEl.textContent = err.message || 'Something went wrong. Please try again.';
+        errEl.style.display = 'block';
+        btn.textContent = 'send';
+        btn.disabled = false;
+      }
+    });
+  })();
+  </script>
 
 
 </body>

@@ -1,5 +1,6 @@
 /* ── Reports tab ─────────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
+import { esc } from './helpers.js';
 
 let currentReportType = 'overview';
 
@@ -182,8 +183,8 @@ function renderAttendance(data, el) {
       <tbody>
         ${data.map(r => `
           <tr>
-            <td>${r.course_code}</td>
-            <td><span class="course-status ${r.status}">${r.status}</span></td>
+            <td>${esc(r.course_code)}</td>
+            <td><span class="course-status ${esc(r.status)}">${esc(r.status)}</span></td>
             <td class="num">${r.present}</td>
             <td class="num">${r.absent}</td>
             <td class="num ${attendanceClass(r.rate)}">${r.rate !== null ? r.rate + '%' : '—'}</td>

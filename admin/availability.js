@@ -1,5 +1,6 @@
 /* ── Teacher availability tab ─────────────────────────────────────── */
 import { apiFetch } from './api.js';
+import { esc } from './helpers.js';
 
 let availabilityTeachers = null;
 
@@ -14,7 +15,7 @@ export async function loadAvailability() {
       if (!res.ok) throw new Error();
       availabilityTeachers = await res.json();
       sel.innerHTML = '<option value="">select teacher…</option>' +
-        availabilityTeachers.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        availabilityTeachers.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
     } catch {
       sel.innerHTML = '<option value="">could not load teachers</option>';
     }
@@ -82,7 +83,7 @@ function renderSchedule(data, el) {
                 ? day.sessions.map(s => `
                     <div class="avail-slot ${s.status}">
                       <span class="avail-time">${formatTime(s.time)}</span>
-                      <span class="avail-code">${s.course_code}</span>
+                      <span class="avail-code">${esc(s.course_code)}</span>
                       <span class="avail-dur">${s.duration_minutes}m</span>
                     </div>
                   `).join('')
