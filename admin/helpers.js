@@ -1,5 +1,15 @@
 /* ── Shared formatters & DOM utilities ─────────────────────────────── */
 
+export function esc(str) {
+  if (!str && str !== 0) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function fmt(dateStr) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -17,7 +27,7 @@ export function fmtDate(iso) {
 export function dl(key, val) {
   if (!val) return '';
   const v = Array.isArray(val) ? val.join(', ') : val;
-  return `<div class="detail-row"><span class="detail-key">${key}</span><span class="detail-val">${v}</span></div>`;
+  return `<div class="detail-row"><span class="detail-key">${esc(key)}</span><span class="detail-val">${esc(v)}</span></div>`;
 }
 
 export function showSaved(id, duration = 2000) {

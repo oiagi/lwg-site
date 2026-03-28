@@ -1,6 +1,6 @@
 /* ── Enquiries tab ────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { fmt, dl } from './helpers.js';
+import { fmt, dl, esc } from './helpers.js';
 import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teachers.js';
 
 let currentFilter = 'all';
@@ -69,7 +69,7 @@ function renderContactDetails(c) {
     c.participants.forEach((p, i) => {
       const name = [p.firstName, p.lastName].filter(Boolean).join(' ');
       html += `<div style="margin-top:0.4rem;font-size:0.72rem;color:#555;">
-        ${i+1}. ${name || '—'}${p.email ? ' — ' + p.email : ''}${p.phone ? ' · ' + p.phone : ''}
+        ${i+1}. ${esc(name) || '—'}${p.email ? ' — ' + esc(p.email) : ''}${p.phone ? ' · ' + esc(p.phone) : ''}
       </div>`;
     });
   }
@@ -93,13 +93,13 @@ function renderEnquiries(rows) {
     return `
     <div class="enquiry-row" id="row-${row.id}">
       <div class="enquiry-summary" data-action="toggleDetail" data-args="${row.id}">
-        <span class="dot ${status}"></span>
+        <span class="dot ${esc(status)}"></span>
         <div>
-          <div class="enq-name">${name}</div>
-          <div class="enq-svc">${svc}</div>
+          <div class="enq-name">${esc(name)}</div>
+          <div class="enq-svc">${esc(svc)}</div>
         </div>
         <div class="enq-date">${fmt(row.created_at)}</div>
-        <div class="enq-status ${status}">${status}</div>
+        <div class="enq-status ${esc(status)}">${esc(status)}</div>
       </div>
       <div class="enquiry-detail" id="detail-${row.id}">
         <div class="detail-section">
@@ -121,7 +121,7 @@ function renderEnquiries(rows) {
             <button class="delete-btn" data-action="deleteEnquiry" data-args="${row.id}">delete</button>
           </div>
           <textarea class="notes-input" id="notes-${row.id}"
-            placeholder="internal notes…">${row.notes || ''}</textarea>
+            placeholder="internal notes…">${esc(row.notes)}</textarea>
           <div style="margin-top:0.4rem;">
             <button class="save-btn" data-action="saveNotes" data-args="${row.id}">save notes</button>
             <span class="saved-msg" id="notes-saved-${row.id}">saved</span>

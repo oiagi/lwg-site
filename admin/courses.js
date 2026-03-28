@@ -1,6 +1,6 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { fmtDate } from './helpers.js';
+import { fmtDate, esc } from './helpers.js';
 import { loadTeachers } from './teachers.js';
 
 let currentCourseFilter = 'active';
@@ -52,7 +52,7 @@ function renderCourses(courses) {
   }
 
   list.innerHTML = courses.map(c => {
-    const names    = (c.participant_names || []).join(', ') || '—';
+    const names    = (c.participant_names || []).map(n => esc(n)).join(', ') || '—';
     const done     = c.sessions_completed || 0;
     const total    = c.sessions_total;
     const remaining = total ? total - done : null;
@@ -82,8 +82,8 @@ function renderCourses(courses) {
     const studentBlocks = (c.students || []).map(s => `
       <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f0f0f0;">
         <p style="font-size:0.78rem;color:#1a1a1a;margin-bottom:0.3rem;">
-          ${[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}
-          ${s.current_level ? '<span style="color:#888;"> · ' + s.current_level + '</span>' : ''}
+          ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
+          ${s.current_level ? '<span style="color:#888;"> · ' + esc(s.current_level) + '</span>' : ''}
           ${s.access_token ? `<a href="/sessions.html?token=${s.access_token}" target="_blank"
             style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;
             text-decoration:none;margin-left:0.6rem;border-bottom:1px solid #ddd;">session page ↗</a>` : ''}
@@ -92,7 +92,7 @@ function renderCourses(courses) {
           style="width:100%;background:transparent;border:none;border-bottom:1px solid #ddd;
           font-family:inherit;font-size:0.82rem;font-weight:300;color:#555;outline:none;
           resize:none;height:50px;padding:0.2rem 0;margin-top:0.3rem;"
-          placeholder="progress notes…">${s.progress_notes || ''}</textarea>
+          placeholder="progress notes…">${esc(s.progress_notes)}</textarea>
         <div style="margin-top:0.3rem;display:flex;gap:0.5rem;align-items:center;">
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             style="background:transparent;border:none;border-bottom:1px solid #ddd;
@@ -118,20 +118,20 @@ function renderCourses(courses) {
     return `
       <div class="course-row" id="course-${c.id}">
         <div class="course-summary" data-action="toggleCourse" data-args="${c.id}">
-          <span class="course-code">${c.course_code || '—'}</span>
+          <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
-          <span class="course-status ${c.status}">${c.status}</span>
-          <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${c.course_code}">delete</button>
+          <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
+          <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;">
             <div>
               <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
               <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-                Service: ${c.service || '—'}<br>
-                Level: ${c.level || '—'}<br>
-                Group: ${c.group_type || '—'}<br>
+                Service: ${esc(c.service) || '—'}<br>
+                Level: ${esc(c.level) || '—'}<br>
+                Group: ${esc(c.group_type) || '—'}<br>
                 Block: ${total ? total + ' sessions' : 'open-ended'}
               </p>
             </div>
@@ -139,9 +139,9 @@ function renderCourses(courses) {
               <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
               ${(c.participants || []).map(p => `
                 <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-                  ${[p.firstName, p.lastName].filter(Boolean).join(' ')}
-                  ${p.email ? '<br><span style="color:#aaa;">' + p.email + '</span>' : ''}
-                  ${p.phone ? '<br><span style="color:#aaa;">' + p.phone + '</span>' : ''}
+                  ${esc([p.firstName, p.lastName].filter(Boolean).join(' '))}
+                  ${p.email ? '<br><span style="color:#aaa;">' + esc(p.email) + '</span>' : ''}
+                  ${p.phone ? '<br><span style="color:#aaa;">' + esc(p.phone) + '</span>' : ''}
                 </p>
               `).join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'}
             </div>
@@ -266,7 +266,7 @@ export function openNewCourseModal() {
   const sel = document.getElementById('nc-teacher');
   loadTeachers().then(teachers => {
     sel.innerHTML = teachers.map(t =>
-      `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${t.name}${!t.authorised ? ' (not authorised)' : ''}</option>`
+      `<option value="${t.id}"${!t.authorised ? ' disabled' : ''}>${esc(t.name)}${!t.authorised ? ' (not authorised)' : ''}</option>`
     ).join('');
   });
   const msgEl = document.getElementById('nc-msg');
@@ -422,7 +422,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
     }
 
     container.innerHTML = attendanceStudents.map(s => {
-      const name    = [s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—';
+      const name    = esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—');
       const existing = attMap[s.id];
       const checked  = existing ? existing.present : true;
       const statusLabel = existing

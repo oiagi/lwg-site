@@ -70,6 +70,26 @@ export function withErrorHandling(handler, operationName) {
   };
 }
 
+// ── Origin validation (CSRF protection for public endpoints) ─────────────
+// Returns null if the origin is allowed, or an error Response if not.
+export function validateOrigin(request, env) {
+  const origin = request.headers.get('Origin') || '';
+  const referer = request.headers.get('Referer') || '';
+  const source = origin || referer;
+
+  // Allow configured origins, or default to oiagi.org + localhost
+  const allowed = env.ALLOWED_ORIGINS
+    ? env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+    : ['https://oiagi.org', 'http://localhost'];
+
+  if (!source) return errorResponse('Forbidden', 403);
+
+  const isAllowed = allowed.some(a => source === a || source.startsWith(a + '/') || source.startsWith(a + ':'));
+  if (!isAllowed) return errorResponse('Forbidden', 403);
+
+  return null;
+}
+
 // ── Google OAuth token refresh ────────────────────────────────────────────
 // Returns a valid access token for the given teacher, refreshing via OAuth
 // if the current token is within 5 minutes of expiry. Persists the new

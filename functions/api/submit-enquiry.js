@@ -7,7 +7,7 @@
 //   SUPABASE_SERVICE_KEY — service_role key
 //   RESEND_API_KEY       — Resend API key
 
-import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin } from './_utils.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
@@ -188,6 +188,9 @@ function buildNotificationEmail(booking, contact, enquiryId) {
 
 // ── Main handler (Cloudflare Pages Functions format) ─────────────────────
 export async function onRequestPost({ request, env }) {
+  const originErr = validateOrigin(request, env);
+  if (originErr) return originErr;
+
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
 
   // Parse request body

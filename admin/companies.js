@@ -1,5 +1,6 @@
 /* ── Companies tab ────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
+import { esc } from './helpers.js';
 
 let currentCompanyFilter = 'true';
 
@@ -45,31 +46,31 @@ function renderCompanies(companies) {
     return `
     <div class="company-row" id="company-${c.id}">
       <div class="company-summary" data-action="toggleCompany" data-args="${c.id}">
-        <span class="company-name">${c.name}</span>
-        <span class="company-contact">${c.contact_name || '—'}</span>
-        <span class="company-stats">${stats}</span>
+        <span class="company-name">${esc(c.name)}</span>
+        <span class="company-contact">${esc(c.contact_name) || '—'}</span>
+        <span class="company-stats">${esc(stats)}</span>
       </div>
       <div class="company-detail" id="company-detail-${c.id}">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
           <div>
             <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
             <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-              ${c.contact_name || '—'}<br>
-              ${c.contact_email ? '<span style="color:#aaa;">' + c.contact_email + '</span><br>' : ''}
-              ${c.contact_phone ? '<span style="color:#aaa;">' + c.contact_phone + '</span>' : ''}
+              ${esc(c.contact_name) || '—'}<br>
+              ${c.contact_email ? '<span style="color:#aaa;">' + esc(c.contact_email) + '</span><br>' : ''}
+              ${c.contact_phone ? '<span style="color:#aaa;">' + esc(c.contact_phone) + '</span>' : ''}
             </p>
           </div>
           <div>
             <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
             <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-              ${c.billing_address || '—'}<br>
-              ${c.billing_email ? '<span style="color:#aaa;">' + c.billing_email + '</span><br>' : ''}
-              ${c.vat_number ? 'VAT: ' + c.vat_number + '<br>' : ''}
-              ${c.rate_per_session ? '<strong>' + c.rate_per_session + ' ' + (c.currency || 'CHF') + '</strong> per session' : ''}
+              ${esc(c.billing_address) || '—'}<br>
+              ${c.billing_email ? '<span style="color:#aaa;">' + esc(c.billing_email) + '</span><br>' : ''}
+              ${c.vat_number ? 'VAT: ' + esc(c.vat_number) + '<br>' : ''}
+              ${c.rate_per_session ? '<strong>' + esc(c.rate_per_session) + ' ' + esc(c.currency || 'CHF') + '</strong> per session' : ''}
             </p>
           </div>
         </div>
-        ${c.notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + c.notes + '</p>' : ''}
+        ${c.notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + esc(c.notes) + '</p>' : ''}
         <div style="display:flex;gap:0.5rem;">
           <button class="save-btn" data-action="editCompany" data-args="${c.id}">edit</button>
         </div>

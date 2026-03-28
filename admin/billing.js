@@ -1,5 +1,6 @@
 /* ── Billing / Invoices tab ───────────────────────────────────────── */
 import { apiFetch } from './api.js';
+import { esc } from './helpers.js';
 
 let currentInvoiceFilter = 'all';
 let invoiceCompanyCache = null;
@@ -43,11 +44,11 @@ function renderInvoices(invoices) {
   list.innerHTML = invoices.map(inv => `
     <div class="invoice-row" data-action="openInvoiceDetail" data-args="${inv.id}">
       <div class="invoice-summary">
-        <span class="inv-number">${inv.invoice_number}</span>
-        <span class="inv-company">${inv.billed_to || inv.company_name || '—'}</span>
-        <span class="inv-amount">${inv.currency} ${parseFloat(inv.total_amount).toFixed(2)}</span>
-        <span class="inv-date">${inv.issued_date || '—'}</span>
-        <span class="inv-status ${inv.status}">${inv.status}</span>
+        <span class="inv-number">${esc(inv.invoice_number)}</span>
+        <span class="inv-company">${esc(inv.billed_to || inv.company_name) || '—'}</span>
+        <span class="inv-amount">${esc(inv.currency)} ${parseFloat(inv.total_amount).toFixed(2)}</span>
+        <span class="inv-date">${esc(inv.issued_date) || '—'}</span>
+        <span class="inv-status ${esc(inv.status)}">${esc(inv.status)}</span>
       </div>
     </div>
   `).join('');
@@ -68,7 +69,7 @@ export async function openInvoiceDetail(invoiceId) {
 
     const linesHtml = (inv.lines || []).map(l => `
       <div style="display:grid;grid-template-columns:1fr 40px 70px 70px;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid #f0f0f0;font-size:0.78rem;">
-        <span style="color:#555;">${l.description}</span>
+        <span style="color:#555;">${esc(l.description)}</span>
         <span style="color:#888;text-align:right;">${l.quantity}</span>
         <span style="color:#888;text-align:right;">${parseFloat(l.unit_price).toFixed(2)}</span>
         <span style="color:#1a1a1a;text-align:right;">${parseFloat(l.line_total).toFixed(2)}</span>
@@ -86,18 +87,18 @@ export async function openInvoiceDetail(invoiceId) {
         <div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
           <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-            ${billedLabel}: ${billedTo.name || '—'}<br>
-            Date: ${inv.issued_date}<br>
-            Due: ${inv.due_date}<br>
-            Status: <strong>${inv.status}</strong>
+            ${billedLabel}: ${esc(billedTo.name) || '—'}<br>
+            Date: ${esc(inv.issued_date)}<br>
+            Due: ${esc(inv.due_date)}<br>
+            Status: <strong>${esc(inv.status)}</strong>
           </p>
         </div>
         <div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">payment</p>
           <p style="font-size:0.82rem;color:#555;line-height:1.8;">
-            QR-IBAN: ${inv.qr_iban || '—'}<br>
-            QR Ref: ${inv.qr_reference_formatted || '—'}<br>
-            Currency: ${inv.currency}
+            QR-IBAN: ${esc(inv.qr_iban) || '—'}<br>
+            QR Ref: ${esc(inv.qr_reference_formatted) || '—'}<br>
+            Currency: ${esc(inv.currency)}
           </p>
         </div>
       </div>
@@ -114,7 +115,7 @@ export async function openInvoiceDetail(invoiceId) {
         <strong>Total: ${inv.currency} ${totalAmt}</strong>
       </div>
 
-      ${inv.notes ? `<p style="font-size:0.78rem;color:#888;margin-top:1rem;">${inv.notes}</p>` : ''}
+      ${inv.notes ? `<p style="font-size:0.78rem;color:#888;margin-top:1rem;">${esc(inv.notes)}</p>` : ''}
 
       <div style="display:flex;gap:0.5rem;margin-top:1.4rem;flex-wrap:wrap;">
         <button class="save-btn" data-action="downloadInvoicePdf" data-args="${inv.id},${inv.invoice_number}">download PDF</button>
@@ -215,7 +216,7 @@ export async function openCreateInvoiceModal() {
       invoiceCompanyCache = await res.json();
       companySel.innerHTML = '<option value="">select company…</option>' +
         invoiceCompanyCache.map(c =>
-          `<option value="${c.id}">${c.name}${c.rate_per_session ? ' (' + c.rate_per_session + ' ' + (c.currency || 'CHF') + '/session)' : ''}</option>`
+          `<option value="${c.id}">${esc(c.name)}${c.rate_per_session ? ' (' + esc(c.rate_per_session) + ' ' + esc(c.currency || 'CHF') + '/session)' : ''}</option>`
         ).join('');
     }
   } catch { /* keep default */ }
@@ -228,8 +229,8 @@ export async function openCreateInvoiceModal() {
       studentSel.innerHTML = '<option value="">select student…</option>' +
         invoiceStudentCache.map(s => {
           const name = [s.first_name, s.last_name].filter(Boolean).join(' ');
-          const rateInfo = s.rate_per_session ? ' (' + s.rate_per_session + ' ' + (s.currency || 'CHF') + '/session)' : '';
-          return `<option value="${s.id}">${name}${rateInfo}</option>`;
+          const rateInfo = s.rate_per_session ? ' (' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '/session)' : '';
+          return `<option value="${s.id}">${esc(name)}${rateInfo}</option>`;
         }).join('');
     }
   } catch { /* keep default */ }
@@ -347,7 +348,7 @@ function renderSessionCheckboxes() {
       <div class="inv-session-check">
         <label>
           <input type="checkbox" value="${s.id}" checked data-action-change="updateInvTotalPreview">
-          ${s.course_code || '—'} — ${date}
+          ${esc(s.course_code) || '—'} — ${date}
         </label>
       </div>`;
   }).join('');
