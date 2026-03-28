@@ -8,6 +8,7 @@
   // ── Inject nav HTML ─────────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
   var navHTML =
+    '<a href="#content" class="skip-link">Skip to content</a>' +
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
       '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
@@ -81,6 +82,12 @@
       e.preventDefault();
       toggleMenu(!menuOpen, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     });
+  }
+
+  // ── Skip link: ensure target exists ──────────────────────────────
+  if (!document.getElementById('content')) {
+    var first = nav.nextElementSibling;
+    if (first) first.id = 'content';
   }
 
   // ── Expose toggleMenu for pages that need it (e.g. logo click) ──

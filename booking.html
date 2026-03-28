@@ -46,16 +46,16 @@
          Three mutually exclusive tabs. selectTab(service) shows the
          matching form and hides the other two.                         -->
     <div class="service-toggle" role="tablist">
-      <button class="service-tab" id="tab-language" role="tab" onclick="selectTab('language')">Language course</button>
-      <button class="service-tab" id="tab-exam"     role="tab" onclick="selectTab('exam')">Exam prep</button>
-      <button class="service-tab" id="tab-tutoring" role="tab" onclick="selectTab('tutoring')">Tutoring</button>
+      <button class="service-tab" id="tab-language" role="tab" aria-selected="true"  aria-controls="l-form" onclick="selectTab('language')">Language course</button>
+      <button class="service-tab" id="tab-exam"     role="tab" aria-selected="false" aria-controls="e-form" onclick="selectTab('exam')">Exam prep</button>
+      <button class="service-tab" id="tab-tutoring" role="tab" aria-selected="false" aria-controls="t-form" onclick="selectTab('tutoring')">Tutoring</button>
     </div>
 
     <!-- ════════════════════════════════════════════════════════════════
          LANGUAGE COURSE FORM  (id prefix: l-)
          Shown when "Language course" tab is active.
          ════════════════════════════════════════════════════════════════ -->
-    <div id="l-form" style="display:none;">
+    <div id="l-form" role="tabpanel" aria-labelledby="tab-language" style="display:none;">
 
       <!-- Language -->
       <div class="field">
@@ -134,7 +134,7 @@
          EXAM PREP FORM  (id prefix: e-)
          Shown when "Exam prep" tab is active.
          ════════════════════════════════════════════════════════════════ -->
-    <div id="e-form" style="display:none;">
+    <div id="e-form" role="tabpanel" aria-labelledby="tab-exam" style="display:none;">
 
       <!-- Exam type -->
       <div class="field">
@@ -212,7 +212,7 @@
          TUTORING FORM  (id prefix: t-)
          Shown when "Tutoring" tab is active.
          ════════════════════════════════════════════════════════════════ -->
-    <div id="t-form" style="display:none;">
+    <div id="t-form" role="tabpanel" aria-labelledby="tab-tutoring" style="display:none;">
 
       <!-- Student grade -->
       <div class="field">
@@ -364,13 +364,17 @@
       });
       /* Deactivate all tab buttons */
       ['tab-language', 'tab-exam', 'tab-tutoring'].forEach(id => {
-        document.getElementById(id).classList.remove('active');
+        const el = document.getElementById(id);
+        el.classList.remove('active');
+        el.setAttribute('aria-selected', 'false');
       });
       /* Show the selected form and activate its tab */
       const formMap = { language: 'l-form', exam: 'e-form', tutoring: 't-form' };
       const tabMap  = { language: 'tab-language', exam: 'tab-exam', tutoring: 'tab-tutoring' };
       document.getElementById(formMap[service]).style.display = 'block';
-      document.getElementById(tabMap[service]).classList.add('active');
+      const activeTabEl = document.getElementById(tabMap[service]);
+      activeTabEl.classList.add('active');
+      activeTabEl.setAttribute('aria-selected', 'true');
       /* Show scheduling section once a tab is selected */
       document.getElementById('scheduling-section').style.display = 'block';
       activeTab = service;

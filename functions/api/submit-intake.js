@@ -9,7 +9,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
 
-import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin } from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
@@ -17,6 +17,9 @@ const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
 export async function onRequestPost({ request, env }) {
   const originErr = validateOrigin(request, env);
   if (originErr) return originErr;
+
+  const rateLimitErr = await checkRateLimit(request);
+  if (rateLimitErr) return rateLimitErr;
 
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
 

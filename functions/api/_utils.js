@@ -90,6 +90,34 @@ export function validateOrigin(request, env) {
   return null;
 }
 
+// ── Rate limiting (per-IP, via Cache API) ────────────────────────────────
+// Returns null if under limit, or a 429 Response if exceeded.
+// Uses Cloudflare's Cache API for lightweight per-colo rate state.
+// Default: 5 requests per 60 seconds per IP per endpoint.
+export async function checkRateLimit(request, { maxRequests = 5, windowSeconds = 60 } = {}) {
+  try {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const url = new URL(request.url);
+    const cacheKey = `https://rate-limit.internal/${url.pathname}/${ip}`;
+    const cache = caches.default;
+
+    const cached = await cache.match(cacheKey);
+    const count = cached ? parseInt(await cached.text(), 10) : 0;
+
+    if (count >= maxRequests) {
+      return errorResponse('Too many requests. Please try again later.', 429);
+    }
+
+    const res = new Response(String(count + 1), {
+      headers: { 'Cache-Control': `s-maxage=${windowSeconds}` },
+    });
+    await cache.put(cacheKey, res);
+  } catch {
+    // If cache API is unavailable (e.g. local dev), silently allow
+  }
+  return null;
+}
+
 // ── Google OAuth token refresh ────────────────────────────────────────────
 // Returns a valid access token for the given teacher, refreshing via OAuth
 // if the current token is within 5 minutes of expiry. Persists the new
