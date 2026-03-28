@@ -8,6 +8,7 @@
 //   RESEND_API_KEY       — Resend API key
 
 import { supabaseHeaders, jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
+import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
@@ -208,7 +209,18 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('Missing booking or contact data', 400);
   }
 
+  const bookingErr = validate(booking, {
+    service: { required: true, type: 'string', oneOf: ['language course', 'exam prep', 'tutoring'] },
+  });
+  if (bookingErr) return errorResponse(bookingErr, 400);
+
   const lead = contact.lead || contact;
+
+  const leadErr = validate(lead, {
+    firstName: { required: true, type: 'string', maxLength: 200 },
+    email:     { required: true, type: 'string', email: true, maxLength: 320 },
+  });
+  if (leadErr) return errorResponse(leadErr, 400);
 
   // ── 1. Write to Supabase ───────────────────────────────────────────────
   let enquiryId;

@@ -7,6 +7,8 @@
    - Submits to /api/submit-intake
    ══════════════════════════════════════════════════════════════════ */
 
+import { isValidEmail, showFieldError } from './form-validate.js';
+
 const token = new URLSearchParams(window.location.search).get('token');
 
 const formState    = document.getElementById('form-state');
@@ -99,16 +101,12 @@ function validate() {
   const email     = document.getElementById('in-email').value.trim();
   const consent   = document.getElementById('in-consent').checked;
 
-  showErr('err-first-name', !firstName); if (!firstName) ok = false;
-  showErr('err-last-name',  !lastName);  if (!lastName)  ok = false;
-  showErr('err-email',      !email || !email.includes('@')); if (!email || !email.includes('@')) ok = false;
-  showErr('err-consent',    !consent);   if (!consent)   ok = false;
+  showFieldError('err-first-name', !firstName); if (!firstName) ok = false;
+  showFieldError('err-last-name',  !lastName);  if (!lastName)  ok = false;
+  showFieldError('err-email',      !email || !isValidEmail(email)); if (!email || !isValidEmail(email)) ok = false;
+  showFieldError('err-consent',    !consent);   if (!consent)   ok = false;
 
   return ok;
-}
-
-function showErr(id, show) {
-  document.getElementById(id).style.display = show ? 'block' : 'none';
 }
 
 /* ── Submit ──────────────────────────────────────────────────────── */

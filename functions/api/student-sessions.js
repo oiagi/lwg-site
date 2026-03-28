@@ -24,13 +24,23 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   // ── Find student by access token ─────────────────────────────────────
   const studentRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=id,first_name,last_name,current_level`,
+    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=id,first_name,last_name,current_level,token_created_at,created_at`,
     { headers: H }
   );
   if (!studentRes.ok) return errorResponse('Database error');
   const students = await studentRes.json();
   if (!students.length) return errorResponse('Invalid token', 404);
   const student = students[0];
+
+  // ── Token expiry check (90 days) ──────────────────────────────────
+  const tokenDate = student.token_created_at || student.created_at;
+  if (tokenDate) {
+    const ageMs    = Date.now() - new Date(tokenDate).getTime();
+    const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
+    if (ageMs > maxAgeMs) {
+      return errorResponse('This link has expired. Please contact us for a new one.', 410);
+    }
+  }
 
   // ── Load enrolments → courses → sessions ─────────────────────────────
   const enrolRes = await fetch(

@@ -6,9 +6,6 @@ SUPABASE_SERVICE_KEY=your-service-role-key
 # ── Email (Resend) ────────────────────────────────────────────────
 RESEND_API_KEY=re_your-resend-key
 
-# ── Contact form (Web3Forms) ─────────────────────────────────────
-WEB3FORMS_ACCESS_KEY=your-web3forms-key
-
 # ── Google OAuth (calendar integration) ──────────────────────────
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
