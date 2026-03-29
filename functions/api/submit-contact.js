@@ -5,7 +5,13 @@
 // Environment variables:
 //   RESEND_API_KEY — Resend API key
 
-import { jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_utils.js';
+import {
+  jsonResponse,
+  errorResponse,
+  validateOrigin,
+  checkRateLimit,
+  withErrorHandling,
+} from './_utils.js';
 import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
@@ -60,7 +66,7 @@ function buildContactNotification({ name, email, phone, preferred_contact, messa
   };
 }
 
-export async function onRequestPost({ request, env }) {
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const originErr = validateOrigin(request, env);
   if (originErr) return originErr;
 
@@ -125,4 +131,4 @@ export async function onRequestPost({ request, env }) {
     console.error('Resend fetch error:', err?.message || err);
     return errorResponse('Could not send message', 502);
   }
-}
+}, 'submit-contact');

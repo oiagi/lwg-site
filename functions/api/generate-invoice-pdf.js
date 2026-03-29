@@ -9,7 +9,7 @@
 //   QR_IBAN, CREDITOR_NAME, CREDITOR_STREET, CREDITOR_HOUSE_NUMBER,
 //   CREDITOR_POSTAL_CODE, CREDITOR_CITY, CREDITOR_COUNTRY
 
-import { supabaseHeaders, requireAdminAuth, errorResponse } from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, errorResponse, withErrorHandling } from './_utils.js';
 import { formatQrReference, buildQrPayload } from './_qr-utils.js';
 import { PdfBuilder, parseAddress } from './_pdf-builder.js';
 
@@ -265,7 +265,7 @@ function renderQrSlip(pdf, invoice, debtor, creditor, env) {
 
 // ── Handler ──────────────────────────────────────────────────────────────
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -357,4 +357,4 @@ export async function onRequestGet({ request, env }) {
     console.error('PDF generation error:', err);
     return errorResponse('Could not generate PDF');
   }
-}
+}, 'generate-invoice-pdf');

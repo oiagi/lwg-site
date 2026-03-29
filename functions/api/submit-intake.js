@@ -15,13 +15,14 @@ import {
   errorResponse,
   validateOrigin,
   checkRateLimit,
+  withErrorHandling,
 } from './_utils.js';
 import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
-export async function onRequestPost({ request, env }) {
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const originErr = validateOrigin(request, env);
   if (originErr) return originErr;
 
@@ -199,4 +200,4 @@ export async function onRequestPost({ request, env }) {
     console.error('Error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'submit-intake');

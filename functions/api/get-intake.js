@@ -8,10 +8,23 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import { supabaseHeaders, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+  validateOrigin,
+  checkRateLimit,
+} from './_utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+
+  const originErr = validateOrigin(request, env);
+  if (originErr) return originErr;
+
+  const rateLimitErr = await checkRateLimit(request);
+  if (rateLimitErr) return rateLimitErr;
 
   const url = new URL(request.url);
   const token = url.searchParams.get('token');
@@ -47,4 +60,4 @@ export async function onRequestGet({ request, env }) {
     console.error('Error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'get-intake');

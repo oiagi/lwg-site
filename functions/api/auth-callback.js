@@ -11,7 +11,9 @@
 //   SUPABASE_URL         — Supabase project URL
 //   SUPABASE_SERVICE_KEY — Supabase service role key
 
-export async function onRequestGet({ request, env }) {
+import { withErrorHandling } from './_utils.js';
+
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
   const SUPABASE_URL = env.SUPABASE_URL;
@@ -93,4 +95,4 @@ export async function onRequestGet({ request, env }) {
 
   // ── Success — redirect back to admin dashboard ───────────────────────
   return Response.redirect(`${siteUrl}/admin.html?auth=success`, 302);
-}
+}, 'auth-callback');

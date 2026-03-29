@@ -10,10 +10,19 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import { supabaseHeaders, jsonResponse, errorResponse, withErrorHandling } from './_utils.js';
+import {
+  supabaseHeaders,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+  checkRateLimit,
+} from './_utils.js';
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+
+  const rateLimitErr = await checkRateLimit(request);
+  if (rateLimitErr) return rateLimitErr;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
