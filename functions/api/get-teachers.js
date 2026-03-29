@@ -28,13 +28,13 @@ export async function onRequestGet({ request, env }) {
     const teachers = await res.json();
 
     // Return teachers with a simple 'authorised' flag instead of raw tokens
-    const sanitised = teachers.map(t => ({
-      id:             t.id,
-      name:           t.name,
-      email:          t.email,
+    const sanitised = teachers.map((t) => ({
+      id: t.id,
+      name: t.name,
+      email: t.email,
       google_account: t.google_account,
-      authorised:     !!t.refresh_token,
-      token_valid:    t.token_expires_at ? new Date(t.token_expires_at) > new Date() : false,
+      authorised: !!t.refresh_token,
+      token_valid: t.token_expires_at ? new Date(t.token_expires_at) > new Date() : false,
     }));
 
     return jsonResponse(sanitised);

@@ -40,19 +40,16 @@ export async function onRequestPatch({ request, env }) {
 
   // ── Mark session as completed ────────────────────────────────────────
   const patch = {
-    status:       'completed',
+    status: 'completed',
     completed_at: new Date().toISOString(),
   };
   if (notes !== undefined) patch.notes = notes;
 
-  const updateRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`,
-    {
-      method:  'PATCH',
-      headers: { ...H, 'Prefer': 'return=representation' },
-      body:    JSON.stringify(patch),
-    }
-  );
+  const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, {
+    method: 'PATCH',
+    headers: { ...H, Prefer: 'return=representation' },
+    body: JSON.stringify(patch),
+  });
 
   if (!updateRes.ok) return errorResponse('Could not update session');
 
@@ -68,14 +65,11 @@ export async function onRequestPatch({ request, env }) {
       const courses = await courseRes.json();
       if (courses.length) {
         const newCount = (courses[0].sessions_completed || 0) + 1;
-        await fetch(
-          `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}`,
-          {
-            method:  'PATCH',
-            headers: H,
-            body:    JSON.stringify({ sessions_completed: newCount }),
-          }
-        );
+        await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}`, {
+          method: 'PATCH',
+          headers: H,
+          body: JSON.stringify({ sessions_completed: newCount }),
+        });
       }
     } catch (err) {
       console.error('Course count update error:', err);

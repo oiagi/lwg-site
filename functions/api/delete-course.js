@@ -13,7 +13,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  getValidAccessToken,
+  jsonResponse,
+  errorResponse,
+} from './_utils.js';
 
 export async function onRequestDelete({ request, env }) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -32,10 +38,9 @@ export async function onRequestDelete({ request, env }) {
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ───────────────────────────────────────────────────────
-  const courseRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`,
-    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const courseRes = await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const courses = await courseRes.json();
   if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
@@ -48,9 +53,7 @@ export async function onRequestDelete({ request, env }) {
   const sessions = await sessRes.json();
 
   // ── Cancel calendar events for all upcoming sessions ──────────────────
-  const upcomingSessions = sessions.filter(s =>
-    s.status === 'scheduled' && s.calendar_event_id
-  );
+  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled' && s.calendar_event_id);
 
   if (upcomingSessions.length && course.teacher_id) {
     try {
@@ -67,7 +70,7 @@ export async function onRequestDelete({ request, env }) {
               `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(teachers[0].calendar_id)}/events/${sess.calendar_event_id}`,
               {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${accessToken}` },
+                headers: { Authorization: `Bearer ${accessToken}` },
               }
             );
           } catch (err) {
@@ -85,7 +88,8 @@ export async function onRequestDelete({ request, env }) {
   if (course.enquiry_id) {
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${course.enquiry_id}`, {
-        method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'PATCH',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ course_id: null, status: 'contacted' }),
       });
     } catch (err) {
@@ -96,10 +100,10 @@ export async function onRequestDelete({ request, env }) {
   // ── Delete sessions, enrolments, and course (cascade handles sessions) ─
   // Enrolments reference course_id with ON DELETE CASCADE so they're
   // removed automatically. Sessions too. We just delete the course.
-  const deleteRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`,
-    { method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const deleteRes = await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
+    method: 'DELETE',
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
 
   if (!deleteRes.ok) return errorResponse('Could not delete course');
 

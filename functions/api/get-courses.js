@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  const url    = new URL(request.url);
+  const url = new URL(request.url);
   const status = url.searchParams.get('status') || 'all';
 
   let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=created_at.desc&select=*`;
@@ -28,28 +28,27 @@ export async function onRequestGet({ request, env }) {
     if (!courses.length) return jsonResponse([]);
 
     // ── Batch fetch sessions and enrolments for all courses ────────────
-    const courseIds = courses.map(c => c.id);
-    const courseFilter = courseIds.map(id => `course_id.eq.${id}`).join(',');
+    const courseIds = courses.map((c) => c.id);
+    const courseFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
 
     const [sessRes, enrolRes] = await Promise.all([
       fetch(
         `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
         { headers: H }
       ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=student_id,course_id`,
-        { headers: H }
-      ),
+      fetch(`${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=student_id,course_id`, {
+        headers: H,
+      }),
     ]);
 
-    const allSessions   = sessRes.ok  ? await sessRes.json()  : [];
+    const allSessions = sessRes.ok ? await sessRes.json() : [];
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
 
     // ── Batch fetch all unique students ────────────────────────────────
-    const studentIds = [...new Set(allEnrolments.map(e => e.student_id))];
+    const studentIds = [...new Set(allEnrolments.map((e) => e.student_id))];
     let allStudents = [];
     if (studentIds.length) {
-      const studentFilter = studentIds.map(id => `id.eq.${id}`).join(',');
+      const studentFilter = studentIds.map((id) => `id.eq.${id}`).join(',');
       const studRes = await fetch(
         `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,email,phone,current_level,progress_notes,access_token`,
         { headers: H }
@@ -74,11 +73,11 @@ export async function onRequestGet({ request, env }) {
     }
 
     // ── Enrich courses ────────────────────────────────────────────────
-    const enriched = courses.map(course => ({
+    const enriched = courses.map((course) => ({
       ...course,
       sessions: sessionsByCourse[course.id] || [],
       students: [...(studentIdsByCourse[course.id] || [])]
-        .map(id => studentsById[id])
+        .map((id) => studentsById[id])
         .filter(Boolean),
     }));
 

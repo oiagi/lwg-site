@@ -1,5 +1,5 @@
 body {
-  --page-bg: #d6eaf8;           /* used by nav gradient to match page bg */
+  --page-bg: #d6eaf8; /* used by nav gradient to match page bg */
   background-color: #d6eaf8;
   display: flex;
   flex-direction: column;
@@ -10,7 +10,10 @@ body {
   transition: background-color 0.6s ease;
 }
 /* Background turns slightly deeper blue when nav is open */
-body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
+body.nav-active {
+  --page-bg: #b8d9f0;
+  background-color: #b8d9f0;
+}
 
 /* ── Form container ─────────────────────────────────────────── */
 .form-container {
@@ -47,12 +50,21 @@ h1 {
   background: transparent;
   border: none;
   font-family: inherit;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   user-select: none;
 }
-.service-tab + .service-tab { border-left: 1px solid #1a1a1a; }
-.service-tab:hover { background: rgba(26,26,26,0.06); }
-.service-tab.active { background: #1a1a1a; color: #d6eaf8; }
+.service-tab + .service-tab {
+  border-left: 1px solid #1a1a1a;
+}
+.service-tab:hover {
+  background: rgba(26, 26, 26, 0.06);
+}
+.service-tab.active {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}
 
 /* ── Contact link at top ─────────────────────────────────────── */
 .contact-hint {
@@ -69,7 +81,9 @@ h1 {
   padding-bottom: 1px;
   transition: border-color 0.2s;
 }
-.contact-hint a:hover { border-color: #1a1a1a; }
+.contact-hint a:hover {
+  border-color: #1a1a1a;
+}
 
 /* ── Section divider ──────────────────────────────────────────── */
 .section-label {
@@ -84,7 +98,9 @@ h1 {
 }
 
 /* ── Form field wrapper ─────────────────────────────────────── */
-.field { margin-bottom: 1.8rem; }
+.field {
+  margin-bottom: 1.8rem;
+}
 
 /* ── Field labels ───────────────────────────────────────────── */
 label {
@@ -107,9 +123,15 @@ label {
 }
 
 /* ── Pill-style radio/checkbox toggles ──────────────────────── */
-.toggle-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.toggle-group input[type="radio"],
-.toggle-group input[type="checkbox"] { display: none; }
+.toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.toggle-group input[type='radio'],
+.toggle-group input[type='checkbox'] {
+  display: none;
+}
 .toggle-group label {
   font-size: 0.82rem;
   letter-spacing: 0.08em;
@@ -118,15 +140,20 @@ label {
   border: 1px solid #1a1a1a;
   padding: 0.35rem 0.85rem;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   margin-bottom: 0;
 }
-.toggle-group input:checked + label { background: #1a1a1a; color: #d6eaf8; }
+.toggle-group input:checked + label {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}
 
 /* ── Text inputs ──────────────────────────────────────────────── */
-input[type="text"],
-input[type="email"],
-input[type="tel"] {
+input[type='text'],
+input[type='email'],
+input[type='tel'] {
   width: 100%;
   background: transparent;
   border: none;
@@ -139,9 +166,11 @@ input[type="tel"] {
   outline: none;
   transition: border-color 0.2s;
 }
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus { border-bottom-color: #555; }
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='tel']:focus {
+  border-bottom-color: #555;
+}
 
 textarea {
   width: 100%;
@@ -172,9 +201,14 @@ button.submit {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
-button.submit:hover { background: #ffffff; color: #1a1a1a; }
+button.submit:hover {
+  background: #ffffff;
+  color: #1a1a1a;
+}
 
 /* ── Inline validation error messages ───────────────────────── */
 .error {
@@ -186,25 +220,81 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
 }
 
 @media (max-width: 500px) {
-  h1 { font-size: 1.6rem; margin-bottom: 1.8rem; }
-  .toggle-group label { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
-  .hours-row { flex-wrap: wrap; }
-  .hours-display { min-width: 2.5rem; }
-  button.submit { padding: 0.8rem; font-size: 0.75rem; }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 1.8rem;
+  }
+  .toggle-group label {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+  }
+  .hours-row {
+    flex-wrap: wrap;
+  }
+  .hours-display {
+    min-width: 2.5rem;
+  }
+  button.submit {
+    padding: 0.8rem;
+    font-size: 0.75rem;
+  }
 }
 
-html[data-device="mobile"] h1           { font-size: 1.5rem; margin-bottom: 1.6rem; }
-html[data-device="mobile"] .form-container { width: 96vw; margin-top: 0.4rem; }
-html[data-device="mobile"] .toggle-group label { font-size: 0.8rem; padding: 0.4rem 0.75rem; min-height: 36px; display: inline-flex; align-items: center; }
-html[data-device="mobile"] .hours-row   { flex-wrap: wrap; }
-html[data-device="mobile"] .hours-row button { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
-html[data-device="mobile"] .hours-display { min-width: 2.5rem; }
-html[data-device="mobile"] button.submit { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
-html[data-device="tablet"] h1           { font-size: 1.75rem; }
-html[data-device="tablet"] .form-container { width: min(78vw, 500px); }
-html[data-device="tablet"] .toggle-group label { min-height: 40px; display: inline-flex; align-items: center; }
-html[data-device="tablet"] .hours-row button { width: 2.4rem; height: 2.4rem; }
-html[data-device="tablet"] button.submit { min-height: 48px; }
+html[data-device='mobile'] h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.6rem;
+}
+html[data-device='mobile'] .form-container {
+  width: 96vw;
+  margin-top: 0.4rem;
+}
+html[data-device='mobile'] .toggle-group label {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+}
+html[data-device='mobile'] .hours-row {
+  flex-wrap: wrap;
+}
+html[data-device='mobile'] .hours-row button {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.2rem;
+}
+html[data-device='mobile'] .hours-display {
+  min-width: 2.5rem;
+}
+html[data-device='mobile'] button.submit {
+  padding: 0.85rem;
+  font-size: 0.78rem;
+  min-height: 48px;
+}
+html[data-device='tablet'] h1 {
+  font-size: 1.75rem;
+}
+html[data-device='tablet'] .form-container {
+  width: min(78vw, 500px);
+}
+html[data-device='tablet'] .toggle-group label {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+html[data-device='tablet'] .hours-row button {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+html[data-device='tablet'] button.submit {
+  min-height: 48px;
+}
 /* type toggle touch: inherits .service-tab touch overrides */
-html[data-touch="true"] .hours-row button:hover  { background: none; color: #1a1a1a; }
-html[data-touch="true"] .hours-row button:active { background: #1a1a1a; color: #d6eaf8; }
+html[data-touch='true'] .hours-row button:hover {
+  background: none;
+  color: #1a1a1a;
+}
+html[data-touch='true'] .hours-row button:active {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}

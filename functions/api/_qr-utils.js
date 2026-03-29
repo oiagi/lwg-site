@@ -69,31 +69,37 @@ export function buildQrPayload({
   unstructuredMessage,
 }) {
   const lines = [
-    'SPC',                          // QR type
-    '0200',                         // Version
-    '1',                            // Coding type (UTF-8)
-    qrIban,                         // IBAN / QR-IBAN
-    'S',                            // Creditor address type (Structured)
+    'SPC', // QR type
+    '0200', // Version
+    '1', // Coding type (UTF-8)
+    qrIban, // IBAN / QR-IBAN
+    'S', // Creditor address type (Structured)
     creditorName,
     creditorStreet || '',
     creditorHouseNumber || '',
     creditorPostalCode,
     creditorCity,
     creditorCountry || 'CH',
-    '', '', '', '', '', '', '',     // Ultimate creditor (not used, 7 empty fields)
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '', // Ultimate creditor (not used, 7 empty fields)
     amount ? amount.toFixed(2) : '',
     currency || 'CHF',
-    'S',                            // Debtor address type (Structured)
+    'S', // Debtor address type (Structured)
     debtorName || '',
     debtorStreet || '',
     debtorHouseNumber || '',
     debtorPostalCode || '',
     debtorCity || '',
     debtorCountry || 'CH',
-    'QRR',                          // Reference type (QR Reference)
+    'QRR', // Reference type (QR Reference)
     qrReference || '',
     unstructuredMessage || '',
-    'EPD',                          // Trailer
+    'EPD', // Trailer
   ];
   return lines.join('\n');
 }

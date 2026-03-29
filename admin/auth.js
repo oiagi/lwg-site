@@ -10,7 +10,9 @@ export async function initAuth() {
   return supabaseClient;
 }
 
-export function getClient() { return supabaseClient; }
+export function getClient() {
+  return supabaseClient;
+}
 
 export async function signIn(email, password) {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -24,7 +26,9 @@ export async function signOut() {
 }
 
 export async function getSession() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
+  const {
+    data: { session },
+  } = await supabaseClient.auth.getSession();
   return session;
 }
 

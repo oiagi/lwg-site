@@ -12,7 +12,13 @@
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-import { supabaseHeaders, requireAdminAuth, getValidAccessToken, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  getValidAccessToken,
+  jsonResponse,
+  errorResponse,
+} from './_utils.js';
 import { fetchCourseEvents } from './_calendar.js';
 
 export async function onRequestPost({ request, env }) {
@@ -31,19 +37,17 @@ export async function onRequestPost({ request, env }) {
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ──────────────────────────────────────────────────────
-  const cr = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`,
-    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const cr = await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const courses = await cr.json();
   if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load teacher ─────────────────────────────────────────────────────
-  const tr = await fetch(
-    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`,
-    { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
-  );
+  const tr = await fetch(`${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const teachers = await tr.json();
   if (!teachers.length || !teachers[0].refresh_token) {
     return errorResponse('Teacher not found or not authorised', 400);
@@ -63,12 +67,14 @@ export async function onRequestPost({ request, env }) {
   let activeEvents, cancelledEvents;
   try {
     ({ active: activeEvents, cancelled: cancelledEvents } = await fetchCourseEvents({
-      accessToken, calendarId: teacher.calendar_id, courseCode: course.course_code,
+      accessToken,
+      calendarId: teacher.calendar_id,
+      courseCode: course.course_code,
     }));
   } catch (err) {
     return errorResponse(err.message || 'Calendar API error');
   }
-  const activeEventIds = new Set(activeEvents.map(e => e.id));
+  const activeEventIds = new Set(activeEvents.map((e) => e.id));
 
   // ── Upsert active session records ────────────────────────────────────
   const now = new Date();
@@ -76,8 +82,8 @@ export async function onRequestPost({ request, env }) {
 
   for (const event of activeEvents) {
     const scheduledAt = event.start.dateTime || event.start.date;
-    const isPast      = new Date(scheduledAt) < now;
-    const status      = isPast ? 'completed' : 'scheduled';
+    const isPast = new Date(scheduledAt) < now;
+    const status = isPast ? 'completed' : 'scheduled';
     if (isPast) completedCount++;
 
     const existRes = await fetch(
@@ -88,17 +94,19 @@ export async function onRequestPost({ request, env }) {
 
     if (existing.length) {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${existing[0].id}`, {
-        method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'PATCH',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ scheduled_at: scheduledAt, status }),
       });
     } else {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-        method: 'POST', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'POST',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({
-          course_id:         course.id,
-          teacher_id:        course.teacher_id,
-          scheduled_at:      scheduledAt,
-          duration_minutes:  50,
+          course_id: course.id,
+          teacher_id: course.teacher_id,
+          scheduled_at: scheduledAt,
+          duration_minutes: 50,
           status,
           calendar_event_id: event.id,
         }),
@@ -118,22 +126,24 @@ export async function onRequestPost({ request, env }) {
   for (const sess of allDbSessions) {
     if (!sess.calendar_event_id || !activeEventIds.has(sess.calendar_event_id)) {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${sess.id}`, {
-        method: 'DELETE', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        method: 'DELETE',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
       });
     }
   }
 
   // ── Update sessions_completed count on course ─────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course.id}`, {
-    method: 'PATCH', headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    method: 'PATCH',
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
     body: JSON.stringify({ sessions_completed: completedCount }),
   });
 
   return jsonResponse({
-    success:      true,
+    success: true,
     events_found: activeEvents.length,
-    cancelled:    cancelledEvents.length,
-    completed:    completedCount,
-    scheduled:    activeEvents.length - completedCount,
+    cancelled: cancelledEvents.length,
+    completed: completedCount,
+    scheduled: activeEvents.length - completedCount,
   });
 }

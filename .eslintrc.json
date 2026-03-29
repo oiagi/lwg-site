@@ -22,6 +22,9 @@
         "browser": false,
         "node": true,
         "es2022": true
+      },
+      "globals": {
+        "caches": "readonly"
       }
     }
   ]

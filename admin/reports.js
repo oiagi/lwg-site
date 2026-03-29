@@ -4,11 +4,13 @@ import { esc } from './helpers.js';
 
 let currentReportType = 'overview';
 
-export function getCurrentReportType() { return currentReportType; }
+export function getCurrentReportType() {
+  return currentReportType;
+}
 
 export function filterReport(type) {
   currentReportType = type;
-  document.querySelectorAll('[data-report-type]').forEach(b => {
+  document.querySelectorAll('[data-report-type]').forEach((b) => {
     b.classList.toggle('active', b.dataset.reportType === type);
   });
   loadReport(type);
@@ -24,10 +26,18 @@ export async function loadReport(type = 'overview') {
     const data = await res.json();
 
     switch (type) {
-      case 'overview':   renderOverview(data, container); break;
-      case 'revenue':    renderRevenue(data, container); break;
-      case 'sessions':   renderSessions(data, container); break;
-      case 'attendance': renderAttendance(data, container); break;
+      case 'overview':
+        renderOverview(data, container);
+        break;
+      case 'revenue':
+        renderRevenue(data, container);
+        break;
+      case 'sessions':
+        renderSessions(data, container);
+        break;
+      case 'attendance':
+        renderAttendance(data, container);
+        break;
     }
   } catch {
     container.innerHTML = '<div class="loading-state">Could not load report.</div>';
@@ -69,13 +79,16 @@ function renderRevenue(data, el) {
     return;
   }
 
-  const totals = data.rows.reduce((acc, r) => {
-    acc.invoiced += r.invoiced;
-    acc.paid += r.paid;
-    acc.outstanding += r.outstanding;
-    acc.count += r.count;
-    return acc;
-  }, { invoiced: 0, paid: 0, outstanding: 0, count: 0 });
+  const totals = data.rows.reduce(
+    (acc, r) => {
+      acc.invoiced += r.invoiced;
+      acc.paid += r.paid;
+      acc.outstanding += r.outstanding;
+      acc.count += r.count;
+      return acc;
+    },
+    { invoiced: 0, paid: 0, outstanding: 0, count: 0 }
+  );
 
   el.innerHTML = `
     <table class="report-table">
@@ -89,7 +102,9 @@ function renderRevenue(data, el) {
         </tr>
       </thead>
       <tbody>
-        ${data.rows.map(r => `
+        ${data.rows
+          .map(
+            (r) => `
           <tr>
             <td>${formatMonth(r.month)}</td>
             <td class="num">${r.count}</td>
@@ -97,7 +112,9 @@ function renderRevenue(data, el) {
             <td class="num paid">${data.currency} ${r.paid.toFixed(2)}</td>
             <td class="num outstanding">${r.outstanding > 0 ? data.currency + ' ' + r.outstanding.toFixed(2) : '—'}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
       <tfoot>
         <tr>
@@ -119,13 +136,16 @@ function renderSessions(data, el) {
     return;
   }
 
-  const totals = data.reduce((acc, r) => {
-    acc.completed += r.completed;
-    acc.scheduled += r.scheduled;
-    acc.cancelled += r.cancelled;
-    acc.total += r.total;
-    return acc;
-  }, { completed: 0, scheduled: 0, cancelled: 0, total: 0 });
+  const totals = data.reduce(
+    (acc, r) => {
+      acc.completed += r.completed;
+      acc.scheduled += r.scheduled;
+      acc.cancelled += r.cancelled;
+      acc.total += r.total;
+      return acc;
+    },
+    { completed: 0, scheduled: 0, cancelled: 0, total: 0 }
+  );
 
   el.innerHTML = `
     <table class="report-table">
@@ -139,7 +159,9 @@ function renderSessions(data, el) {
         </tr>
       </thead>
       <tbody>
-        ${data.map(r => `
+        ${data
+          .map(
+            (r) => `
           <tr>
             <td>${formatMonth(r.month)}</td>
             <td class="num completed">${r.completed}</td>
@@ -147,7 +169,9 @@ function renderSessions(data, el) {
             <td class="num cancelled">${r.cancelled || '—'}</td>
             <td class="num">${r.total}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
       <tfoot>
         <tr>
@@ -181,7 +205,9 @@ function renderAttendance(data, el) {
         </tr>
       </thead>
       <tbody>
-        ${data.map(r => `
+        ${data
+          .map(
+            (r) => `
           <tr>
             <td>${esc(r.course_code)}</td>
             <td><span class="course-status ${esc(r.status)}">${esc(r.status)}</span></td>
@@ -189,7 +215,9 @@ function renderAttendance(data, el) {
             <td class="num">${r.absent}</td>
             <td class="num ${attendanceClass(r.rate)}">${r.rate !== null ? r.rate + '%' : '—'}</td>
           </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
   `;
@@ -199,7 +227,20 @@ function renderAttendance(data, el) {
 function formatMonth(m) {
   if (!m || m === 'unknown') return '—';
   const [y, mo] = m.split('-');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return months[parseInt(mo, 10) - 1] + ' ' + y;
 }
 

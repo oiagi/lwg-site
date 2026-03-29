@@ -38,15 +38,14 @@ export async function onRequestPost({ request, env }) {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   // ── Verify session exists ────────────────────────────────────────────
-  const sessRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=id`,
-    { headers: H }
-  );
+  const sessRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=id`, {
+    headers: H,
+  });
   const sessions = await sessRes.json();
   if (!sessions.length) return errorResponse('Session not found', 404);
 
   // ── Upsert attendance records ─────────────────────────────────────────
-  const saved  = [];
+  const saved = [];
   const errors = [];
 
   for (const rec of records) {
@@ -58,7 +57,7 @@ export async function onRequestPost({ request, env }) {
     const data = {
       session_id,
       student_id: rec.student_id,
-      present:    rec.present !== false, // default to present
+      present: rec.present !== false, // default to present
     };
     if (rec.notes !== undefined) data.notes = rec.notes;
 
@@ -68,7 +67,7 @@ export async function onRequestPost({ request, env }) {
         method: 'POST',
         headers: {
           ...H,
-          'Prefer': 'return=representation,resolution=merge-duplicates',
+          Prefer: 'return=representation,resolution=merge-duplicates',
         },
         body: JSON.stringify(data),
       });

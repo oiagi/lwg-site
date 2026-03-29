@@ -27,13 +27,21 @@ export async function onRequestPost({ request, env }) {
 
   if (!body.name) return errorResponse('Company name is required', 400);
 
-  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' };
+  const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };
 
   // Fields allowed in the payload
   const fields = [
-    'name', 'contact_name', 'contact_email', 'contact_phone',
-    'billing_address', 'billing_email', 'vat_number',
-    'rate_per_session', 'currency', 'notes', 'active',
+    'name',
+    'contact_name',
+    'contact_email',
+    'contact_phone',
+    'billing_address',
+    'billing_email',
+    'vat_number',
+    'rate_per_session',
+    'currency',
+    'notes',
+    'active',
   ];
   const data = {};
   for (const f of fields) {
@@ -44,16 +52,18 @@ export async function onRequestPost({ request, env }) {
     let res;
     if (body.id) {
       // ── Update existing company ──────────────────────────────────────
-      res = await fetch(
-        `${SUPABASE_URL}/rest/v1/companies?id=eq.${body.id}`,
-        { method: 'PATCH', headers: H, body: JSON.stringify(data) }
-      );
+      res = await fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${body.id}`, {
+        method: 'PATCH',
+        headers: H,
+        body: JSON.stringify(data),
+      });
     } else {
       // ── Create new company ───────────────────────────────────────────
-      res = await fetch(
-        `${SUPABASE_URL}/rest/v1/companies`,
-        { method: 'POST', headers: H, body: JSON.stringify(data) }
-      );
+      res = await fetch(`${SUPABASE_URL}/rest/v1/companies`, {
+        method: 'POST',
+        headers: H,
+        body: JSON.stringify(data),
+      });
     }
 
     if (!res.ok) {

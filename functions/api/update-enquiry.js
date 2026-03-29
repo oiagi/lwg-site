@@ -29,16 +29,16 @@ export async function onRequestPatch({ request, env }) {
   // Build patch object — only include fields that were provided
   const patch = {};
   if (status !== undefined) patch.status = status;
-  if (notes  !== undefined) patch.notes  = notes;
+  if (notes !== undefined) patch.notes = notes;
 
   if (Object.keys(patch).length === 0) return errorResponse('Nothing to update', 400);
 
   // ── Update in Supabase ───────────────────────────────────────────────
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${id}`, {
-      method:  'PATCH',
-      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), 'Prefer': 'return=representation' },
-      body:    JSON.stringify(patch),
+      method: 'PATCH',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
+      body: JSON.stringify(patch),
     });
 
     if (!res.ok) {

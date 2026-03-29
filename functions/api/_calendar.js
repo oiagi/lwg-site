@@ -17,13 +17,20 @@
  * @returns {Promise<string>} Calendar event ID
  */
 export async function createCourseCalendarEvent({
-  accessToken, calendarId, courseCode, booking, contact,
-  teacherName, firstSessionAt, durationMinutes = 50, sessionsTotal,
+  accessToken,
+  calendarId,
+  courseCode,
+  booking,
+  contact,
+  teacherName,
+  firstSessionAt,
+  durationMinutes = 50,
+  sessionsTotal,
 }) {
-  const participants     = contact.participants || [];
-  const participantNames = participants.map(p => p.firstName).filter(Boolean);
-  const startTime        = new Date(firstSessionAt);
-  const endTime          = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+  const participants = contact.participants || [];
+  const participantNames = participants.map((p) => p.firstName).filter(Boolean);
+  const startTime = new Date(firstSessionAt);
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
   const eventTitle = participantNames.length
     ? `${courseCode} — ${participantNames.join('+')} <> ${teacherName}`
@@ -43,24 +50,27 @@ export async function createCourseCalendarEvent({
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify({
         summary: eventTitle,
         description:
           `Course: ${courseCode}\nService: ${booking.service || ''}\n` +
-          (booking.level    ? `Level: ${booking.level}\n`       : '') +
+          (booking.level ? `Level: ${booking.level}\n` : '') +
           (booking.language ? `Language: ${booking.language}\n` : '') +
-          (booking.exam     ? `Exam: ${booking.exam}\n`         : '') +
+          (booking.exam ? `Exam: ${booking.exam}\n` : '') +
           sessionsLine +
           `\nLead: ${contact.lead?.firstName || ''} ${contact.lead?.lastName || ''}` +
           `\nEmail: ${contact.lead?.email || ''}` +
           `\nPhone: ${contact.lead?.phone || ''}`,
         start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
-        end:   { dateTime: endTime.toISOString(),   timeZone: 'Europe/Zurich' },
+        end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Zurich' },
         recurrence,
         attendees: participants
-          .filter(p => p.email)
-          .map(p => ({ email: p.email, displayName: `${p.firstName||''} ${p.lastName||''}`.trim() })),
+          .filter((p) => p.email)
+          .map((p) => ({
+            email: p.email,
+            displayName: `${p.firstName || ''} ${p.lastName || ''}`.trim(),
+          })),
       }),
     }
   );
@@ -87,8 +97,8 @@ export async function createCourseCalendarEvent({
 export async function fetchCourseEvents({ accessToken, calendarId, courseCode }) {
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
-    `q=${encodeURIComponent(courseCode)}&singleEvents=true&orderBy=startTime&maxResults=250`,
-    { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      `q=${encodeURIComponent(courseCode)}&singleEvents=true&orderBy=startTime&maxResults=250`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   if (!res.ok) {
@@ -101,7 +111,7 @@ export async function fetchCourseEvents({ accessToken, calendarId, courseCode })
   const items = data.items || [];
 
   return {
-    active:    items.filter(e => e.summary?.startsWith(courseCode) && e.status !== 'cancelled'),
-    cancelled: items.filter(e => e.summary?.startsWith(courseCode) && e.status === 'cancelled'),
+    active: items.filter((e) => e.summary?.startsWith(courseCode) && e.status !== 'cancelled'),
+    cancelled: items.filter((e) => e.summary?.startsWith(courseCode) && e.status === 'cancelled'),
   };
 }

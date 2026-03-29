@@ -14,8 +14,9 @@ export async function loadAvailability() {
       const res = await apiFetch('/api/get-teacher-availability');
       if (!res.ok) throw new Error();
       availabilityTeachers = await res.json();
-      sel.innerHTML = '<option value="">select teacher…</option>' +
-        availabilityTeachers.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+      sel.innerHTML =
+        '<option value="">select teacher…</option>' +
+        availabilityTeachers.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
     } catch {
       sel.innerHTML = '<option value="">could not load teachers</option>';
     }
@@ -67,34 +68,45 @@ function renderSchedule(data, el) {
     weeks.push(days.slice(i, i + 7));
   }
 
-  el.innerHTML = weeks.map(week => `
+  el.innerHTML = weeks
+    .map(
+      (week) => `
     <div class="avail-week">
-      ${week.map(day => {
-        const isToday = day.date === new Date().toISOString().slice(0, 10);
-        const isWeekend = ['Sat', 'Sun'].includes(day.weekday);
-        return `
+      ${week
+        .map((day) => {
+          const isToday = day.date === new Date().toISOString().slice(0, 10);
+          const isWeekend = ['Sat', 'Sun'].includes(day.weekday);
+          return `
           <div class="avail-day${isToday ? ' today' : ''}${isWeekend ? ' weekend' : ''}">
             <div class="avail-day-header">
               <span class="avail-weekday">${day.weekday}</span>
               <span class="avail-date">${formatDayDate(day.date)}</span>
             </div>
             <div class="avail-slots">
-              ${day.sessions.length
-                ? day.sessions.map(s => `
+              ${
+                day.sessions.length
+                  ? day.sessions
+                      .map(
+                        (s) => `
                     <div class="avail-slot ${s.status}">
                       <span class="avail-time">${formatTime(s.time)}</span>
                       <span class="avail-code">${esc(s.course_code)}</span>
                       <span class="avail-dur">${s.duration_minutes}m</span>
                     </div>
-                  `).join('')
-                : '<span class="avail-free">free</span>'
+                  `
+                      )
+                      .join('')
+                  : '<span class="avail-free">free</span>'
               }
             </div>
           </div>
         `;
-      }).join('')}
+        })
+        .join('')}
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 }
 
 function formatDayDate(dateStr) {

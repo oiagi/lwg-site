@@ -29,7 +29,7 @@ export async function onRequestDelete({ request, env }) {
   // ── Delete from Supabase ─────────────────────────────────────────────
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${id}`, {
-      method:  'DELETE',
+      method: 'DELETE',
       headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
     });
 

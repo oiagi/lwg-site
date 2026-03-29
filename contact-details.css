@@ -9,7 +9,10 @@ body {
   font-weight: 300;
   transition: background-color 0.6s ease;
 }
-body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
+body.nav-active {
+  --page-bg: #b8d9f0;
+  background-color: #b8d9f0;
+}
 
 /* ── Form container ─────────────────────────────────────────── */
 .form-container {
@@ -27,7 +30,9 @@ h1 {
 }
 
 /* ── Field ──────────────────────────────────────────────────── */
-.field { margin-bottom: 1.8rem; }
+.field {
+  margin-bottom: 1.8rem;
+}
 label {
   display: block;
   font-size: 0.72rem;
@@ -38,9 +43,9 @@ label {
 }
 
 /* ── Text inputs ─────────────────────────────────────────────── */
-input[type="text"],
-input[type="email"],
-input[type="tel"] {
+input[type='text'],
+input[type='email'],
+input[type='tel'] {
   width: 100%;
   background: transparent;
   border: none;
@@ -53,9 +58,11 @@ input[type="tel"] {
   outline: none;
   transition: border-color 0.2s;
 }
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus { border-bottom-color: #555; }
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='tel']:focus {
+  border-bottom-color: #555;
+}
 
 /* ── Select ──────────────────────────────────────────────────── */
 select {
@@ -89,9 +96,14 @@ button.submit {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
-button.submit:hover { background: #ffffff; color: #1a1a1a; }
+button.submit:hover {
+  background: #ffffff;
+  color: #1a1a1a;
+}
 
 /* ── Inline errors ───────────────────────────────────────────── */
 .error {
@@ -103,9 +115,25 @@ button.submit:hover { background: #ffffff; color: #1a1a1a; }
 }
 
 /* ── Device-aware styles ─────────────────────────────────────── */
-html[data-device="mobile"] h1   { font-size: 1.5rem; margin-bottom: 1.6rem; }
-html[data-device="mobile"] .form-container { width: 96vw; margin-top: 0.4rem; }
-html[data-device="mobile"] button.submit { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
-html[data-device="tablet"] h1   { font-size: 1.75rem; }
-html[data-device="tablet"] .form-container { width: min(78vw, 500px); }
-html[data-device="tablet"] button.submit { min-height: 48px; }
+html[data-device='mobile'] h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.6rem;
+}
+html[data-device='mobile'] .form-container {
+  width: 96vw;
+  margin-top: 0.4rem;
+}
+html[data-device='mobile'] button.submit {
+  padding: 0.85rem;
+  font-size: 0.78rem;
+  min-height: 48px;
+}
+html[data-device='tablet'] h1 {
+  font-size: 1.75rem;
+}
+html[data-device='tablet'] .form-container {
+  width: min(78vw, 500px);
+}
+html[data-device='tablet'] button.submit {
+  min-height: 48px;
+}

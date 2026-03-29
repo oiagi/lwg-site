@@ -17,17 +17,16 @@ export async function onRequestGet({ request, env }) {
   if (authErr) return authErr;
 
   const url = new URL(request.url);
-  const id  = url.searchParams.get('id');
+  const id = url.searchParams.get('id');
   if (!id) return errorResponse('Missing id parameter', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
     // ── Load company ────────────────────────────────────────────────────
-    const compRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/companies?id=eq.${id}&select=*`,
-      { headers: H }
-    );
+    const compRes = await fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${id}&select=*`, {
+      headers: H,
+    });
     const companies = await compRes.json();
     if (!companies.length) return errorResponse('Company not found', 404);
     const company = companies[0];
@@ -47,22 +46,22 @@ export async function onRequestGet({ request, env }) {
     const students = studentsRes.ok ? await studentsRes.json() : [];
 
     // ── Compute aggregate stats ─────────────────────────────────────────
-    const activeCourses  = courses.filter(c => c.status === 'active');
-    const totalSessions  = courses.reduce((sum, c) => sum + (c.sessions_completed || 0), 0);
-    const totalPlanned   = courses.reduce((sum, c) => sum + (c.sessions_total || 0), 0);
-    const activeStudents = students.filter(s => s.active);
+    const activeCourses = courses.filter((c) => c.status === 'active');
+    const totalSessions = courses.reduce((sum, c) => sum + (c.sessions_completed || 0), 0);
+    const totalPlanned = courses.reduce((sum, c) => sum + (c.sessions_total || 0), 0);
+    const activeStudents = students.filter((s) => s.active);
 
     return jsonResponse({
       ...company,
       courses,
       students,
       stats: {
-        active_courses:     activeCourses.length,
-        total_courses:      courses.length,
-        active_students:    activeStudents.length,
-        total_students:     students.length,
+        active_courses: activeCourses.length,
+        total_courses: courses.length,
+        active_students: activeStudents.length,
+        total_students: students.length,
         sessions_completed: totalSessions,
-        sessions_planned:   totalPlanned,
+        sessions_planned: totalPlanned,
       },
     });
   } catch (err) {

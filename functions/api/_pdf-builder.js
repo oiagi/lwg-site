@@ -18,7 +18,9 @@ export class PdfBuilder {
   }
 
   _addFont(name, baseFont) {
-    const id = this._obj(`<< /Type /Font /Subtype /Type1 /BaseFont /${baseFont} /Encoding /WinAnsiEncoding >>`);
+    const id = this._obj(
+      `<< /Type /Font /Subtype /Type1 /BaseFont /${baseFont} /Encoding /WinAnsiEncoding >>`
+    );
     this.fonts[name] = id;
     return id;
   }
@@ -28,7 +30,8 @@ export class PdfBuilder {
     this._addFont('bold', 'Helvetica-Bold');
   }
 
-  addPage(width = 595.28, height = 841.89) { // A4 in points
+  addPage(width = 595.28, height = 841.89) {
+    // A4 in points
     this.currentPage = { width, height, streams: [] };
     this.pages.push(this.currentPage);
   }
@@ -52,9 +55,7 @@ export class PdfBuilder {
       .replace(/—/g, '-')
       .replace(/–/g, '-');
     const fontKey = font === 'bold' ? 'F2' : 'F1';
-    this.currentPage.streams.push(
-      `BT /${fontKey} ${size} Tf ${x} ${y} Td (${escaped}) Tj ET`
-    );
+    this.currentPage.streams.push(`BT /${fontKey} ${size} Tf ${x} ${y} Td (${escaped}) Tj ET`);
   }
 
   text(x, y, text, { font = 'regular', size = 10 } = {}) {
@@ -62,27 +63,19 @@ export class PdfBuilder {
   }
 
   line(x1, y1, x2, y2, lineWidth = 0.5) {
-    this.currentPage.streams.push(
-      `${lineWidth} w ${x1} ${y1} m ${x2} ${y2} l S`
-    );
+    this.currentPage.streams.push(`${lineWidth} w ${x1} ${y1} m ${x2} ${y2} l S`);
   }
 
   rect(x, y, w, h, lineWidth = 0.75) {
-    this.currentPage.streams.push(
-      `${lineWidth} w ${x} ${y} ${w} ${h} re S`
-    );
+    this.currentPage.streams.push(`${lineWidth} w ${x} ${y} ${w} ${h} re S`);
   }
 
   fillRect(x, y, w, h) {
-    this.currentPage.streams.push(
-      `${x} ${y} ${w} ${h} re f`
-    );
+    this.currentPage.streams.push(`${x} ${y} ${w} ${h} re f`);
   }
 
   dashedLine(x1, y1, x2, y2) {
-    this.currentPage.streams.push(
-      `0.5 w [4 4] 0 d ${x1} ${y1} m ${x2} ${y2} l S [] 0 d`
-    );
+    this.currentPage.streams.push(`0.5 w [4 4] 0 d ${x1} ${y1} m ${x2} ${y2} l S [] 0 d`);
   }
 
   setFillColor(r, g, b) {
@@ -107,19 +100,17 @@ export class PdfBuilder {
         .join(' ');
       const pageId = this._obj(
         `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${page.width} ${page.height}] ` +
-        `/Contents ${streamId} 0 R /Resources << /Font << ${fontDict} >> >> >>`
+          `/Contents ${streamId} 0 R /Resources << /Font << ${fontDict} >> >> >>`
       );
       pageObjIds.push(pageId);
     }
 
     this.objects.push({
       id: pagesId,
-      content: `<< /Type /Pages /Kids [${pageObjIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageObjIds.length} >>`,
+      content: `<< /Type /Pages /Kids [${pageObjIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pageObjIds.length} >>`,
     });
 
-    const catalogId = this._obj(
-      `<< /Type /Catalog /Pages ${pagesId} 0 R >>`
-    );
+    const catalogId = this._obj(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
 
     let output = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
     const objOffsets = {};
@@ -152,8 +143,11 @@ export class PdfBuilder {
 // Parse a one-line Swiss address into structured components
 export function parseAddress(addr) {
   if (!addr) return { street: '', houseNumber: '', postalCode: '', city: '' };
-  const parts = addr.split(',').map(s => s.trim());
-  let street = '', houseNumber = '', postalCode = '', city = '';
+  const parts = addr.split(',').map((s) => s.trim());
+  let street = '',
+    houseNumber = '',
+    postalCode = '',
+    city = '';
 
   if (parts.length >= 2) {
     const streetPart = parts[0];

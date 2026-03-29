@@ -15,9 +15,9 @@ export function errorResponse(message, status = 500) {
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {
-    'Content-Type':  'application/json',
-    'apikey':        key,
-    'Authorization': `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    apikey: key,
+    Authorization: `Bearer ${key}`,
   };
 }
 
@@ -29,8 +29,8 @@ export async function verifySupabaseToken(token, env) {
   try {
     const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'apikey': env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token}`,
+        apikey: env.SUPABASE_ANON_KEY,
       },
     });
     if (!res.ok) return null;
@@ -63,20 +63,29 @@ export function withErrorHandling(handler, operationName) {
       const response = await handler(ctx);
       const durationMs = Date.now() - startTime;
       const url = new URL(ctx.request.url);
-      console.log(JSON.stringify({
-        timestamp: new Date().toISOString(), level: 'info',
-        operation: operationName || url.pathname,
-        method: ctx.request.method, path: url.pathname,
-        status: response.status, durationMs,
-      }));
+      console.log(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'info',
+          operation: operationName || url.pathname,
+          method: ctx.request.method,
+          path: url.pathname,
+          status: response.status,
+          durationMs,
+        })
+      );
       return response;
     } catch (err) {
       const durationMs = Date.now() - startTime;
-      console.error(JSON.stringify({
-        timestamp: new Date().toISOString(), level: 'error',
-        operation: operationName || 'API',
-        message: err?.message || String(err), durationMs,
-      }));
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          operation: operationName || 'API',
+          message: err?.message || String(err),
+          durationMs,
+        })
+      );
       return errorResponse(
         err?.userMessage || 'An unexpected error occurred',
         err?.statusCode || 500
@@ -94,12 +103,14 @@ export function validateOrigin(request, env) {
 
   // Allow configured origins, or default to oiagi.org + localhost
   const allowed = env.ALLOWED_ORIGINS
-    ? env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+    ? env.ALLOWED_ORIGINS.split(',').map((s) => s.trim())
     : ['https://oiagi.org', 'http://localhost'];
 
   if (!source) return errorResponse('Forbidden', 403);
 
-  const isAllowed = allowed.some(a => source === a || source.startsWith(a + '/') || source.startsWith(a + ':'));
+  const isAllowed = allowed.some(
+    (a) => source === a || source.startsWith(a + '/') || source.startsWith(a + ':')
+  );
   if (!isAllowed) return errorResponse('Forbidden', 403);
 
   return null;
@@ -145,16 +156,20 @@ export async function getValidAccessToken(teacher, env) {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      client_id:     env.GOOGLE_CLIENT_ID,
+      client_id: env.GOOGLE_CLIENT_ID,
       client_secret: env.GOOGLE_CLIENT_SECRET,
       refresh_token: teacher.refresh_token,
-      grant_type:    'refresh_token',
+      grant_type: 'refresh_token',
     }),
   });
   if (!res.ok) {
     const body = await res.text();
     let parsed;
-    try { parsed = JSON.parse(body); } catch { parsed = {}; }
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      parsed = {};
+    }
 
     if (parsed.error === 'invalid_grant') {
       // Refresh token revoked or expired — clear stale tokens so the teacher
@@ -177,9 +192,10 @@ export async function getValidAccessToken(teacher, env) {
   }
 
   const tokens = await res.json();
-  const expiry  = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+  const expiry = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
   await fetch(`${env.SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher.id}`, {
-    method: 'PATCH', headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+    method: 'PATCH',
+    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
     body: JSON.stringify({ access_token: tokens.access_token, token_expires_at: expiry }),
   });
   return tokens.access_token;

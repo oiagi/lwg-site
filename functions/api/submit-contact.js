@@ -9,7 +9,7 @@ import { jsonResponse, errorResponse, validateOrigin, checkRateLimit } from './_
 import { validate } from './_validate.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
-const FROM_EMAIL   = 'learning with gioia <hello@oiagi.org>';
+const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function buildContactNotification({ name, email, phone, preferred_contact, message }) {
   return {
@@ -75,11 +75,11 @@ export async function onRequestPost({ request, env }) {
   }
 
   const validationErr = validate(body, {
-    name:              { required: true, type: 'string', maxLength: 200 },
-    email:             { required: true, type: 'string', email: true, maxLength: 320 },
-    phone:             { type: 'string', maxLength: 50 },
+    name: { required: true, type: 'string', maxLength: 200 },
+    email: { required: true, type: 'string', email: true, maxLength: 320 },
+    phone: { type: 'string', maxLength: 50 },
     preferred_contact: { type: 'string', oneOf: ['Email', 'Phone', 'Either'] },
-    message:           { required: true, type: 'string', maxLength: 5000 },
+    message: { required: true, type: 'string', maxLength: 5000 },
   });
   if (validationErr) return errorResponse(validationErr, 400);
 
@@ -92,20 +92,26 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    const notification = buildContactNotification({ name, email, phone, preferred_contact, message });
+    const notification = buildContactNotification({
+      name,
+      email,
+      phone,
+      preferred_contact,
+      message,
+    });
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from:     FROM_EMAIL,
-        to:       [NOTIFY_EMAIL],
+        from: FROM_EMAIL,
+        to: [NOTIFY_EMAIL],
         reply_to: email,
-        subject:  notification.subject,
-        html:     notification.html,
+        subject: notification.subject,
+        html: notification.html,
       }),
     });
 

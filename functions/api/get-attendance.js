@@ -19,10 +19,10 @@ export async function onRequestGet({ request, env }) {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  const url        = new URL(request.url);
-  const sessionId  = url.searchParams.get('session_id');
-  const studentId  = url.searchParams.get('student_id');
-  const courseId   = url.searchParams.get('course_id');
+  const url = new URL(request.url);
+  const sessionId = url.searchParams.get('session_id');
+  const studentId = url.searchParams.get('student_id');
+  const courseId = url.searchParams.get('course_id');
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
@@ -56,16 +56,15 @@ export async function onRequestGet({ request, env }) {
         { headers: H }
       );
       const sessions = sessRes.ok ? await sessRes.json() : [];
-      const sessionIds = sessions.map(s => s.id);
+      const sessionIds = sessions.map((s) => s.id);
 
       if (!sessionIds.length) return jsonResponse([]);
 
       // Load attendance for all sessions
-      const filter = sessionIds.map(id => `session_id.eq.${id}`).join(',');
-      const attRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/attendance?or=(${filter})&select=*`,
-        { headers: H }
-      );
+      const filter = sessionIds.map((id) => `session_id.eq.${id}`).join(',');
+      const attRes = await fetch(`${SUPABASE_URL}/rest/v1/attendance?or=(${filter})&select=*`, {
+        headers: H,
+      });
       const attendance = attRes.ok ? await attRes.json() : [];
 
       // Group by session
@@ -93,8 +92,8 @@ export async function onRequestGet({ request, env }) {
 async function enrichWithStudentNames(records, env) {
   if (!records.length) return records;
 
-  const studentIds = [...new Set(records.map(r => r.student_id))];
-  const filter     = studentIds.map(id => `id.eq.${id}`).join(',');
+  const studentIds = [...new Set(records.map((r) => r.student_id))];
+  const filter = studentIds.map((id) => `id.eq.${id}`).join(',');
 
   const res = await fetch(
     `${env.SUPABASE_URL}/rest/v1/students?or=(${filter})&select=id,first_name,last_name,email`,
@@ -107,5 +106,5 @@ async function enrichWithStudentNames(records, env) {
     nameMap[s.id] = { first_name: s.first_name, last_name: s.last_name, email: s.email };
   }
 
-  return records.map(r => ({ ...r, student: nameMap[r.student_id] || null }));
+  return records.map((r) => ({ ...r, student: nameMap[r.student_id] || null }));
 }

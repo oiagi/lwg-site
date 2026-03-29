@@ -14,11 +14,11 @@ const VALIDATORS = {
   },
   type(value, expected) {
     if (value === undefined || value === null) return true; // checked by required
-    if (expected === 'string')  return typeof value === 'string';
-    if (expected === 'number')  return typeof value === 'number' && !Number.isNaN(value);
+    if (expected === 'string') return typeof value === 'string';
+    if (expected === 'number') return typeof value === 'number' && !Number.isNaN(value);
     if (expected === 'boolean') return typeof value === 'boolean';
-    if (expected === 'object')  return typeof value === 'object' && !Array.isArray(value);
-    if (expected === 'array')   return Array.isArray(value);
+    if (expected === 'object') return typeof value === 'object' && !Array.isArray(value);
+    if (expected === 'array') return Array.isArray(value);
     return true;
   },
   maxLength(value, max) {

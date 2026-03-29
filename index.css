@@ -10,7 +10,10 @@ body {
   padding: 5rem 1.5rem 4rem;
   gap: 0;
 }
-body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
+body.nav-active {
+  --page-bg: #d6eaf8;
+  background-color: #d6eaf8;
+}
 
 /* ── Logo ────────────────────────────────────────────────────── */
 .logo-wrap {
@@ -26,7 +29,9 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
   opacity: 0.92;
   transition: opacity 0.2s;
 }
-.logo-wrap:hover .logo-img { opacity: 1; }
+.logo-wrap:hover .logo-img {
+  opacity: 1;
+}
 
 /* ── Blurb ───────────────────────────────────────────────────── */
 .blurb {
@@ -50,6 +55,13 @@ body.nav-active { --page-bg: #d6eaf8; background-color: #d6eaf8; }
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-html[data-device="mobile"] body  { padding: 4.5rem 1rem 3rem; }
-html[data-device="mobile"] .logo-img { width: min(88vw, 340px); }
-html[data-device="mobile"] .blurb p  { font-size: 0.95rem; line-height: 1.9; }
+html[data-device='mobile'] body {
+  padding: 4.5rem 1rem 3rem;
+}
+html[data-device='mobile'] .logo-img {
+  width: min(88vw, 340px);
+}
+html[data-device='mobile'] .blurb p {
+  font-size: 0.95rem;
+  line-height: 1.9;
+}

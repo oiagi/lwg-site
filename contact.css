@@ -1,5 +1,5 @@
 body {
-  --page-bg: #d6eaf8;           /* used by nav gradient to match page bg */
+  --page-bg: #d6eaf8; /* used by nav gradient to match page bg */
   background-color: #d6eaf8;
   display: flex;
   flex-direction: column;
@@ -10,7 +10,10 @@ body {
   transition: background-color 0.6s ease;
 }
 /* Background turns slightly deeper blue when nav is open */
-body.nav-active { --page-bg: #b8d9f0; background-color: #b8d9f0; }
+body.nav-active {
+  --page-bg: #b8d9f0;
+  background-color: #b8d9f0;
+}
 
 /* ── Form container ─────────────────────────────────────────── */
 .form-container {
@@ -30,7 +33,9 @@ h1 {
 }
 
 /* ── Form field wrapper ─────────────────────────────────────── */
-.field { margin-bottom: 1.4rem; }
+.field {
+  margin-bottom: 1.4rem;
+}
 
 /* ── Field labels ───────────────────────────────────────────── */
 label {
@@ -43,7 +48,9 @@ label {
 }
 
 /* ── Text inputs and textarea ───────────────────────────────── */
-input, textarea, select {
+input,
+textarea,
+select {
   width: 100%;
   background: transparent;
   border: none;
@@ -56,11 +63,18 @@ input, textarea, select {
   outline: none;
   transition: border-color 0.2s;
 }
-textarea { resize: none; height: 80px; }
-select { cursor: pointer; appearance: none; -webkit-appearance: none; }
+textarea {
+  resize: none;
+  height: 80px;
+}
+select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
 
 /* ── Submit button ──────────────────────────────────────────── */
-button[type="submit"] {
+button[type='submit'] {
   margin-top: 2rem;
   display: block;
   width: 100%;
@@ -73,19 +87,49 @@ button[type="submit"] {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
-button[type="submit"]:hover { background: #ffffff; color: #1a1a1a; }
+button[type='submit']:hover {
+  background: #ffffff;
+  color: #1a1a1a;
+}
 
 @media (max-width: 500px) {
-  h1 { font-size: 1.6rem; margin-bottom: 1.8rem; }
-  input, textarea, select { font-size: 0.9rem; }
-  button[type="submit"] { padding: 0.8rem; font-size: 0.75rem; }
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 1.8rem;
+  }
+  input,
+  textarea,
+  select {
+    font-size: 0.9rem;
+  }
+  button[type='submit'] {
+    padding: 0.8rem;
+    font-size: 0.75rem;
+  }
 }
 
-html[data-device="mobile"] h1        { font-size: 1.55rem; margin-bottom: 1.6rem; }
-html[data-device="mobile"] .form-container { width: 94vw; }
-html[data-device="mobile"] button[type="submit"] { padding: 0.85rem; font-size: 0.78rem; min-height: 48px; }
-html[data-device="tablet"] h1        { font-size: 1.8rem; }
-html[data-device="tablet"] .form-container { width: min(80vw, 460px); }
-html[data-device="tablet"] button[type="submit"] { min-height: 48px; }
+html[data-device='mobile'] h1 {
+  font-size: 1.55rem;
+  margin-bottom: 1.6rem;
+}
+html[data-device='mobile'] .form-container {
+  width: 94vw;
+}
+html[data-device='mobile'] button[type='submit'] {
+  padding: 0.85rem;
+  font-size: 0.78rem;
+  min-height: 48px;
+}
+html[data-device='tablet'] h1 {
+  font-size: 1.8rem;
+}
+html[data-device='tablet'] .form-container {
+  width: min(80vw, 460px);
+}
+html[data-device='tablet'] button[type='submit'] {
+  min-height: 48px;
+}

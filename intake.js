@@ -11,7 +11,7 @@ import { isValidEmail, showFieldError } from './form-validate.js';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
-const formState    = document.getElementById('form-state');
+const formState = document.getElementById('form-state');
 const loadingState = document.getElementById('loading-state');
 const successState = document.getElementById('success-state');
 const invalidState = document.getElementById('invalid-state');
@@ -36,33 +36,33 @@ const invalidState = document.getElementById('invalid-state');
   }
 
   loadingState.style.display = 'none';
-  formState.style.display    = 'block';
+  formState.style.display = 'block';
 })();
 
 /* ── Pre-fill form from existing student data ────────────────────── */
 function prefill(s) {
-  if (s.first_name)        document.getElementById('in-first-name').value    = s.first_name;
-  if (s.last_name)         document.getElementById('in-last-name').value     = s.last_name;
-  if (s.email)             document.getElementById('in-email').value         = s.email;
-  if (s.phone)             document.getElementById('in-phone').value         = s.phone;
-  if (s.date_of_birth)     document.getElementById('in-dob').value           = s.date_of_birth;
-  if (s.nationality)       document.getElementById('in-nationality').value   = s.nationality;
-  if (s.postcode)          document.getElementById('in-postcode').value      = s.postcode;
-  if (s.emergency_contact) document.getElementById('in-emergency').value     = s.emergency_contact;
-  if (s.native_language)   document.getElementById('in-native-lang').value   = s.native_language;
-  if (s.target_language)   document.getElementById('in-target-lang').value   = s.target_language;
-  if (s.current_level)     document.getElementById('in-level').value         = s.current_level;
-  if (s.learning_goals)    document.getElementById('in-goals').value         = s.learning_goals;
-  if (s.desired_start_date) document.getElementById('in-start-date').value   = s.desired_start_date;
-  if (s.billing_name)      document.getElementById('in-billing-name').value  = s.billing_name;
-  if (s.billing_address)   document.getElementById('in-billing-address').value = s.billing_address;
-  if (s.billing_email)     document.getElementById('in-billing-email').value = s.billing_email;
-  if (s.referral_source)   document.getElementById('in-referral').value      = s.referral_source;
+  if (s.first_name) document.getElementById('in-first-name').value = s.first_name;
+  if (s.last_name) document.getElementById('in-last-name').value = s.last_name;
+  if (s.email) document.getElementById('in-email').value = s.email;
+  if (s.phone) document.getElementById('in-phone').value = s.phone;
+  if (s.date_of_birth) document.getElementById('in-dob').value = s.date_of_birth;
+  if (s.nationality) document.getElementById('in-nationality').value = s.nationality;
+  if (s.postcode) document.getElementById('in-postcode').value = s.postcode;
+  if (s.emergency_contact) document.getElementById('in-emergency').value = s.emergency_contact;
+  if (s.native_language) document.getElementById('in-native-lang').value = s.native_language;
+  if (s.target_language) document.getElementById('in-target-lang').value = s.target_language;
+  if (s.current_level) document.getElementById('in-level').value = s.current_level;
+  if (s.learning_goals) document.getElementById('in-goals').value = s.learning_goals;
+  if (s.desired_start_date) document.getElementById('in-start-date').value = s.desired_start_date;
+  if (s.billing_name) document.getElementById('in-billing-name').value = s.billing_name;
+  if (s.billing_address) document.getElementById('in-billing-address').value = s.billing_address;
+  if (s.billing_email) document.getElementById('in-billing-email').value = s.billing_email;
+  if (s.referral_source) document.getElementById('in-referral').value = s.referral_source;
 
   // Radio buttons
-  if (s.course_type)   selectRadio('course-type', s.course_type);
+  if (s.course_type) selectRadio('course-type', s.course_type);
   if (s.course_format) selectRadio('course-format', s.course_format);
-  if (s.location)      selectRadio('location', s.location);
+  if (s.location) selectRadio('location', s.location);
   if (s.payment_method) selectRadio('payment-method', s.payment_method);
 
   // Show location if in-person pre-selected
@@ -88,7 +88,8 @@ document.getElementById('in-course-format').addEventListener('click', (e) => {
   // Small delay to let the radio update
   setTimeout(() => {
     const format = getRadio('course-format');
-    document.getElementById('location-field').style.display = format === 'in-person' ? 'block' : 'none';
+    document.getElementById('location-field').style.display =
+      format === 'in-person' ? 'block' : 'none';
   }, 10);
 });
 
@@ -97,14 +98,18 @@ function validate() {
   let ok = true;
 
   const firstName = document.getElementById('in-first-name').value.trim();
-  const lastName  = document.getElementById('in-last-name').value.trim();
-  const email     = document.getElementById('in-email').value.trim();
-  const consent   = document.getElementById('in-consent').checked;
+  const lastName = document.getElementById('in-last-name').value.trim();
+  const email = document.getElementById('in-email').value.trim();
+  const consent = document.getElementById('in-consent').checked;
 
-  showFieldError('err-first-name', !firstName); if (!firstName) ok = false;
-  showFieldError('err-last-name',  !lastName);  if (!lastName)  ok = false;
-  showFieldError('err-email',      !email || !isValidEmail(email)); if (!email || !isValidEmail(email)) ok = false;
-  showFieldError('err-consent',    !consent);   if (!consent)   ok = false;
+  showFieldError('err-first-name', !firstName);
+  if (!firstName) ok = false;
+  showFieldError('err-last-name', !lastName);
+  if (!lastName) ok = false;
+  showFieldError('err-email', !email || !isValidEmail(email));
+  if (!email || !isValidEmail(email)) ok = false;
+  showFieldError('err-consent', !consent);
+  if (!consent) ok = false;
 
   return ok;
 }
@@ -120,29 +125,29 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   const body = {
-    token:             token || undefined,
-    first_name:        document.getElementById('in-first-name').value.trim(),
-    last_name:         document.getElementById('in-last-name').value.trim(),
-    email:             document.getElementById('in-email').value.trim(),
-    phone:             document.getElementById('in-phone').value.trim() || null,
-    date_of_birth:     document.getElementById('in-dob').value || null,
-    nationality:       document.getElementById('in-nationality').value.trim() || null,
-    postcode:          document.getElementById('in-postcode').value.trim() || null,
+    token: token || undefined,
+    first_name: document.getElementById('in-first-name').value.trim(),
+    last_name: document.getElementById('in-last-name').value.trim(),
+    email: document.getElementById('in-email').value.trim(),
+    phone: document.getElementById('in-phone').value.trim() || null,
+    date_of_birth: document.getElementById('in-dob').value || null,
+    nationality: document.getElementById('in-nationality').value.trim() || null,
+    postcode: document.getElementById('in-postcode').value.trim() || null,
     emergency_contact: document.getElementById('in-emergency').value.trim() || null,
-    course_type:       getRadio('course-type'),
-    course_format:     getRadio('course-format'),
-    location:          getRadio('location'),
-    target_language:   document.getElementById('in-target-lang').value || null,
-    native_language:   document.getElementById('in-native-lang').value.trim() || null,
-    current_level:     document.getElementById('in-level').value || null,
-    learning_goals:    document.getElementById('in-goals').value.trim() || null,
-    desired_start_date:document.getElementById('in-start-date').value || null,
-    billing_name:      document.getElementById('in-billing-name').value.trim() || null,
-    billing_address:   document.getElementById('in-billing-address').value.trim() || null,
-    billing_email:     document.getElementById('in-billing-email').value.trim() || null,
-    payment_method:    getRadio('payment-method'),
-    referral_source:   document.getElementById('in-referral').value || null,
-    consent_given:     true,
+    course_type: getRadio('course-type'),
+    course_format: getRadio('course-format'),
+    location: getRadio('location'),
+    target_language: document.getElementById('in-target-lang').value || null,
+    native_language: document.getElementById('in-native-lang').value.trim() || null,
+    current_level: document.getElementById('in-level').value || null,
+    learning_goals: document.getElementById('in-goals').value.trim() || null,
+    desired_start_date: document.getElementById('in-start-date').value || null,
+    billing_name: document.getElementById('in-billing-name').value.trim() || null,
+    billing_address: document.getElementById('in-billing-address').value.trim() || null,
+    billing_email: document.getElementById('in-billing-email').value.trim() || null,
+    payment_method: getRadio('payment-method'),
+    referral_source: document.getElementById('in-referral').value || null,
+    consent_given: true,
   };
 
   try {
@@ -154,7 +159,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
 
     if (!res.ok) throw new Error();
 
-    formState.style.display    = 'none';
+    formState.style.display = 'none';
     successState.style.display = 'block';
   } catch {
     errEl.style.display = 'block';
