@@ -7,9 +7,15 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+} from './_utils.js';
 
-export async function onRequestPatch({ request, env }) {
+export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -55,4 +61,4 @@ export async function onRequestPatch({ request, env }) {
     console.error('Error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'update-invoice');

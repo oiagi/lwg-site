@@ -12,9 +12,9 @@
 //   GOOGLE_CLIENT_ID — OAuth client ID from Google Cloud Console
 //   SUPABASE_URL     — Supabase project URL (for JWT verification)
 
-import { verifySupabaseToken } from './_utils.js';
+import { verifySupabaseToken, withErrorHandling } from './_utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
 
   const url = new URL(request.url);
@@ -48,4 +48,4 @@ export async function onRequestGet({ request, env }) {
   });
 
   return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`, 302);
-}
+}, 'auth-login');

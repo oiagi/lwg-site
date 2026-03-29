@@ -29,6 +29,7 @@ import {
   getValidAccessToken,
   jsonResponse,
   errorResponse,
+  withErrorHandling,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
 
@@ -91,7 +92,7 @@ async function findOrCreateStudent(p, source, env) {
 
 // ── Main handler ─────────────────────────────────────────────────────
 
-export async function onRequestPost({ request, env }) {
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -299,4 +300,4 @@ export async function onRequestPost({ request, env }) {
     event_id: calendarEventId,
     student_ids: studentIds,
   });
-}
+}, 'confirm-booking');

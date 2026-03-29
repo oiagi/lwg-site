@@ -7,9 +7,15 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+} from './_utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -36,7 +42,7 @@ export async function onRequestGet({ request, env }) {
     console.error('Report error:', err);
     return errorResponse('Could not generate report');
   }
-}
+}, 'get-report');
 
 // ── Overview: key dashboard metrics ──────────────────────────────────
 async function buildOverview(base, H) {

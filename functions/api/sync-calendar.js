@@ -18,10 +18,11 @@ import {
   getValidAccessToken,
   jsonResponse,
   errorResponse,
+  withErrorHandling,
 } from './_utils.js';
 import { fetchCourseEvents } from './_calendar.js';
 
-export async function onRequestPost({ request, env }) {
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -146,4 +147,4 @@ export async function onRequestPost({ request, env }) {
     completed: completedCount,
     scheduled: activeEvents.length - completedCount,
   });
-}
+}, 'sync-calendar');

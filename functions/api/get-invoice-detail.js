@@ -6,10 +6,16 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+} from './_utils.js';
 import { formatQrReference } from './_qr-utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -78,4 +84,4 @@ export async function onRequestGet({ request, env }) {
     console.error('Error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'get-invoice-detail');

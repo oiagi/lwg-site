@@ -13,6 +13,7 @@ import {
   errorResponse,
   validateOrigin,
   checkRateLimit,
+  withErrorHandling,
 } from './_utils.js';
 import { validate } from './_validate.js';
 
@@ -205,7 +206,7 @@ function buildNotificationEmail(booking, contact, enquiryId) {
 }
 
 // ── Main handler (Cloudflare Pages Functions format) ─────────────────────
-export async function onRequestPost({ request, env }) {
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const originErr = validateOrigin(request, env);
   if (originErr) return originErr;
 
@@ -304,4 +305,4 @@ export async function onRequestPost({ request, env }) {
   ]);
 
   return jsonResponse({ success: true, id: enquiryId });
-}
+}, 'submit-enquiry');

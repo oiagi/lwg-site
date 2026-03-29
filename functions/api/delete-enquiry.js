@@ -8,9 +8,15 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+} from './_utils.js';
 
-export async function onRequestDelete({ request, env }) {
+export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -43,4 +49,4 @@ export async function onRequestDelete({ request, env }) {
     console.error('Fetch error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'delete-enquiry');

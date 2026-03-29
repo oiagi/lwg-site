@@ -1,7 +1,9 @@
 // Public endpoint: returns Supabase config needed by the frontend.
 // Both values are designed to be public (anon key enforces RLS, not secrecy).
 
-export async function onRequestGet({ env }) {
+import { withErrorHandling } from './_utils.js';
+
+export const onRequestGet = withErrorHandling(async ({ env }) => {
   return new Response(
     JSON.stringify({
       supabaseUrl: env.SUPABASE_URL,
@@ -11,4 +13,4 @@ export async function onRequestGet({ env }) {
       headers: { 'Content-Type': 'application/json' },
     }
   );
-}
+}, 'config');

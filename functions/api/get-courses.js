@@ -4,9 +4,15 @@
 // Returns courses with sessions and enrolled students.
 // Uses batch queries instead of per-course fetching to avoid N+1.
 
-import { supabaseHeaders, requireAdminAuth, jsonResponse, errorResponse } from './_utils.js';
+import {
+  supabaseHeaders,
+  requireAdminAuth,
+  jsonResponse,
+  errorResponse,
+  withErrorHandling,
+} from './_utils.js';
 
-export async function onRequestGet({ request, env }) {
+export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -86,4 +92,4 @@ export async function onRequestGet({ request, env }) {
     console.error('get-courses error:', err);
     return errorResponse('Connection error');
   }
-}
+}, 'get-courses');

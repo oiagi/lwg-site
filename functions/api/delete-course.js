@@ -19,9 +19,10 @@ import {
   getValidAccessToken,
   jsonResponse,
   errorResponse,
+  withErrorHandling,
 } from './_utils.js';
 
-export async function onRequestDelete({ request, env }) {
+export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
   const authErr = await requireAdminAuth(request, env);
@@ -108,4 +109,4 @@ export async function onRequestDelete({ request, env }) {
   if (!deleteRes.ok) return errorResponse('Could not delete course');
 
   return jsonResponse({ success: true });
-}
+}, 'delete-course');
