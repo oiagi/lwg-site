@@ -35,9 +35,10 @@ export async function onRequestGet({ request, env }) {
   // Scopes requested:
   //   calendar.events   — create and manage events
   //   calendar.readonly — read calendar metadata
+  const siteUrl = env.SITE_URL || new URL(request.url).origin;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: 'https://oiagi.org/api/auth-callback',
+    redirect_uri: `${siteUrl}/api/auth-callback`,
     response_type: 'code',
     scope:
       'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',

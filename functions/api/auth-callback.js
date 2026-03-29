@@ -21,14 +21,15 @@ export async function onRequestGet({ request, env }) {
   const code = url.searchParams.get('code');
   const teacher_id = url.searchParams.get('state');
   const error = url.searchParams.get('error');
+  const siteUrl = env.SITE_URL || url.origin;
 
   // ── Handle user denying consent ──────────────────────────────────────
   if (error) {
-    return Response.redirect('https://oiagi.org/admin.html?auth=denied', 302);
+    return Response.redirect(`${siteUrl}/admin.html?auth=denied`, 302);
   }
 
   if (!code || !teacher_id) {
-    return Response.redirect('https://oiagi.org/admin.html?auth=error', 302);
+    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
   }
 
   // ── Exchange authorisation code for tokens ───────────────────────────
@@ -41,20 +42,20 @@ export async function onRequestGet({ request, env }) {
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: 'https://oiagi.org/api/auth-callback',
+        redirect_uri: `${siteUrl}/api/auth-callback`,
         grant_type: 'authorization_code',
       }),
     });
 
     if (!tokenRes.ok) {
       console.error('Token exchange failed:', await tokenRes.text());
-      return Response.redirect('https://oiagi.org/admin.html?auth=error', 302);
+      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
     }
 
     tokens = await tokenRes.json();
   } catch (err) {
     console.error('Token exchange error:', err);
-    return Response.redirect('https://oiagi.org/admin.html?auth=error', 302);
+    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
   }
 
   // ── Store tokens in Supabase against the teacher record ─────────────
@@ -83,13 +84,13 @@ export async function onRequestGet({ request, env }) {
 
     if (!res.ok) {
       console.error('Supabase token store failed:', await res.text());
-      return Response.redirect('https://oiagi.org/admin.html?auth=error', 302);
+      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
     }
   } catch (err) {
     console.error('Supabase error:', err);
-    return Response.redirect('https://oiagi.org/admin.html?auth=error', 302);
+    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
   }
 
   // ── Success — redirect back to admin dashboard ───────────────────────
-  return Response.redirect('https://oiagi.org/admin.html?auth=success', 302);
+  return Response.redirect(`${siteUrl}/admin.html?auth=success`, 302);
 }

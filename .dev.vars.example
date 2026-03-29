@@ -10,6 +10,11 @@ RESEND_API_KEY=re_your-resend-key
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
 
+# ── Site URL (used for OAuth redirects) ──────────────────────────
+# Set to the base URL where the site is hosted. Falls back to
+# the request origin if omitted (safe for local dev).
+# SITE_URL=http://localhost:8788
+
 # ── CORS ─────────────────────────────────────────────────────────
 # Comma-separated list of allowed origins (defaults to https://oiagi.org,http://localhost)
 # ALLOWED_ORIGINS=https://oiagi.org,http://localhost:8788
