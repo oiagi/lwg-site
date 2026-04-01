@@ -90,3 +90,33 @@ At minimum, the files above are coupled to the `active` field and need changes f
 - The architecture objective is correct.
 - The 10-file backend plan is a good core, but **not sufficient** for a non-breaking rollout.
 - The largest hidden risk is the `students.active` removal ripple into intake/company/billing/student admin paths.
+
+## Follow-up validation: claims E–H
+
+### E) `active` is still the student status model — **accurate**
+- `get-students` still reads query param `active` and applies `active=eq.true|false` filters.
+- The selected columns still include `active`.
+- `save-student` still whitelists `active` and defaults new rows to `active=true`.
+
+### F) `confirm-booking` dedupe behavior is email-only — **accurate**
+- `findOrCreateStudent` only checks existing students by exact email match.
+- If participant email is missing/falsy, lookup is skipped and a new student row is inserted.
+- Enrolment dedupe (`Prefer: resolution=ignore-duplicates`) only affects `enrolments` inserts, not student creation.
+
+### G) Partial-failure behavior is non-atomic — **accurate, with an extra severity gap**
+- In `confirm-booking`, course creation failure returns an error, but session sync, student/enrolment linking, and enquiry patch failures are all swallowed (log-only) and the endpoint still returns success.
+- In `create-invoice`, invoice insert failure hard-fails, but invoice-line insert failure only logs and still returns `200` with persisted invoice and empty `lines`.
+- **Additional gap:** session inserts in `confirm-booking` are not checked for `res.ok`; even per-session DB write failures can pass silently inside the sync loop.
+
+### H) Enquiry/student linkage claim is understated — **partially accurate**
+- Correct: multiple participants can map to multiple students through per-participant enrolment creation.
+- More important gap: `enquiries` currently has no `student_id` linkage at all; the current flow writes denormalized lead fields on enquiry creation and later patches only `status` and `course_id`.
+
+## Additional gaps (beyond E–H wording)
+
+- **`findOrCreateStudent` no `res.ok` on email lookup — severity understated**: The description "ambiguous runtime failures" is wrong. Supabase errors return a JSON object, not an array. `existing.length` resolves to `undefined` (falsy), causing silent fallthrough to student INSERT. A DB error during lookup deterministically produces a **duplicate student row**, not just an ambiguous failure.
+- Student dedupe is case/normalization fragile (`email=eq.<raw encoded input>`), with no canonicalization step (`trim/lowercase`) before lookup.
+- No transactional boundary exists between calendar creation and DB writes in `confirm-booking`. The gap is one-directional: calendar event creation failure is caught and returned as an error; but if the calendar event is created successfully and any subsequent DB write fails, the calendar event persists with no linked course record.
+- **`create-invoice` — five unchecked fetches**: Lines fetching company, student, sessions, courses, and existing invoice numbers all call `.json()` without checking `res.ok` first. A Supabase 5xx on any of these either throws (outer catch returns "Connection error", masking the real error) or parses an error object causing misleading 404 responses downstream. None of these are mentioned in claims E–H.
+- **`create-invoice` — invoice number TOCTOU race**: `nextInvoiceNumber()` reads existing invoice numbers and computes the next value in application code. Two concurrent requests will read identical state and generate the same invoice number. There is no DB-level sequence or uniqueness enforcement visible in this endpoint.
+- **`create-invoice` — no double-invoicing guard**: `session_ids` are not validated against existing `invoice_lines` rows. The same session can be invoiced multiple times with no error.
