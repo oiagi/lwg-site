@@ -16,6 +16,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 import { validate } from './_validate.js';
+import { findOrCreateStudent } from './_student-utils.js';
 
 const NOTIFY_EMAIL = 'info@oiagi.org';
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -274,7 +275,29 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Database connection error');
   }
 
-  // ── 2. Send emails via Resend ──────────────────────────────────────────
+  // ── 2. Link student to enquiry (best-effort, non-blocking) ───────────
+  // Enquiry is already persisted above. If student find/create or the
+  // patch fails, we log and continue — the enquiry is not lost.
+  if (enquiryId !== 'unknown') {
+    try {
+      const studentId = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        first_name: lead.firstName || null,
+        last_name: lead.lastName || null,
+        email: lead.email || null,
+        phone: lead.phone || null,
+        source: 'website',
+      });
+      await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiryId}`, {
+        method: 'PATCH',
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+        body: JSON.stringify({ student_id: studentId }),
+      });
+    } catch (err) {
+      console.error('Student link error (non-fatal):', err);
+    }
+  }
+
+  // ── 3. Send emails via Resend ──────────────────────────────────────────
   // Both emails are sent concurrently. Email failure does not fail the
   // request — data is already safely stored in Supabase.
   const customerEmail = buildCustomerEmail(booking, contact);

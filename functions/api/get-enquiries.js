@@ -26,7 +26,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const status = url.searchParams.get('status');
   const limit = url.searchParams.get('limit') || '100';
 
-  let supabaseUrl = `${SUPABASE_URL}/rest/v1/enquiries?order=created_at.desc&limit=${limit}`;
+  let supabaseUrl = `${SUPABASE_URL}/rest/v1/enquiries?order=created_at.desc&limit=${limit}&select=*,student:students(id,first_name,last_name,email)`;
   if (status && status !== 'all') supabaseUrl += `&status=eq.${status}`;
 
   // ── Fetch from Supabase ──────────────────────────────────────────────

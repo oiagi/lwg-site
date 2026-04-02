@@ -34,9 +34,16 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('First name and last name are required', 400);
   }
 
+  // ── Status-wins precedence ───────────────────────────────────────────
+  // If only `active` (boolean) was sent by an old caller, derive status from it.
+  // If `status` was sent, it wins. Either way, we dual-write both fields.
+  if (body.status === undefined && body.active !== undefined) {
+    body.status = body.active ? 'active' : 'inactive';
+  }
+
   const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };
 
-  // Fields allowed in the payload
+  // Fields allowed in the payload (active is excluded — derived from status below)
   const fields = [
     'first_name',
     'last_name',
@@ -46,7 +53,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'current_level',
     'progress_notes',
     'company_id',
-    'active',
+    'status',
     'source',
     'billing_name',
     'billing_address',
@@ -74,6 +81,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     if (body[f] !== undefined) data[f] = body[f];
   }
 
+  // Dual-write: always keep active in sync with status during migration
+  if (data.status !== undefined) {
+    data.active = data.status === 'active';
+  }
+
   try {
     let res;
     if (body.id) {
@@ -88,7 +100,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       // Generate access_token for the student portal / intake form link
       data.access_token = crypto.randomUUID();
       if (!data.source) data.source = 'manual';
-      if (data.active === undefined) data.active = true;
+      if (data.status === undefined) {
+        data.status = 'active';
+        data.active = true;
+      }
 
       res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
         method: 'POST',

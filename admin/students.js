@@ -2,7 +2,7 @@
 import { apiFetch } from './api.js';
 import { esc } from './helpers.js';
 
-let currentStudentFilter = 'true';
+let currentStudentFilter = 'active';
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -16,13 +16,13 @@ export function filterStudents(active) {
   loadStudents(active);
 }
 
-export async function loadStudents(active = 'true') {
+export async function loadStudents(status = 'active') {
   const list = document.getElementById('student-list');
   if (!list.querySelector('.student-row')) {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
   try {
-    const qs = active !== 'all' ? `?active=${active}` : '';
+    const qs = status !== 'all' ? `?status=${status}` : '';
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
@@ -189,7 +189,7 @@ export function openStudentModal(existingData) {
     if (el) el.value = '';
   });
 
-  document.getElementById('sm-active').checked = true;
+  document.getElementById('sm-status').value = 'active';
   document.getElementById('student-modal-title').textContent = 'new student';
   const btn = document.getElementById('sm-submit');
   btn.textContent = 'save student';
@@ -226,7 +226,10 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-referral').value = existingData.referral_source || '';
     document.getElementById('sm-company').value = existingData.company_id || '';
     document.getElementById('sm-notes').value = existingData.progress_notes || '';
-    document.getElementById('sm-active').checked = existingData.active !== false;
+    // Resolve status from status field, falling back to active boolean for old records
+    const resolvedStatus =
+      existingData.status || (existingData.active !== false ? 'active' : 'inactive');
+    document.getElementById('sm-status').value = resolvedStatus;
   }
 
   loadCompanyOptions();
@@ -313,7 +316,7 @@ export async function submitStudent() {
     referral_source: document.getElementById('sm-referral').value.trim() || null,
     company_id: document.getElementById('sm-company').value || null,
     progress_notes: document.getElementById('sm-notes').value.trim() || null,
-    active: document.getElementById('sm-active').checked,
+    status: document.getElementById('sm-status').value,
   };
   const id = document.getElementById('sm-id').value;
   if (id) body.id = id;

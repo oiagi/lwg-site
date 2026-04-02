@@ -128,6 +128,20 @@ export async function openInvoiceDetail(invoiceId) {
 
       ${inv.notes ? `<p style="font-size:0.78rem;color:#888;margin-top:1rem;">${esc(inv.notes)}</p>` : ''}
 
+      ${
+        inv.linked_students && inv.linked_students.length
+          ? `<div style="margin-top:1rem;">
+          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">students</p>
+          ${inv.linked_students
+            .map(
+              (s) =>
+                `<span style="display:inline-block;font-size:0.78rem;color:#555;margin-right:1rem;">${esc(s.first_name)} ${esc(s.last_name)}</span>`
+            )
+            .join('')}
+        </div>`
+          : ''
+      }
+
       <div style="display:flex;gap:0.5rem;margin-top:1.4rem;flex-wrap:wrap;">
         <button class="save-btn" data-action="downloadInvoicePdf" data-args="${inv.id},${inv.invoice_number}">download PDF</button>
         ${inv.status === 'draft' ? `<button class="action-btn" data-action="updateInvoiceStatus" data-args="${inv.id},sent">mark sent</button>` : ''}
@@ -243,7 +257,7 @@ export async function openCreateInvoiceModal() {
 
   // Load students
   try {
-    const res = await apiFetch('/api/get-students?active=true');
+    const res = await apiFetch('/api/get-students?status=active');
     if (res.ok) {
       invoiceStudentCache = await res.json();
       studentSel.innerHTML =

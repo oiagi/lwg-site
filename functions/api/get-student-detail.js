@@ -55,21 +55,38 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       courses = courseRes.ok ? await courseRes.json() : [];
     }
 
-    // ── Load company name if applicable ─────────────────────────────────
-    let company_name = null;
-    if (student.company_id) {
-      const compRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/companies?id=eq.${student.company_id}&select=id,name`,
+    // ── Load company name, enquiries, and invoices in parallel ──────────
+    const [compRes, enquiriesRes, invoicesRes] = await Promise.all([
+      student.company_id
+        ? fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${student.company_id}&select=id,name`, {
+            headers: H,
+          })
+        : Promise.resolve(null),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at`,
         { headers: H }
-      );
+      ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date`,
+        { headers: H }
+      ),
+    ]);
+
+    let company_name = null;
+    if (compRes) {
       const comps = compRes.ok ? await compRes.json() : [];
       if (comps.length) company_name = comps[0].name;
     }
+
+    const enquiries = enquiriesRes.ok ? await enquiriesRes.json() : [];
+    const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
 
     return jsonResponse({
       ...student,
       company_name,
       courses,
+      enquiries,
+      invoices,
     });
   } catch (err) {
     console.error('Error:', err);

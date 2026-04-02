@@ -1,6 +1,7 @@
 // functions/update-enquiry.js
 // PATCH /api/update-enquiry
-// Body: { id, status?, notes? }
+// Body: { id, status?, notes?, student_id? }
+//   student_id: uuid to link a student, or null to unlink
 //
 // Requires header: x-admin-password matching ADMIN_PASSWORD env var
 // Updates the status and/or internal notes on an enquiry record.
@@ -23,9 +24,9 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   if (authErr) return authErr;
 
   // ── Parse body ───────────────────────────────────────────────────────
-  let id, status, notes;
+  let id, status, notes, student_id;
   try {
-    ({ id, status, notes } = await request.json());
+    ({ id, status, notes, student_id } = await request.json());
   } catch {
     return errorResponse('Invalid JSON', 400);
   }
@@ -36,6 +37,7 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const patch = {};
   if (status !== undefined) patch.status = status;
   if (notes !== undefined) patch.notes = notes;
+  if (student_id !== undefined) patch.student_id = student_id ?? null;
 
   if (Object.keys(patch).length === 0) return errorResponse('Nothing to update', 400);
 

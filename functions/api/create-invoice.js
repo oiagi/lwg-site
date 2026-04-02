@@ -185,6 +185,41 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
     const insertedLines = linesRes.ok ? await linesRes.json() : [];
 
+    // ── Insert invoice_students roster ─────────────────────────────────
+    // For company invoices: derive roster from enrolments on the invoiced courses.
+    // For student invoices: single row for the billed student.
+    // Empty roster is allowed (invoice is still valid); duplicates are ignored.
+    const rosterIds = new Set();
+
+    if (company_id && courseIds.length) {
+      const enrolFilter = courseIds.map((cid) => `course_id.eq.${cid}`).join(',');
+      const enrolRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/enrolments?or=(${enrolFilter})&select=student_id`,
+        { headers: H }
+      );
+      if (enrolRes.ok) {
+        const enrols = await enrolRes.json();
+        enrols.forEach((e) => rosterIds.add(e.student_id));
+      }
+    } else if (student_id) {
+      rosterIds.add(student_id);
+    }
+
+    if (rosterIds.size > 0) {
+      const rosterRows = [...rosterIds].map((sid) => ({
+        invoice_id: invoice.id,
+        student_id: sid,
+      }));
+      const rosterRes = await fetch(`${SUPABASE_URL}/rest/v1/invoice_students`, {
+        method: 'POST',
+        headers: { ...H, Prefer: 'resolution=ignore-duplicates' },
+        body: JSON.stringify(rosterRows),
+      });
+      if (!rosterRes.ok) {
+        console.error('invoice_students insert error:', await rosterRes.text());
+      }
+    }
+
     return jsonResponse({ ...invoice, lines: insertedLines });
   } catch (err) {
     console.error('Error:', err);

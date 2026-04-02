@@ -46,7 +46,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             { headers: H }
           ),
           fetch(
-            `${SUPABASE_URL}/rest/v1/students?company_id=eq.${company.id}&active=eq.true&select=id`,
+            `${SUPABASE_URL}/rest/v1/students?company_id=eq.${company.id}&or=(status.eq.active,active.eq.true)&select=id`,
             { headers: H }
           ),
         ]);

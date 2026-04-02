@@ -32,6 +32,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
+import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
@@ -59,35 +60,6 @@ async function getNextCourseCode(prefix, levelCode, env) {
   });
   if (!res.ok) throw new Error(`Course code error: ${await res.text()}`);
   return res.json();
-}
-
-// ── Student matching ─────────────────────────────────────────────────
-
-async function findOrCreateStudent(p, source, env) {
-  if (p.email) {
-    const res = await fetch(
-      `${env.SUPABASE_URL}/rest/v1/students?email=eq.${encodeURIComponent(p.email)}&select=id`,
-      { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-    );
-    const existing = await res.json();
-    if (existing.length) return existing[0].id;
-  }
-
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/students`, {
-    method: 'POST',
-    headers: { ...supabaseHeaders(env.SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
-    body: JSON.stringify({
-      first_name: p.firstName || null,
-      last_name: p.lastName || null,
-      email: p.email || null,
-      phone: p.phone || null,
-      postcode: p.postcode || null,
-      source,
-    }),
-  });
-  if (!res.ok) throw new Error(`Student creation failed: ${await res.text()}`);
-  const rows = await res.json();
-  return rows[0].id;
 }
 
 // ── Main handler ─────────────────────────────────────────────────────
@@ -264,7 +236,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const studentIds = [];
   for (const p of participants) {
     try {
-      const sid = await findOrCreateStudent(p, source, env);
+      const sid = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        first_name: p.firstName,
+        last_name: p.lastName,
+        email: p.email,
+        phone: p.phone,
+        postcode: p.postcode,
+        source,
+      });
       studentIds.push(sid);
       await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
         method: 'POST',
@@ -274,6 +253,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         },
         body: JSON.stringify({ student_id: sid, course_id: courseId }),
       });
+      await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, 'active');
     } catch (err) {
       console.error('Student/enrolment error:', err);
     }
@@ -285,7 +265,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       const ur = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}`, {
         method: 'PATCH',
         headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
-        body: JSON.stringify({ status: 'confirmed', course_id: courseId }),
+        body: JSON.stringify({
+          status: 'confirmed',
+          course_id: courseId,
+          student_id: studentIds[0] || null,
+        }),
       });
       if (!ur.ok) console.error('Enquiry update failed:', await ur.text());
     } catch (err) {

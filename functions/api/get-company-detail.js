@@ -46,7 +46,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     // ── Load students for this company ──────────────────────────────────
     const studentsRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?company_id=eq.${id}&order=last_name.asc&select=id,first_name,last_name,email,phone,current_level,active`,
+      `${SUPABASE_URL}/rest/v1/students?company_id=eq.${id}&order=last_name.asc&select=id,first_name,last_name,email,phone,current_level,active,status`,
       { headers: H }
     );
     const students = studentsRes.ok ? await studentsRes.json() : [];
@@ -55,7 +55,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const activeCourses = courses.filter((c) => c.status === 'active');
     const totalSessions = courses.reduce((sum, c) => sum + (c.sessions_completed || 0), 0);
     const totalPlanned = courses.reduce((sum, c) => sum + (c.sessions_total || 0), 0);
-    const activeStudents = students.filter((s) => s.active);
+    // Compat fallback: count as active if status='active' OR (status not yet set and active=true)
+    const activeStudents = students.filter((s) => s.status === 'active' || s.active);
 
     return jsonResponse({
       ...company,

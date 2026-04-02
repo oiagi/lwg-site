@@ -99,6 +99,7 @@ function renderEnquiries(rows) {
       const svc = row.service || '—';
       const b = row.booking_data || {};
       const c = row.contact_data || {};
+      const linkedStudent = row.student;
 
       return `
     <div class="enquiry-row" id="row-${row.id}">
@@ -129,6 +130,15 @@ function renderEnquiries(rows) {
             <button class="save-btn" data-action="saveStatus" data-args="${row.id}">save</button>
             <span class="saved-msg" id="saved-${row.id}">saved</span>
             <button class="delete-btn" data-action="deleteEnquiry" data-args="${row.id}">delete</button>
+          </div>
+          <div style="margin-top:0.5rem;font-size:0.75rem;color:#888;" id="student-link-${row.id}">
+            ${
+              linkedStudent
+                ? `student: <strong style="color:#555;">${esc(linkedStudent.first_name)} ${esc(linkedStudent.last_name)}</strong>
+                 <button class="action-btn" style="font-size:0.7rem;padding:0.15rem 0.5rem;margin-left:0.5rem;"
+                   data-action="unlinkStudent" data-args="${row.id}">unlink</button>`
+                : 'no student linked'
+            }
           </div>
           <textarea class="notes-input" id="notes-${row.id}"
             placeholder="internal notes…">${esc(row.notes)}</textarea>
@@ -219,6 +229,20 @@ export async function saveNotes(id) {
     }
   } catch (e) {
     console.error(e);
+  }
+}
+
+export async function unlinkStudent(enquiryId) {
+  try {
+    const res = await apiFetch('/api/update-enquiry', {
+      method: 'PATCH',
+      body: { id: enquiryId, student_id: null },
+    });
+    if (!res.ok) throw new Error();
+    const el = document.getElementById(`student-link-${enquiryId}`);
+    if (el) el.innerHTML = 'no student linked';
+  } catch {
+    alert('Could not unlink student.');
   }
 }
 
