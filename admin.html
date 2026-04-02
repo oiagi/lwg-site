@@ -151,9 +151,9 @@
     <div id="panel-students" style="display:none;">
       <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
         <div class="course-filter-row">
-          <button class="filter-btn active" data-student-status="true" data-action="filterStudents" data-args="true">active</button>
+          <button class="filter-btn active" data-student-status="active" data-action="filterStudents" data-args="active">active</button>
           <button class="filter-btn" data-student-status="all" data-action="filterStudents" data-args="all">all</button>
-          <button class="filter-btn" data-student-status="false" data-action="filterStudents" data-args="false">inactive</button>
+          <button class="filter-btn" data-student-status="inactive" data-action="filterStudents" data-args="inactive">inactive</button>
         </div>
         <button class="new-course-btn" data-action="openStudentModal">+ new student</button>
       </div>
@@ -259,10 +259,12 @@
           </div>
           <div class="modal-field full"><label>Notes</label><input type="text" id="sm-notes" placeholder="Internal notes"></div>
           <div class="modal-field">
-            <label style="display:flex;align-items:center;gap:0.5rem;">
-              <input type="checkbox" id="sm-active" checked style="width:auto;">
-              Active
-            </label>
+            <label>Status</label>
+            <select id="sm-status">
+              <option value="active">active</option>
+              <option value="prospect">prospect</option>
+              <option value="inactive">inactive</option>
+            </select>
           </div>
         </div>
 

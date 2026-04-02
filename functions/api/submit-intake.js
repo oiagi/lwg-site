@@ -115,6 +115,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       data.access_token = crypto.randomUUID();
       data.token_created_at = new Date().toISOString();
       data.source = 'intake';
+      data.status = 'active';
       data.active = true;
 
       const res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {

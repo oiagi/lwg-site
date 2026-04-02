@@ -72,6 +72,14 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         }
       : { name: company.name, billing_address: company.billing_address };
 
+    // ── Load linked students from invoice_students roster ─────────────
+    const rosterRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/invoice_students?invoice_id=eq.${id}&select=student:students(id,first_name,last_name)`,
+      { headers: H }
+    );
+    const rosterRows = rosterRes.ok ? await rosterRes.json() : [];
+    const linked_students = rosterRows.map((r) => r.student).filter(Boolean);
+
     return jsonResponse({
       ...invoice,
       qr_reference_formatted: invoice.qr_reference ? formatQrReference(invoice.qr_reference) : null,
@@ -79,6 +87,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       company,
       student,
       billed_to: billedTo,
+      linked_students,
     });
   } catch (err) {
     console.error('Error:', err);
