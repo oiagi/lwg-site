@@ -6,6 +6,8 @@ import { loadTeachers } from './teachers.js';
 let currentCourseFilter = 'active';
 let participantCount = 1;
 let attendanceStudents = [];
+let studentCache = [];
+let clickAwayHandler = null;
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -287,6 +289,120 @@ export async function logSession(sessionId, courseId) {
   }
 }
 
+/* ── Participant block helpers ──────────────────────────────────── */
+function renderParticipantBlock(i, { showRemove = false } = {}) {
+  return `
+    <div class="participant-block modal-grid" id="nc-p-${i}" data-selected-student-id="" style="${i > 0 ? 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;' : ''}">
+      ${
+        showRemove
+          ? `<div class="full" style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+               <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
+               <button data-action="removeParticipantBlock" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
+             </div>`
+          : ''
+      }
+      <div class="modal-field" style="grid-column:1/-1;">
+        <label>Search existing student <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(optional)</span></label>
+        <div style="position:relative;">
+          <input type="text" id="nc-p${i}-search" class="participant-search"
+            placeholder="Type name or email…" autocomplete="off"
+            role="combobox" aria-expanded="false" aria-haspopup="listbox"
+            aria-controls="nc-p${i}-dropdown">
+          <ul id="nc-p${i}-dropdown" role="listbox"
+            style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;
+            border:1px solid #e0e0e0;border-radius:4px;max-height:220px;overflow-y:auto;
+            z-index:200;list-style:none;margin:2px 0 0;padding:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          </ul>
+        </div>
+      </div>
+      <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
+      <div class="modal-field"><label>Last name</label><input type="text" id="nc-p${i}-last" placeholder="Last name"></div>
+      <div class="modal-field"><label>Email</label><input type="email" id="nc-p${i}-email" placeholder="email@example.com"></div>
+      <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p${i}-phone" placeholder="+41…"></div>
+    </div>`;
+}
+
+function hideDropdown(i) {
+  const dropdown = document.getElementById(`nc-p${i}-dropdown`);
+  const search = document.getElementById(`nc-p${i}-search`);
+  if (dropdown) dropdown.style.display = 'none';
+  if (search) search.setAttribute('aria-expanded', 'false');
+}
+
+function attachSearchListeners(i) {
+  const search = document.getElementById(`nc-p${i}-search`);
+  const dropdown = document.getElementById(`nc-p${i}-dropdown`);
+  if (!search || !dropdown) return;
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    if (!q) {
+      hideDropdown(i);
+      return;
+    }
+    const matches = studentCache
+      .filter((s) => {
+        const name = `${s.first_name || ''} ${s.last_name || ''}`.trim().toLowerCase();
+        const email = (s.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      })
+      .slice(0, 8);
+
+    if (!matches.length) {
+      hideDropdown(i);
+      return;
+    }
+
+    dropdown.innerHTML = matches
+      .map((s, idx) => {
+        const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' '));
+        const email = esc(s.email || '');
+        return `<li role="option" data-idx="${idx}"
+          style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f5f5f5;"
+          data-first="${esc(s.first_name || '')}" data-last="${esc(s.last_name || '')}"
+          data-email="${esc(s.email || '')}" data-phone="${esc(s.phone || '')}"
+          data-student-id="${esc(s.id || '')}">
+          ${fullName} <span style="color:#aaa;font-size:0.75rem;">${email}</span>
+        </li>`;
+      })
+      .join('');
+
+    dropdown.style.display = 'block';
+    search.setAttribute('aria-expanded', 'true');
+
+    dropdown.querySelectorAll('li').forEach((li) => {
+      li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
+      li.addEventListener('mouseout', () => (li.style.background = ''));
+    });
+  });
+
+  search.addEventListener('blur', () => {
+    setTimeout(() => hideDropdown(i), 150);
+  });
+
+  search.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const first = dropdown.querySelector('li');
+    if (first && dropdown.style.display !== 'none') {
+      e.preventDefault();
+      first.click();
+    }
+  });
+
+  dropdown.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    document.getElementById(`nc-p${i}-first`).value = li.dataset.first;
+    document.getElementById(`nc-p${i}-last`).value = li.dataset.last;
+    document.getElementById(`nc-p${i}-email`).value = li.dataset.email;
+    document.getElementById(`nc-p${i}-phone`).value = li.dataset.phone;
+    const block = document.getElementById(`nc-p-${i}`);
+    if (block) block.dataset.selectedStudentId = li.dataset.studentId;
+    search.value = [li.dataset.first, li.dataset.last].filter(Boolean).join(' ');
+    hideDropdown(i);
+  });
+}
+
 /* ── New course modal ───────────────────────────────────────────── */
 export function openNewCourseModal() {
   ['nc-teacher', 'nc-service', 'nc-level', 'nc-group', 'nc-sessions', 'nc-datetime'].forEach(
@@ -297,13 +413,9 @@ export function openNewCourseModal() {
   );
   participantCount = 1;
   const container = document.getElementById('nc-participants');
-  container.innerHTML = `
-    <div class="participant-block" id="nc-p-0">
-      <div class="modal-field"><label>First name</label><input type="text" id="nc-p0-first" placeholder="First name"></div>
-      <div class="modal-field"><label>Last name</label><input type="text" id="nc-p0-last" placeholder="Last name"></div>
-      <div class="modal-field"><label>Email</label><input type="email" id="nc-p0-email" placeholder="email@example.com"></div>
-      <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p0-phone" placeholder="+41…"></div>
-    </div>`;
+  container.innerHTML = renderParticipantBlock(0);
+  attachSearchListeners(0);
+
   const sel = document.getElementById('nc-teacher');
   loadTeachers().then((teachers) => {
     sel.innerHTML = teachers
@@ -324,10 +436,39 @@ export function openNewCourseModal() {
     btn.disabled = false;
   }
   document.getElementById('new-course-modal').classList.add('open');
+
+  // Fetch students for search (fire-and-forget, safe fallback on failure)
+  apiFetch('/api/get-students?status=all')
+    .then((res) => {
+      if (res.ok) return res.json();
+      throw new Error();
+    })
+    .then((data) => {
+      studentCache = data;
+    })
+    .catch(() => {
+      studentCache = [];
+    });
+
+  // Click-away handler: close any open dropdown when clicking outside participants
+  if (clickAwayHandler) document.removeEventListener('click', clickAwayHandler);
+  clickAwayHandler = (e) => {
+    if (!e.target.closest('#nc-participants')) {
+      document.querySelectorAll('#nc-participants .participant-block').forEach((block) => {
+        const idx = block.id.replace('nc-p-', '');
+        hideDropdown(parseInt(idx, 10));
+      });
+    }
+  };
+  document.addEventListener('click', clickAwayHandler);
 }
 
 export function closeNewCourseModal() {
   document.getElementById('new-course-modal').classList.remove('open');
+  if (clickAwayHandler) {
+    document.removeEventListener('click', clickAwayHandler);
+    clickAwayHandler = null;
+  }
 }
 
 export function removeParticipantBlock(el) {
@@ -338,20 +479,10 @@ export function removeParticipantBlock(el) {
 export function addParticipantBlock() {
   const container = document.getElementById('nc-participants');
   const i = participantCount++;
-  const block = document.createElement('div');
-  block.className = 'participant-block modal-grid';
-  block.id = `nc-p-${i}`;
-  block.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;';
-  block.innerHTML = `
-    <div class="full" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
-      <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
-      <button data-action="removeParticipantBlock" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
-    </div>
-    <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
-    <div class="modal-field"><label>Last name</label><input type="text" id="nc-p${i}-last" placeholder="Last name"></div>
-    <div class="modal-field"><label>Email</label><input type="email" id="nc-p${i}-email" placeholder="email@example.com"></div>
-    <div class="modal-field"><label>Phone</label><input type="tel" id="nc-p${i}-phone" placeholder="+41…"></div>`;
-  container.appendChild(block);
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = renderParticipantBlock(i, { showRemove: true });
+  container.appendChild(wrapper.firstElementChild);
+  attachSearchListeners(i);
 }
 
 export async function submitNewCourse() {
