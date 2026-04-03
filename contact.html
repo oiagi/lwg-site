@@ -45,14 +45,17 @@
       <div class="field">
         <label for="name">name</label>
         <input type="text" id="name" name="name" required autocomplete="off" />
+        <p class="field-error" id="err-name">Name is required.</p>
       </div>
       <div class="field">
         <label for="email">email</label>
         <input type="email" id="email" name="email" required autocomplete="off" />
+        <p class="field-error" id="err-email">A valid email is required.</p>
       </div>
       <div class="field">
         <label for="phone">phone</label>
-        <input type="tel" id="phone" name="phone" required autocomplete="off" />
+        <input type="tel" id="phone" name="phone" inputmode="tel" required autocomplete="off" />
+        <p class="field-error" id="err-phone">Phone is required.</p>
       </div>
       <div class="field">
         <label for="preferred-contact">preferred contact method</label>
@@ -66,6 +69,7 @@
       <div class="field">
         <label for="message">message</label>
         <textarea id="message" name="message" required></textarea>
+        <p class="field-error" id="err-message">A message is required.</p>
       </div>
       <button type="submit">send</button>
       <p id="form-error" style="display:none;color:#c0392b;font-size:0.78rem;margin-top:0.8rem;text-align:center;"></p>
@@ -79,6 +83,25 @@
     var form  = document.getElementById('contact-form');
     var btn   = form.querySelector('button[type="submit"]');
     var errEl = document.getElementById('form-error');
+
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    function showErr(id, show) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = show ? 'block' : 'none';
+    }
+
+    document.getElementById('name').addEventListener('blur', function () {
+      showErr('err-name', !this.value.trim());
+    });
+    document.getElementById('email').addEventListener('blur', function () {
+      showErr('err-email', !EMAIL_RE.test(this.value.trim()));
+    });
+    document.getElementById('phone').addEventListener('blur', function () {
+      showErr('err-phone', !this.value.trim());
+    });
+    document.getElementById('message').addEventListener('blur', function () {
+      showErr('err-message', !this.value.trim());
+    });
 
     form.addEventListener('submit', async function (e) {
       e.preventDefault();

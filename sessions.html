@@ -50,7 +50,24 @@
 
       try {
         const res  = await fetch('/api/student-sessions?token=' + encodeURIComponent(token));
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          if (res.status === 410) {
+            content.innerHTML = `
+              <div class="error-state" style="text-align:center;">
+                <strong style="display:block;margin-bottom:0.8rem;font-size:1.1rem;">link expired</strong>
+                This sessions link has expired. Please contact your teacher for a new one.<br>
+                <a href="mailto:info@oiagi.org"
+                   style="display:inline-block;margin-top:1rem;font-size:0.8rem;
+                          letter-spacing:0.12em;text-transform:uppercase;color:#1a1a1a;
+                          text-decoration:none;border-bottom:1px solid #1a1a1a;">
+                  contact teacher →
+                </a>
+              </div>`;
+          } else {
+            throw new Error();
+          }
+          return;
+        }
         const data = await res.json();
 
         if (!data.courses || !data.courses.length) {
@@ -91,7 +108,14 @@
             <div class="course-block">
               <p class="course-code">${course.course_code} · ${course.service || ''} ${course.level ? '· ' + course.level : ''}</p>
               <p class="session-count">${countLine}</p>
-              ${total ? `<div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>` : ''}
+              ${total ? `<div class="progress-bar-wrap"
+                role="progressbar"
+                aria-valuenow="${completed}"
+                aria-valuemax="${total}"
+                aria-valuemin="0"
+                aria-label="${completed} of ${total} sessions completed">
+                  <div class="progress-bar" style="width:${pct}%"></div>
+              </div>` : ''}
               ${sessionRows || '<p style="font-size:0.82rem;color:#aaa;">No sessions scheduled yet.</p>'}
               ${rebookNote}
             </div>`;

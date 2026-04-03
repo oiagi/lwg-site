@@ -44,7 +44,7 @@ const VALIDATORS = {
  *     email:   { required: true, type: 'string', email: true },
  *     service: { required: true, type: 'string', oneOf: ['language course', 'exam prep', 'tutoring'] },
  *   }
- * @returns {string|null} Error message or null if valid.
+ * @returns {string|null} First error message or null if valid.
  */
 export function validate(body, schema) {
   if (!body || typeof body !== 'object') {
@@ -75,4 +75,46 @@ export function validate(body, schema) {
   }
 
   return null;
+}
+
+/**
+ * Validate a body object against a schema, collecting ALL field errors.
+ *
+ * Unlike `validate()` which returns the first error string, this returns
+ * a map of every failing field so frontends can highlight specific inputs.
+ *
+ * @param {object} body   - The parsed request body.
+ * @param {object} schema - Same field-rule schema as `validate()`.
+ * @returns {{ errors: Record<string,string> }|null}
+ *   null if valid; { errors: { fieldName: "message", … } } on failure.
+ */
+export function validateFull(body, schema) {
+  if (!body || typeof body !== 'object') {
+    return { errors: { _body: 'Request body must be a JSON object' } };
+  }
+
+  const errors = {};
+
+  for (const [field, rules] of Object.entries(schema)) {
+    const value = body[field];
+
+    if (rules.required && !VALIDATORS.required(value)) {
+      errors[field] = `${field} is required`;
+      continue;
+    }
+
+    if (value !== undefined && value !== null && value !== '') {
+      if (rules.type && !VALIDATORS.type(value, rules.type)) {
+        errors[field] = `${field} must be a ${rules.type}`;
+      } else if (rules.maxLength && !VALIDATORS.maxLength(value, rules.maxLength)) {
+        errors[field] = `${field} must be at most ${rules.maxLength} characters`;
+      } else if (rules.email && !VALIDATORS.email(value)) {
+        errors[field] = `${field} must be a valid email address`;
+      } else if (rules.oneOf && !VALIDATORS.oneOf(value, rules.oneOf)) {
+        errors[field] = `${field} must be one of: ${rules.oneOf.join(', ')}`;
+      }
+    }
+  }
+
+  return Object.keys(errors).length ? { errors } : null;
 }

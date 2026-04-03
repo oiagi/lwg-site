@@ -1,9 +1,10 @@
 /* ── Enquiries tab ────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { fmt, dl, esc } from './helpers.js';
+import { fmt, dl, esc, showToast } from './helpers.js';
 import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teachers.js';
 
-let currentFilter = 'all';
+let currentFilter = sessionStorage.getItem('adminEnquiryFilter') || 'all';
+let _enquiriesCache = [];
 
 export function init() {
   const panel = document.getElementById('panel-enquiries');
@@ -12,9 +13,27 @@ export function init() {
       panel.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.status;
+      sessionStorage.setItem('adminEnquiryFilter', currentFilter);
       loadEnquiries(currentFilter);
     });
   });
+
+  const search = document.getElementById('enquiry-search');
+  if (search) {
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      if (!q) {
+        renderEnquiries(_enquiriesCache);
+        return;
+      }
+      const filtered = _enquiriesCache.filter((r) => {
+        const name = `${r.lead_first || ''} ${r.lead_last || ''}`.toLowerCase();
+        const svc = (r.service || '').toLowerCase();
+        return name.includes(q) || svc.includes(q);
+      });
+      renderEnquiries(filtered);
+    });
+  }
 }
 
 export async function loadEnquiries(status, probe = false) {
@@ -24,7 +43,10 @@ export async function loadEnquiries(status, probe = false) {
     if (res.status === 401) return false;
     if (!res.ok) return false;
     const data = await res.json();
-    if (!probe) renderEnquiries(data);
+    if (!probe) {
+      _enquiriesCache = data;
+      renderEnquiries(data);
+    }
     return true;
   } catch {
     return false;
@@ -88,7 +110,8 @@ function renderContactDetails(c) {
 function renderEnquiries(rows) {
   const list = document.getElementById('enquiry-list');
   if (!rows || rows.length === 0) {
-    list.innerHTML = '<div class="empty-state">no enquiries found</div>';
+    list.innerHTML = `<div class="empty-state">no enquiries found<br>
+      <a class="empty-cta" href="/booking.html" target="_blank">share booking link →</a></div>`;
     return;
   }
 
@@ -256,8 +279,9 @@ export async function deleteEnquiry(id) {
     if (!res.ok) throw new Error();
     const row = document.getElementById('row-' + id);
     if (row) row.remove();
+    showToast('Enquiry deleted');
   } catch {
-    alert('Could not delete enquiry. Please try again.');
+    showToast('Could not delete enquiry', 'err');
   }
 }
 

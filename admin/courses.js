@@ -1,13 +1,34 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { fmtDate, esc } from './helpers.js';
+import { fmtDate, esc, showToast } from './helpers.js';
 import { loadTeachers } from './teachers.js';
 
-let currentCourseFilter = 'active';
+let currentCourseFilter = sessionStorage.getItem('adminCourseFilter') || 'active';
 let participantCount = 1;
 let attendanceStudents = [];
 let studentCache = [];
 let clickAwayHandler = null;
+let _coursesCache = [];
+
+/* Wire course search input once DOM is ready */
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('course-search');
+  if (input) {
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      if (!q) {
+        renderCourses(_coursesCache);
+        return;
+      }
+      const filtered = _coursesCache.filter((c) => {
+        const code = (c.course_code || '').toLowerCase();
+        const names = (c.participant_names || []).join(' ').toLowerCase();
+        return code.includes(q) || names.includes(q);
+      });
+      renderCourses(filtered);
+    });
+  }
+});
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -15,6 +36,7 @@ export function getCurrentCourseFilter() {
 
 export function filterCourses(status) {
   currentCourseFilter = status;
+  sessionStorage.setItem('adminCourseFilter', status);
   document.querySelectorAll('[data-course-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.courseStatus === status);
   });
@@ -31,13 +53,23 @@ export async function loadCourses(status = 'active') {
   );
 
   if (!list.querySelector('.course-row')) {
-    list.innerHTML = '<div class="loading-state">loading…</div>';
+    list.innerHTML = Array.from({ length: 4 })
+      .map(
+        () => `
+      <div class="skeleton-row">
+        <div class="skeleton-bar" style="width:80px;"></div>
+        <div class="skeleton-bar" style="width:140px;"></div>
+        <div class="skeleton-bar" style="width:100px;margin-left:auto;"></div>
+      </div>`
+      )
+      .join('');
   }
 
   try {
     const res = await apiFetch('/api/get-courses?status=' + status);
     if (!res.ok) throw new Error('Failed to load courses');
     const courses = await res.json();
+    _coursesCache = courses;
     renderCourses(courses);
 
     openIds.forEach((id) => {
@@ -52,7 +84,8 @@ export async function loadCourses(status = 'active') {
 function renderCourses(courses) {
   const list = document.getElementById('course-list');
   if (!courses.length) {
-    list.innerHTML = '<div class="loading-state" style="padding:2rem 0;">No courses found.</div>';
+    list.innerHTML = `<div class="empty-state">no courses found<br>
+      <button class="empty-cta" data-action="openNewCourseModal">+ new course</button></div>`;
     return;
   }
 
@@ -198,14 +231,33 @@ export async function syncCalendar(courseId) {
       body: { course_id: courseId },
     });
     if (res.ok) {
-      if (msg) {
-        msg.style.display = 'inline';
-        setTimeout(() => (msg.style.display = 'none'), 2000);
+      let syncLabel = 'synced';
+      try {
+        const data = await res.json();
+        if (typeof data.events_found === 'number') {
+          syncLabel =
+            `synced — ${data.events_found} found · ` +
+            `${data.scheduled ?? 0} scheduled · ` +
+            `${data.completed ?? 0} completed · ` +
+            `${data.cancelled ?? 0} cancelled`;
+        }
+      } catch {
+        /* response already consumed or not JSON — use default label */
       }
+      if (msg) {
+        msg.textContent = syncLabel;
+        msg.style.display = 'inline';
+        setTimeout(() => {
+          msg.style.display = 'none';
+          msg.textContent = 'synced';
+        }, 4000);
+      }
+      showToast(syncLabel, 'info');
       loadCourses(currentCourseFilter);
     }
   } catch (err) {
     console.error('Sync error:', err);
+    showToast('Calendar sync failed', 'err');
   }
 }
 
@@ -544,6 +596,7 @@ export async function submitNewCourse() {
     msgEl.className = 'modal-msg';
     msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
     btn.textContent = 'created ✓';
+    showToast(`Course ${result.course_code} created`);
 
     setTimeout(() => {
       closeNewCourseModal();
@@ -685,6 +738,7 @@ export async function submitAttendance() {
     msgEl.className = 'modal-msg';
     msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
     btn.textContent = 'saved ✓';
+    showToast(`Attendance saved for ${result.saved_count} student(s)`);
 
     setTimeout(() => closeAttendanceModal(), 1200);
   } catch (err) {

@@ -1,16 +1,26 @@
 /* ── Students tab ─────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
+import { esc, showToast } from './helpers.js';
 
-let currentStudentFilter = 'active';
+let currentStudentFilter = sessionStorage.getItem('adminStudentFilter') || 'active';
 let selectedStudentId = null;
+let _studentsCache = [];
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
 }
 
+/* Wire search input once DOM is ready */
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('student-search');
+  if (input) {
+    input.addEventListener('input', syncStudentSearch);
+  }
+});
+
 export function filterStudents(active) {
   currentStudentFilter = active;
+  sessionStorage.setItem('adminStudentFilter', active);
   document.querySelectorAll('[data-student-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.studentStatus === active);
   });
@@ -27,23 +37,49 @@ export async function loadStudents(status = 'active') {
     pane.innerHTML = '<p>select a student to view their details</p>';
   }
   if (!list.querySelector('.student-row')) {
-    list.innerHTML = '<div class="loading-state">loading…</div>';
+    list.innerHTML = Array.from({ length: 5 })
+      .map(
+        () => `
+      <div class="skeleton-row" style="padding:0.6rem 0.8rem;">
+        <div class="skeleton-bar" style="width:60%;"></div>
+      </div>`
+      )
+      .join('');
   }
   try {
     const qs = status !== 'all' ? `?status=${status}` : '';
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
+    _studentsCache = students;
     renderStudents(students);
+    syncStudentSearch();
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load students.</div>';
   }
 }
 
+function syncStudentSearch() {
+  const input = document.getElementById('student-search');
+  if (!input) return;
+  const q = input.value.trim().toLowerCase();
+  if (!q) {
+    renderStudents(_studentsCache);
+    return;
+  }
+  const filtered = _studentsCache.filter((s) => {
+    const name = `${s.first_name || ''} ${s.last_name || ''}`.toLowerCase();
+    const email = (s.email || '').toLowerCase();
+    return name.includes(q) || email.includes(q);
+  });
+  renderStudents(filtered);
+}
+
 function renderStudents(students) {
   const list = document.getElementById('student-list');
   if (!students.length) {
-    list.innerHTML = '<div class="empty-state">no students found</div>';
+    list.innerHTML = `<div class="empty-state">no students found<br>
+      <button class="empty-cta" data-action="openStudentModal">+ add student</button></div>`;
     return;
   }
 
@@ -332,6 +368,7 @@ export async function submitStudent() {
     msgEl.className = 'modal-msg';
     msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
     btn.textContent = 'saved ✓';
+    showToast(id ? 'Student updated' : 'Student created');
 
     setTimeout(() => {
       closeStudentModal();

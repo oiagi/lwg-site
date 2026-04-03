@@ -41,6 +41,38 @@ export function showSaved(id, duration = 2000) {
   }
 }
 
+/* ── Toast notifications ────────────────────────────────────────────── */
+let _toastContainer = null;
+
+function getToastContainer() {
+  if (!_toastContainer) {
+    _toastContainer = document.createElement('div');
+    _toastContainer.id = 'toast-container';
+    document.body.appendChild(_toastContainer);
+  }
+  return _toastContainer;
+}
+
+/**
+ * Show a brief toast notification.
+ * @param {string} message - Text to display.
+ * @param {'ok'|'err'|'info'} [type='ok'] - Visual variant.
+ * @param {number} [duration=3000] - Auto-dismiss delay in ms.
+ */
+export function showToast(message, type = 'ok', duration = 3000) {
+  const container = getToastContainer();
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  // Trigger entry animation on next frame
+  requestAnimationFrame(() => toast.classList.add('toast-visible'));
+  setTimeout(() => {
+    toast.classList.remove('toast-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, duration);
+}
+
 /* ── Modal focus trap ──────────────────────────────────────────────── */
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

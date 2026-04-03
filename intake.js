@@ -15,6 +15,7 @@ const formState = document.getElementById('form-state');
 const loadingState = document.getElementById('loading-state');
 const successState = document.getElementById('success-state');
 const invalidState = document.getElementById('invalid-state');
+const expiredState = document.getElementById('expired-state');
 
 /* ── Init ────────────────────────────────────────────────────────── */
 (async function init() {
@@ -23,7 +24,11 @@ const invalidState = document.getElementById('invalid-state');
       const res = await fetch('/api/get-intake?token=' + encodeURIComponent(token));
       if (!res.ok) {
         loadingState.style.display = 'none';
-        invalidState.style.display = 'block';
+        if (res.status === 410) {
+          expiredState.style.display = 'block';
+        } else {
+          invalidState.style.display = 'block';
+        }
         return;
       }
       const data = await res.json();
@@ -80,6 +85,20 @@ function getRadio(name) {
   const checked = document.querySelector(`input[name="${name}"]:checked`);
   return checked ? checked.value : null;
 }
+
+/* ── Blur validation on required fields ──────────────────────────── */
+document.getElementById('in-first-name').addEventListener('blur', () => {
+  const v = document.getElementById('in-first-name').value.trim();
+  showFieldError('err-first-name', !v);
+});
+document.getElementById('in-last-name').addEventListener('blur', () => {
+  const v = document.getElementById('in-last-name').value.trim();
+  showFieldError('err-last-name', !v);
+});
+document.getElementById('in-email').addEventListener('blur', () => {
+  const v = document.getElementById('in-email').value.trim();
+  showFieldError('err-email', !v || !isValidEmail(v));
+});
 
 /* ── Show/hide location field based on format selection ───────────── */
 document.getElementById('in-course-format').addEventListener('click', (e) => {

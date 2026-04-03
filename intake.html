@@ -28,59 +28,62 @@
       <p class="intro">Please fill out the form below so we can prepare everything for your course.</p>
 
       <!-- ── Personal Information ───────────────────────────────────── -->
-      <p class="section-label">personal information</p>
+      <fieldset class="form-section">
+        <legend class="section-label">personal information</legend>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="in-first-name">First name *</label>
-          <input type="text" id="in-first-name" autocomplete="given-name">
-          <div class="error" id="err-first-name">First name is required.</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="in-first-name">First name *</label>
+            <input type="text" id="in-first-name" autocomplete="given-name">
+            <div class="error" id="err-first-name">First name is required.</div>
+          </div>
+          <div class="field">
+            <label for="in-last-name">Last name *</label>
+            <input type="text" id="in-last-name" autocomplete="family-name">
+            <div class="error" id="err-last-name">Last name is required.</div>
+          </div>
         </div>
-        <div class="field">
-          <label for="in-last-name">Last name *</label>
-          <input type="text" id="in-last-name" autocomplete="family-name">
-          <div class="error" id="err-last-name">Last name is required.</div>
-        </div>
-      </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="in-email">Email *</label>
-          <input type="email" id="in-email" autocomplete="email">
-          <div class="error" id="err-email">A valid email is required.</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="in-email">Email *</label>
+            <input type="email" id="in-email" autocomplete="email" inputmode="email">
+            <div class="error" id="err-email">A valid email is required.</div>
+          </div>
+          <div class="field">
+            <label for="in-phone">Phone</label>
+            <input type="tel" id="in-phone" autocomplete="tel" inputmode="tel" placeholder="+41…">
+          </div>
         </div>
-        <div class="field">
-          <label for="in-phone">Phone</label>
-          <input type="tel" id="in-phone" autocomplete="tel" placeholder="+41…">
-        </div>
-      </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="in-dob">Date of birth</label>
-          <input type="date" id="in-dob">
+        <div class="field-row">
+          <div class="field">
+            <label for="in-dob">Date of birth</label>
+            <input type="date" id="in-dob">
+          </div>
+          <div class="field">
+            <label for="in-nationality">Nationality</label>
+            <input type="text" id="in-nationality">
+          </div>
         </div>
+
         <div class="field">
-          <label for="in-nationality">Nationality</label>
-          <input type="text" id="in-nationality">
+          <label for="in-postcode">Postcode</label>
+          <input type="text" id="in-postcode" inputmode="numeric" placeholder="e.g. 8001">
         </div>
-      </div>
 
-      <div class="field">
-        <label for="in-postcode">Postcode</label>
-        <input type="text" id="in-postcode" placeholder="e.g. 8001">
-      </div>
-
-      <div class="field">
-        <label for="in-emergency">Emergency contact</label>
-        <input type="text" id="in-emergency" placeholder="Name, phone number">
-      </div>
+        <div class="field">
+          <label for="in-emergency">Emergency contact</label>
+          <input type="text" id="in-emergency" placeholder="Name, phone number">
+        </div>
+      </fieldset>
 
       <!-- ── Course Preferences ─────────────────────────────────────── -->
-      <p class="section-label">course preferences</p>
+      <fieldset class="form-section">
+        <legend class="section-label">course preferences</legend>
 
-      <div class="field">
-        <label>Course type</label>
+        <div class="field">
+          <label>Course type</label>
         <div class="toggle-group" id="in-course-type">
           <input type="radio" name="course-type" id="ct-private" value="private">
           <label for="ct-private">Private</label>
@@ -152,54 +155,59 @@
         <textarea id="in-goals" placeholder="e.g. Improve conversational German for work, prepare for a certification…"></textarea>
       </div>
 
-      <div class="field">
-        <label for="in-start-date">Desired start date</label>
-        <input type="date" id="in-start-date">
-      </div>
+        <div class="field">
+          <label for="in-start-date">Desired start date</label>
+          <input type="date" id="in-start-date">
+        </div>
+      </fieldset>
 
       <!-- ── Billing Information ─────────────────────────────────────── -->
-      <p class="section-label">billing information</p>
+      <fieldset class="form-section">
+        <legend class="section-label">billing information</legend>
 
-      <div class="field">
-        <label for="in-billing-name">Billing name <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-        <input type="text" id="in-billing-name" placeholder="Full name">
-      </div>
-
-      <div class="field">
-        <label for="in-billing-address">Billing address</label>
-        <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
-      </div>
-
-      <div class="field">
-        <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-        <input type="email" id="in-billing-email" placeholder="billing@example.com">
-      </div>
-
-      <div class="field">
-        <label>Payment method</label>
-        <div class="toggle-group" id="in-payment-method">
-          <input type="radio" name="payment-method" id="pm-bank" value="bank">
-          <label for="pm-bank">Bank transfer</label>
-          <input type="radio" name="payment-method" id="pm-twint" value="twint">
-          <label for="pm-twint">Twint</label>
+        <div class="field">
+          <label for="in-billing-name">Billing name <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+          <input type="text" id="in-billing-name" placeholder="Full name">
         </div>
-      </div>
+
+        <div class="field">
+          <label for="in-billing-address">Billing address</label>
+          <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+          <input type="email" id="in-billing-email" placeholder="billing@example.com" inputmode="email">
+        </div>
+
+        <div class="field">
+          <label>Payment method</label>
+          <div class="toggle-group" id="in-payment-method">
+            <input type="radio" name="payment-method" id="pm-bank" value="bank">
+            <label for="pm-bank">Bank transfer</label>
+            <input type="radio" name="payment-method" id="pm-twint" value="twint">
+            <label for="pm-twint">Twint</label>
+          </div>
+        </div>
+      </fieldset>
 
       <!-- ── Other ──────────────────────────────────────────────────── -->
-      <p class="section-label">other</p>
+      <fieldset class="form-section">
+        <legend class="section-label">other</legend>
 
-      <div class="field">
-        <label for="in-referral">How did you hear about us?</label>
-        <select id="in-referral">
-          <option value="">—</option>
-          <option value="Google">Google</option>
-          <option value="Social media">Social media</option>
-          <option value="Friend or family">Friend or family</option>
-          <option value="School or university">School or university</option>
-          <option value="Company">Company</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
+        <div class="field">
+          <label for="in-referral">How did you hear about us?</label>
+          <select id="in-referral">
+            <option value="">—</option>
+            <option value="Google">Google</option>
+            <option value="Social media">Social media</option>
+            <option value="Friend or family">Friend or family</option>
+            <option value="School or university">School or university</option>
+            <option value="Company">Company</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </fieldset>
 
       <!-- ── Consent ────────────────────────────────────────────────── -->
       <div class="consent-field">
@@ -230,6 +238,21 @@
         <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>
         if you need a new link.
       </p>
+    </div>
+
+    <!-- ── Expired token state (HTTP 410) ────────────────────────── -->
+    <div id="expired-state" style="display:none;text-align:center;">
+      <h1>link expired</h1>
+      <p style="font-size:0.92rem;color:#555;line-height:1.7;">
+        This registration link has expired (links are valid for 90 days).<br>
+        Please contact us and we'll send you a new one.
+      </p>
+      <a href="mailto:info@oiagi.org"
+         style="display:inline-block;margin-top:1.2rem;font-size:0.8rem;
+                letter-spacing:0.14em;text-transform:uppercase;color:#1a1a1a;
+                text-decoration:none;border-bottom:1px solid #1a1a1a;">
+        request a new link →
+      </a>
     </div>
 
   </div>

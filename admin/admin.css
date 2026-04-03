@@ -1280,3 +1280,119 @@ html[data-device='mobile'] .avail-day {
   cursor: pointer;
   min-width: 200px;
 }
+
+/* ── Toast notifications ────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.toast {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.8rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  padding: 0.6rem 1rem;
+  border-left: 3px solid #27ae60;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: auto;
+  max-width: 320px;
+}
+.toast.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast.toast-ok {
+  border-left-color: #27ae60;
+  color: #1a1a1a;
+}
+.toast.toast-err {
+  border-left-color: #c0392b;
+  color: #c0392b;
+}
+.toast.toast-info {
+  border-left-color: #2980b9;
+  color: #1a1a1a;
+}
+
+/* ── Skeleton loading rows ──────────────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid #eee;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-bar {
+  background: #dde8f0;
+  border-radius: 2px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Panel search input ─────────────────────────────────────────── */
+.panel-search {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: #1a1a1a;
+  outline: none;
+  padding: 0.3rem 0 0.3rem 1.2rem;
+  margin-bottom: 1.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0 center;
+}
+.panel-search::placeholder {
+  color: #bbb;
+  letter-spacing: 0.04em;
+}
+
+/* ── Empty state CTA link ───────────────────────────────────────── */
+.empty-state .empty-cta {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: none;
+  border-bottom: 1px solid #1a1a1a;
+  cursor: pointer;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+  font-weight: 300;
+  padding: 0;
+}
+.empty-state .empty-cta:hover {
+  color: #555;
+  border-bottom-color: #555;
+}
