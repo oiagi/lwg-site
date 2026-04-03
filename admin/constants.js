@@ -55,9 +55,9 @@ export const DEFAULT_SESSION_DURATION = 50;
 
 /* Admin dashboard tabs */
 export const TABS = [
+  'students',
   'enquiries',
   'courses',
-  'students',
   'companies',
   'billing',
   'reports',

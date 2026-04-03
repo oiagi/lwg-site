@@ -3,6 +3,7 @@ import { apiFetch } from './api.js';
 import { esc } from './helpers.js';
 
 let currentStudentFilter = 'active';
+let selectedStudentId = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -18,6 +19,13 @@ export function filterStudents(active) {
 
 export async function loadStudents(status = 'active') {
   const list = document.getElementById('student-list');
+  // Reset selection and right pane on every reload attempt
+  selectedStudentId = null;
+  const pane = document.getElementById('student-detail-panel');
+  if (pane) {
+    pane.className = 'student-detail-empty';
+    pane.innerHTML = '<p>select a student to view their details</p>';
+  }
   if (!list.querySelector('.student-row')) {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
@@ -42,48 +50,39 @@ function renderStudents(students) {
   list.innerHTML = students
     .map((s) => {
       const name = [s.first_name, s.last_name].filter(Boolean).join(' ');
-      const stats =
-        [
-          s.course_count ? s.course_count + ' course' + (s.course_count !== 1 ? 's' : '') : null,
-          s.company_name ? s.company_name : null,
-        ]
-          .filter(Boolean)
-          .join(' · ') || 'no courses';
-
       return `
-    <div class="student-row" id="student-${s.id}">
-      <div class="student-summary" data-action="toggleStudent" data-args="${s.id}">
-        <span class="student-name">${esc(name)}</span>
-        <span class="student-email">${esc(s.email) || '—'}</span>
-        <span class="student-stats">${esc(stats)}</span>
-      </div>
-      <div class="student-detail" id="student-detail-${s.id}">
-        <div class="student-detail-loading">loading…</div>
-      </div>
+    <div class="student-row" id="student-${s.id}"
+         role="option" aria-selected="false" tabindex="0"
+         data-action="selectStudent" data-args="${s.id}">
+      <span class="student-name">${esc(name)}</span>
+      <span class="student-email">${esc(s.email) || '—'}</span>
     </div>`;
     })
     .join('');
 }
 
-export async function toggleStudent(id) {
-  const detail = document.getElementById('student-detail-' + id);
-  if (detail.classList.contains('open')) {
-    detail.classList.remove('open');
-    return;
-  }
-  detail.classList.add('open');
+export async function selectStudent(id) {
+  if (selectedStudentId === id) return;
+  selectedStudentId = id;
 
-  // Load full detail if not yet loaded
-  if (detail.querySelector('.student-detail-loading')) {
-    try {
-      const res = await apiFetch('/api/get-student-detail?id=' + id);
-      if (!res.ok) throw new Error();
-      const s = await res.json();
-      renderStudentDetail(detail, s);
-    } catch {
-      detail.innerHTML =
-        '<p style="color:#c0392b;font-size:0.78rem;">Could not load student details.</p>';
-    }
+  document.querySelectorAll('.student-row').forEach((row) => {
+    const isSelected = row.id === 'student-' + id;
+    row.classList.toggle('selected', isSelected);
+    row.setAttribute('aria-selected', String(isSelected));
+  });
+
+  const pane = document.getElementById('student-detail-panel');
+  pane.className = '';
+  pane.innerHTML = '<div class="loading-state">loading…</div>';
+
+  try {
+    const res = await apiFetch('/api/get-student-detail?id=' + id);
+    if (!res.ok) throw new Error();
+    const s = await res.json();
+    renderStudentDetail(pane, s);
+  } catch {
+    pane.innerHTML =
+      '<p style="color:#c0392b;font-size:0.78rem;">Could not load student details.</p>';
   }
 }
 
