@@ -43,7 +43,7 @@ import {
   loadStudents,
   getCurrentStudentFilter,
   filterStudents,
-  toggleStudent,
+  selectStudent,
   openStudentModal,
   closeStudentModal,
   editStudent,
@@ -97,7 +97,7 @@ const actions = {
   submitAttendance,
   // Students
   filterStudents,
-  toggleStudent,
+  selectStudent,
   openStudentModal,
   closeStudentModal,
   editStudent,
@@ -144,6 +144,18 @@ document.addEventListener('click', (e) => {
   fn(...args, el);
 });
 
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const name = el.dataset.action;
+  const fn = actions[name];
+  if (!fn) return;
+  e.preventDefault();
+  const args = el.dataset.args ? el.dataset.args.split(',') : [];
+  fn(...args, el);
+});
+
 document.addEventListener('change', (e) => {
   const el = e.target.closest('[data-action-change]');
   if (!el) return;
@@ -161,6 +173,7 @@ function switchTab(tab) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
   }
+  if (tab === 'enquiries') loadEnquiries('all');
   if (tab === 'courses') loadCourses(getCurrentCourseFilter());
   if (tab === 'students') loadStudents(getCurrentStudentFilter());
   if (tab === 'companies') loadCompanies(getCurrentCompanyFilter());
@@ -173,7 +186,7 @@ function switchTab(tab) {
 function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  loadEnquiries('all');
+  loadStudents(getCurrentStudentFilter());
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */

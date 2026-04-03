@@ -41,9 +41,9 @@
     <!-- ── Main tab switcher ──────────────────────────────────────────── -->
     <div class="main-tabs" style="position:relative;">
       <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
-      <button class="main-tab active" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
+      <button class="main-tab active" id="tab-students" data-action="switchTab" data-args="students">students</button>
+      <button class="main-tab" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
       <button class="main-tab" id="tab-courses" data-action="switchTab" data-args="courses">courses</button>
-      <button class="main-tab" id="tab-students" data-action="switchTab" data-args="students">students</button>
       <button class="main-tab" id="tab-companies" data-action="switchTab" data-args="companies">companies</button>
       <button class="main-tab" id="tab-billing" data-action="switchTab" data-args="billing">billing</button>
       <button class="main-tab" id="tab-reports" data-action="switchTab" data-args="reports">reports</button>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- ── Enquiries panel ───────────────────────────────────────────── -->
-    <div id="panel-enquiries">
+    <div id="panel-enquiries" style="display:none;">
       <div class="dashboard-header">
         <div class="filter-row">
           <button class="filter-btn active" data-status="all">all</button>
@@ -148,8 +148,8 @@
     </div>
 
     <!-- ── Students panel ────────────────────────────────────────────── -->
-    <div id="panel-students" style="display:none;">
-      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
+    <div id="panel-students">
+      <div class="dashboard-header students-header">
         <div class="course-filter-row">
           <button class="filter-btn active" data-student-status="active" data-action="filterStudents" data-args="active">active</button>
           <button class="filter-btn" data-student-status="all" data-action="filterStudents" data-args="all">all</button>
@@ -157,8 +157,17 @@
         </div>
         <button class="new-course-btn" data-action="openStudentModal">+ new student</button>
       </div>
-      <div id="student-list">
-        <div class="loading-state">loading…</div>
+      <div class="students-layout">
+        <div class="students-sidebar">
+          <div id="student-list" role="listbox" aria-label="Students">
+            <div class="loading-state">loading…</div>
+          </div>
+        </div>
+        <div class="student-detail-pane">
+          <div id="student-detail-panel" class="student-detail-empty">
+            <p>select a student to view their details</p>
+          </div>
+        </div>
       </div>
     </div>
 
