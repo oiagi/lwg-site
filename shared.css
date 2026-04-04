@@ -118,7 +118,9 @@ button[data-loading]::after {
   background: rgba(214, 234, 248, 0.7);
   backdrop-filter: blur(2px);
   z-index: 90;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 .nav-overlay.visible {
   opacity: 1;

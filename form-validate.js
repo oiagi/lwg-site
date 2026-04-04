@@ -42,9 +42,11 @@ export function clearErrors(container) {
 export function scrollToFirstError(container) {
   const el = typeof container === 'string' ? document.getElementById(container) : container;
   if (!el) return;
-  const first = [...el.querySelectorAll('.error')].find(e => e.style.display === 'block');
+  const first = [...el.querySelectorAll('.error')].find((e) => e.style.display === 'block');
   if (!first) return;
   first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  const input = first.closest('.field, .consent-field, .field-row')?.querySelector('input, select, textarea');
+  const input = first
+    .closest('.field, .consent-field, .field-row')
+    ?.querySelector('input, select, textarea');
   if (input) input.focus({ preventScroll: true });
 }
