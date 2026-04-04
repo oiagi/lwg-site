@@ -51,7 +51,8 @@ function prefill(s) {
   if (s.address_city) document.getElementById('in-address-city').value = s.address_city;
   if (s.postcode) document.getElementById('in-postcode').value = s.postcode;
   if (s.address_country) document.getElementById('in-address-country').value = s.address_country;
-  if (s.emergency_contact_name) document.getElementById('in-emergency-name').value = s.emergency_contact_name;
+  if (s.emergency_contact_name)
+    document.getElementById('in-emergency-name').value = s.emergency_contact_name;
   if (s.emergency_contact_relation)
     document.getElementById('in-emergency-relation').value = s.emergency_contact_relation;
   if (s.emergency_contact_phone)

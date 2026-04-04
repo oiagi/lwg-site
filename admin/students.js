@@ -111,14 +111,19 @@ function renderStudentDetail(container, s) {
           ${[s.postcode, s.address_city].filter(Boolean).map(esc).join(' ') || ''}<br>
           ${s.address_country ? esc(s.address_country) : ''}
         </p>
-        ${(s.emergency_contact_name || s.emergency_contact_phone || s.emergency_contact_email || s.emergency_contact_relation)
-          ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">
+        ${
+          s.emergency_contact_name ||
+          s.emergency_contact_phone ||
+          s.emergency_contact_email ||
+          s.emergency_contact_relation
+            ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">
             Emergency: ${esc(s.emergency_contact_name || '—')}
             ${s.emergency_contact_relation ? ' (' + esc(s.emergency_contact_relation) + ')' : ''}
             ${s.emergency_contact_phone ? '<br>' + esc(s.emergency_contact_phone) : ''}
             ${s.emergency_contact_email ? '<br>' + esc(s.emergency_contact_email) : ''}
           </p>`
-          : ''}
+            : ''
+        }
       </div>
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
@@ -235,19 +240,25 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-target-lang').value = existingData.target_language || '';
     document.getElementById('sm-level').value = existingData.current_level || '';
     document.getElementById('sm-learning-goals').value = existingData.learning_goals || '';
-    document.getElementById('sm-emergency-contact-name').value = existingData.emergency_contact_name || '';
-    document.getElementById('sm-emergency-contact-phone').value = existingData.emergency_contact_phone || '';
-    document.getElementById('sm-emergency-contact-email').value = existingData.emergency_contact_email || '';
+    document.getElementById('sm-emergency-contact-name').value =
+      existingData.emergency_contact_name || '';
+    document.getElementById('sm-emergency-contact-phone').value =
+      existingData.emergency_contact_phone || '';
+    document.getElementById('sm-emergency-contact-email').value =
+      existingData.emergency_contact_email || '';
     document.getElementById('sm-emergency-contact-relation').value =
       existingData.emergency_contact_relation || '';
     document.getElementById('sm-desired-start').value = existingData.desired_start_date || '';
     document.getElementById('sm-course-type').value = existingData.course_type || '';
     document.getElementById('sm-course-format').value = existingData.course_format || '';
     document.getElementById('sm-location').value = existingData.location || '';
-    document.getElementById('sm-billing-same').checked = existingData.billing_same_as_student !== false;
+    document.getElementById('sm-billing-same').checked =
+      existingData.billing_same_as_student !== false;
     document.getElementById('sm-billing-name').value = existingData.billing_name || '';
-    document.getElementById('sm-billing-address-line1').value = existingData.billing_address_line1 || '';
-    document.getElementById('sm-billing-address-line2').value = existingData.billing_address_line2 || '';
+    document.getElementById('sm-billing-address-line1').value =
+      existingData.billing_address_line1 || '';
+    document.getElementById('sm-billing-address-line2').value =
+      existingData.billing_address_line2 || '';
     document.getElementById('sm-billing-city').value = existingData.billing_city || '';
     document.getElementById('sm-billing-postcode').value = existingData.billing_postcode || '';
     document.getElementById('sm-billing-country').value = existingData.billing_country || '';
@@ -335,9 +346,12 @@ export async function submitStudent() {
     target_language: document.getElementById('sm-target-lang').value.trim() || null,
     current_level: document.getElementById('sm-level').value || null,
     learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
-    emergency_contact_name: document.getElementById('sm-emergency-contact-name').value.trim() || null,
-    emergency_contact_phone: document.getElementById('sm-emergency-contact-phone').value.trim() || null,
-    emergency_contact_email: document.getElementById('sm-emergency-contact-email').value.trim() || null,
+    emergency_contact_name:
+      document.getElementById('sm-emergency-contact-name').value.trim() || null,
+    emergency_contact_phone:
+      document.getElementById('sm-emergency-contact-phone').value.trim() || null,
+    emergency_contact_email:
+      document.getElementById('sm-emergency-contact-email').value.trim() || null,
     emergency_contact_relation:
       document.getElementById('sm-emergency-contact-relation').value.trim() || null,
     desired_start_date: document.getElementById('sm-desired-start').value || null,
