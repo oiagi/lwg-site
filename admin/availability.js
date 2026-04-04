@@ -1,6 +1,7 @@
 /* ── Teacher availability tab ─────────────────────────────────────── */
 import { apiFetch } from './api.js';
 import { esc } from './helpers.js';
+import { loadTeachers } from './teachers.js';
 
 let availabilityTeachers = null;
 
@@ -45,9 +46,20 @@ async function loadTeacherSchedule(teacherId) {
   container.innerHTML = '<div class="loading-state">loading…</div>';
 
   try {
-    const res = await apiFetch(`/api/get-teacher-availability?teacher_id=${teacherId}&days=14`);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
+    const [scheduleRes, teachers] = await Promise.all([
+      apiFetch(`/api/get-teacher-availability?teacher_id=${teacherId}&days=14`),
+      loadTeachers(),
+    ]);
+    if (!scheduleRes.ok) throw new Error();
+    const data = await scheduleRes.json();
+
+    const teacher = teachers.find((t) => t.id === teacherId);
+    const authorised = teacher ? teacher.authorised : false;
+    const bannerHtml = authorised
+      ? '<p style="font-size:0.75rem;color:#27ae60;margin-bottom:0.8rem;">Calendar: authorised ✓</p>'
+      : `<p style="font-size:0.75rem;color:#c0392b;margin-bottom:0.8rem;">Calendar: not authorised — <button class="action-btn" data-action="authoriseTeacher" data-args="${esc(teacherId)}">Authorise now</button></p>`;
+
+    container.innerHTML = bannerHtml;
     renderSchedule(data, container);
   } catch {
     container.innerHTML = '<div class="loading-state">Could not load schedule.</div>';
@@ -58,7 +70,7 @@ function renderSchedule(data, el) {
   const days = data.days || [];
 
   if (!days.length) {
-    el.innerHTML = '<div class="empty-state">no upcoming sessions</div>';
+    el.insertAdjacentHTML('beforeend', '<div class="empty-state">no upcoming sessions</div>');
     return;
   }
 
@@ -68,9 +80,11 @@ function renderSchedule(data, el) {
     weeks.push(days.slice(i, i + 7));
   }
 
-  el.innerHTML = weeks
-    .map(
-      (week) => `
+  el.insertAdjacentHTML(
+    'beforeend',
+    weeks
+      .map(
+        (week) => `
     <div class="avail-week">
       ${week
         .map((day) => {
@@ -105,8 +119,9 @@ function renderSchedule(data, el) {
         .join('')}
     </div>
   `
-    )
-    .join('');
+      )
+      .join('')
+  );
 }
 
 function formatDayDate(dateStr) {

@@ -8,23 +8,10 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import {
-  supabaseHeaders,
-  jsonResponse,
-  errorResponse,
-  withErrorHandling,
-  validateOrigin,
-  checkRateLimit,
-} from './_utils.js';
+import { supabaseHeaders, jsonResponse, errorResponse, withErrorHandling } from './_utils.js';
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
-
-  const originErr = validateOrigin(request, env);
-  if (originErr) return originErr;
-
-  const rateLimitErr = await checkRateLimit(request);
-  if (rateLimitErr) return rateLimitErr;
 
   const url = new URL(request.url);
   const token = url.searchParams.get('token');
@@ -34,7 +21,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,date_of_birth,nationality,postcode,emergency_contact,native_language,target_language,current_level,learning_goals,desired_start_date,course_type,course_format,location,billing_name,billing_address,billing_email,payment_method,referral_source,token_created_at,created_at`,
+      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,nationality,street,street_number,postcode,emergency_contact,ec_phone,ec_email,ec_relationship,native_language,target_language,current_level,learning_goals,desired_start_date,course_type,course_format,location,billing_name,billing_address,billing_email,payment_method,referral_source,token_created_at,created_at`,
       { headers: H }
     );
     if (!res.ok) return errorResponse('Database error');

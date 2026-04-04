@@ -48,6 +48,7 @@ import {
   closeStudentModal,
   editStudent,
   submitStudent,
+  deleteStudent,
   copyIntakeLink,
 } from './students.js';
 import {
@@ -66,10 +67,18 @@ import {
   switchInvoiceMode,
   initVatListener,
 } from './billing.js';
-import { authoriseTeacher } from './teachers.js';
+import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
 import { trapFocus, releaseFocus } from './helpers.js';
+
+/* ── Refresh availability banner after OAuth ─────────────────────── */
+setOnAuthoriseComplete(() => {
+  const panel = document.getElementById('panel-teachers');
+  if (panel && panel.style.display !== 'none') {
+    onTeacherSelect();
+  }
+});
 
 /* ── Action registry for event delegation ─────────────────────────── */
 const actions = {
@@ -102,6 +111,7 @@ const actions = {
   closeStudentModal,
   editStudent,
   submitStudent,
+  deleteStudent,
   copyIntakeLink,
   // Companies
   filterCompanies,
