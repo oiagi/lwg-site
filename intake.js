@@ -7,7 +7,7 @@
    - Submits to /api/submit-intake
    ══════════════════════════════════════════════════════════════════ */
 
-import { isValidEmail, showFieldError } from './form-validate.js';
+import { isValidEmail, showFieldError, scrollToFirstError } from './form-validate.js';
 
 const token = new URLSearchParams(window.location.search).get('token');
 
@@ -116,12 +116,15 @@ function validate() {
 
 /* ── Submit ──────────────────────────────────────────────────────── */
 document.getElementById('submit-btn').addEventListener('click', async () => {
-  if (!validate()) return;
+  if (!validate()) {
+    scrollToFirstError(document.getElementById('form-state'));
+    return;
+  }
 
   const btn = document.getElementById('submit-btn');
   const errEl = document.getElementById('form-error');
   errEl.style.display = 'none';
-  btn.textContent = 'submitting…';
+  btn.dataset.loading = '';
   btn.disabled = true;
 
   const body = {
@@ -163,7 +166,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     successState.style.display = 'block';
   } catch {
     errEl.style.display = 'block';
-    btn.textContent = 'submit registration';
+    delete btn.dataset.loading;
     btn.disabled = false;
   }
 });
