@@ -55,16 +55,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'last_name',
     'email',
     'phone',
+    'date_of_birth',
     'nationality',
-    'address_line1',
-    'address_line2',
-    'address_city',
     'postcode',
-    'address_country',
-    'emergency_contact_name',
-    'emergency_contact_phone',
-    'emergency_contact_email',
-    'emergency_contact_relation',
+    'emergency_contact',
     'native_language',
     'target_language',
     'current_level',
@@ -74,12 +68,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'course_format',
     'location',
     'billing_name',
-    'billing_same_as_student',
-    'billing_address_line1',
-    'billing_address_line2',
-    'billing_city',
-    'billing_postcode',
-    'billing_country',
     'billing_address',
     'billing_email',
     'payment_method',
@@ -95,22 +83,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (data.consent_given) {
     data.consent_date = new Date().toISOString();
   }
-  data.emergency_contact = [
-    data.emergency_contact_name,
-    data.emergency_contact_relation,
-    data.emergency_contact_phone,
-    data.emergency_contact_email,
-  ]
-    .filter(Boolean)
-    .join(' | ');
-  data.billing_address = [
-    data.billing_address_line1,
-    data.billing_address_line2,
-    [data.billing_postcode, data.billing_city].filter(Boolean).join(' '),
-    data.billing_country,
-  ]
-    .filter(Boolean)
-    .join(', ');
 
   try {
     const studentName = `${body.first_name} ${body.last_name}`;

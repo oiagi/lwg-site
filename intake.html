@@ -55,58 +55,25 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="in-nationality">Nationality</label>
-        <input type="text" id="in-nationality">
-      </div>
-
       <div class="field-row">
         <div class="field">
-          <label for="in-address-line1">Address line 1</label>
-          <input type="text" id="in-address-line1" autocomplete="address-line1" placeholder="Street and number">
+          <label for="in-dob">Date of birth</label>
+          <input type="date" id="in-dob">
         </div>
         <div class="field">
-          <label for="in-address-line2">Address line 2</label>
-          <input type="text" id="in-address-line2" autocomplete="address-line2" placeholder="Apartment, c/o, etc.">
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="in-address-city">City</label>
-          <input type="text" id="in-address-city" autocomplete="address-level2">
-        </div>
-        <div class="field">
-          <label for="in-postcode">Postcode</label>
-          <input type="text" id="in-postcode" autocomplete="postal-code" placeholder="e.g. 8001">
+          <label for="in-nationality">Nationality</label>
+          <input type="text" id="in-nationality">
         </div>
       </div>
 
       <div class="field">
-        <label for="in-address-country">Country</label>
-        <input type="text" id="in-address-country" autocomplete="country-name" placeholder="e.g. Switzerland">
+        <label for="in-postcode">Postcode</label>
+        <input type="text" id="in-postcode" placeholder="e.g. 8001">
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="in-emergency-name">Emergency contact full name</label>
-          <input type="text" id="in-emergency-name" placeholder="Full name">
-        </div>
-        <div class="field">
-          <label for="in-emergency-relation">Relation to student</label>
-          <input type="text" id="in-emergency-relation" placeholder="e.g. Parent, partner">
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="in-emergency-phone">Emergency contact phone</label>
-          <input type="tel" id="in-emergency-phone" autocomplete="tel" placeholder="+41…">
-        </div>
-        <div class="field">
-          <label for="in-emergency-email">Emergency contact email</label>
-          <input type="email" id="in-emergency-email" autocomplete="email" placeholder="contact@example.com">
-        </div>
+      <div class="field">
+        <label for="in-emergency">Emergency contact</label>
+        <input type="text" id="in-emergency" placeholder="Name, phone number">
       </div>
 
       <!-- ── Course Preferences ─────────────────────────────────────── -->
@@ -193,45 +160,19 @@
       <!-- ── Billing Information ─────────────────────────────────────── -->
       <p class="section-label">billing information</p>
 
-      <div class="consent-field" style="margin-bottom:1rem;">
-        <input type="checkbox" id="in-billing-same" checked>
-        <label for="in-billing-same">Billing details are the same as student information</label>
+      <div class="field">
+        <label for="in-billing-name">Billing name <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+        <input type="text" id="in-billing-name" placeholder="Full name">
       </div>
 
-      <div id="billing-fields" style="display:none;">
-        <div class="field">
-          <label for="in-billing-name">Billing name</label>
-          <input type="text" id="in-billing-name" placeholder="Full name">
-        </div>
+      <div class="field">
+        <label for="in-billing-address">Billing address</label>
+        <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
+      </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="in-billing-address-line1">Billing address line 1</label>
-            <input type="text" id="in-billing-address-line1" placeholder="Street and number">
-          </div>
-          <div class="field">
-            <label for="in-billing-address-line2">Billing address line 2</label>
-            <input type="text" id="in-billing-address-line2" placeholder="Apartment, c/o, etc.">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label for="in-billing-city">Billing city</label>
-            <input type="text" id="in-billing-city">
-          </div>
-          <div class="field">
-            <label for="in-billing-postcode">Billing postcode</label>
-            <input type="text" id="in-billing-postcode">
-          </div>
-        </div>
-        <div class="field">
-          <label for="in-billing-country">Billing country</label>
-          <input type="text" id="in-billing-country">
-        </div>
-        <div class="field">
-          <label for="in-billing-email">Billing email</label>
-          <input type="email" id="in-billing-email" placeholder="billing@example.com">
-        </div>
+      <div class="field">
+        <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+        <input type="email" id="in-billing-email" placeholder="billing@example.com">
       </div>
 
       <div class="field">

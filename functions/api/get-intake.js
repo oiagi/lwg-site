@@ -34,7 +34,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,nationality,address_line1,address_line2,address_city,postcode,address_country,emergency_contact_name,emergency_contact_phone,emergency_contact_email,emergency_contact_relation,native_language,target_language,current_level,learning_goals,desired_start_date,course_type,course_format,location,billing_name,billing_same_as_student,billing_address_line1,billing_address_line2,billing_city,billing_postcode,billing_country,billing_address,billing_email,payment_method,referral_source,token_created_at,created_at`,
+      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,date_of_birth,nationality,postcode,emergency_contact,native_language,target_language,current_level,learning_goals,desired_start_date,course_type,course_format,location,billing_name,billing_address,billing_email,payment_method,referral_source,token_created_at,created_at`,
       { headers: H }
     );
     if (!res.ok) return errorResponse('Database error');
@@ -42,10 +42,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const students = await res.json();
     if (!students.length) return errorResponse('Student not found', 404);
 
+    // ── Token expiry check (90 days) ──────────────────────────────────
+    const student = students[0];
+    const tokenDate = student.token_created_at || student.created_at;
+    if (tokenDate) {
+      const ageMs = Date.now() - new Date(tokenDate).getTime();
+      const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
+      if (ageMs > maxAgeMs) {
+        return errorResponse('This link has expired. Please contact us for a new one.', 410);
+      }
+    }
+
     // Strip internal date fields before returning
-    const formData = { ...students[0] };
-    delete formData.token_created_at;
-    delete formData.created_at;
+    const { token_created_at: _t, created_at: _c, ...formData } = student;
     return jsonResponse(formData);
   } catch (err) {
     console.error('Error:', err);
