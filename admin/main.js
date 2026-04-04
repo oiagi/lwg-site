@@ -49,6 +49,7 @@ import {
   editStudent,
   submitStudent,
   copyIntakeLink,
+  deleteStudent,
 } from './students.js';
 import {
   loadInvoices,
@@ -103,6 +104,7 @@ const actions = {
   editStudent,
   submitStudent,
   copyIntakeLink,
+  deleteStudent,
   // Companies
   filterCompanies,
   toggleCompany,

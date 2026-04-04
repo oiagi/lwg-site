@@ -49,24 +49,37 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'last_name',
     'email',
     'phone',
+    'address_line1',
+    'address_line2',
+    'address_city',
     'postcode',
+    'address_country',
     'current_level',
     'progress_notes',
     'company_id',
     'status',
     'source',
     'billing_name',
+    'billing_same_as_student',
+    'billing_address_line1',
+    'billing_address_line2',
+    'billing_city',
+    'billing_postcode',
+    'billing_country',
     'billing_address',
     'billing_email',
     'rate_per_session',
     'currency',
     'vat_number',
-    'date_of_birth',
     'nationality',
     'native_language',
     'target_language',
     'learning_goals',
     'emergency_contact',
+    'emergency_contact_name',
+    'emergency_contact_phone',
+    'emergency_contact_email',
+    'emergency_contact_relation',
     'desired_start_date',
     'referral_source',
     'payment_method',
@@ -79,6 +92,26 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const data = {};
   for (const f of fields) {
     if (body[f] !== undefined) data[f] = body[f];
+  }
+  if (data.emergency_contact === undefined) {
+    data.emergency_contact = [
+      data.emergency_contact_name,
+      data.emergency_contact_relation,
+      data.emergency_contact_phone,
+      data.emergency_contact_email,
+    ]
+      .filter(Boolean)
+      .join(' | ');
+  }
+  if (data.billing_address === undefined) {
+    data.billing_address = [
+      data.billing_address_line1,
+      data.billing_address_line2,
+      [data.billing_postcode, data.billing_city].filter(Boolean).join(' '),
+      data.billing_country,
+    ]
+      .filter(Boolean)
+      .join(', ');
   }
 
   // Dual-write: always keep active in sync with status during migration
