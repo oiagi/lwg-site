@@ -22,6 +22,15 @@ const invalidState = document.getElementById('invalid-state');
     try {
       const res = await fetch('/api/get-intake?token=' + encodeURIComponent(token));
       if (!res.ok) {
+        let msg = null;
+        try {
+          const err = await res.json();
+          if (err && err.error) msg = err.error;
+        } catch {
+          /* ignore */
+        }
+        const msgEl = invalidState.querySelector('p');
+        if (msg && msgEl) msgEl.textContent = msg;
         loadingState.style.display = 'none';
         invalidState.style.display = 'block';
         return;

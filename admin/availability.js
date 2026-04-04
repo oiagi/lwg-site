@@ -45,24 +45,43 @@ async function loadTeacherSchedule(teacherId) {
   const container = document.getElementById('availability-content');
   container.innerHTML = '<div class="loading-state">loading…</div>';
 
+  // Fetch schedule and teacher auth status in parallel.
+  // loadTeachers() never throws — returns [] on error.
+  let scheduleRes, teachers;
   try {
-    const [scheduleRes, teachers] = await Promise.all([
+    [scheduleRes, teachers] = await Promise.all([
       apiFetch(`/api/get-teacher-availability?teacher_id=${teacherId}&days=14`),
       loadTeachers(),
     ]);
-    if (!scheduleRes.ok) throw new Error();
-    const data = await scheduleRes.json();
-
-    const teacher = teachers.find((t) => t.id === teacherId);
-    const authorised = teacher ? teacher.authorised : false;
-    const bannerHtml = authorised
-      ? '<p style="font-size:0.75rem;color:#27ae60;margin-bottom:0.8rem;">Calendar: authorised ✓</p>'
-      : `<p style="font-size:0.75rem;color:#c0392b;margin-bottom:0.8rem;">Calendar: not authorised — <button class="action-btn" data-action="authoriseTeacher" data-args="${esc(teacherId)}">Authorise now</button></p>`;
-
-    container.innerHTML = bannerHtml;
-    renderSchedule(data, container);
   } catch {
     container.innerHTML = '<div class="loading-state">Could not load schedule.</div>';
+    return;
+  }
+
+  // Always render the auth banner, even if the schedule failed.
+  const teacher = teachers.find((t) => t.id === teacherId);
+  const authorised = teacher ? teacher.authorised : false;
+  const bannerHtml = authorised
+    ? '<p style="font-size:0.75rem;color:#27ae60;margin-bottom:0.8rem;">Calendar: authorised ✓</p>'
+    : `<p style="font-size:0.75rem;color:#c0392b;margin-bottom:0.8rem;">Calendar: not authorised — <button class="action-btn" data-action="authoriseTeacher" data-args="${esc(teacherId)}">Authorise now</button></p>`;
+  container.innerHTML = bannerHtml;
+
+  if (!scheduleRes.ok) {
+    container.insertAdjacentHTML(
+      'beforeend',
+      '<div class="loading-state">Could not load schedule.</div>'
+    );
+    return;
+  }
+
+  try {
+    const data = await scheduleRes.json();
+    renderSchedule(data, container);
+  } catch {
+    container.insertAdjacentHTML(
+      'beforeend',
+      '<div class="loading-state">Could not load schedule.</div>'
+    );
   }
 }
 

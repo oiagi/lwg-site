@@ -30,10 +30,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (!students.length) return errorResponse('Student not found', 404);
 
     // ── Token expiry check (90 days) ──────────────────────────────────
+    // Only applies if token_created_at is explicitly set (i.e. the student
+    // has previously submitted the intake form). Admin-created tokens have
+    // no token_created_at and never expire.
     const student = students[0];
-    const tokenDate = student.token_created_at || student.created_at;
-    if (tokenDate) {
-      const ageMs = Date.now() - new Date(tokenDate).getTime();
+    if (student.token_created_at) {
+      const ageMs = Date.now() - new Date(student.token_created_at).getTime();
       const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
       if (ageMs > maxAgeMs) {
         return errorResponse('This link has expired. Please contact us for a new one.', 410);
