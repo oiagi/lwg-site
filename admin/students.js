@@ -105,11 +105,20 @@ function renderStudentDetail(container, s) {
           ${esc(s.first_name)} ${esc(s.last_name)}<br>
           ${s.email ? '<span style="color:#aaa;">' + esc(s.email) + '</span><br>' : ''}
           ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
-          ${s.date_of_birth ? 'DOB: ' + esc(s.date_of_birth) + '<br>' : ''}
           ${s.nationality ? 'Nationality: ' + esc(s.nationality) + '<br>' : ''}
-          ${s.postcode ? 'Postcode: ' + esc(s.postcode) : ''}
+          ${s.address_line1 ? esc(s.address_line1) + '<br>' : ''}
+          ${s.address_line2 ? esc(s.address_line2) + '<br>' : ''}
+          ${[s.postcode, s.address_city].filter(Boolean).map(esc).join(' ') || ''}<br>
+          ${s.address_country ? esc(s.address_country) : ''}
         </p>
-        ${s.emergency_contact ? '<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ' + esc(s.emergency_contact) + '</p>' : ''}
+        ${(s.emergency_contact_name || s.emergency_contact_phone || s.emergency_contact_email || s.emergency_contact_relation)
+          ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">
+            Emergency: ${esc(s.emergency_contact_name || '—')}
+            ${s.emergency_contact_relation ? ' (' + esc(s.emergency_contact_relation) + ')' : ''}
+            ${s.emergency_contact_phone ? '<br>' + esc(s.emergency_contact_phone) : ''}
+            ${s.emergency_contact_email ? '<br>' + esc(s.emergency_contact_email) : ''}
+          </p>`
+          : ''}
       </div>
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
@@ -146,8 +155,9 @@ function renderStudentDetail(container, s) {
     ${s.progress_notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + esc(s.progress_notes) + '</p>' : ''}
     ${s.consent_given ? '<p style="font-size:0.7rem;color:#aaa;margin-bottom:0.5rem;">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-      <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
-      <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token}">copy intake link</button>
+          <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
+          <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token}">copy intake link</button>
+          <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete student</button>
     </div>
   `;
 }
@@ -161,20 +171,30 @@ export function openStudentModal(existingData) {
     'sm-last-name',
     'sm-email',
     'sm-phone',
+    'sm-address-line1',
+    'sm-address-line2',
+    'sm-address-city',
     'sm-postcode',
-    'sm-dob',
+    'sm-address-country',
     'sm-nationality',
     'sm-native-lang',
     'sm-target-lang',
     'sm-level',
     'sm-learning-goals',
-    'sm-emergency-contact',
+    'sm-emergency-contact-name',
+    'sm-emergency-contact-phone',
+    'sm-emergency-contact-email',
+    'sm-emergency-contact-relation',
     'sm-desired-start',
     'sm-course-type',
     'sm-course-format',
     'sm-location',
     'sm-billing-name',
-    'sm-billing-address',
+    'sm-billing-address-line1',
+    'sm-billing-address-line2',
+    'sm-billing-city',
+    'sm-billing-postcode',
+    'sm-billing-country',
     'sm-billing-email',
     'sm-rate',
     'sm-vat',
@@ -189,6 +209,7 @@ export function openStudentModal(existingData) {
   });
 
   document.getElementById('sm-status').value = 'active';
+  document.getElementById('sm-billing-same').checked = true;
   document.getElementById('student-modal-title').textContent = 'new student';
   const btn = document.getElementById('sm-submit');
   btn.textContent = 'save student';
@@ -204,20 +225,32 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-last-name').value = existingData.last_name || '';
     document.getElementById('sm-email').value = existingData.email || '';
     document.getElementById('sm-phone').value = existingData.phone || '';
+    document.getElementById('sm-address-line1').value = existingData.address_line1 || '';
+    document.getElementById('sm-address-line2').value = existingData.address_line2 || '';
+    document.getElementById('sm-address-city').value = existingData.address_city || '';
     document.getElementById('sm-postcode').value = existingData.postcode || '';
-    document.getElementById('sm-dob').value = existingData.date_of_birth || '';
+    document.getElementById('sm-address-country').value = existingData.address_country || '';
     document.getElementById('sm-nationality').value = existingData.nationality || '';
     document.getElementById('sm-native-lang').value = existingData.native_language || '';
     document.getElementById('sm-target-lang').value = existingData.target_language || '';
     document.getElementById('sm-level').value = existingData.current_level || '';
     document.getElementById('sm-learning-goals').value = existingData.learning_goals || '';
-    document.getElementById('sm-emergency-contact').value = existingData.emergency_contact || '';
+    document.getElementById('sm-emergency-contact-name').value = existingData.emergency_contact_name || '';
+    document.getElementById('sm-emergency-contact-phone').value = existingData.emergency_contact_phone || '';
+    document.getElementById('sm-emergency-contact-email').value = existingData.emergency_contact_email || '';
+    document.getElementById('sm-emergency-contact-relation').value =
+      existingData.emergency_contact_relation || '';
     document.getElementById('sm-desired-start').value = existingData.desired_start_date || '';
     document.getElementById('sm-course-type').value = existingData.course_type || '';
     document.getElementById('sm-course-format').value = existingData.course_format || '';
     document.getElementById('sm-location').value = existingData.location || '';
+    document.getElementById('sm-billing-same').checked = existingData.billing_same_as_student !== false;
     document.getElementById('sm-billing-name').value = existingData.billing_name || '';
-    document.getElementById('sm-billing-address').value = existingData.billing_address || '';
+    document.getElementById('sm-billing-address-line1').value = existingData.billing_address_line1 || '';
+    document.getElementById('sm-billing-address-line2').value = existingData.billing_address_line2 || '';
+    document.getElementById('sm-billing-city').value = existingData.billing_city || '';
+    document.getElementById('sm-billing-postcode').value = existingData.billing_postcode || '';
+    document.getElementById('sm-billing-country').value = existingData.billing_country || '';
     document.getElementById('sm-billing-email').value = existingData.billing_email || '';
     document.getElementById('sm-rate').value = existingData.rate_per_session || '';
     document.getElementById('sm-vat').value = existingData.vat_number || '';
@@ -292,20 +325,32 @@ export async function submitStudent() {
     last_name: lastName,
     email: document.getElementById('sm-email').value.trim() || null,
     phone: document.getElementById('sm-phone').value.trim() || null,
+    address_line1: document.getElementById('sm-address-line1').value.trim() || null,
+    address_line2: document.getElementById('sm-address-line2').value.trim() || null,
+    address_city: document.getElementById('sm-address-city').value.trim() || null,
     postcode: document.getElementById('sm-postcode').value.trim() || null,
-    date_of_birth: document.getElementById('sm-dob').value || null,
+    address_country: document.getElementById('sm-address-country').value.trim() || null,
     nationality: document.getElementById('sm-nationality').value.trim() || null,
     native_language: document.getElementById('sm-native-lang').value.trim() || null,
     target_language: document.getElementById('sm-target-lang').value.trim() || null,
     current_level: document.getElementById('sm-level').value || null,
     learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
-    emergency_contact: document.getElementById('sm-emergency-contact').value.trim() || null,
+    emergency_contact_name: document.getElementById('sm-emergency-contact-name').value.trim() || null,
+    emergency_contact_phone: document.getElementById('sm-emergency-contact-phone').value.trim() || null,
+    emergency_contact_email: document.getElementById('sm-emergency-contact-email').value.trim() || null,
+    emergency_contact_relation:
+      document.getElementById('sm-emergency-contact-relation').value.trim() || null,
     desired_start_date: document.getElementById('sm-desired-start').value || null,
     course_type: document.getElementById('sm-course-type').value || null,
     course_format: document.getElementById('sm-course-format').value || null,
     location: document.getElementById('sm-location').value || null,
+    billing_same_as_student: document.getElementById('sm-billing-same').checked,
     billing_name: document.getElementById('sm-billing-name').value.trim() || null,
-    billing_address: document.getElementById('sm-billing-address').value.trim() || null,
+    billing_address_line1: document.getElementById('sm-billing-address-line1').value.trim() || null,
+    billing_address_line2: document.getElementById('sm-billing-address-line2').value.trim() || null,
+    billing_city: document.getElementById('sm-billing-city').value.trim() || null,
+    billing_postcode: document.getElementById('sm-billing-postcode').value.trim() || null,
+    billing_country: document.getElementById('sm-billing-country').value.trim() || null,
     billing_email: document.getElementById('sm-billing-email').value.trim() || null,
     rate_per_session: document.getElementById('sm-rate').value
       ? parseFloat(document.getElementById('sm-rate').value)
@@ -370,4 +415,27 @@ export function copyIntakeLink(studentId, accessToken) {
     .catch(() => {
       prompt('Copy this link:', window.location.origin + '/intake.html?token=' + accessToken);
     });
+}
+
+export async function deleteStudent(studentId) {
+  const confirmed = confirm(
+    'Delete this student permanently? This cannot be undone and may fail if linked records exist.'
+  );
+  if (!confirmed) return;
+
+  try {
+    const res = await apiFetch('/api/delete-student?id=' + encodeURIComponent(studentId), {
+      method: 'DELETE',
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not delete student');
+
+    selectedStudentId = null;
+    const pane = document.getElementById('student-detail-panel');
+    pane.className = 'student-detail-empty';
+    pane.innerHTML = '<p>select a student to view their details</p>';
+    loadStudents(currentStudentFilter);
+  } catch (err) {
+    alert(err.message || 'Could not delete student.');
+  }
 }

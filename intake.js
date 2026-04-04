@@ -45,18 +45,36 @@ function prefill(s) {
   if (s.last_name) document.getElementById('in-last-name').value = s.last_name;
   if (s.email) document.getElementById('in-email').value = s.email;
   if (s.phone) document.getElementById('in-phone').value = s.phone;
-  if (s.date_of_birth) document.getElementById('in-dob').value = s.date_of_birth;
   if (s.nationality) document.getElementById('in-nationality').value = s.nationality;
+  if (s.address_line1) document.getElementById('in-address-line1').value = s.address_line1;
+  if (s.address_line2) document.getElementById('in-address-line2').value = s.address_line2;
+  if (s.address_city) document.getElementById('in-address-city').value = s.address_city;
   if (s.postcode) document.getElementById('in-postcode').value = s.postcode;
-  if (s.emergency_contact) document.getElementById('in-emergency').value = s.emergency_contact;
+  if (s.address_country) document.getElementById('in-address-country').value = s.address_country;
+  if (s.emergency_contact_name) document.getElementById('in-emergency-name').value = s.emergency_contact_name;
+  if (s.emergency_contact_relation)
+    document.getElementById('in-emergency-relation').value = s.emergency_contact_relation;
+  if (s.emergency_contact_phone)
+    document.getElementById('in-emergency-phone').value = s.emergency_contact_phone;
+  if (s.emergency_contact_email)
+    document.getElementById('in-emergency-email').value = s.emergency_contact_email;
   if (s.native_language) document.getElementById('in-native-lang').value = s.native_language;
   if (s.target_language) document.getElementById('in-target-lang').value = s.target_language;
   if (s.current_level) document.getElementById('in-level').value = s.current_level;
   if (s.learning_goals) document.getElementById('in-goals').value = s.learning_goals;
   if (s.desired_start_date) document.getElementById('in-start-date').value = s.desired_start_date;
   if (s.billing_name) document.getElementById('in-billing-name').value = s.billing_name;
-  if (s.billing_address) document.getElementById('in-billing-address').value = s.billing_address;
+  if (s.billing_address_line1)
+    document.getElementById('in-billing-address-line1').value = s.billing_address_line1;
+  if (s.billing_address_line2)
+    document.getElementById('in-billing-address-line2').value = s.billing_address_line2;
+  if (s.billing_city) document.getElementById('in-billing-city').value = s.billing_city;
+  if (s.billing_postcode) document.getElementById('in-billing-postcode').value = s.billing_postcode;
+  if (s.billing_country) document.getElementById('in-billing-country').value = s.billing_country;
   if (s.billing_email) document.getElementById('in-billing-email').value = s.billing_email;
+  const billingSame = s.billing_same_as_student !== false;
+  document.getElementById('in-billing-same').checked = billingSame;
+  setBillingFieldsVisibility();
   if (s.referral_source) document.getElementById('in-referral').value = s.referral_source;
 
   // Radio buttons
@@ -80,6 +98,14 @@ function getRadio(name) {
   const checked = document.querySelector(`input[name="${name}"]:checked`);
   return checked ? checked.value : null;
 }
+
+function setBillingFieldsVisibility() {
+  const billingSame = document.getElementById('in-billing-same').checked;
+  document.getElementById('billing-fields').style.display = billingSame ? 'none' : 'block';
+}
+
+document.getElementById('in-billing-same').addEventListener('change', setBillingFieldsVisibility);
+setBillingFieldsVisibility();
 
 /* ── Show/hide location field based on format selection ───────────── */
 document.getElementById('in-course-format').addEventListener('click', (e) => {
@@ -124,16 +150,52 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   btn.textContent = 'submitting…';
   btn.disabled = true;
 
+  const billingSame = document.getElementById('in-billing-same').checked;
+  const studentAddressLine1 = document.getElementById('in-address-line1').value.trim() || null;
+  const studentAddressLine2 = document.getElementById('in-address-line2').value.trim() || null;
+  const studentAddressCity = document.getElementById('in-address-city').value.trim() || null;
+  const studentPostcode = document.getElementById('in-postcode').value.trim() || null;
+  const studentAddressCountry = document.getElementById('in-address-country').value.trim() || null;
+
+  const billingName = billingSame
+    ? `${document.getElementById('in-first-name').value.trim()} ${document.getElementById('in-last-name').value.trim()}`.trim()
+    : document.getElementById('in-billing-name').value.trim() || null;
+  const billingAddressLine1 = billingSame
+    ? studentAddressLine1
+    : document.getElementById('in-billing-address-line1').value.trim() || null;
+  const billingAddressLine2 = billingSame
+    ? studentAddressLine2
+    : document.getElementById('in-billing-address-line2').value.trim() || null;
+  const billingCity = billingSame
+    ? studentAddressCity
+    : document.getElementById('in-billing-city').value.trim() || null;
+  const billingPostcode = billingSame
+    ? studentPostcode
+    : document.getElementById('in-billing-postcode').value.trim() || null;
+  const billingCountry = billingSame
+    ? studentAddressCountry
+    : document.getElementById('in-billing-country').value.trim() || null;
+  const billingEmail = billingSame
+    ? document.getElementById('in-email').value.trim()
+    : document.getElementById('in-billing-email').value.trim() || null;
+
   const body = {
     token: token || undefined,
     first_name: document.getElementById('in-first-name').value.trim(),
     last_name: document.getElementById('in-last-name').value.trim(),
     email: document.getElementById('in-email').value.trim(),
     phone: document.getElementById('in-phone').value.trim() || null,
-    date_of_birth: document.getElementById('in-dob').value || null,
     nationality: document.getElementById('in-nationality').value.trim() || null,
-    postcode: document.getElementById('in-postcode').value.trim() || null,
-    emergency_contact: document.getElementById('in-emergency').value.trim() || null,
+    address_line1: studentAddressLine1,
+    address_line2: studentAddressLine2,
+    address_city: studentAddressCity,
+    postcode: studentPostcode,
+    address_country: studentAddressCountry,
+    emergency_contact_name: document.getElementById('in-emergency-name').value.trim() || null,
+    emergency_contact_relation:
+      document.getElementById('in-emergency-relation').value.trim() || null,
+    emergency_contact_phone: document.getElementById('in-emergency-phone').value.trim() || null,
+    emergency_contact_email: document.getElementById('in-emergency-email').value.trim() || null,
     course_type: getRadio('course-type'),
     course_format: getRadio('course-format'),
     location: getRadio('location'),
@@ -142,9 +204,14 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     current_level: document.getElementById('in-level').value || null,
     learning_goals: document.getElementById('in-goals').value.trim() || null,
     desired_start_date: document.getElementById('in-start-date').value || null,
-    billing_name: document.getElementById('in-billing-name').value.trim() || null,
-    billing_address: document.getElementById('in-billing-address').value.trim() || null,
-    billing_email: document.getElementById('in-billing-email').value.trim() || null,
+    billing_same_as_student: billingSame,
+    billing_name: billingName || null,
+    billing_address_line1: billingAddressLine1,
+    billing_address_line2: billingAddressLine2,
+    billing_city: billingCity,
+    billing_postcode: billingPostcode,
+    billing_country: billingCountry,
+    billing_email: billingEmail,
     payment_method: getRadio('payment-method'),
     referral_source: document.getElementById('in-referral').value || null,
     consent_given: true,
