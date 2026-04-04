@@ -52,6 +52,12 @@ export async function populateTeacherSelects() {
   });
 }
 
+let _onAuthoriseComplete = null;
+
+export function setOnAuthoriseComplete(fn) {
+  _onAuthoriseComplete = fn;
+}
+
 export async function authoriseTeacher(teacherId) {
   const token = await getAccessToken();
   const popup = window.open(
@@ -64,6 +70,7 @@ export async function authoriseTeacher(teacherId) {
       clearInterval(poll);
       clearTeachersCache();
       populateTeacherSelects();
+      if (_onAuthoriseComplete) _onAuthoriseComplete();
     }
   }, 500);
 }

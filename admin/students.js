@@ -105,11 +105,11 @@ function renderStudentDetail(container, s) {
           ${esc(s.first_name)} ${esc(s.last_name)}<br>
           ${s.email ? '<span style="color:#aaa;">' + esc(s.email) + '</span><br>' : ''}
           ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
-          ${s.date_of_birth ? 'DOB: ' + esc(s.date_of_birth) + '<br>' : ''}
           ${s.nationality ? 'Nationality: ' + esc(s.nationality) + '<br>' : ''}
+          ${s.street || s.street_number ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' : ''}
           ${s.postcode ? 'Postcode: ' + esc(s.postcode) : ''}
         </p>
-        ${s.emergency_contact ? '<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ' + esc(s.emergency_contact) + '</p>' : ''}
+        ${s.emergency_contact || s.ec_phone || s.ec_email ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' (' + esc(s.ec_relationship) + ')' : ''}${s.ec_phone ? ' · ' + esc(s.ec_phone) : ''}${s.ec_email ? ' · ' + esc(s.ec_email) : ''}</p>` : ''}
       </div>
       <div>
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
@@ -148,6 +148,7 @@ function renderStudentDetail(container, s) {
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
       <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token}">copy intake link</button>
+      <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
 }
@@ -161,14 +162,18 @@ export function openStudentModal(existingData) {
     'sm-last-name',
     'sm-email',
     'sm-phone',
-    'sm-postcode',
-    'sm-dob',
     'sm-nationality',
+    'sm-street',
+    'sm-street-number',
+    'sm-postcode',
+    'sm-ec-name',
+    'sm-ec-phone',
+    'sm-ec-email',
+    'sm-ec-relationship',
     'sm-native-lang',
     'sm-target-lang',
     'sm-level',
     'sm-learning-goals',
-    'sm-emergency-contact',
     'sm-desired-start',
     'sm-course-type',
     'sm-course-format',
@@ -204,14 +209,18 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-last-name').value = existingData.last_name || '';
     document.getElementById('sm-email').value = existingData.email || '';
     document.getElementById('sm-phone').value = existingData.phone || '';
-    document.getElementById('sm-postcode').value = existingData.postcode || '';
-    document.getElementById('sm-dob').value = existingData.date_of_birth || '';
     document.getElementById('sm-nationality').value = existingData.nationality || '';
+    document.getElementById('sm-street').value = existingData.street || '';
+    document.getElementById('sm-street-number').value = existingData.street_number || '';
+    document.getElementById('sm-postcode').value = existingData.postcode || '';
+    document.getElementById('sm-ec-name').value = existingData.emergency_contact || '';
+    document.getElementById('sm-ec-phone').value = existingData.ec_phone || '';
+    document.getElementById('sm-ec-email').value = existingData.ec_email || '';
+    document.getElementById('sm-ec-relationship').value = existingData.ec_relationship || '';
     document.getElementById('sm-native-lang').value = existingData.native_language || '';
     document.getElementById('sm-target-lang').value = existingData.target_language || '';
     document.getElementById('sm-level').value = existingData.current_level || '';
     document.getElementById('sm-learning-goals').value = existingData.learning_goals || '';
-    document.getElementById('sm-emergency-contact').value = existingData.emergency_contact || '';
     document.getElementById('sm-desired-start').value = existingData.desired_start_date || '';
     document.getElementById('sm-course-type').value = existingData.course_type || '';
     document.getElementById('sm-course-format').value = existingData.course_format || '';
@@ -292,14 +301,18 @@ export async function submitStudent() {
     last_name: lastName,
     email: document.getElementById('sm-email').value.trim() || null,
     phone: document.getElementById('sm-phone').value.trim() || null,
-    postcode: document.getElementById('sm-postcode').value.trim() || null,
-    date_of_birth: document.getElementById('sm-dob').value || null,
     nationality: document.getElementById('sm-nationality').value.trim() || null,
+    street: document.getElementById('sm-street').value.trim() || null,
+    street_number: document.getElementById('sm-street-number').value.trim() || null,
+    postcode: document.getElementById('sm-postcode').value.trim() || null,
+    emergency_contact: document.getElementById('sm-ec-name').value.trim() || null,
+    ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
+    ec_email: document.getElementById('sm-ec-email').value.trim() || null,
+    ec_relationship: document.getElementById('sm-ec-relationship').value.trim() || null,
     native_language: document.getElementById('sm-native-lang').value.trim() || null,
     target_language: document.getElementById('sm-target-lang').value.trim() || null,
     current_level: document.getElementById('sm-level').value || null,
     learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
-    emergency_contact: document.getElementById('sm-emergency-contact').value.trim() || null,
     desired_start_date: document.getElementById('sm-desired-start').value || null,
     course_type: document.getElementById('sm-course-type').value || null,
     course_format: document.getElementById('sm-course-format').value || null,
@@ -343,6 +356,21 @@ export async function submitStudent() {
     msgEl.style.display = 'block';
     btn.textContent = 'save student';
     btn.disabled = false;
+  }
+}
+
+export async function deleteStudent(studentId) {
+  if (!confirm('Delete this student? This cannot be undone.')) return;
+  try {
+    const res = await apiFetch('/api/delete-student?id=' + studentId, { method: 'DELETE' });
+    const result = await res.json();
+    if (!res.ok) {
+      alert(result.error || 'Could not delete student.');
+      return;
+    }
+    loadStudents(currentStudentFilter);
+  } catch {
+    alert('Could not delete student.');
   }
 }
 

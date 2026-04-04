@@ -55,14 +55,19 @@
         </div>
       </div>
 
+      <div class="field">
+        <label for="in-nationality">Nationality</label>
+        <input type="text" id="in-nationality">
+      </div>
+
       <div class="field-row">
         <div class="field">
-          <label for="in-dob">Date of birth</label>
-          <input type="date" id="in-dob">
+          <label for="in-street">Street</label>
+          <input type="text" id="in-street" autocomplete="street-address">
         </div>
-        <div class="field">
-          <label for="in-nationality">Nationality</label>
-          <input type="text" id="in-nationality">
+        <div class="field" style="max-width:120px;">
+          <label for="in-street-number">Number</label>
+          <input type="text" id="in-street-number" autocomplete="address-line2" placeholder="e.g. 3a">
         </div>
       </div>
 
@@ -71,9 +76,25 @@
         <input type="text" id="in-postcode" placeholder="e.g. 8001">
       </div>
 
-      <div class="field">
-        <label for="in-emergency">Emergency contact</label>
-        <input type="text" id="in-emergency" placeholder="Name, phone number">
+      <div class="field-row">
+        <div class="field">
+          <label for="in-ec-name">Emergency contact name</label>
+          <input type="text" id="in-ec-name">
+        </div>
+        <div class="field">
+          <label for="in-ec-relationship">Relationship</label>
+          <input type="text" id="in-ec-relationship" placeholder="e.g. Partner, Parent">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="in-ec-phone">Emergency contact phone</label>
+          <input type="tel" id="in-ec-phone" placeholder="+41…">
+        </div>
+        <div class="field">
+          <label for="in-ec-email">Emergency contact email</label>
+          <input type="email" id="in-ec-email">
+        </div>
       </div>
 
       <!-- ── Course Preferences ─────────────────────────────────────── -->
@@ -160,19 +181,26 @@
       <!-- ── Billing Information ─────────────────────────────────────── -->
       <p class="section-label">billing information</p>
 
-      <div class="field">
-        <label for="in-billing-name">Billing name <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-        <input type="text" id="in-billing-name" placeholder="Full name">
+      <div class="consent-field" style="margin-bottom:1rem;">
+        <input type="checkbox" id="in-billing-same">
+        <label for="in-billing-same">Same as name and address above</label>
       </div>
 
-      <div class="field">
-        <label for="in-billing-address">Billing address</label>
-        <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
-      </div>
+      <div id="billing-fields">
+        <div class="field">
+          <label for="in-billing-name">Billing name</label>
+          <input type="text" id="in-billing-name" placeholder="Full name">
+        </div>
 
-      <div class="field">
-        <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-        <input type="email" id="in-billing-email" placeholder="billing@example.com">
+        <div class="field">
+          <label for="in-billing-address">Billing address</label>
+          <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+          <input type="email" id="in-billing-email" placeholder="billing@example.com">
+        </div>
       </div>
 
       <div class="field">

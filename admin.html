@@ -176,10 +176,14 @@
           <div class="modal-field"><label>Last name *</label><input type="text" id="sm-last-name" placeholder="Last name"></div>
           <div class="modal-field"><label>Email</label><input type="email" id="sm-email" placeholder="student@example.com"></div>
           <div class="modal-field"><label>Phone</label><input type="tel" id="sm-phone" placeholder="+41…"></div>
-          <div class="modal-field"><label>Date of birth</label><input type="date" id="sm-dob"></div>
           <div class="modal-field"><label>Nationality</label><input type="text" id="sm-nationality" placeholder="e.g. Swiss"></div>
+          <div class="modal-field"><label>Street</label><input type="text" id="sm-street" placeholder="e.g. Bahnhofstrasse"></div>
+          <div class="modal-field"><label>Street number</label><input type="text" id="sm-street-number" placeholder="e.g. 3a"></div>
           <div class="modal-field"><label>Postcode</label><input type="text" id="sm-postcode" placeholder="e.g. 8001"></div>
-          <div class="modal-field"><label>Emergency contact</label><input type="text" id="sm-emergency-contact" placeholder="Name, +41…"></div>
+          <div class="modal-field"><label>Emergency contact name</label><input type="text" id="sm-ec-name" placeholder="Full name"></div>
+          <div class="modal-field"><label>Relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
+          <div class="modal-field"><label>Emergency contact phone</label><input type="tel" id="sm-ec-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Emergency contact email</label><input type="email" id="sm-ec-email" placeholder="ec@example.com"></div>
         </div>
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">course preferences</p>
@@ -254,7 +258,18 @@
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">other</p>
         <div class="modal-grid">
-          <div class="modal-field"><label>Referral source</label><input type="text" id="sm-referral" placeholder="e.g. Google, friend, school"></div>
+          <div class="modal-field">
+            <label>Referral source</label>
+            <select id="sm-referral">
+              <option value="">—</option>
+              <option value="Google">Google</option>
+              <option value="Social media">Social media</option>
+              <option value="Friend or family">Friend or family</option>
+              <option value="School or university">School or university</option>
+              <option value="Company">Company</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div class="modal-field">
             <label>Company</label>
             <select id="sm-company"><option value="">— none —</option></select>
