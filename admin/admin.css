@@ -378,7 +378,7 @@ button.submit:hover {
 }
 .modal {
   background: #fff;
-  padding: 2rem;
+  padding: 2rem 2rem 0;
   width: min(92vw, 600px);
   max-height: min(85vh, 700px);
   overflow-y: auto;
@@ -436,6 +436,12 @@ button.submit:hover {
   display: flex;
   gap: 0.8rem;
   margin-top: 1.6rem;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 1rem 2rem 1.5rem;
+  margin-left: -2rem;
+  margin-right: -2rem;
 }
 .modal-submit {
   font-family: inherit;

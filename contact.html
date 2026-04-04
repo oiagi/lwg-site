@@ -65,7 +65,8 @@
       </div>
       <div class="field">
         <label for="message">message</label>
-        <textarea id="message" name="message" required></textarea>
+        <textarea id="message" name="message" required maxlength="500"></textarea>
+        <span class="char-counter"><span id="char-count">0</span>/500</span>
       </div>
       <button type="submit">send</button>
       <p id="form-error" style="display:none;color:#c0392b;font-size:0.78rem;margin-top:0.8rem;text-align:center;"></p>
@@ -80,10 +81,16 @@
     var btn   = form.querySelector('button[type="submit"]');
     var errEl = document.getElementById('form-error');
 
+    /* ── Character counter ── */
+    var ta = document.getElementById('message');
+    var cc = document.getElementById('char-count');
+    cc.textContent = ta.value.length;
+    ta.addEventListener('input', function () { cc.textContent = ta.value.length; });
+
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       errEl.style.display = 'none';
-      btn.textContent = 'sending…';
+      btn.dataset.loading = '';
       btn.disabled = true;
 
       try {
@@ -103,7 +110,7 @@
       } catch (err) {
         errEl.textContent = err.message || 'Something went wrong. Please try again.';
         errEl.style.display = 'block';
-        btn.textContent = 'send';
+        delete btn.dataset.loading;
         btn.disabled = false;
       }
     });

@@ -39,6 +39,7 @@
 
   <div class="form-container">
     <h1>make a booking enquiry</h1>
+    <p class="step-indicator">Step 1 of 2</p>
 
     <!-- ── Not sure? Contact hint ────────────────────────────────────── -->
     <p class="contact-hint">not sure what you need? <a href="contact.html">get in touch</a></p>
@@ -47,9 +48,9 @@
          Three mutually exclusive tabs. selectTab(service) shows the
          matching form and hides the other two.                         -->
     <div class="service-toggle" role="tablist">
-      <button class="service-tab" id="tab-language" role="tab" aria-selected="true"  aria-controls="l-form" onclick="selectTab('language')">Language course</button>
-      <button class="service-tab" id="tab-exam"     role="tab" aria-selected="false" aria-controls="e-form" onclick="selectTab('exam')">Exam prep</button>
-      <button class="service-tab" id="tab-tutoring" role="tab" aria-selected="false" aria-controls="t-form" onclick="selectTab('tutoring')">Tutoring</button>
+      <button class="service-tab" id="tab-language" role="tab" aria-selected="true"  aria-controls="l-form" tabindex="0"  onclick="selectTab('language')">Language course</button>
+      <button class="service-tab" id="tab-exam"     role="tab" aria-selected="false" aria-controls="e-form" tabindex="-1" onclick="selectTab('exam')">Exam prep</button>
+      <button class="service-tab" id="tab-tutoring" role="tab" aria-selected="false" aria-controls="t-form" tabindex="-1" onclick="selectTab('tutoring')">Tutoring</button>
     </div>
 
     <!-- ════════════════════════════════════════════════════════════════
@@ -380,7 +381,38 @@
       /* Show scheduling section once a tab is selected */
       document.getElementById('scheduling-section').style.display = 'block';
       activeTab = service;
+      /* Roving tabindex */
+      document.querySelectorAll('[role="tab"]').forEach(t => {
+        t.setAttribute('tabindex', t.id === `tab-${service}` ? '0' : '-1');
+      });
     }
+
+    /* ── Tab keyboard navigation ────────────────────────────────────── */
+    document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const idx = tabs.indexOf(document.activeElement);
+      if (idx === -1) return;
+      let next;
+      if (e.key === 'ArrowRight') next = tabs[(idx + 1) % tabs.length];
+      if (e.key === 'ArrowLeft')  next = tabs[(idx - 1 + tabs.length) % tabs.length];
+      if (e.key === 'Home')       next = tabs[0];
+      if (e.key === 'End')        next = tabs[tabs.length - 1];
+      if (next) { e.preventDefault(); next.focus(); }
+      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement.matches('[role="tab"]')) {
+        e.preventDefault();
+        document.activeElement.click();
+      }
+    });
+
+    /* ── Unsaved-changes guard ──────────────────────────────────────── */
+    let formTouched = false;
+    document.querySelector('.form-container').addEventListener('input', () => { formTouched = true; }, { once: true });
+    window.addEventListener('beforeunload', e => {
+      if (formTouched) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
 
     /* ── URL pre-selection on page load ─────────────────────────────── */
     (function () {
@@ -626,6 +658,7 @@
       if (notes) booking.notes = notes;
 
       sessionStorage.setItem('booking', JSON.stringify(booking));
+      formTouched = false;
       window.location.href = 'contact-details.html';
     });
 

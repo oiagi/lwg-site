@@ -54,7 +54,11 @@
         const data = await res.json();
 
         if (!data.courses || !data.courses.length) {
-          content.innerHTML = '<h1>your sessions</h1><p style="text-align:center;color:#888;margin-top:2rem;">No sessions found yet.</p>';
+          content.innerHTML = `<h1>your sessions</h1>
+  <div class="empty-state">
+    <p>No sessions scheduled yet.</p>
+    <a class="book-link" href="/booking.html">make a booking enquiry →</a>
+  </div>`;
           return;
         }
 

@@ -133,3 +133,11 @@ html[data-device='tablet'] .form-container {
 html[data-device='tablet'] button[type='submit'] {
   min-height: 48px;
 }
+
+.char-counter {
+  font-size: 0.72rem;
+  color: #888;
+  display: block;
+  text-align: right;
+  margin-top: 0.3rem;
+}

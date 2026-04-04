@@ -131,3 +131,19 @@ html[data-device='mobile'] h1 {
 html[data-device='tablet'] h1 {
   font-size: 1.8rem;
 }
+.empty-state {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+.empty-state p {
+  color: #888;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+}
+.book-link {
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: underline;
+}

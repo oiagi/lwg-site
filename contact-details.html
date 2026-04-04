@@ -35,6 +35,7 @@
 
   <div class="form-container">
     <h1>your details</h1>
+    <p class="step-indicator">Step 2 of 2</p>
 
     <div style="display:flex; gap:1rem;">
       <div class="field" style="flex:1;">
@@ -112,7 +113,17 @@
       const preferredContact = document.getElementById('preferred-contact').value;
       err('err-preferred-contact', !preferredContact); if (!preferredContact) valid = false;
 
-      if (!valid) return;
+      if (!valid) {
+        /* Scroll to first visible error and focus its input */
+        const container = document.querySelector('.form-container');
+        const first = [...container.querySelectorAll('.error')].find(e => e.style.display === 'block');
+        if (first) {
+          first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const input = first.closest('.field, .field-row')?.querySelector('input, select, textarea');
+          if (input) input.focus({ preventScroll: true });
+        }
+        return;
+      }
 
       const contact = {
         lead: {
@@ -126,8 +137,8 @@
 
       /* ── Submit ─────────────────────────────────────────────────── */
       const btn = document.getElementById('continue-btn');
-      btn.textContent = 'sending…';
-      btn.disabled    = true;
+      btn.dataset.loading = '';
+      btn.disabled        = true;
 
       try {
         const res = await fetch('/api/submit-enquiry', {
@@ -139,8 +150,8 @@
         sessionStorage.removeItem('booking');
         window.location.href = 'thankyou.html';
       } catch {
-        btn.textContent = 'continue →';
-        btn.disabled    = false;
+        delete btn.dataset.loading;
+        btn.disabled = false;
         document.getElementById('submit-error').style.display = 'block';
       }
     });
