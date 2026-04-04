@@ -62,6 +62,24 @@ p {
   margin-bottom: 2.8rem;
 }
 
+/* ── Course structure notes & sources ──────────────────────── */
+.note {
+  margin-top: 1.2rem;
+}
+.sources {
+  margin-top: 1.2rem;
+  font-size: 0.78rem;
+  color: #888;
+  line-height: 1.7;
+  padding-left: 1.2rem;
+}
+.sources li {
+  margin-bottom: 0.6rem;
+}
+.sources a {
+  color: inherit;
+}
+
 /* ── Book CTA ────────────────────────────────────────────────── */
 .book-cta {
   display: block;
