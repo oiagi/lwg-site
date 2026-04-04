@@ -7,7 +7,7 @@
 import {
   supabaseHeaders,
   requireAdminAuth,
-  jsonResponse,
+  listResponse,
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
@@ -20,18 +20,23 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const url = new URL(request.url);
   const status = url.searchParams.get('status') || 'all';
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10), 1), 200);
+  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0);
 
-  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=created_at.desc&select=*`;
+  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=created_at.desc&limit=${limit}&offset=${offset}&select=*`;
   if (status !== 'all') coursesUrl += `&status=eq.${status}`;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
-    const res = await fetch(coursesUrl, { headers: H });
+    const res = await fetch(coursesUrl, { headers: { ...H, Prefer: 'count=exact' } });
     if (!res.ok) return errorResponse('Database error');
 
+    const contentRange = res.headers.get('Content-Range');
+    const total = contentRange ? parseInt(contentRange.split('/')[1] || '0', 10) : 0;
+
     const courses = await res.json();
-    if (!courses.length) return jsonResponse([]);
+    if (!courses.length) return listResponse([], { total: 0, limit, offset });
 
     // ── Batch fetch sessions and enrolments for all courses ────────────
     const courseIds = courses.map((c) => c.id);
@@ -87,7 +92,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         .filter(Boolean),
     }));
 
-    return jsonResponse(enriched);
+    return listResponse(enriched, { total, limit, offset });
   } catch (err) {
     console.error('get-courses error:', err);
     return errorResponse('Connection error');

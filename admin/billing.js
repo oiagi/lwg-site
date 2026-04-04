@@ -29,7 +29,7 @@ export async function loadInvoices(status = 'all') {
     const qs = status !== 'all' ? `?status=${status}` : '';
     const res = await apiFetch('/api/get-invoices' + qs);
     if (!res.ok) throw new Error();
-    const invoices = await res.json();
+    const { data: invoices } = await res.json();
     renderInvoices(invoices);
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load invoices.</div>';
@@ -174,22 +174,82 @@ export async function updateInvoiceStatus(invoiceId, newStatus) {
   }
 }
 
+let _pdfBlobUrl = null;
+let _pdfFilename = 'invoice.pdf';
+
 export async function downloadInvoicePdf(invoiceId, invoiceNumber) {
+  const previewOverlay = document.getElementById('pdf-preview-modal');
+  const frame = document.getElementById('pdf-preview-frame');
+  const title = document.getElementById('pdf-preview-title');
+  const dlBtn = document.getElementById('pdf-download-btn');
+
+  // Revoke any previous blob URL to avoid memory leak
+  if (_pdfBlobUrl) {
+    URL.revokeObjectURL(_pdfBlobUrl);
+    _pdfBlobUrl = null;
+  }
+
+  _pdfFilename = (invoiceNumber || 'invoice') + '.pdf';
+
+  // Show the modal in a loading state while fetching
+  frame.src = '';
+  title.textContent = 'generating preview…';
+  dlBtn.textContent = 'loading…';
+  dlBtn.disabled = true;
+  previewOverlay.classList.add('open');
+
   try {
     const res = await apiFetch('/api/generate-invoice-pdf?id=' + invoiceId);
     if (!res.ok) throw new Error();
     const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = (invoiceNumber || 'invoice') + '.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    _pdfBlobUrl = URL.createObjectURL(blob);
+    frame.src = _pdfBlobUrl;
+    title.textContent = invoiceNumber || 'invoice';
+    dlBtn.textContent = 'download';
+    dlBtn.disabled = false;
+    dlBtn.onclick = () => triggerPdfDownload();
   } catch {
-    alert('Could not download PDF.');
+    title.textContent = 'preview unavailable';
+    frame.src = '';
+    dlBtn.textContent = 'download';
+    dlBtn.disabled = false;
+    // Fall back to direct download attempt
+    dlBtn.onclick = async () => {
+      try {
+        const r = await apiFetch('/api/generate-invoice-pdf?id=' + invoiceId);
+        if (!r.ok) throw new Error();
+        const b = await r.blob();
+        const u = URL.createObjectURL(b);
+        triggerAnchorDownload(u, _pdfFilename);
+        URL.revokeObjectURL(u);
+      } catch {
+        alert('Could not download PDF.');
+      }
+    };
   }
+}
+
+function triggerPdfDownload() {
+  if (!_pdfBlobUrl) return;
+  triggerAnchorDownload(_pdfBlobUrl, _pdfFilename);
+}
+
+function triggerAnchorDownload(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+export function closePdfPreviewModal() {
+  document.getElementById('pdf-preview-modal').classList.remove('open');
+  if (_pdfBlobUrl) {
+    URL.revokeObjectURL(_pdfBlobUrl);
+    _pdfBlobUrl = null;
+  }
+  document.getElementById('pdf-preview-frame').src = '';
 }
 
 /* ── Create invoice modal ──────────────────────────────────────────── */
@@ -241,7 +301,8 @@ export async function openCreateInvoiceModal() {
   try {
     const res = await apiFetch('/api/get-companies');
     if (res.ok) {
-      invoiceCompanyCache = await res.json();
+      const { data: companyList } = await res.json();
+      invoiceCompanyCache = companyList;
       companySel.innerHTML =
         '<option value="">select company…</option>' +
         invoiceCompanyCache
@@ -259,7 +320,8 @@ export async function openCreateInvoiceModal() {
   try {
     const res = await apiFetch('/api/get-students?status=active');
     if (res.ok) {
-      invoiceStudentCache = await res.json();
+      const { data: studentList } = await res.json();
+      invoiceStudentCache = studentList;
       studentSel.innerHTML =
         '<option value="">select student…</option>' +
         invoiceStudentCache
@@ -298,7 +360,7 @@ async function loadCompanySessions(companyId) {
   try {
     const res = await apiFetch('/api/get-courses?status=all');
     if (!res.ok) throw new Error();
-    const allCourses = await res.json();
+    const { data: allCourses } = await res.json();
     const companyCourses = allCourses.filter((c) => c.company_id === companyId);
 
     invoiceSessionsCache = [];
@@ -345,7 +407,7 @@ async function loadStudentSessions(studentId) {
     // Load all courses to get sessions
     const res = await apiFetch('/api/get-courses?status=all');
     if (!res.ok) throw new Error();
-    const allCourses = await res.json();
+    const { data: allCourses } = await res.json();
     const studentCourses = allCourses.filter((c) => courseIds.includes(c.id));
 
     invoiceSessionsCache = [];

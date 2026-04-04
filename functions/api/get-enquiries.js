@@ -10,7 +10,7 @@
 import {
   supabaseHeaders,
   requireAdminAuth,
-  jsonResponse,
+  listResponse,
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
@@ -24,21 +24,25 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   // ── Parse query params ───────────────────────────────────────────────
   const url = new URL(request.url);
   const status = url.searchParams.get('status');
-  const limit = url.searchParams.get('limit') || '100';
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10), 1), 200);
+  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0);
 
-  let supabaseUrl = `${SUPABASE_URL}/rest/v1/enquiries?order=created_at.desc&limit=${limit}&select=*,student:students(id,first_name,last_name,email)`;
+  let supabaseUrl = `${SUPABASE_URL}/rest/v1/enquiries?order=created_at.desc&limit=${limit}&offset=${offset}&select=*,student:students(id,first_name,last_name,email)`;
   if (status && status !== 'all') supabaseUrl += `&status=eq.${status}`;
 
   // ── Fetch from Supabase ──────────────────────────────────────────────
   try {
-    const res = await fetch(supabaseUrl, { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) });
+    const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+    const res = await fetch(supabaseUrl, { headers: { ...H, Prefer: 'count=exact' } });
 
     if (!res.ok) {
       console.error('Supabase error:', await res.text());
       return errorResponse('Database error');
     }
 
-    return jsonResponse(await res.json());
+    const contentRange = res.headers.get('Content-Range');
+    const total = contentRange ? parseInt(contentRange.split('/')[1] || '0', 10) : 0;
+    return listResponse(await res.json(), { total, limit, offset });
   } catch (err) {
     console.error('Fetch error:', err);
     return errorResponse('Connection error');

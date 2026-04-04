@@ -11,7 +11,7 @@
 import {
   supabaseHeaders,
   requireAdminAuth,
-  jsonResponse,
+  listResponse,
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
@@ -62,7 +62,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       })
     );
 
-    return jsonResponse(enriched);
+    return listResponse(enriched);
   } catch (err) {
     console.error('Error:', err);
     return errorResponse('Connection error');

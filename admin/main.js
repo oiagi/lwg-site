@@ -3,6 +3,7 @@ import { TABS } from './constants.js';
 import { initAuth, signIn, signOut, getSession } from './auth.js';
 import {
   loadEnquiries,
+  loadMoreEnquiries,
   init as initEnquiries,
   toggleDetail,
   saveStatus,
@@ -12,6 +13,7 @@ import {
 } from './enquiries.js';
 import {
   loadCourses,
+  loadMoreCourses,
   getCurrentCourseFilter,
   filterCourses,
   toggleCourse,
@@ -41,6 +43,7 @@ import {
 } from './companies.js';
 import {
   loadStudents,
+  loadMoreStudents,
   getCurrentStudentFilter,
   filterStudents,
   selectStudent,
@@ -58,6 +61,7 @@ import {
   closeInvoiceDetailModal,
   updateInvoiceStatus,
   downloadInvoicePdf,
+  closePdfPreviewModal,
   openCreateInvoiceModal,
   closeCreateInvoiceModal,
   toggleAllInvSessions,
@@ -79,7 +83,9 @@ const actions = {
   saveNotes,
   deleteEnquiry,
   confirmBooking,
+  loadMoreEnquiries,
   // Courses
+  loadMoreCourses,
   filterCourses,
   toggleCourse,
   syncCalendar,
@@ -96,6 +102,7 @@ const actions = {
   closeAttendanceModal,
   submitAttendance,
   // Students
+  loadMoreStudents,
   filterStudents,
   selectStudent,
   openStudentModal,
@@ -116,6 +123,7 @@ const actions = {
   closeInvoiceDetailModal,
   updateInvoiceStatus,
   downloadInvoicePdf,
+  closePdfPreviewModal,
   openCreateInvoiceModal,
   closeCreateInvoiceModal,
   toggleAllInvSessions,

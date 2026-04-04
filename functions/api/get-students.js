@@ -12,7 +12,7 @@
 import {
   supabaseHeaders,
   requireAdminAuth,
-  jsonResponse,
+  listResponse,
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
@@ -27,6 +27,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const status = url.searchParams.get('status');
   const active = url.searchParams.get('active'); // backward compat
 
+  // Pagination + sort params
+  const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10), 1), 200);
+  const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10), 0);
+  const ALLOWED_SORT = ['last_name', 'first_name', 'created_at', 'email'];
+  const sort = ALLOWED_SORT.includes(url.searchParams.get('sort'))
+    ? url.searchParams.get('sort')
+    : 'last_name';
+  const dir = url.searchParams.get('dir') === 'desc' ? 'desc' : 'asc';
+
   // During migration, filter on `active` column (reliable) while `status`
   // is being backfilled. Translate status param → active filter.
   let filter = '';
@@ -34,14 +43,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   else if (status === 'inactive' || active === 'false') filter = '&active=eq.false';
   else if (status === 'prospect') filter = '&status=eq.prospect';
 
-  let supabaseUrl = `${SUPABASE_URL}/rest/v1/students?order=last_name.asc,first_name.asc&select=id,first_name,last_name,email,phone,current_level,active,status,company_id,source,created_at${filter}`;
+  let supabaseUrl = `${SUPABASE_URL}/rest/v1/students?order=${sort}.${dir},first_name.asc&limit=${limit}&offset=${offset}&select=id,first_name,last_name,email,phone,current_level,active,status,company_id,source,created_at${filter}`;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   try {
-    const res = await fetch(supabaseUrl, { headers: H });
+    const res = await fetch(supabaseUrl, { headers: { ...H, Prefer: 'count=exact' } });
     if (!res.ok) return errorResponse('Database error');
 
+    const contentRange = res.headers.get('Content-Range');
+    const total = contentRange ? parseInt(contentRange.split('/')[1] || '0', 10) : 0;
     const students = await res.json();
 
     // ── Enrich with course counts and company name ──────────────────────
@@ -79,7 +90,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       enquiry_count: enquiryCountMap[s.id] || 0,
     }));
 
-    return jsonResponse(enriched);
+    return listResponse(enriched, { total, limit, offset });
   } catch (err) {
     console.error('Error:', err);
     return errorResponse('Connection error');

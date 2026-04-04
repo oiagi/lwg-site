@@ -5,9 +5,22 @@ import { esc, showToast } from './helpers.js';
 let currentStudentFilter = sessionStorage.getItem('adminStudentFilter') || 'active';
 let selectedStudentId = null;
 let _studentsCache = [];
+let _studentsOffset = 0;
+let _studentsMeta = { total: 0, limit: 50 };
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
+}
+
+function _updateLoadMore(id, loaded, total) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  if (loaded >= total) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'block';
+    btn.textContent = `load more (${loaded} of ${total})`;
+  }
 }
 
 /* Wire search input once DOM is ready */
@@ -24,39 +37,53 @@ export function filterStudents(active) {
   document.querySelectorAll('[data-student-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.studentStatus === active);
   });
-  loadStudents(active);
+  loadStudents(active, false);
 }
 
-export async function loadStudents(status = 'active') {
+export async function loadStudents(status = 'active', append = false) {
   const list = document.getElementById('student-list');
-  // Reset selection and right pane on every reload attempt
-  selectedStudentId = null;
-  const pane = document.getElementById('student-detail-panel');
-  if (pane) {
-    pane.className = 'student-detail-empty';
-    pane.innerHTML = '<p>select a student to view their details</p>';
+
+  if (!append) {
+    _studentsOffset = 0;
+    _studentsCache = [];
+    // Reset selection and right pane on every fresh load
+    selectedStudentId = null;
+    const pane = document.getElementById('student-detail-panel');
+    if (pane) {
+      pane.className = 'student-detail-empty';
+      pane.innerHTML = '<p>select a student to view their details</p>';
+    }
+    if (!list.querySelector('.student-row')) {
+      list.innerHTML = Array.from({ length: 5 })
+        .map(
+          () => `
+        <div class="skeleton-row" style="padding:0.6rem 0.8rem;">
+          <div class="skeleton-bar" style="width:60%;"></div>
+        </div>`
+        )
+        .join('');
+    }
   }
-  if (!list.querySelector('.student-row')) {
-    list.innerHTML = Array.from({ length: 5 })
-      .map(
-        () => `
-      <div class="skeleton-row" style="padding:0.6rem 0.8rem;">
-        <div class="skeleton-bar" style="width:60%;"></div>
-      </div>`
-      )
-      .join('');
-  }
+
   try {
-    const qs = status !== 'all' ? `?status=${status}` : '';
-    const res = await apiFetch('/api/get-students' + qs);
+    const params = new URLSearchParams({ offset: _studentsOffset });
+    if (status !== 'all') params.set('status', status);
+    const res = await apiFetch('/api/get-students?' + params);
     if (!res.ok) throw new Error();
-    const students = await res.json();
-    _studentsCache = students;
-    renderStudents(students);
+    const { data: students, meta } = await res.json();
+    _studentsMeta = meta || { total: students.length, limit: 50 };
+    _studentsOffset += students.length;
+    _studentsCache = append ? [..._studentsCache, ...students] : students;
+    renderStudents(_studentsCache);
     syncStudentSearch();
+    _updateLoadMore('students-load-more', _studentsOffset, _studentsMeta.total);
   } catch {
-    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+    if (!append) list.innerHTML = '<div class="loading-state">Could not load students.</div>';
   }
+}
+
+export function loadMoreStudents() {
+  loadStudents(currentStudentFilter, true);
 }
 
 function syncStudentSearch() {
@@ -277,7 +304,7 @@ async function loadCompanyOptions() {
   try {
     const res = await apiFetch('/api/get-companies');
     if (!res.ok) return;
-    const companies = await res.json();
+    const { data: companies } = await res.json();
     sel.innerHTML =
       '<option value="">— none —</option>' +
       companies

@@ -1396,3 +1396,26 @@ html[data-device='mobile'] .avail-day {
   color: #555;
   border-bottom-color: #555;
 }
+
+/* ── Load more button ────────────────────────────────────────────── */
+.load-more-btn {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: none;
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  color: #aaa;
+  font-size: 0.72rem;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.load-more-btn:hover {
+  background: #fafafa;
+  color: #555;
+}

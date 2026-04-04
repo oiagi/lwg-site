@@ -8,8 +8,25 @@ export function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
 }
 
-export function errorResponse(message, status = 500) {
-  return new Response(JSON.stringify({ error: message }), { status, headers: JSON_HEADERS });
+/**
+ * Standard envelope for list responses.
+ * Shape: { data: T[], meta: { total: number, limit: number|null, offset: number } }
+ */
+export function listResponse(data, meta = {}) {
+  return new Response(
+    JSON.stringify({
+      data,
+      meta: { total: data.length, limit: meta.limit ?? null, offset: meta.offset ?? 0, ...meta },
+    }),
+    { status: 200, headers: JSON_HEADERS }
+  );
+}
+
+export function errorResponse(message, status = 500, extra = {}) {
+  return new Response(JSON.stringify({ error: message, ...extra }), {
+    status,
+    headers: JSON_HEADERS,
+  });
 }
 
 // ── Supabase request headers ──────────────────────────────────────────────

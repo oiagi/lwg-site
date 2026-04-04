@@ -9,6 +9,19 @@ let attendanceStudents = [];
 let studentCache = [];
 let clickAwayHandler = null;
 let _coursesCache = [];
+let _coursesOffset = 0;
+let _coursesMeta = { total: 0, limit: 50 };
+
+function _updateLoadMore(id, loaded, total) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  if (loaded >= total) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'block';
+    btn.textContent = `load more (${loaded} of ${total})`;
+  }
+}
 
 /* Wire course search input once DOM is ready */
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,10 +53,10 @@ export function filterCourses(status) {
   document.querySelectorAll('[data-course-status]').forEach((b) => {
     b.classList.toggle('active', b.dataset.courseStatus === status);
   });
-  loadCourses(status);
+  loadCourses(status, false);
 }
 
-export async function loadCourses(status = 'active') {
+export async function loadCourses(status = 'active', append = false) {
   const list = document.getElementById('course-list');
 
   const openIds = new Set(
@@ -52,7 +65,7 @@ export async function loadCourses(status = 'active') {
     )
   );
 
-  if (!list.querySelector('.course-row')) {
+  if (!append && !list.querySelector('.course-row')) {
     list.innerHTML = Array.from({ length: 4 })
       .map(
         () => `
@@ -65,20 +78,33 @@ export async function loadCourses(status = 'active') {
       .join('');
   }
 
+  if (!append) {
+    _coursesOffset = 0;
+    _coursesCache = [];
+  }
+
   try {
-    const res = await apiFetch('/api/get-courses?status=' + status);
+    const params = new URLSearchParams({ status, offset: _coursesOffset });
+    const res = await apiFetch('/api/get-courses?' + params);
     if (!res.ok) throw new Error('Failed to load courses');
-    const courses = await res.json();
-    _coursesCache = courses;
-    renderCourses(courses);
+    const { data: courses, meta } = await res.json();
+    _coursesMeta = meta || { total: courses.length, limit: 50 };
+    _coursesOffset += courses.length;
+    _coursesCache = append ? [..._coursesCache, ...courses] : courses;
+    renderCourses(_coursesCache);
+    _updateLoadMore('courses-load-more', _coursesOffset, _coursesMeta.total);
 
     openIds.forEach((id) => {
       const detail = document.getElementById('course-detail-' + id);
       if (detail) detail.classList.add('open');
     });
   } catch (err) {
-    list.innerHTML = '<div class="loading-state">Could not load courses.</div>';
+    if (!append) list.innerHTML = '<div class="loading-state">Could not load courses.</div>';
   }
+}
+
+export function loadMoreCourses() {
+  loadCourses(currentCourseFilter, true);
 }
 
 function renderCourses(courses) {
@@ -495,7 +521,7 @@ export function openNewCourseModal() {
       if (res.ok) return res.json();
       throw new Error();
     })
-    .then((data) => {
+    .then(({ data }) => {
       studentCache = data;
     })
     .catch(() => {
@@ -648,7 +674,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
 
   try {
     const coursesRes = await apiFetch('/api/get-courses?status=all');
-    const courses = await coursesRes.json();
+    const { data: courses } = await coursesRes.json();
     const course = courses.find((c) => c.id === courseId);
     attendanceStudents = course?.students || [];
 

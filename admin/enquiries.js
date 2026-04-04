@@ -5,6 +5,19 @@ import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teache
 
 let currentFilter = sessionStorage.getItem('adminEnquiryFilter') || 'all';
 let _enquiriesCache = [];
+let _enquiriesOffset = 0;
+let _enquiriesMeta = { total: 0, limit: 50 };
+
+function _updateLoadMore(id, loaded, total) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  if (loaded >= total) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'block';
+    btn.textContent = `load more (${loaded} of ${total})`;
+  }
+}
 
 export function init() {
   const panel = document.getElementById('panel-enquiries');
@@ -14,7 +27,7 @@ export function init() {
       btn.classList.add('active');
       currentFilter = btn.dataset.status;
       sessionStorage.setItem('adminEnquiryFilter', currentFilter);
-      loadEnquiries(currentFilter);
+      loadEnquiries(currentFilter, false, false);
     });
   });
 
@@ -36,21 +49,33 @@ export function init() {
   }
 }
 
-export async function loadEnquiries(status, probe = false) {
-  const qs = status && status !== 'all' ? `?status=${status}` : '';
+export async function loadEnquiries(status, probe = false, append = false) {
+  if (!append) {
+    _enquiriesOffset = 0;
+    _enquiriesCache = [];
+  }
   try {
-    const res = await apiFetch(`/api/get-enquiries${qs}`);
+    const params = new URLSearchParams({ offset: _enquiriesOffset });
+    if (status && status !== 'all') params.set('status', status);
+    const res = await apiFetch(`/api/get-enquiries?${params}`);
     if (res.status === 401) return false;
     if (!res.ok) return false;
-    const data = await res.json();
+    const { data: rows, meta } = await res.json();
     if (!probe) {
-      _enquiriesCache = data;
-      renderEnquiries(data);
+      _enquiriesMeta = meta || { total: rows.length, limit: 50 };
+      _enquiriesOffset += rows.length;
+      _enquiriesCache = append ? [..._enquiriesCache, ...rows] : rows;
+      renderEnquiries(_enquiriesCache);
+      _updateLoadMore('enquiries-load-more', _enquiriesOffset, _enquiriesMeta.total);
     }
     return true;
   } catch {
     return false;
   }
+}
+
+export function loadMoreEnquiries() {
+  loadEnquiries(currentFilter, false, true);
 }
 
 function renderBookingDetails(b) {

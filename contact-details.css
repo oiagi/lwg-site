@@ -29,6 +29,54 @@ h1 {
   text-align: center;
 }
 
+/* ── Step progress indicator ─────────────────────────────────── */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2.4rem;
+}
+.step-indicator .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.step-indicator .step-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #1a1a1a;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #1a1a1a;
+}
+.step-indicator .step.active .step-dot,
+.step-indicator .step.done .step-dot {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}
+.step-indicator .step-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+.step-indicator .step.active .step-label {
+  color: #1a1a1a;
+}
+.step-indicator .step-line {
+  flex: 1;
+  max-width: 60px;
+  height: 1px;
+  background: #ccc;
+  margin-bottom: 1.2rem;
+}
+
 /* ── Field ──────────────────────────────────────────────────── */
 .field {
   margin-bottom: 1.8rem;

@@ -25,7 +25,7 @@ export async function loadCompanies(active = 'true') {
     const qs = active !== 'all' ? `?active=${active}` : '';
     const res = await apiFetch('/api/get-companies' + qs);
     if (!res.ok) throw new Error();
-    const companies = await res.json();
+    const { data: companies } = await res.json();
     renderCompanies(companies);
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load companies.</div>';
