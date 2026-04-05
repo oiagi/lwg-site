@@ -30,7 +30,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Invalid JSON', 400);
   }
 
-  if (!body.first_name || !body.last_name) {
+  if (!body.id && (!body.first_name || !body.last_name)) {
     return errorResponse('First name and last name are required', 400);
   }
 
@@ -84,6 +84,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'location',
     'consent_given',
     'consent_date',
+    'token_created_at',
   ];
   const data = {};
   for (const f of fields) {
@@ -122,6 +123,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       // ── Create new student ───────────────────────────────────────────
       // Generate access_token for the student portal / intake form link
       data.access_token = crypto.randomUUID();
+      data.token_created_at = new Date().toISOString();
       if (!data.source) data.source = 'manual';
       if (data.status === undefined) {
         data.status = 'active';
