@@ -71,14 +71,75 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="in-postcode">Postcode</label>
-        <input type="text" id="in-postcode" placeholder="e.g. 8001">
+      <div class="field-row">
+        <div class="field" style="max-width:140px;">
+          <label for="in-postcode">Postcode</label>
+          <input type="text" id="in-postcode" placeholder="e.g. 8001">
+        </div>
+        <div class="field">
+          <label for="in-city">City</label>
+          <input type="text" id="in-city" autocomplete="address-level2">
+        </div>
       </div>
+
+      <!-- ── Billing Information ─────────────────────────────────────── -->
+      <p class="section-label">billing information</p>
+
+      <div class="consent-field" style="margin-bottom:1rem;">
+        <input type="checkbox" id="in-billing-differs">
+        <label for="in-billing-differs">My billing information differs from my personal information</label>
+      </div>
+
+      <div id="billing-fields" style="display:none;">
+        <div class="field">
+          <label for="in-billing-name">Billing name</label>
+          <input type="text" id="in-billing-name" placeholder="Full name or company name">
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="in-billing-street">Billing street</label>
+            <input type="text" id="in-billing-street" autocomplete="billing street-address">
+          </div>
+          <div class="field" style="max-width:120px;">
+            <label for="in-billing-street-number">Number</label>
+            <input type="text" id="in-billing-street-number" placeholder="e.g. 3a">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field" style="max-width:140px;">
+            <label for="in-billing-postcode">Postcode</label>
+            <input type="text" id="in-billing-postcode" placeholder="e.g. 8001">
+          </div>
+          <div class="field">
+            <label for="in-billing-city">City</label>
+            <input type="text" id="in-billing-city" autocomplete="billing address-level2">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+          <input type="email" id="in-billing-email" placeholder="billing@example.com">
+        </div>
+
+        <div class="field">
+          <label>Payment method</label>
+          <div class="toggle-group" id="in-payment-method">
+            <input type="radio" name="payment-method" id="pm-bank" value="bank">
+            <label for="pm-bank">Bank transfer</label>
+            <input type="radio" name="payment-method" id="pm-twint" value="twint">
+            <label for="pm-twint">Twint</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Emergency Contact ──────────────────────────────────────── -->
+      <p class="section-label">emergency contact</p>
 
       <div class="field-row">
         <div class="field">
-          <label for="in-ec-name">Emergency contact name</label>
+          <label for="in-ec-name">Name</label>
           <input type="text" id="in-ec-name">
         </div>
         <div class="field">
@@ -88,11 +149,11 @@
       </div>
       <div class="field-row">
         <div class="field">
-          <label for="in-ec-phone">Emergency contact phone</label>
+          <label for="in-ec-phone">Phone</label>
           <input type="tel" id="in-ec-phone" placeholder="+41…">
         </div>
         <div class="field">
-          <label for="in-ec-email">Emergency contact email</label>
+          <label for="in-ec-email">Email</label>
           <input type="email" id="in-ec-email">
         </div>
       </div>
@@ -176,41 +237,6 @@
       <div class="field">
         <label for="in-start-date">Desired start date</label>
         <input type="date" id="in-start-date">
-      </div>
-
-      <!-- ── Billing Information ─────────────────────────────────────── -->
-      <p class="section-label">billing information</p>
-
-      <div class="consent-field" style="margin-bottom:1rem;">
-        <input type="checkbox" id="in-billing-same">
-        <label for="in-billing-same">Same as name and address above</label>
-      </div>
-
-      <div id="billing-fields">
-        <div class="field">
-          <label for="in-billing-name">Billing name</label>
-          <input type="text" id="in-billing-name" placeholder="Full name">
-        </div>
-
-        <div class="field">
-          <label for="in-billing-address">Billing address</label>
-          <textarea id="in-billing-address" placeholder="Street, PLZ, City" style="height:50px;"></textarea>
-        </div>
-
-        <div class="field">
-          <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-          <input type="email" id="in-billing-email" placeholder="billing@example.com">
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Payment method</label>
-        <div class="toggle-group" id="in-payment-method">
-          <input type="radio" name="payment-method" id="pm-bank" value="bank">
-          <label for="pm-bank">Bank transfer</label>
-          <input type="radio" name="payment-method" id="pm-twint" value="twint">
-          <label for="pm-twint">Twint</label>
-        </div>
       </div>
 
       <!-- ── Other ──────────────────────────────────────────────────── -->

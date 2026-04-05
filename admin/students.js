@@ -107,7 +107,7 @@ function renderStudentDetail(container, s) {
           ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
           ${s.nationality ? 'Nationality: ' + esc(s.nationality) + '<br>' : ''}
           ${s.street || s.street_number ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' : ''}
-          ${s.postcode ? 'Postcode: ' + esc(s.postcode) : ''}
+          ${s.postcode || s.city ? esc([s.postcode, s.city].filter(Boolean).join(' ')) : ''}
         </p>
         ${s.emergency_contact || s.ec_phone || s.ec_email ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' (' + esc(s.ec_relationship) + ')' : ''}${s.ec_phone ? ' · ' + esc(s.ec_phone) : ''}${s.ec_email ? ' · ' + esc(s.ec_email) : ''}</p>` : ''}
       </div>
@@ -115,11 +115,15 @@ function renderStudentDetail(container, s) {
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
         <p style="font-size:0.82rem;color:#555;line-height:1.8;">
           ${esc(s.billing_name) || '—'}<br>
-          ${esc(s.billing_address) || '—'}<br>
+          ${
+            s.billing_street || s.billing_postcode
+              ? esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' ')) +
+                '<br>' +
+                esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))
+              : esc(s.billing_address) || '—'
+          }<br>
           ${s.billing_email ? '<span style="color:#aaa;">' + esc(s.billing_email) + '</span><br>' : ''}
-          ${s.vat_number ? 'VAT: ' + esc(s.vat_number) + '<br>' : ''}
-          ${s.rate_per_session ? '<strong>' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '</strong> per session<br>' : ''}
-          ${s.payment_method ? 'Payment: ' + esc(s.payment_method) : ''}
+          ${s.vat_number ? 'VAT: ' + esc(s.vat_number) : ''}
         </p>
       </div>
     </div>
@@ -142,8 +146,20 @@ function renderStudentDetail(container, s) {
         <div>${coursesHtml}</div>
       </div>
     </div>
-    ${s.referral_source ? '<p style="font-size:0.75rem;color:#888;margin-bottom:0.5rem;">Referral: ' + esc(s.referral_source) + '</p>' : ''}
-    ${s.progress_notes ? '<p style="font-size:0.78rem;color:#888;margin-bottom:1rem;">' + esc(s.progress_notes) + '</p>' : ''}
+    ${
+      s.referral_source || s.payment_method || s.rate_per_session || s.progress_notes
+        ? `
+    <div style="margin-bottom:1rem;">
+      <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">admin</p>
+      <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+        ${s.payment_method ? 'Payment: ' + esc(s.payment_method) + '<br>' : ''}
+        ${s.referral_source ? 'Referral: ' + esc(s.referral_source) + '<br>' : ''}
+        ${s.rate_per_session ? '<strong>' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '</strong> per session<br>' : ''}
+        ${s.progress_notes ? '<span style="color:#888;">' + esc(s.progress_notes) + '</span>' : ''}
+      </p>
+    </div>`
+        : ''
+    }
     ${s.consent_given ? '<p style="font-size:0.7rem;color:#aaa;margin-bottom:0.5rem;">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
@@ -166,6 +182,7 @@ export function openStudentModal(existingData) {
     'sm-street',
     'sm-street-number',
     'sm-postcode',
+    'sm-city',
     'sm-ec-name',
     'sm-ec-phone',
     'sm-ec-email',
@@ -179,7 +196,10 @@ export function openStudentModal(existingData) {
     'sm-course-format',
     'sm-location',
     'sm-billing-name',
-    'sm-billing-address',
+    'sm-billing-street',
+    'sm-billing-street-number',
+    'sm-billing-postcode',
+    'sm-billing-city',
     'sm-billing-email',
     'sm-rate',
     'sm-vat',
@@ -213,6 +233,7 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-street').value = existingData.street || '';
     document.getElementById('sm-street-number').value = existingData.street_number || '';
     document.getElementById('sm-postcode').value = existingData.postcode || '';
+    document.getElementById('sm-city').value = existingData.city || '';
     document.getElementById('sm-ec-name').value = existingData.emergency_contact || '';
     document.getElementById('sm-ec-phone').value = existingData.ec_phone || '';
     document.getElementById('sm-ec-email').value = existingData.ec_email || '';
@@ -226,8 +247,31 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-course-format').value = existingData.course_format || '';
     document.getElementById('sm-location').value = existingData.location || '';
     document.getElementById('sm-billing-name').value = existingData.billing_name || '';
-    document.getElementById('sm-billing-address').value = existingData.billing_address || '';
     document.getElementById('sm-billing-email').value = existingData.billing_email || '';
+    // Billing address — prefer split fields, fall back to parsing legacy billing_address
+    if (existingData.billing_street || existingData.billing_postcode) {
+      document.getElementById('sm-billing-street').value = existingData.billing_street || '';
+      document.getElementById('sm-billing-street-number').value =
+        existingData.billing_street_number || '';
+      document.getElementById('sm-billing-postcode').value = existingData.billing_postcode || '';
+      document.getElementById('sm-billing-city').value = existingData.billing_city || '';
+    } else if (existingData.billing_address) {
+      const [streetPart = '', cityPart = ''] = existingData.billing_address
+        .split(',')
+        .map((p) => p.trim());
+      const streetM = streetPart.match(/^(.+?)\s+(\d+\w*)$/);
+      if (streetM) {
+        document.getElementById('sm-billing-street').value = streetM[1];
+        document.getElementById('sm-billing-street-number').value = streetM[2];
+      } else {
+        document.getElementById('sm-billing-street').value = streetPart;
+      }
+      const cityM = cityPart.match(/^(\d{4,5})\s+(.+)$/);
+      if (cityM) {
+        document.getElementById('sm-billing-postcode').value = cityM[1];
+        document.getElementById('sm-billing-city').value = cityM[2];
+      }
+    }
     document.getElementById('sm-rate').value = existingData.rate_per_session || '';
     document.getElementById('sm-vat').value = existingData.vat_number || '';
     document.getElementById('sm-payment-method').value = existingData.payment_method || '';
@@ -305,6 +349,7 @@ export async function submitStudent() {
     street: document.getElementById('sm-street').value.trim() || null,
     street_number: document.getElementById('sm-street-number').value.trim() || null,
     postcode: document.getElementById('sm-postcode').value.trim() || null,
+    city: document.getElementById('sm-city').value.trim() || null,
     emergency_contact: document.getElementById('sm-ec-name').value.trim() || null,
     ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
     ec_email: document.getElementById('sm-ec-email').value.trim() || null,
@@ -318,7 +363,10 @@ export async function submitStudent() {
     course_format: document.getElementById('sm-course-format').value || null,
     location: document.getElementById('sm-location').value || null,
     billing_name: document.getElementById('sm-billing-name').value.trim() || null,
-    billing_address: document.getElementById('sm-billing-address').value.trim() || null,
+    billing_street: document.getElementById('sm-billing-street').value.trim() || null,
+    billing_street_number: document.getElementById('sm-billing-street-number').value.trim() || null,
+    billing_postcode: document.getElementById('sm-billing-postcode').value.trim() || null,
+    billing_city: document.getElementById('sm-billing-city').value.trim() || null,
     billing_email: document.getElementById('sm-billing-email').value.trim() || null,
     rate_per_session: document.getElementById('sm-rate').value
       ? parseFloat(document.getElementById('sm-rate').value)
