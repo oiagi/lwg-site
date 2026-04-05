@@ -52,6 +52,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'postcode',
     'street',
     'street_number',
+    'city',
     'current_level',
     'progress_notes',
     'company_id',
@@ -59,6 +60,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'source',
     'billing_name',
     'billing_address',
+    'billing_street',
+    'billing_street_number',
+    'billing_postcode',
+    'billing_city',
     'billing_email',
     'rate_per_session',
     'currency',
@@ -83,6 +88,20 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const data = {};
   for (const f of fields) {
     if (body[f] !== undefined) data[f] = body[f];
+  }
+
+  // Derive billing_address for PDF/invoice compat whenever split billing fields are updated
+  const billingComponents = [
+    'billing_street',
+    'billing_street_number',
+    'billing_postcode',
+    'billing_city',
+  ];
+  if (billingComponents.some((k) => k in data)) {
+    const streetLine = [data.billing_street, data.billing_street_number].filter(Boolean).join(' ');
+    const cityLine = [data.billing_postcode, data.billing_city].filter(Boolean).join(' ');
+    const derived = [streetLine, cityLine].filter(Boolean).join(', ');
+    if (derived) data.billing_address = derived;
   }
 
   // Dual-write: always keep active in sync with status during migration

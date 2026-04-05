@@ -49,6 +49,7 @@ function prefill(s) {
   if (s.street) document.getElementById('in-street').value = s.street;
   if (s.street_number) document.getElementById('in-street-number').value = s.street_number;
   if (s.postcode) document.getElementById('in-postcode').value = s.postcode;
+  if (s.city) document.getElementById('in-city').value = s.city;
   if (s.emergency_contact) document.getElementById('in-ec-name').value = s.emergency_contact;
   if (s.ec_phone) document.getElementById('in-ec-phone').value = s.ec_phone;
   if (s.ec_email) document.getElementById('in-ec-email').value = s.ec_email;
@@ -58,34 +59,65 @@ function prefill(s) {
   if (s.current_level) document.getElementById('in-level').value = s.current_level;
   if (s.learning_goals) document.getElementById('in-goals').value = s.learning_goals;
   if (s.desired_start_date) document.getElementById('in-start-date').value = s.desired_start_date;
-  if (s.billing_name) document.getElementById('in-billing-name').value = s.billing_name;
-  if (s.billing_address) document.getElementById('in-billing-address').value = s.billing_address;
-  if (s.billing_email) document.getElementById('in-billing-email').value = s.billing_email;
   if (s.referral_source) document.getElementById('in-referral').value = s.referral_source;
 
   // Radio buttons
   if (s.course_type) selectRadio('course-type', s.course_type);
   if (s.course_format) selectRadio('course-format', s.course_format);
   if (s.location) selectRadio('location', s.location);
-  if (s.payment_method) selectRadio('payment-method', s.payment_method);
 
   // Show location if in-person pre-selected
   if (s.course_format === 'in-person') {
     document.getElementById('location-field').style.display = 'block';
   }
 
-  // Auto-check "same as above" if billing matches student name/address
+  // Billing fields — prefer new split columns, fall back to parsing legacy billing_address
+  if (s.billing_name) document.getElementById('in-billing-name').value = s.billing_name;
+  if (s.billing_email) document.getElementById('in-billing-email').value = s.billing_email;
+  if (s.payment_method) selectRadio('payment-method', s.payment_method);
+
+  if (s.billing_street || s.billing_postcode) {
+    if (s.billing_street) document.getElementById('in-billing-street').value = s.billing_street;
+    if (s.billing_street_number)
+      document.getElementById('in-billing-street-number').value = s.billing_street_number;
+    if (s.billing_postcode)
+      document.getElementById('in-billing-postcode').value = s.billing_postcode;
+    if (s.billing_city) document.getElementById('in-billing-city').value = s.billing_city;
+  } else if (s.billing_address) {
+    // Legacy fallback: parse "Street Number, Postcode City" format
+    const [streetPart = '', cityPart = ''] = s.billing_address.split(',').map((p) => p.trim());
+    const streetM = streetPart.match(/^(.+?)\s+(\d+\w*)$/);
+    if (streetM) {
+      document.getElementById('in-billing-street').value = streetM[1];
+      document.getElementById('in-billing-street-number').value = streetM[2];
+    } else {
+      document.getElementById('in-billing-street').value = streetPart;
+    }
+    const cityM = cityPart.match(/^(\d{4,5})\s+(.+)$/);
+    if (cityM) {
+      document.getElementById('in-billing-postcode').value = cityM[1];
+      document.getElementById('in-billing-city').value = cityM[2];
+    }
+  }
+
+  // Auto-show billing section if billing info exists and differs from personal info
   const norm = (v) => (v || '').trim().replace(/\s+/g, ' ').toLowerCase();
-  const studentName = norm(`${s.first_name || ''} ${s.last_name || ''}`);
-  const studentAddr = norm([s.street, s.street_number, s.postcode].filter(Boolean).join(', '));
-  if (
-    s.billing_name &&
-    s.billing_address &&
-    norm(s.billing_name) === studentName &&
-    norm(s.billing_address) === studentAddr
-  ) {
-    document.getElementById('in-billing-same').checked = true;
-    document.getElementById('billing-fields').style.display = 'none';
+  const hasBillingInfo =
+    s.billing_name ||
+    s.billing_street ||
+    s.billing_postcode ||
+    s.billing_city ||
+    s.billing_email ||
+    s.billing_address;
+  const billingNameMatches =
+    norm(s.billing_name || '') === norm(`${s.first_name || ''} ${s.last_name || ''}`);
+  const billingAddrMatches =
+    norm(
+      `${s.billing_street || ''} ${s.billing_street_number || ''}, ${s.billing_postcode || ''} ${s.billing_city || ''}`
+    ) === norm(`${s.street || ''} ${s.street_number || ''}, ${s.postcode || ''} ${s.city || ''}`);
+  if (hasBillingInfo && !(billingNameMatches && billingAddrMatches)) {
+    document.getElementById('in-billing-differs').checked = true;
+    document.getElementById('billing-fields').style.display = 'block';
   }
 }
 
@@ -99,25 +131,9 @@ function getRadio(name) {
   return checked ? checked.value : null;
 }
 
-/* ── Billing "same as above" checkbox ────────────────────────────── */
-document.getElementById('in-billing-same').addEventListener('change', function () {
-  const billingFields = document.getElementById('billing-fields');
-  if (this.checked) {
-    const firstName = document.getElementById('in-first-name').value.trim();
-    const lastName = document.getElementById('in-last-name').value.trim();
-    const street = document.getElementById('in-street').value.trim();
-    const streetNumber = document.getElementById('in-street-number').value.trim();
-    const postcode = document.getElementById('in-postcode').value.trim();
-    document.getElementById('in-billing-name').value = [firstName, lastName]
-      .filter(Boolean)
-      .join(' ');
-    document.getElementById('in-billing-address').value = [street, streetNumber, postcode]
-      .filter(Boolean)
-      .join(', ');
-    billingFields.style.display = 'none';
-  } else {
-    billingFields.style.display = 'block';
-  }
+/* ── Billing "differs" checkbox ──────────────────────────────────── */
+document.getElementById('in-billing-differs').addEventListener('change', function () {
+  document.getElementById('billing-fields').style.display = this.checked ? 'block' : 'none';
 });
 
 /* ── Show/hide location field based on format selection ───────────── */
@@ -166,6 +182,8 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   btn.dataset.loading = '';
   btn.disabled = true;
 
+  const billingDiffers = document.getElementById('in-billing-differs').checked;
+
   const body = {
     token: token || undefined,
     first_name: document.getElementById('in-first-name').value.trim(),
@@ -176,6 +194,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     street: document.getElementById('in-street').value.trim() || null,
     street_number: document.getElementById('in-street-number').value.trim() || null,
     postcode: document.getElementById('in-postcode').value.trim() || null,
+    city: document.getElementById('in-city').value.trim() || null,
     emergency_contact: document.getElementById('in-ec-name').value.trim() || null,
     ec_phone: document.getElementById('in-ec-phone').value.trim() || null,
     ec_email: document.getElementById('in-ec-email').value.trim() || null,
@@ -188,12 +207,28 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     current_level: document.getElementById('in-level').value || null,
     learning_goals: document.getElementById('in-goals').value.trim() || null,
     desired_start_date: document.getElementById('in-start-date').value || null,
-    billing_name: document.getElementById('in-billing-name').value.trim() || null,
-    billing_address: document.getElementById('in-billing-address').value.trim() || null,
-    billing_email: document.getElementById('in-billing-email').value.trim() || null,
-    payment_method: getRadio('payment-method'),
     referral_source: document.getElementById('in-referral').value || null,
     consent_given: true,
+    // Billing fields — send nulls if checkbox is unchecked to clear stale values
+    billing_name: billingDiffers
+      ? document.getElementById('in-billing-name').value.trim() || null
+      : null,
+    billing_street: billingDiffers
+      ? document.getElementById('in-billing-street').value.trim() || null
+      : null,
+    billing_street_number: billingDiffers
+      ? document.getElementById('in-billing-street-number').value.trim() || null
+      : null,
+    billing_postcode: billingDiffers
+      ? document.getElementById('in-billing-postcode').value.trim() || null
+      : null,
+    billing_city: billingDiffers
+      ? document.getElementById('in-billing-city').value.trim() || null
+      : null,
+    billing_email: billingDiffers
+      ? document.getElementById('in-billing-email').value.trim() || null
+      : null,
+    payment_method: billingDiffers ? getRadio('payment-method') : null,
   };
 
   try {

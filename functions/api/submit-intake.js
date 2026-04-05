@@ -59,6 +59,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'street',
     'street_number',
     'postcode',
+    'city',
     'emergency_contact',
     'ec_phone',
     'ec_email',
@@ -72,7 +73,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'course_format',
     'location',
     'billing_name',
-    'billing_address',
+    'billing_street',
+    'billing_street_number',
+    'billing_postcode',
+    'billing_city',
     'billing_email',
     'payment_method',
     'referral_source',
@@ -81,6 +85,20 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const data = {};
   for (const f of allowedFields) {
     if (body[f] !== undefined) data[f] = body[f];
+  }
+
+  // Derive billing_address for PDF/invoice compat from split fields
+  if (
+    data.billing_street ||
+    data.billing_street_number ||
+    data.billing_postcode ||
+    data.billing_city
+  ) {
+    const streetLine = [data.billing_street, data.billing_street_number].filter(Boolean).join(' ');
+    const cityLine = [data.billing_postcode, data.billing_city].filter(Boolean).join(' ');
+    data.billing_address = [streetLine, cityLine].filter(Boolean).join(', ');
+  } else {
+    data.billing_address = null;
   }
 
   // Record consent timestamp
