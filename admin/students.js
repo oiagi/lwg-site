@@ -422,10 +422,19 @@ export async function deleteStudent(studentId) {
   }
 }
 
-export function copyIntakeLink(studentId, accessToken) {
+export async function copyIntakeLink(studentId, accessToken) {
   if (!accessToken) {
     alert('This student has no access token. Edit and save the student first.');
     return;
+  }
+  // Reset token_created_at so the 90-day expiry window starts from now
+  try {
+    await apiFetch('/api/save-student', {
+      method: 'POST',
+      body: { id: studentId, token_created_at: new Date().toISOString() },
+    });
+  } catch {
+    // Non-fatal — still copy the link
   }
   const url = window.location.origin + '/intake.html?token=' + accessToken;
   navigator.clipboard
