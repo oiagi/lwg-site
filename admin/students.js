@@ -105,7 +105,6 @@ function renderStudentDetail(container, s) {
           ${esc(s.first_name)} ${esc(s.last_name)}<br>
           ${s.email ? '<span style="color:#aaa;">' + esc(s.email) + '</span><br>' : ''}
           ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
-          ${s.nationality ? 'Nationality: ' + esc(s.nationality) + '<br>' : ''}
           ${s.street || s.street_number ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' : ''}
           ${s.postcode || s.city ? esc([s.postcode, s.city].filter(Boolean).join(' ')) : ''}
         </p>
@@ -178,7 +177,6 @@ export function openStudentModal(existingData) {
     'sm-last-name',
     'sm-email',
     'sm-phone',
-    'sm-nationality',
     'sm-street',
     'sm-street-number',
     'sm-postcode',
@@ -229,7 +227,6 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-last-name').value = existingData.last_name || '';
     document.getElementById('sm-email').value = existingData.email || '';
     document.getElementById('sm-phone').value = existingData.phone || '';
-    document.getElementById('sm-nationality').value = existingData.nationality || '';
     document.getElementById('sm-street').value = existingData.street || '';
     document.getElementById('sm-street-number').value = existingData.street_number || '';
     document.getElementById('sm-postcode').value = existingData.postcode || '';
@@ -284,8 +281,39 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-status').value = resolvedStatus;
   }
 
+  // Billing address toggle
+  const hasBilling = !!(
+    existingData?.billing_street ||
+    existingData?.billing_postcode ||
+    existingData?.billing_name
+  );
+  resetBillingToggle(hasBilling);
+
   loadCompanyOptions();
   document.getElementById('student-modal').classList.add('open');
+}
+
+function resetBillingToggle(hasBillingData) {
+  const cb = document.getElementById('sm-billing-separate');
+  const section = document.getElementById('sm-billing-section');
+  cb.checked = hasBillingData;
+  section.style.display = hasBillingData ? 'block' : 'none';
+  cb.onchange = (e) => {
+    const show = e.target.checked;
+    section.style.display = show ? 'block' : 'none';
+    if (!show) {
+      [
+        'sm-billing-name',
+        'sm-billing-email',
+        'sm-billing-street',
+        'sm-billing-street-number',
+        'sm-billing-postcode',
+        'sm-billing-city',
+      ].forEach((id) => {
+        document.getElementById(id).value = '';
+      });
+    }
+  };
 }
 
 async function loadCompanyOptions() {
@@ -345,7 +373,6 @@ export async function submitStudent() {
     last_name: lastName,
     email: document.getElementById('sm-email').value.trim() || null,
     phone: document.getElementById('sm-phone').value.trim() || null,
-    nationality: document.getElementById('sm-nationality').value.trim() || null,
     street: document.getElementById('sm-street').value.trim() || null,
     street_number: document.getElementById('sm-street-number').value.trim() || null,
     postcode: document.getElementById('sm-postcode').value.trim() || null,
@@ -362,12 +389,24 @@ export async function submitStudent() {
     course_type: document.getElementById('sm-course-type').value || null,
     course_format: document.getElementById('sm-course-format').value || null,
     location: document.getElementById('sm-location').value || null,
-    billing_name: document.getElementById('sm-billing-name').value.trim() || null,
-    billing_street: document.getElementById('sm-billing-street').value.trim() || null,
-    billing_street_number: document.getElementById('sm-billing-street-number').value.trim() || null,
-    billing_postcode: document.getElementById('sm-billing-postcode').value.trim() || null,
-    billing_city: document.getElementById('sm-billing-city').value.trim() || null,
-    billing_email: document.getElementById('sm-billing-email').value.trim() || null,
+    ...(document.getElementById('sm-billing-separate').checked
+      ? {
+          billing_name: document.getElementById('sm-billing-name').value.trim() || null,
+          billing_street: document.getElementById('sm-billing-street').value.trim() || null,
+          billing_street_number:
+            document.getElementById('sm-billing-street-number').value.trim() || null,
+          billing_postcode: document.getElementById('sm-billing-postcode').value.trim() || null,
+          billing_city: document.getElementById('sm-billing-city').value.trim() || null,
+          billing_email: document.getElementById('sm-billing-email').value.trim() || null,
+        }
+      : {
+          billing_name: null,
+          billing_street: null,
+          billing_street_number: null,
+          billing_postcode: null,
+          billing_city: null,
+          billing_email: null,
+        }),
     rate_per_session: document.getElementById('sm-rate').value
       ? parseFloat(document.getElementById('sm-rate').value)
       : null,
