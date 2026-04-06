@@ -128,11 +128,14 @@ function renderStudentDetail(container, s) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">language</p>
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">preferences</p>
         <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+          ${s.service ? 'Service: ' + esc(s.service) + '<br>' : ''}
           ${s.native_language ? 'Native: ' + esc(s.native_language) + '<br>' : ''}
           ${s.target_language ? 'Target: ' + esc(s.target_language) + '<br>' : ''}
           ${s.current_level ? 'Level: ' + esc(s.current_level) + '<br>' : ''}
+          ${s.grade ? 'Grade: ' + esc(s.grade) + '<br>' : ''}
+          ${s.subjects ? 'Subjects: ' + esc(s.subjects) + '<br>' : ''}
           ${s.course_type ? 'Type: ' + esc(s.course_type) + '<br>' : ''}
           ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
           ${s.location ? 'Location: ' + esc(s.location) : ''}
@@ -185,9 +188,12 @@ export function openStudentModal(existingData) {
     'sm-ec-phone',
     'sm-ec-email',
     'sm-ec-relationship',
+    'sm-service',
     'sm-native-lang',
     'sm-target-lang',
     'sm-level',
+    'sm-grade',
+    'sm-subjects',
     'sm-learning-goals',
     'sm-desired-start',
     'sm-course-type',
@@ -235,9 +241,12 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-ec-phone').value = existingData.ec_phone || '';
     document.getElementById('sm-ec-email').value = existingData.ec_email || '';
     document.getElementById('sm-ec-relationship').value = existingData.ec_relationship || '';
+    document.getElementById('sm-service').value = existingData.service || '';
     document.getElementById('sm-native-lang').value = existingData.native_language || '';
     document.getElementById('sm-target-lang').value = existingData.target_language || '';
     document.getElementById('sm-level').value = existingData.current_level || '';
+    document.getElementById('sm-grade').value = existingData.grade || '';
+    document.getElementById('sm-subjects').value = existingData.subjects || '';
     document.getElementById('sm-learning-goals').value = existingData.learning_goals || '';
     document.getElementById('sm-desired-start').value = existingData.desired_start_date || '';
     document.getElementById('sm-course-type').value = existingData.course_type || '';
@@ -288,6 +297,7 @@ export function openStudentModal(existingData) {
     existingData?.billing_name
   );
   resetBillingToggle(hasBilling);
+  resetServiceToggle(existingData?.service);
 
   loadCompanyOptions();
   document.getElementById('student-modal').classList.add('open');
@@ -314,6 +324,22 @@ function resetBillingToggle(hasBillingData) {
       });
     }
   };
+}
+
+function resetServiceToggle(service) {
+  const sel = document.getElementById('sm-service');
+  const langFields = document.getElementById('sm-lang-fields');
+  const tutFields = document.getElementById('sm-tutoring-fields');
+
+  function apply(val) {
+    const isTutoring = val === 'tutoring';
+    langFields.style.display = isTutoring ? 'none' : 'contents';
+    tutFields.style.display = isTutoring ? 'contents' : 'none';
+  }
+
+  sel.value = service || '';
+  apply(sel.value);
+  sel.onchange = (e) => apply(e.target.value);
 }
 
 async function loadCompanyOptions() {
@@ -381,9 +407,22 @@ export async function submitStudent() {
     ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
     ec_email: document.getElementById('sm-ec-email').value.trim() || null,
     ec_relationship: document.getElementById('sm-ec-relationship').value.trim() || null,
-    native_language: document.getElementById('sm-native-lang').value.trim() || null,
-    target_language: document.getElementById('sm-target-lang').value.trim() || null,
-    current_level: document.getElementById('sm-level').value || null,
+    service: document.getElementById('sm-service').value || null,
+    ...(document.getElementById('sm-service').value === 'tutoring'
+      ? {
+          native_language: null,
+          target_language: null,
+          current_level: null,
+          grade: document.getElementById('sm-grade').value || null,
+          subjects: document.getElementById('sm-subjects').value.trim() || null,
+        }
+      : {
+          native_language: document.getElementById('sm-native-lang').value.trim() || null,
+          target_language: document.getElementById('sm-target-lang').value || null,
+          current_level: document.getElementById('sm-level').value || null,
+          grade: null,
+          subjects: null,
+        }),
     learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
     desired_start_date: document.getElementById('sm-desired-start').value || null,
     course_type: document.getElementById('sm-course-type').value || null,

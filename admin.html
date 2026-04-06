@@ -179,32 +179,84 @@
           <div class="modal-field"><label>Street number</label><input type="text" id="sm-street-number" placeholder="e.g. 3a"></div>
           <div class="modal-field"><label>Postcode</label><input type="text" id="sm-postcode" placeholder="e.g. 8001"></div>
           <div class="modal-field"><label>City</label><input type="text" id="sm-city" autocomplete="address-level2" placeholder="e.g. Zürich"></div>
-          <div class="modal-field"><label>Emergency contact name</label><input type="text" id="sm-ec-name" placeholder="Full name"></div>
-          <div class="modal-field"><label>Emergency contact relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
-          <div class="modal-field"><label>Emergency contact phone</label><input type="tel" id="sm-ec-phone" placeholder="+41…"></div>
-          <div class="modal-field"><label>Emergency contact email</label><input type="email" id="sm-ec-email" placeholder="ec@example.com"></div>
+        </div>
+
+        <div style="margin:1.2rem 0 0.6rem;display:flex;align-items:center;gap:0.7rem;">
+          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:0;">billing address</p>
+          <label style="font-size:0.75rem;color:#888;display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-weight:300;">
+            <input type="checkbox" id="sm-billing-separate"> differs from above
+          </label>
+        </div>
+        <div id="sm-billing-section" style="display:none;">
+          <div class="modal-grid">
+            <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+            <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
+            <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
+            <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
+            <div class="modal-field"><label>Billing postcode</label><input type="text" id="sm-billing-postcode" placeholder="e.g. 8001"></div>
+            <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
+          </div>
+        </div>
+
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">emergency contact</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>Name</label><input type="text" id="sm-ec-name" placeholder="Full name"></div>
+          <div class="modal-field"><label>Relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="sm-ec-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="sm-ec-email" placeholder="ec@example.com"></div>
         </div>
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">course preferences</p>
         <div class="modal-grid">
-          <div class="modal-field"><label>Native language</label><input type="text" id="sm-native-lang" placeholder="e.g. German"></div>
           <div class="modal-field">
-            <label>Target language</label>
-            <select id="sm-target-lang">
+            <label>Service type</label>
+            <select id="sm-service">
               <option value="">—</option>
-              <option value="German">German</option>
-              <option value="Swiss German">Swiss German</option>
-              <option value="English">English</option>
-              <option value="Other">Other</option>
+              <option value="language course">Language course</option>
+              <option value="exam prep">Exam prep</option>
+              <option value="tutoring">Tutoring</option>
             </select>
           </div>
-          <div class="modal-field">
-            <label>Current level</label>
-            <select id="sm-level">
-              <option value="">—</option>
-              <option>A1</option><option>A2</option><option>B1</option>
-              <option>B2</option><option>C1</option><option>C2</option>
-            </select>
+          <div id="sm-lang-fields" style="display:contents;">
+            <div class="modal-field"><label>Native language</label><input type="text" id="sm-native-lang" placeholder="e.g. German"></div>
+            <div class="modal-field">
+              <label>Target language</label>
+              <select id="sm-target-lang">
+                <option value="">—</option>
+                <option value="German">German</option>
+                <option value="Swiss German">Swiss German</option>
+                <option value="English">English</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="modal-field">
+              <label>Current level</label>
+              <select id="sm-level">
+                <option value="">—</option>
+                <option>A1</option><option>A2</option><option>B1</option>
+                <option>B2</option><option>C1</option><option>C2</option>
+              </select>
+            </div>
+          </div>
+          <div id="sm-tutoring-fields" style="display:none;">
+            <div class="modal-field">
+              <label>School level / grade</label>
+              <select id="sm-grade">
+                <option value="">—</option>
+                <option>Primar</option>
+                <option>Sekundar</option>
+                <option>Langzeitgymnasium</option>
+                <option>Kurzzeitgymnasium</option>
+                <option>BMS</option>
+                <option>EFZ</option>
+                <option>FMS</option>
+                <option>EBA</option>
+              </select>
+            </div>
+            <div class="modal-field">
+              <label>Subjects</label>
+              <input type="text" id="sm-subjects" placeholder="e.g. Mathematik, Englisch">
+            </div>
           </div>
           <div class="modal-field">
             <label>Course type</label>
@@ -236,23 +288,6 @@
           </div>
           <div class="modal-field"><label>Desired start date</label><input type="date" id="sm-desired-start"></div>
           <div class="modal-field full"><label>Learning goals</label><input type="text" id="sm-learning-goals" placeholder="e.g. Improve conversational German for work"></div>
-        </div>
-
-        <div style="margin:1.2rem 0 0.6rem;display:flex;align-items:center;gap:0.7rem;">
-          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:0;">billing address</p>
-          <label style="font-size:0.75rem;color:#888;display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-weight:300;">
-            <input type="checkbox" id="sm-billing-separate"> differs from above
-          </label>
-        </div>
-        <div id="sm-billing-section" style="display:none;">
-          <div class="modal-grid">
-            <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
-            <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
-            <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
-            <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
-            <div class="modal-field"><label>Billing postcode</label><input type="text" id="sm-billing-postcode" placeholder="e.g. 8001"></div>
-            <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
-          </div>
         </div>
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">admin</p>
