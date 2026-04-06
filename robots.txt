@@ -6,5 +6,6 @@ Disallow: /contact-details.html
 Disallow: /thankyou.html
 Disallow: /admin.html
 Disallow: /sessions.html
+Disallow: /redepartikeln.html
 
 Sitemap: https://oiagi.org/sitemap.xml
