@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redepartikeln — B1 Deutsch</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="redepartikeln.css" />
+  <script src="device-detect.js"></script>
+</head>
+<body>
+
+  <main id="content">
+
+    <header class="page-header">
+      <h1>Rede<em>partikeln</em></h1>
+      <p>Die kleinen Wörter, die Deutsch lebendig machen. Interaktiv lernen auf B1-Niveau.</p>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Lernbereiche">
+      <button class="tab active" role="tab" data-tab="reference"
+              aria-selected="true" aria-controls="tab-reference" tabindex="0">Übersicht</button>
+      <button class="tab" role="tab" data-tab="quiz"
+              aria-selected="false" aria-controls="tab-quiz" tabindex="-1">Quiz</button>
+      <button class="tab" role="tab" data-tab="cheatsheet"
+              aria-selected="false" aria-controls="tab-cheatsheet" tabindex="-1">Spickzettel</button>
+    </div>
+
+    <div class="main">
+
+      <div id="tab-reference" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-reference">
+        <div class="particle-grid" id="particleGrid"></div>
+      </div>
+
+      <div id="tab-quiz" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-quiz" hidden>
+        <div class="quiz-area" id="quizArea"></div>
+      </div>
+
+      <div id="tab-cheatsheet" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-cheatsheet" hidden>
+        <div class="cheat-sheet" id="cheatSheet"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+// ========== DATA ==========
+const particles = [
+  {
+    name: "mal",
+    function: "Abschwächung / Höflichkeit",
+    meaning: "Makes requests softer and friendlier. Turns a command into a casual suggestion.",
+    examples: [
+      { de: "Kannst du {mal} kurz helfen?", en: "Can you help me for a sec?" },
+      { de: "Schau {mal}!", en: "Look! / Have a look!" },
+      { de: "Probier das {mal}.", en: "Why don't you try this." }
+    ],
+    tip: "Use 'mal' to soften any imperative. Compare: 'Komm her!' vs. 'Komm mal her!' (Come here, would you?).",
+    category: "softening"
+  },
+  {
+    name: "doch",
+    function: "Widerspruch / Nachdruck",
+    meaning: "Expresses contradiction, surprise, or reinforces something the speaker considers obvious. Very versatile!",
+    examples: [
+      { de: "Das ist {doch} Unsinn!", en: "That's nonsense! (come on!)" },
+      { de: "Du weißt {doch}, dass ich recht habe.", en: "You know (perfectly well) that I'm right." },
+      { de: "Komm {doch} mit!", en: "Come along! (why wouldn't you?)" }
+    ],
+    tip: "'Doch' is one of the most important particles. In statements: 'but actually / after all'. In imperatives: urgency or encouragement. Standalone: 'Yes, it IS!' to contradict a negative question.",
+    category: "emphasis"
+  },
+  {
+    name: "denn",
+    function: "Interesse / Neugier",
+    meaning: "Shows genuine curiosity or interest in questions. Makes questions warmer and less interrogative.",
+    examples: [
+      { de: "Was machst du {denn} hier?", en: "What are you doing here? (I'm curious!)" },
+      { de: "Wie heißt du {denn}?", en: "So what's your name?" },
+      { de: "Hast du {denn} keine Zeit?", en: "Don't you have time? (I'm surprised)" }
+    ],
+    tip: "Without 'denn', questions can sound like a police interrogation. With 'denn', they become friendly and conversational. Use it in almost every casual question!",
+    category: "questions"
+  },
+  {
+    name: "eigentlich",
+    function: "Themenwechsel / echtes Interesse",
+    meaning: "Signals a change of topic, deeper curiosity, or 'when you think about it...'",
+    examples: [
+      { de: "Was willst du {eigentlich} werden?", en: "What do you actually want to become?" },
+      { de: "Wer ist das {eigentlich}?", en: "Who is that, anyway?" },
+      { de: "{Eigentlich} wollte ich zu Hause bleiben.", en: "Actually, I wanted to stay home." }
+    ],
+    tip: "'Eigentlich' in questions signals 'I've been wondering...' or 'by the way...'. In statements it means 'actually / to be honest'. Great for steering conversations.",
+    category: "questions"
+  },
+  {
+    name: "ja",
+    function: "Bestätigung / gemeinsames Wissen",
+    meaning: "Signals that something is obvious or already known to both speakers. 'As you/we know...'",
+    examples: [
+      { de: "Das ist {ja} toll!", en: "That's great! (wow, I see!)" },
+      { de: "Du weißt {ja}, wie er ist.", en: "You know how he is. (as we both know)" },
+      { de: "Es ist {ja} nicht so einfach.", en: "It's not that easy, (as you know)." }
+    ],
+    tip: "'Ja' as a particle ≠ 'ja' as 'yes'. It reminds the listener that you share common knowledge. Can also express surprise: 'Das ist ja unglaublich!' = 'Wow, that's incredible!'",
+    category: "emphasis"
+  },
+  {
+    name: "aber",
+    function: "Überraschung / Verstärkung",
+    meaning: "Expresses surprise or intensifies an exclamation. Similar to 'really' or 'wow'.",
+    examples: [
+      { de: "Das ist {aber} nett!", en: "That's really nice! (more than expected)" },
+      { de: "Du bist {aber} groß geworden!", en: "Wow, you've really grown!" },
+      { de: "Das war {aber} teuer!", en: "That was really expensive!" }
+    ],
+    tip: "'Aber' as a particle is NOT 'but'. It exclaims surprise at intensity: something is more [adjective] than expected. Think of it as 'wow, really!'",
+    category: "emphasis"
+  },
+  {
+    name: "ruhig",
+    function: "Ermutigung / Erlaubnis",
+    meaning: "Encourages someone to do something freely, without worry. 'Go ahead, feel free!'",
+    examples: [
+      { de: "Du kannst {ruhig} bleiben.", en: "You can stay, no problem." },
+      { de: "Frag {ruhig}!", en: "Go ahead and ask! (don't be shy)" },
+      { de: "Nimm dir {ruhig} noch ein Stück.", en: "Help yourself to another piece." }
+    ],
+    tip: "'Ruhig' as a particle ≠ 'quiet/calm'. It gives permission or encouragement. Signals: 'I'm okay with it, don't hold back!'",
+    category: "softening"
+  },
+  {
+    name: "bloß",
+    function: "Warnung / Verstärkung",
+    meaning: "Adds urgency to warnings or intensifies questions. Can express worry or emphasis.",
+    examples: [
+      { de: "Mach das {bloß} nicht!", en: "Don't you dare do that!" },
+      { de: "Was habe ich {bloß} getan?", en: "What on earth have I done?" },
+      { de: "Fahr {bloß} vorsichtig!", en: "Drive carefully! (I mean it!)" }
+    ],
+    tip: "'Bloß' in imperatives = strong warning. In W-questions = desperation or bewilderment. Synonym: 'nur' works the same way as a particle.",
+    category: "urgency"
+  },
+  {
+    name: "halt",
+    function: "Resignation / Unabänderlichkeit",
+    meaning: "Signals acceptance: 'that's just how it is.' Similar to 'eben' but more colloquial (southern German).",
+    examples: [
+      { de: "Das ist {halt} so.", en: "That's just the way it is." },
+      { de: "Dann musst du {halt} früher aufstehen.", en: "Then you just have to get up earlier." },
+      { de: "Man kann {halt} nicht alles haben.", en: "You just can't have everything." }
+    ],
+    tip: "'Halt' is very common in spoken German, especially in the south. Expresses resignation — there's no alternative. 'Eben' is the more standard equivalent.",
+    category: "emphasis"
+  },
+  {
+    name: "eben",
+    function: "Bestätigung / Unvermeidlichkeit",
+    meaning: "Confirms something as inevitable or obvious. 'That's precisely it / exactly.'",
+    examples: [
+      { de: "Das ist {eben} der Unterschied.", en: "That's precisely the difference." },
+      { de: "Er ist {eben} so.", en: "He's just like that. (nothing to do about it)" },
+      { de: "Dann bleiben wir {eben} hier.", en: "Then we'll just stay here." }
+    ],
+    tip: "'Eben' and 'halt' are near-synonyms. 'Eben' is more common in northern Germany, 'halt' in the south. Both signal 'no alternative, deal with it.'",
+    category: "emphasis"
+  },
+  {
+    name: "wohl",
+    function: "Vermutung / Unsicherheit",
+    meaning: "Expresses assumption or probability. 'Probably / I suppose / presumably.'",
+    examples: [
+      { de: "Er ist {wohl} krank.", en: "He's probably sick." },
+      { de: "Das wird {wohl} stimmen.", en: "That's presumably true." },
+      { de: "Du hast {wohl} recht.", en: "I suppose you're right." }
+    ],
+    tip: "'Wohl' signals you're not 100% sure but it's your best guess. Softer than 'wahrscheinlich' — more like 'I'd think so.'",
+    category: "hedging"
+  },
+  {
+    name: "schon",
+    function: "Zuversicht / Einschränkung",
+    meaning: "Expresses confidence, concession, or reassurance. 'Sure / don't worry / I suppose.'",
+    examples: [
+      { de: "Das wird {schon} klappen.", en: "It'll work out. (don't worry)" },
+      { de: "Das stimmt {schon}, aber...", en: "That's true, sure, but..." },
+      { de: "Wer will das {schon}?", en: "Who'd want that? (rhetorical)" }
+    ],
+    tip: "'Schon' as a particle ≠ 'already'. Often reassuring ('Das wird schon!') or concessive ('stimmt schon, aber...'). In rhetorical questions it implies 'nobody'.",
+    category: "hedging"
+  },
+  {
+    name: "nur",
+    function: "Warnung / Einschränkung",
+    meaning: "Adds urgency to warnings (like 'bloß'). In questions expresses helplessness.",
+    examples: [
+      { de: "Lass das {nur}!", en: "Stop that! (I'm warning you)" },
+      { de: "Was soll ich {nur} machen?", en: "What am I supposed to do? (helpless)" },
+      { de: "Wenn er {nur} hier wäre!", en: "If only he were here!" }
+    ],
+    tip: "'Nur' as a particle = 'bloß'. In wishes with 'wenn...nur' it means 'if only'. Don't confuse with 'nur' meaning 'only'.",
+    category: "urgency"
+  },
+  {
+    name: "etwa",
+    function: "Unglaube / rhetorische Frage",
+    meaning: "Signals disbelief in yes/no questions. The speaker hopes the answer is 'no'.",
+    examples: [
+      { de: "Bist du {etwa} krank?", en: "Don't tell me you're sick?!" },
+      { de: "Willst du {etwa} aufgeben?", en: "You're not going to give up, are you?!" },
+      { de: "Hast du {etwa} gelogen?", en: "Did you actually lie?! (please say no)" }
+    ],
+    tip: "'Etwa' in questions means 'surely not?!' or 'don't tell me...'. The speaker expects and hopes for 'nein'. Shows shock or disbelief.",
+    category: "questions"
+  },
+  {
+    name: "vielleicht",
+    function: "Überraschung / Ausruf",
+    meaning: "In exclamations: expresses strong surprise or disbelief. Not 'maybe'!",
+    examples: [
+      { de: "Das ist {vielleicht} ein Chaos!", en: "What a mess this is! (wow)" },
+      { de: "Du bist {vielleicht} ein Held!", en: "Some hero you are! (ironic)" },
+      { de: "Das war {vielleicht} ein Tag!", en: "What a day that was!" }
+    ],
+    tip: "As a particle, 'vielleicht' does NOT mean 'maybe'. Expresses amazement at how extreme something is. Always in exclamations, never in questions.",
+    category: "emphasis"
+  }
+];
+
+const categories = {
+  softening: { label: "Abschwächung", blue: false },
+  emphasis:  { label: "Verstärkung",  blue: false },
+  questions: { label: "Fragen",        blue: true  },
+  urgency:   { label: "Dringlichkeit", blue: false },
+  hedging:   { label: "Absicherung",   blue: true  }
+};
+
+// ========== QUIZ DATA ==========
+const quizQuestions = [
+  { sentence: "Kannst du mir ___ helfen?", translation: "Can you help me for a sec?", answer: "mal", options: ["mal", "doch", "ja", "eben"], context: "Polite, casual request to a friend.", explanation: "'Mal' softens the request, making it more casual and friendly — like adding 'just' or 'for a sec'." },
+  { sentence: "Das ist ___ Unsinn!", translation: "That's nonsense! (come on!)", answer: "doch", options: ["aber", "doch", "halt", "wohl"], context: "Contradicting someone who made a wrong claim.", explanation: "'Doch' expresses contradiction — the speaker is pushing back: 'No, that IS nonsense, and you should know that!'" },
+  { sentence: "Was machst du ___ hier?", translation: "What are you doing here? (I'm curious)", answer: "denn", options: ["denn", "eigentlich", "bloß", "etwa"], context: "You meet a friend somewhere unexpected.", explanation: "'Denn' adds friendly curiosity to a question. Without it, the question could sound accusatory." },
+  { sentence: "Du weißt ___, wie er ist.", translation: "You know how he is. (as we both know)", answer: "ja", options: ["ja", "doch", "schon", "halt"], context: "Reminding someone of common knowledge.", explanation: "'Ja' signals shared knowledge — 'you know this already, we both know this.' It's a reminder, not a 'yes'." },
+  { sentence: "Das ist ___ nett von dir!", translation: "That's really nice of you! (more than expected)", answer: "aber", options: ["mal", "aber", "ja", "doch"], context: "Someone does something unexpectedly kind.", explanation: "'Aber' as a particle expresses surprised intensity — 'wow, that's REALLY nice!' Something exceeded expectations." },
+  { sentence: "Mach das ___ nicht!", translation: "Don't you dare do that!", answer: "bloß", options: ["ruhig", "bloß", "mal", "halt"], context: "Strong warning to someone about to do something dangerous.", explanation: "'Bloß' in commands is an urgent warning: 'Whatever you do, DON'T!' Much stronger than a simple 'nicht machen'." },
+  { sentence: "Du kannst ___ fragen.", translation: "Go ahead and ask. (don't be shy)", answer: "ruhig", options: ["ruhig", "mal", "schon", "doch"], context: "Encouraging someone who is hesitant.", explanation: "'Ruhig' gives permission and encouragement — 'feel free, I don't mind, go for it!'" },
+  { sentence: "Das ist ___ so.", translation: "That's just the way it is.", answer: "halt", options: ["eben", "halt", "wohl", "doch"], context: "Accepting an unchangeable situation. (Southern German)", explanation: "'Halt' signals resigned acceptance — there's no alternative. 'Eben' would also work here." },
+  { sentence: "Er ist ___ krank.", translation: "He's probably sick.", answer: "wohl", options: ["wohl", "ja", "eigentlich", "schon"], context: "Guessing why someone didn't come to work.", explanation: "'Wohl' expresses probability — 'I think so, but I'm not certain.' It's an educated guess." },
+  { sentence: "Das wird ___ klappen.", translation: "It'll work out. (don't worry)", answer: "schon", options: ["schon", "wohl", "mal", "doch"], context: "Reassuring a worried friend.", explanation: "'Schon' here is reassuring — 'trust me, it'll be fine.' It expresses confidence and calms the listener." },
+  { sentence: "Wer ist das ___?", translation: "Who is that, anyway?", answer: "eigentlich", options: ["denn", "eigentlich", "etwa", "bloß"], context: "Changing topic; you've been wondering.", explanation: "'Eigentlich' signals 'I've been meaning to ask...' or 'by the way...'. It's a topic shifter showing deeper curiosity." },
+  { sentence: "Bist du ___ krank?", translation: "Don't tell me you're sick?!", answer: "etwa", options: ["etwa", "denn", "vielleicht", "wohl"], context: "Shocked reaction — hoping the answer is 'no'.", explanation: "'Etwa' expresses disbelief in questions — the speaker really hopes the answer is 'no'. It's 'surely not?!'" },
+  { sentence: "Das ist ___ ein Chaos!", translation: "What a mess! (wow)", answer: "vielleicht", options: ["aber", "vielleicht", "ja", "doch"], context: "Exclaiming about how extreme a situation is.", explanation: "'Vielleicht' as a particle ≠ 'maybe'. In exclamations it means 'what a...!' expressing surprise at intensity." },
+  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answer: "nur", options: ["nur", "bloß", "mal", "doch"], context: "Expressing a wish — longing for someone's presence.", explanation: "'Nur' (or 'bloß') in wishes with 'wenn' means 'if only'. Both particles work identically here." },
+  { sentence: "Dann bleiben wir ___ hier.", translation: "Then we'll just stay here.", answer: "eben", options: ["eben", "halt", "schon", "ruhig"], context: "Accepting a situation — the restaurant is full, so...", explanation: "'Eben' signals resigned acceptance — 'there's no alternative, so we'll just do this.' 'Halt' would also work." }
+];
+
+
+// ========== TAB SWITCHING ==========
+const tabsEl = document.querySelector('[role="tablist"]');
+
+tabsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-tab]');
+  if (!btn) return;
+  switchTab(btn.dataset.tab, btn);
+});
+
+tabsEl.addEventListener('keydown', (e) => {
+  const tabs = Array.from(tabsEl.querySelectorAll('[role="tab"]'));
+  const idx = tabs.indexOf(document.activeElement);
+  if (idx === -1) return;
+  if (e.key === 'ArrowRight') {
+    const next = tabs[(idx + 1) % tabs.length];
+    next.focus();
+    switchTab(next.dataset.tab, next);
+    e.preventDefault();
+  } else if (e.key === 'ArrowLeft') {
+    const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+    prev.focus();
+    switchTab(prev.dataset.tab, prev);
+    e.preventDefault();
+  }
+});
+
+function switchTab(tabName, activeBtn) {
+  document.querySelectorAll('.tab-content').forEach((p) => { p.hidden = true; });
+  document.getElementById('tab-' + tabName).hidden = false;
+
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+    t.setAttribute('tabindex', '-1');
+  });
+  activeBtn.classList.add('active');
+  activeBtn.setAttribute('aria-selected', 'true');
+  activeBtn.setAttribute('tabindex', '0');
+
+  if (tabName === 'quiz') openQuizTab();
+  if (tabName === 'cheatsheet') renderCheatSheet();
+}
+
+// ========== REFERENCE CARDS ==========
+function renderReference() {
+  const grid = document.getElementById('particleGrid');
+  grid.innerHTML = particles.map((p) => {
+    const cat = categories[p.category];
+    const catClass = cat.blue ? 'cat-' + p.category : '';
+    const exHtml = p.examples.map((ex) => {
+      const deHtml = ex.de.replace(/\{(\w+)\}/g, '<span class="highlight">$1</span>');
+      return `<div class="example-box">
+        <div class="de">${deHtml}</div>
+        <div class="en">${ex.en}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="particle-card" role="button" tabindex="0"
+                aria-expanded="false"
+                onclick="this.classList.toggle('expanded'); this.setAttribute('aria-expanded', this.classList.contains('expanded'))">
+      <div class="particle-name">${p.name}</div>
+      <div class="particle-function ${catClass}">${p.function}</div>
+      <div class="particle-meaning">${p.meaning}</div>
+      ${exHtml}
+      <div class="expand-hint">▸ Tipp anzeigen</div>
+      <div class="tip">${p.tip}</div>
+    </div>`;
+  }).join('');
+
+  // keyboard support for cards
+  grid.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = e.target.closest('.particle-card');
+      if (card) {
+        card.classList.toggle('expanded');
+        card.setAttribute('aria-expanded', card.classList.contains('expanded'));
+        e.preventDefault();
+      }
+    }
+  });
+}
+
+// ========== QUIZ ==========
+let quizState = {
+  status: 'not_started', // 'in_progress' | 'completed'
+  current: 0,
+  score: 0,
+  answers: [],
+  shuffled: []
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function openQuizTab() {
+  if (quizState.status === 'not_started' || quizState.status === 'completed') {
+    initQuiz();
+  } else {
+    renderQuizQuestion();
+  }
+}
+
+function initQuiz() {
+  quizState = {
+    status: 'in_progress',
+    current: 0,
+    score: 0,
+    answers: [],
+    shuffled: shuffle(quizQuestions).slice(0, 10)
+  };
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const area = document.getElementById('quizArea');
+  const { current, shuffled } = quizState;
+
+  if (current >= shuffled.length) {
+    finishQuiz();
+    return;
+  }
+
+  const q = shuffled[current];
+  const dots = shuffled.map((_, i) => {
+    let cls = 'quiz-dot';
+    if (i < current) cls += quizState.answers[i] ? ' correct' : ' wrong';
+    if (i === current) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  const sentenceHtml = q.sentence.replace('___', '<span class="blank">___</span>');
+  const optionsHtml = shuffle(q.options).map((o) =>
+    `<button class="option-btn" data-value="${o}">${o}</button>`
+  ).join('');
+
+  area.innerHTML = `
+    <div class="quiz-progress" aria-hidden="true">${dots}</div>
+    <div class="quiz-card">
+      <div class="q-number">Frage ${current + 1} von ${shuffled.length}</div>
+      <div class="q-sentence">${sentenceHtml}</div>
+      <div class="q-translation">${q.translation}</div>
+      <div class="q-context">${q.context}</div>
+      <div class="options" role="group" aria-label="Antwortoptionen">${optionsHtml}</div>
+      <div class="explanation-box" id="explanation" role="status" aria-live="polite"></div>
+      <button class="action-btn" id="nextBtn">Weiter →</button>
+    </div>
+  `;
+
+  // Attach listeners to option buttons
+  area.querySelectorAll('.option-btn').forEach((btn) => {
+    btn.addEventListener('click', () => selectAnswer(btn, btn.dataset.value, q.answer));
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+}
+
+function selectAnswer(btn, selected, correct) {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((b) => {
+    b.classList.add('disabled');
+    if (b.dataset.value === correct) b.classList.add('correct');
+    if (b.dataset.value === selected && selected !== correct) b.classList.add('wrong');
+  });
+  btn.classList.add('selected');
+
+  const isCorrect = selected === correct;
+  quizState.answers.push(isCorrect);
+  if (isCorrect) quizState.score++;
+
+  // Fill blank with answer
+  const blank = document.querySelector('.blank');
+  if (blank) {
+    blank.textContent = correct;
+    blank.style.borderBottom = 'none';
+    blank.style.fontStyle = 'normal';
+    blank.style.color = isCorrect ? '#27ae60' : '#c0392b';
+  }
+
+  const q = quizState.shuffled[quizState.current];
+  const expl = document.getElementById('explanation');
+  expl.textContent = q.explanation;
+  expl.classList.add('visible');
+
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function nextQuestion() {
+  quizState.current++;
+  renderQuizQuestion();
+}
+
+function finishQuiz() {
+  quizState.status = 'completed';
+  const area = document.getElementById('quizArea');
+  const { score, shuffled } = quizState;
+  const total = shuffled.length;
+  const heading = score >= 8 ? 'Fantastisch!' : score >= 5 ? 'Gut gemacht!' : 'Weiter üben!';
+  const msg = score >= 8
+    ? 'Du beherrschst die Partikeln wirklich gut!'
+    : score >= 5
+    ? 'Solide Grundlagen — schau dir die Übersicht nochmal an.'
+    : 'Kein Problem — lies die Übersicht und versuche es nochmal!';
+
+  area.innerHTML = `
+    <div class="results-card">
+      <h2>${heading}</h2>
+      <div class="score">${score} / ${total}</div>
+      <p class="score-label">${msg}</p>
+      <button class="action-btn visible" id="restartBtn">Nochmal spielen</button>
+    </div>
+  `;
+  document.getElementById('restartBtn').addEventListener('click', initQuiz);
+}
+
+// ========== CHEAT SHEET ==========
+function renderCheatSheet() {
+  const sheet = document.getElementById('cheatSheet');
+  if (sheet.innerHTML.trim()) return; // already rendered
+
+  const groups = {};
+  particles.forEach((p) => {
+    if (!groups[p.category]) groups[p.category] = [];
+    groups[p.category].push(p);
+  });
+
+  let html = '';
+  for (const [cat, items] of Object.entries(groups)) {
+    const catInfo = categories[cat];
+    const cls = catInfo.blue ? 'cat-' + cat : '';
+    html += `<div class="cs-group"><h3 class="${cls}">${catInfo.label}</h3>`;
+    items.forEach((p) => {
+      const ex = p.examples[0];
+      const exText = ex.de.replace(/\{(\w+)\}/g, '$1');
+      html += `<div class="cs-row">
+        <div class="cs-particle">${p.name}</div>
+        <div class="cs-function">${p.function}</div>
+        <div class="cs-example">${exText}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  sheet.innerHTML = html;
+}
+
+// ========== INIT ==========
+renderReference();
+  </script>
+
+  <script src="nav.js"></script>
+</body>
+</html>
