@@ -8,6 +8,8 @@ let participantCount = 1;
 let attendanceStudents = [];
 let studentCache = [];
 let clickAwayHandler = null;
+let addParticipantCourseId = null;
+let apSearchListenersAttached = false;
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -101,13 +103,6 @@ function renderCourses(courses) {
         <p style="font-size:0.78rem;color:#1a1a1a;margin-bottom:0.3rem;">
           ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
           ${s.current_level ? '<span style="color:#888;"> · ' + esc(s.current_level) + '</span>' : ''}
-          ${
-            s.access_token
-              ? `<a href="/sessions.html?token=${s.access_token}" target="_blank"
-            style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;
-            text-decoration:none;margin-left:0.6rem;border-bottom:1px solid #ddd;">session page ↗</a>`
-              : ''
-          }
         </p>
         <textarea id="notes-${s.id}"
           style="width:100%;background:transparent;border:none;border-bottom:1px solid #ddd;
@@ -177,6 +172,8 @@ function renderCourses(courses) {
           </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.8rem;">students & progress</p>
           ${studentBlocks}
+          <button class="save-btn" style="margin-top:0.4rem;"
+            data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
           ${sessions}
@@ -692,6 +689,161 @@ export async function submitAttendance() {
     msgEl.className = 'modal-msg err';
     msgEl.style.display = 'block';
     btn.textContent = 'save attendance';
+    btn.disabled = false;
+  }
+}
+
+/* ── Add participant to existing course ─────────────────────────── */
+
+export function initAddParticipantSearch() {
+  if (apSearchListenersAttached) return;
+  apSearchListenersAttached = true;
+
+  const search = document.getElementById('ap-search');
+  const dropdown = document.getElementById('ap-dropdown');
+  if (!search || !dropdown) return;
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    if (!q) {
+      dropdown.style.display = 'none';
+      search.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    const matches = studentCache
+      .filter((s) => {
+        const name = `${s.first_name || ''} ${s.last_name || ''}`.trim().toLowerCase();
+        const email = (s.email || '').toLowerCase();
+        return name.includes(q) || email.includes(q);
+      })
+      .slice(0, 8);
+
+    if (!matches.length) {
+      dropdown.style.display = 'none';
+      search.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    dropdown.innerHTML = matches
+      .map(
+        (s) =>
+          `<li role="option"
+            style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f5f5f5;"
+            data-first="${esc(s.first_name || '')}" data-last="${esc(s.last_name || '')}"
+            data-email="${esc(s.email || '')}" data-phone="${esc(s.phone || '')}"
+            data-student-id="${esc(s.id || '')}">
+            ${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}
+            <span style="color:#aaa;font-size:0.75rem;">${esc(s.email || '')}</span>
+          </li>`
+      )
+      .join('');
+
+    dropdown.style.display = 'block';
+    search.setAttribute('aria-expanded', 'true');
+
+    dropdown.querySelectorAll('li').forEach((li) => {
+      li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
+      li.addEventListener('mouseout', () => (li.style.background = ''));
+    });
+  });
+
+  search.addEventListener('blur', () => {
+    setTimeout(() => {
+      dropdown.style.display = 'none';
+      search.setAttribute('aria-expanded', 'false');
+    }, 150);
+  });
+
+  search.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const first = dropdown.querySelector('li');
+    if (first && dropdown.style.display !== 'none') {
+      e.preventDefault();
+      first.click();
+    }
+  });
+
+  dropdown.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    document.getElementById('ap-selected-id').value = li.dataset.studentId;
+    document.getElementById('ap-first').value = li.dataset.first;
+    document.getElementById('ap-last').value = li.dataset.last;
+    document.getElementById('ap-email').value = li.dataset.email;
+    document.getElementById('ap-phone').value = li.dataset.phone;
+    search.value = [li.dataset.first, li.dataset.last].filter(Boolean).join(' ');
+    dropdown.style.display = 'none';
+    search.setAttribute('aria-expanded', 'false');
+  });
+}
+
+export function openAddParticipantModal(courseId) {
+  addParticipantCourseId = courseId;
+  document.getElementById('ap-search').value = '';
+  document.getElementById('ap-selected-id').value = '';
+  document.getElementById('ap-first').value = '';
+  document.getElementById('ap-last').value = '';
+  document.getElementById('ap-email').value = '';
+  document.getElementById('ap-phone').value = '';
+  const msgEl = document.getElementById('ap-msg');
+  msgEl.style.display = 'none';
+  msgEl.textContent = '';
+  const btn = document.getElementById('ap-submit');
+  btn.textContent = 'add';
+  btn.disabled = false;
+  const dropdown = document.getElementById('ap-dropdown');
+  if (dropdown) dropdown.style.display = 'none';
+  document.getElementById('add-participant-modal').classList.add('open');
+
+  // Ensure studentCache is populated
+  if (!studentCache.length) {
+    apiFetch('/api/get-students?status=all')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => {
+        studentCache = d;
+      })
+      .catch(() => {});
+  }
+}
+
+export function closeAddParticipantModal() {
+  document.getElementById('add-participant-modal').classList.remove('open');
+  addParticipantCourseId = null;
+}
+
+export async function submitAddParticipant() {
+  const btn = document.getElementById('ap-submit');
+  const msgEl = document.getElementById('ap-msg');
+  msgEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'adding…';
+
+  const studentId = document.getElementById('ap-selected-id').value;
+  const body = studentId
+    ? { course_id: addParticipantCourseId, student_id: studentId }
+    : {
+        course_id: addParticipantCourseId,
+        first_name: document.getElementById('ap-first').value.trim() || null,
+        last_name: document.getElementById('ap-last').value.trim() || null,
+        email: document.getElementById('ap-email').value.trim() || null,
+        phone: document.getElementById('ap-phone').value.trim() || null,
+      };
+
+  try {
+    const res = await apiFetch('/api/add-enrollment', { method: 'POST', body });
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error || 'Failed');
+    }
+    btn.textContent = 'added ✓';
+    setTimeout(() => {
+      closeAddParticipantModal();
+      loadCourses(currentCourseFilter);
+    }, 1000);
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.style.display = 'block';
+    btn.textContent = 'add';
     btn.disabled = false;
   }
 }

@@ -28,6 +28,10 @@ import {
   openAttendanceModal,
   closeAttendanceModal,
   submitAttendance,
+  openAddParticipantModal,
+  closeAddParticipantModal,
+  submitAddParticipant,
+  initAddParticipantSearch,
 } from './courses.js';
 import {
   loadCompanies,
@@ -51,22 +55,6 @@ import {
   deleteStudent,
   copyIntakeLink,
 } from './students.js';
-import {
-  loadInvoices,
-  getCurrentInvoiceFilter,
-  filterInvoices,
-  openInvoiceDetail,
-  closeInvoiceDetailModal,
-  updateInvoiceStatus,
-  downloadInvoicePdf,
-  openCreateInvoiceModal,
-  closeCreateInvoiceModal,
-  toggleAllInvSessions,
-  updateInvTotalPreview,
-  submitCreateInvoice,
-  switchInvoiceMode,
-  initVatListener,
-} from './billing.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
@@ -104,6 +92,9 @@ const actions = {
   openAttendanceModal,
   closeAttendanceModal,
   submitAttendance,
+  openAddParticipantModal,
+  closeAddParticipantModal,
+  submitAddParticipant,
   // Students
   filterStudents,
   selectStudent,
@@ -120,18 +111,6 @@ const actions = {
   closeCompanyModal,
   editCompany,
   submitCompany,
-  // Billing
-  filterInvoices,
-  openInvoiceDetail,
-  closeInvoiceDetailModal,
-  updateInvoiceStatus,
-  downloadInvoicePdf,
-  openCreateInvoiceModal,
-  closeCreateInvoiceModal,
-  toggleAllInvSessions,
-  updateInvTotalPreview,
-  submitCreateInvoice,
-  switchInvoiceMode,
   // Teachers
   authoriseTeacher,
   // Reports
@@ -187,7 +166,6 @@ function switchTab(tab) {
   if (tab === 'courses') loadCourses(getCurrentCourseFilter());
   if (tab === 'students') loadStudents(getCurrentStudentFilter());
   if (tab === 'companies') loadCompanies(getCurrentCompanyFilter());
-  if (tab === 'billing') loadInvoices(getCurrentInvoiceFilter());
   if (tab === 'reports') loadReport(getCurrentReportType());
   if (tab === 'teachers') loadAvailability();
 }
@@ -229,7 +207,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 
 /* ── Init ────────────────────────────────────────────────────────── */
 initEnquiries();
-initVatListener();
+initAddParticipantSearch();
 
 /* ── Bootstrap: init Supabase, check existing session ────────────── */
 (async function () {

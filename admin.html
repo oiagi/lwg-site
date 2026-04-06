@@ -45,7 +45,6 @@
       <button class="main-tab" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
       <button class="main-tab" id="tab-courses" data-action="switchTab" data-args="courses">courses</button>
       <button class="main-tab" id="tab-companies" data-action="switchTab" data-args="companies">companies</button>
-      <button class="main-tab" id="tab-billing" data-action="switchTab" data-args="billing">billing</button>
       <button class="main-tab" id="tab-reports" data-action="switchTab" data-args="reports">reports</button>
       <button class="main-tab" id="tab-teachers" data-action="switchTab" data-args="teachers">teachers</button>
     </div>
@@ -176,13 +175,12 @@
           <div class="modal-field"><label>Last name *</label><input type="text" id="sm-last-name" placeholder="Last name"></div>
           <div class="modal-field"><label>Email</label><input type="email" id="sm-email" placeholder="student@example.com"></div>
           <div class="modal-field"><label>Phone</label><input type="tel" id="sm-phone" placeholder="+41…"></div>
-          <div class="modal-field"><label>Nationality</label><input type="text" id="sm-nationality" placeholder="e.g. Swiss"></div>
           <div class="modal-field"><label>Street</label><input type="text" id="sm-street" placeholder="e.g. Bahnhofstrasse"></div>
           <div class="modal-field"><label>Street number</label><input type="text" id="sm-street-number" placeholder="e.g. 3a"></div>
           <div class="modal-field"><label>Postcode</label><input type="text" id="sm-postcode" placeholder="e.g. 8001"></div>
           <div class="modal-field"><label>City</label><input type="text" id="sm-city" autocomplete="address-level2" placeholder="e.g. Zürich"></div>
           <div class="modal-field"><label>Emergency contact name</label><input type="text" id="sm-ec-name" placeholder="Full name"></div>
-          <div class="modal-field"><label>Relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
+          <div class="modal-field"><label>Emergency contact relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
           <div class="modal-field"><label>Emergency contact phone</label><input type="tel" id="sm-ec-phone" placeholder="+41…"></div>
           <div class="modal-field"><label>Emergency contact email</label><input type="email" id="sm-ec-email" placeholder="ec@example.com"></div>
         </div>
@@ -240,20 +238,27 @@
           <div class="modal-field full"><label>Learning goals</label><input type="text" id="sm-learning-goals" placeholder="e.g. Improve conversational German for work"></div>
         </div>
 
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">billing</p>
-        <div class="modal-grid">
-          <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
-          <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
-          <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
-          <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
-          <div class="modal-field"><label>Billing postcode</label><input type="text" id="sm-billing-postcode" placeholder="e.g. 8001"></div>
-          <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
-          <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="sm-rate" step="0.01" placeholder="e.g. 80"></div>
-          <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
+        <div style="margin:1.2rem 0 0.6rem;display:flex;align-items:center;gap:0.7rem;">
+          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:0;">billing address</p>
+          <label style="font-size:0.75rem;color:#888;display:flex;align-items:center;gap:0.35rem;cursor:pointer;font-weight:300;">
+            <input type="checkbox" id="sm-billing-separate"> differs from above
+          </label>
+        </div>
+        <div id="sm-billing-section" style="display:none;">
+          <div class="modal-grid">
+            <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+            <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
+            <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
+            <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
+            <div class="modal-field"><label>Billing postcode</label><input type="text" id="sm-billing-postcode" placeholder="e.g. 8001"></div>
+            <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
+          </div>
         </div>
 
         <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">admin</p>
         <div class="modal-grid">
+          <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="sm-rate" step="0.01" placeholder="e.g. 80"></div>
+          <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
           <div class="modal-field">
             <label>Payment method</label>
             <select id="sm-payment-method">
@@ -311,74 +316,6 @@
       </div>
     </div>
 
-    <!-- ── Billing panel ──────────────────────────────────────────────── -->
-    <div id="panel-billing" style="display:none;">
-      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
-        <div class="course-filter-row">
-          <button class="filter-btn active" data-inv-status="all" data-action="filterInvoices" data-args="all">all</button>
-          <button class="filter-btn" data-inv-status="draft" data-action="filterInvoices" data-args="draft">draft</button>
-          <button class="filter-btn" data-inv-status="sent" data-action="filterInvoices" data-args="sent">sent</button>
-          <button class="filter-btn" data-inv-status="paid" data-action="filterInvoices" data-args="paid">paid</button>
-        </div>
-        <button class="new-course-btn" data-action="openCreateInvoiceModal">+ new invoice</button>
-      </div>
-      <div id="invoice-list">
-        <div class="loading-state">loading…</div>
-      </div>
-    </div>
-
-    <!-- ── Create invoice modal ────────────────────────────────────────── -->
-    <div class="modal-overlay" id="create-invoice-modal">
-      <div class="modal modal-wide">
-        <h2>create invoice</h2>
-        <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
-          <button class="filter-btn active" data-inv-mode="company" data-action="switchInvoiceMode" data-args="company">company</button>
-          <button class="filter-btn" data-inv-mode="student" data-action="switchInvoiceMode" data-args="student">student</button>
-        </div>
-        <div class="modal-grid">
-          <div class="modal-field" id="inv-company-field">
-            <label>Company *</label>
-            <select id="inv-company"><option value="">select company…</option></select>
-          </div>
-          <div class="modal-field" id="inv-student-field" style="display:none;">
-            <label>Student *</label>
-            <select id="inv-student"><option value="">select student…</option></select>
-          </div>
-          <div class="modal-field">
-            <label>VAT rate % <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(leave blank for no VAT)</span></label>
-            <input type="number" id="inv-vat-rate" step="0.1" placeholder="e.g. 8.1">
-          </div>
-          <div class="modal-field full">
-            <label>Notes</label>
-            <input type="text" id="inv-notes" placeholder="Optional notes">
-          </div>
-        </div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1.2rem 0 0.6rem;">completed sessions (select to include)</p>
-        <div id="inv-sessions" style="max-height:300px;overflow-y:auto;">
-          <p style="font-size:0.78rem;color:#aaa;">Select a company first.</p>
-        </div>
-        <div style="margin-top:1rem;padding-top:0.8rem;border-top:1px solid #eee;">
-          <span style="font-size:0.82rem;color:#555;" id="inv-total-preview">Total: —</span>
-        </div>
-        <div class="modal-actions">
-          <button class="modal-cancel" data-action="closeCreateInvoiceModal">cancel</button>
-          <button class="modal-submit" id="inv-submit" data-action="submitCreateInvoice">create invoice</button>
-        </div>
-        <p class="modal-msg" id="inv-msg"></p>
-      </div>
-    </div>
-
-    <!-- ── Invoice detail modal ────────────────────────────────────────── -->
-    <div class="modal-overlay" id="invoice-detail-modal">
-      <div class="modal" style="width:min(92vw,900px);">
-        <h2 id="inv-detail-title">invoice</h2>
-        <div id="inv-detail-content"></div>
-        <div class="modal-actions">
-          <button class="modal-cancel" data-action="closeInvoiceDetailModal">close</button>
-        </div>
-      </div>
-    </div>
-
     <!-- ── Company modal ─────────────────────────────────────────────── -->
     <div class="modal-overlay" id="company-modal">
       <div class="modal modal-wide">
@@ -430,6 +367,33 @@
       </div>
       <div id="availability-content">
         <div class="empty-state">select a teacher to view their schedule</div>
+      </div>
+    </div>
+
+    <!-- ── Add participant modal ─────────────────────────────────────── -->
+    <div class="modal-overlay" id="add-participant-modal">
+      <div class="modal">
+        <h2>add participant</h2>
+        <input type="hidden" id="ap-selected-id">
+        <div class="modal-field" style="position:relative;">
+          <label>Search existing student</label>
+          <input type="text" id="ap-search" placeholder="Name or email…" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ap-dropdown">
+          <ul id="ap-dropdown" role="listbox"
+            style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;
+            border:1px solid #eee;list-style:none;padding:0;margin:0;z-index:200;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.08);"></ul>
+        </div>
+        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.5rem;">or enter manually</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>First name</label><input type="text" id="ap-first"></div>
+          <div class="modal-field"><label>Last name</label><input type="text" id="ap-last"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="ap-email"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="ap-phone"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeAddParticipantModal">cancel</button>
+          <button class="modal-submit" id="ap-submit" data-action="submitAddParticipant">add</button>
+        </div>
+        <p class="modal-msg" id="ap-msg"></p>
       </div>
     </div>
 
