@@ -2,16 +2,6 @@
 import { TABS } from './constants.js';
 import { initAuth, signIn, signOut, getSession } from './auth.js';
 import {
-  loadEnquiries,
-  init as initEnquiries,
-  toggleDetail,
-  saveStatus,
-  saveNotes,
-  deleteEnquiry,
-  confirmBooking,
-  unlinkStudent,
-} from './enquiries.js';
-import {
   loadCourses,
   getCurrentCourseFilter,
   filterCourses,
@@ -35,16 +25,6 @@ import {
   initAddParticipantSearch,
 } from './courses.js';
 import {
-  loadCompanies,
-  getCurrentCompanyFilter,
-  filterCompanies,
-  toggleCompany,
-  openCompanyModal,
-  closeCompanyModal,
-  editCompany,
-  submitCompany,
-} from './companies.js';
-import {
   loadStudents,
   getCurrentStudentFilter,
   filterStudents,
@@ -57,7 +37,6 @@ import {
   copyIntakeLink,
 } from './students.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
-import { loadReport, getCurrentReportType, filterReport } from './reports.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
 import { trapFocus, releaseFocus } from './helpers.js';
 
@@ -71,13 +50,6 @@ setOnAuthoriseComplete(() => {
 
 /* ── Action registry for event delegation ─────────────────────────── */
 const actions = {
-  // Enquiries
-  toggleDetail,
-  saveStatus,
-  saveNotes,
-  deleteEnquiry,
-  confirmBooking,
-  unlinkStudent,
   // Courses
   filterCourses,
   toggleCourse,
@@ -106,17 +78,8 @@ const actions = {
   submitStudent,
   deleteStudent,
   copyIntakeLink,
-  // Companies
-  filterCompanies,
-  toggleCompany,
-  openCompanyModal,
-  closeCompanyModal,
-  editCompany,
-  submitCompany,
   // Teachers
   authoriseTeacher,
-  // Reports
-  filterReport,
   // Availability
   onTeacherSelect,
   // Tab switching
@@ -164,11 +127,8 @@ function switchTab(tab) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
   }
-  if (tab === 'enquiries') loadEnquiries('all');
   if (tab === 'courses') loadCourses(getCurrentCourseFilter());
   if (tab === 'students') loadStudents(getCurrentStudentFilter());
-  if (tab === 'companies') loadCompanies(getCurrentCompanyFilter());
-  if (tab === 'reports') loadReport(getCurrentReportType());
   if (tab === 'teachers') loadAvailability();
 }
 
@@ -208,7 +168,6 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 });
 
 /* ── Init ────────────────────────────────────────────────────────── */
-initEnquiries();
 initAddParticipantSearch();
 
 /* ── Bootstrap: init Supabase, check existing session ────────────── */

@@ -42,27 +42,8 @@
     <div class="main-tabs" style="position:relative;">
       <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
       <button class="main-tab active" id="tab-students" data-action="switchTab" data-args="students">students</button>
-      <button class="main-tab" id="tab-enquiries" data-action="switchTab" data-args="enquiries">enquiries</button>
       <button class="main-tab" id="tab-courses" data-action="switchTab" data-args="courses">courses</button>
-      <button class="main-tab" id="tab-companies" data-action="switchTab" data-args="companies">companies</button>
-      <button class="main-tab" id="tab-reports" data-action="switchTab" data-args="reports">reports</button>
       <button class="main-tab" id="tab-teachers" data-action="switchTab" data-args="teachers">teachers</button>
-    </div>
-
-    <!-- ── Enquiries panel ───────────────────────────────────────────── -->
-    <div id="panel-enquiries" style="display:none;">
-      <div class="dashboard-header">
-        <div class="filter-row">
-          <button class="filter-btn active" data-status="all">all</button>
-          <button class="filter-btn" data-status="new">new</button>
-          <button class="filter-btn" data-status="contacted">contacted</button>
-          <button class="filter-btn" data-status="confirmed">confirmed</button>
-          <button class="filter-btn" data-status="cancelled">cancelled</button>
-        </div>
-      </div>
-      <div id="enquiry-list" class="enquiry-list">
-        <div class="loading-state">loading…</div>
-      </div>
     </div>
 
     <!-- ── Courses panel ─────────────────────────────────────────────── -->
@@ -315,10 +296,6 @@
             </select>
           </div>
           <div class="modal-field">
-            <label>Company</label>
-            <select id="sm-company"><option value="">— none —</option></select>
-          </div>
-          <div class="modal-field">
             <label>Status</label>
             <select id="sm-status">
               <option value="active">active</option>
@@ -334,60 +311,6 @@
           <button class="modal-submit" id="sm-submit" data-action="submitStudent">save student</button>
         </div>
         <p class="modal-msg" id="sm-msg"></p>
-      </div>
-    </div>
-
-    <!-- ── Companies panel ───────────────────────────────────────────── -->
-    <div id="panel-companies" style="display:none;">
-      <div class="dashboard-header" style="justify-content:space-between;align-items:center;">
-        <div class="course-filter-row">
-          <button class="filter-btn active" data-company-status="true" data-action="filterCompanies" data-args="true">active</button>
-          <button class="filter-btn" data-company-status="all" data-action="filterCompanies" data-args="all">all</button>
-        </div>
-        <button class="new-course-btn" data-action="openCompanyModal">+ new company</button>
-      </div>
-      <div id="company-list">
-        <div class="loading-state">loading…</div>
-      </div>
-    </div>
-
-    <!-- ── Company modal ─────────────────────────────────────────────── -->
-    <div class="modal-overlay" id="company-modal">
-      <div class="modal modal-wide">
-        <h2 id="company-modal-title">new company</h2>
-        <input type="hidden" id="cm-id" value="">
-        <div class="modal-grid">
-          <div class="modal-field full"><label>Company name *</label><input type="text" id="cm-name" placeholder="e.g. UBS AG"></div>
-          <div class="modal-field"><label>Contact person</label><input type="text" id="cm-contact-name" placeholder="Full name"></div>
-          <div class="modal-field"><label>Contact email</label><input type="email" id="cm-contact-email" placeholder="hr@company.com"></div>
-          <div class="modal-field"><label>Contact phone</label><input type="tel" id="cm-contact-phone" placeholder="+41…"></div>
-          <div class="modal-field"><label>Billing email</label><input type="email" id="cm-billing-email" placeholder="billing@company.com"></div>
-          <div class="modal-field full"><label>Billing address</label><input type="text" id="cm-billing-address" placeholder="Street, PLZ, City"></div>
-          <div class="modal-field"><label>VAT number</label><input type="text" id="cm-vat" placeholder="CHE-…"></div>
-          <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="cm-rate" step="0.01" placeholder="e.g. 180"></div>
-          <div class="modal-field full"><label>Notes</label><input type="text" id="cm-notes" placeholder="Internal notes"></div>
-        </div>
-        <div class="modal-actions">
-          <button class="modal-cancel" data-action="closeCompanyModal">cancel</button>
-          <button class="modal-submit" id="cm-submit" data-action="submitCompany">save company</button>
-        </div>
-        <p class="modal-msg" id="cm-msg"></p>
-      </div>
-    </div>
-
-
-    <!-- ── Reports panel ──────────────────────────────────────────────── -->
-    <div id="panel-reports" style="display:none;">
-      <div class="dashboard-header">
-        <div class="course-filter-row">
-          <button class="filter-btn active" data-report-type="overview" data-action="filterReport" data-args="overview">overview</button>
-          <button class="filter-btn" data-report-type="revenue" data-action="filterReport" data-args="revenue">revenue</button>
-          <button class="filter-btn" data-report-type="sessions" data-action="filterReport" data-args="sessions">sessions</button>
-          <button class="filter-btn" data-report-type="attendance" data-action="filterReport" data-args="attendance">attendance</button>
-        </div>
-      </div>
-      <div id="report-content">
-        <div class="loading-state">loading…</div>
       </div>
     </div>
 

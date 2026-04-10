@@ -47,7 +47,7 @@ export async function createCourseCalendarEvent({
     : [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`];
 
   const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=all`,
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=none`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
@@ -65,12 +65,6 @@ export async function createCourseCalendarEvent({
         start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
         end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Zurich' },
         recurrence,
-        attendees: participants
-          .filter((p) => p.email)
-          .map((p) => ({
-            email: p.email,
-            displayName: `${p.firstName || ''} ${p.lastName || ''}`.trim(),
-          })),
       }),
     }
   );

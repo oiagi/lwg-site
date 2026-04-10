@@ -209,7 +209,6 @@ export function openStudentModal(existingData) {
     'sm-vat',
     'sm-payment-method',
     'sm-referral',
-    'sm-company',
     'sm-notes',
   ];
   allFields.forEach((id) => {
@@ -282,7 +281,6 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-vat').value = existingData.vat_number || '';
     document.getElementById('sm-payment-method').value = existingData.payment_method || '';
     document.getElementById('sm-referral').value = existingData.referral_source || '';
-    document.getElementById('sm-company').value = existingData.company_id || '';
     document.getElementById('sm-notes').value = existingData.progress_notes || '';
     // Resolve status from status field, falling back to active boolean for old records
     const resolvedStatus =
@@ -299,7 +297,6 @@ export function openStudentModal(existingData) {
   resetBillingToggle(hasBilling);
   resetServiceToggle(existingData?.service);
 
-  loadCompanyOptions();
   document.getElementById('student-modal').classList.add('open');
 }
 
@@ -340,26 +337,6 @@ function resetServiceToggle(service) {
   sel.value = service || '';
   apply(sel.value);
   sel.onchange = (e) => apply(e.target.value);
-}
-
-async function loadCompanyOptions() {
-  const sel = document.getElementById('sm-company');
-  const current = sel.value;
-  try {
-    const res = await apiFetch('/api/get-companies');
-    if (!res.ok) return;
-    const companies = await res.json();
-    sel.innerHTML =
-      '<option value="">— none —</option>' +
-      companies
-        .map(
-          (c) =>
-            `<option value="${c.id}"${c.id === current ? ' selected' : ''}>${esc(c.name)}</option>`
-        )
-        .join('');
-  } catch {
-    /* keep default */
-  }
 }
 
 export function closeStudentModal() {
@@ -452,7 +429,6 @@ export async function submitStudent() {
     vat_number: document.getElementById('sm-vat').value.trim() || null,
     payment_method: document.getElementById('sm-payment-method').value || null,
     referral_source: document.getElementById('sm-referral').value.trim() || null,
-    company_id: document.getElementById('sm-company').value || null,
     progress_notes: document.getElementById('sm-notes').value.trim() || null,
     status: document.getElementById('sm-status').value,
   };
