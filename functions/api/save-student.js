@@ -88,6 +88,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'consent_given',
     'consent_date',
     'token_created_at',
+    'access_token',
   ];
   const data = {};
   for (const f of fields) {

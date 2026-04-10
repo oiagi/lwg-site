@@ -165,7 +165,7 @@ function renderStudentDetail(container, s) {
     ${s.consent_given ? '<p style="font-size:0.7rem;color:#aaa;margin-bottom:0.5rem;">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
-      <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token}">copy intake link</button>
+      <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token || ''}">copy intake link</button>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
@@ -500,37 +500,49 @@ export async function deleteStudent(studentId) {
   }
 }
 
-export async function copyIntakeLink(studentId, accessToken) {
-  if (!accessToken) {
-    alert('This student has no access token. Edit and save the student first.');
-    return;
+export async function copyIntakeLink(studentId, accessToken, el) {
+  let tokenToUse = accessToken || null;
+  const generatingNew = !tokenToUse;
+
+  const saveBody = { id: studentId, token_created_at: new Date().toISOString() };
+  if (generatingNew) {
+    tokenToUse = crypto.randomUUID();
+    saveBody.access_token = tokenToUse;
   }
-  // Reset token_created_at so the 90-day expiry window starts from now
+
   try {
-    await apiFetch('/api/save-student', {
-      method: 'POST',
-      body: { id: studentId, token_created_at: new Date().toISOString() },
-    });
+    const res = await apiFetch('/api/save-student', { method: 'POST', body: saveBody });
+    if (!res.ok) {
+      if (generatingNew) {
+        alert('Could not generate intake link. Please try again.');
+        return;
+      }
+      // Existing token: non-fatal — still copy the link
+    } else if (generatingNew && el) {
+      // Persist the new token in the button so repeat clicks reuse it
+      el.dataset.args = `${studentId},${tokenToUse}`;
+    }
   } catch {
-    // Non-fatal — still copy the link
+    if (generatingNew) {
+      alert('Could not generate intake link. Please try again.');
+      return;
+    }
+    // Existing token: non-fatal
   }
-  const url = window.location.origin + '/intake.html?token=' + accessToken;
+
+  const url = window.location.origin + '/intake.html?token=' + tokenToUse;
   navigator.clipboard
     .writeText(url)
     .then(() => {
-      // Brief visual feedback on the button that was clicked
-      const btn = document.querySelector(
-        `[data-action="copyIntakeLink"][data-args="${studentId},${accessToken}"]`
-      );
-      if (btn) {
-        const orig = btn.textContent;
-        btn.textContent = 'copied!';
+      if (el) {
+        const orig = el.textContent;
+        el.textContent = 'copied!';
         setTimeout(() => {
-          btn.textContent = orig;
+          el.textContent = orig;
         }, 1500);
       }
     })
     .catch(() => {
-      prompt('Copy this link:', window.location.origin + '/intake.html?token=' + accessToken);
+      prompt('Copy this link:', url);
     });
 }
