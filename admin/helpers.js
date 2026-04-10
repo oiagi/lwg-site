@@ -33,14 +33,6 @@ export function dl(key, val) {
   return `<div class="detail-row"><span class="detail-key">${esc(key)}</span><span class="detail-val">${esc(v)}</span></div>`;
 }
 
-export function showSaved(id, duration = 2000) {
-  const msg = document.getElementById(id);
-  if (msg) {
-    msg.style.display = 'inline';
-    setTimeout(() => (msg.style.display = 'none'), duration);
-  }
-}
-
 /* ── Modal focus trap ──────────────────────────────────────────────── */
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

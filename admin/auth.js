@@ -10,10 +10,6 @@ export async function initAuth() {
   return supabaseClient;
 }
 
-export function getClient() {
-  return supabaseClient;
-}
-
 export async function signIn(email, password) {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) throw error;
@@ -35,8 +31,4 @@ export async function getSession() {
 export async function getAccessToken() {
   const session = await getSession();
   return session?.access_token ?? null;
-}
-
-export function onAuthStateChange(callback) {
-  return supabaseClient.auth.onAuthStateChange(callback);
 }
