@@ -1,6 +1,7 @@
 /* ── Students tab ─────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
 import { esc } from './helpers.js';
+import { MESSAGE_TIMEOUT_MS } from './constants.js';
 
 let currentStudentFilter = 'active';
 let selectedStudentId = null;
@@ -81,8 +82,7 @@ export async function selectStudent(id) {
     const s = await res.json();
     renderStudentDetail(pane, s);
   } catch {
-    pane.innerHTML =
-      '<p style="color:#c0392b;font-size:0.78rem;">Could not load student details.</p>';
+    pane.innerHTML = '<p class="detail-error">Could not load student details.</p>';
   }
 }
 
@@ -92,27 +92,27 @@ function renderStudentDetail(container, s) {
       ? s.courses
           .map(
             (c) =>
-              `<span style="display:inline-block;background:#f5f5f5;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.75rem;margin:0.15rem 0.2rem 0.15rem 0;">${esc(c.course_code) || '—'} · ${esc(c.service)} · <em>${esc(c.status)}</em></span>`
+              `<span class="course-tag">${esc(c.course_code) || '—'} · ${esc(c.service)} · <em>${esc(c.status)}</em></span>`
           )
           .join('')
-      : '<span style="color:#aaa;font-size:0.78rem;">no courses</span>';
+      : '<span class="detail-muted">no courses</span>';
 
   container.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+    <div class="detail-grid">
       <div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">personal</p>
-        <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+        <p class="detail-meta">personal</p>
+        <p class="detail-body">
           ${esc(s.first_name)} ${esc(s.last_name)}<br>
-          ${s.email ? '<span style="color:#aaa;">' + esc(s.email) + '</span><br>' : ''}
-          ${s.phone ? '<span style="color:#aaa;">' + esc(s.phone) + '</span><br>' : ''}
+          ${s.email ? '<span class="detail-muted">' + esc(s.email) + '</span><br>' : ''}
+          ${s.phone ? '<span class="detail-muted">' + esc(s.phone) + '</span><br>' : ''}
           ${s.street || s.street_number ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' : ''}
           ${s.postcode || s.city ? esc([s.postcode, s.city].filter(Boolean).join(' ')) : ''}
         </p>
-        ${s.emergency_contact || s.ec_phone || s.ec_email ? `<p style="font-size:0.75rem;color:#888;margin-top:0.4rem;">Emergency: ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' (' + esc(s.ec_relationship) + ')' : ''}${s.ec_phone ? ' · ' + esc(s.ec_phone) : ''}${s.ec_email ? ' · ' + esc(s.ec_email) : ''}</p>` : ''}
+        ${s.emergency_contact || s.ec_phone || s.ec_email ? `<p class="detail-note">Emergency: ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' (' + esc(s.ec_relationship) + ')' : ''}${s.ec_phone ? ' · ' + esc(s.ec_phone) : ''}${s.ec_email ? ' · ' + esc(s.ec_email) : ''}</p>` : ''}
       </div>
       <div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">billing</p>
-        <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+        <p class="detail-meta">billing</p>
+        <p class="detail-body">
           ${esc(s.billing_name) || '—'}<br>
           ${
             s.billing_street || s.billing_postcode
@@ -121,15 +121,15 @@ function renderStudentDetail(container, s) {
                 esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))
               : esc(s.billing_address) || '—'
           }<br>
-          ${s.billing_email ? '<span style="color:#aaa;">' + esc(s.billing_email) + '</span><br>' : ''}
+          ${s.billing_email ? '<span class="detail-muted">' + esc(s.billing_email) + '</span><br>' : ''}
           ${s.vat_number ? 'VAT: ' + esc(s.vat_number) : ''}
         </p>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+    <div class="detail-grid">
       <div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">preferences</p>
-        <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+        <p class="detail-meta">preferences</p>
+        <p class="detail-body">
           ${s.service ? 'Service: ' + esc(s.service) + '<br>' : ''}
           ${s.native_language ? 'Native: ' + esc(s.native_language) + '<br>' : ''}
           ${s.target_language ? 'Target: ' + esc(s.target_language) + '<br>' : ''}
@@ -140,30 +140,30 @@ function renderStudentDetail(container, s) {
           ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
           ${s.location ? 'Location: ' + esc(s.location) : ''}
         </p>
-        ${s.learning_goals ? '<p style="font-size:0.75rem;color:#888;margin-top:0.3rem;">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
-        ${s.desired_start_date ? '<p style="font-size:0.75rem;color:#888;">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
+        ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
+        ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
       </div>
       <div>
-        <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">courses</p>
+        <p class="detail-meta">courses</p>
         <div>${coursesHtml}</div>
       </div>
     </div>
     ${
       s.referral_source || s.payment_method || s.rate_per_session || s.progress_notes
         ? `
-    <div style="margin-bottom:1rem;">
-      <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">admin</p>
-      <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+    <div class="detail-section">
+      <p class="detail-meta">admin</p>
+      <p class="detail-body">
         ${s.payment_method ? 'Payment: ' + esc(s.payment_method) + '<br>' : ''}
         ${s.referral_source ? 'Referral: ' + esc(s.referral_source) + '<br>' : ''}
         ${s.rate_per_session ? '<strong>' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '</strong> per session<br>' : ''}
-        ${s.progress_notes ? '<span style="color:#888;">' + esc(s.progress_notes) + '</span>' : ''}
+        ${s.progress_notes ? '<span class="detail-muted">' + esc(s.progress_notes) + '</span>' : ''}
       </p>
     </div>`
         : ''
     }
-    ${s.consent_given ? '<p style="font-size:0.7rem;color:#aaa;margin-bottom:0.5rem;">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
-    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
+    <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
       <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token || ''}">copy intake link</button>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
@@ -444,14 +444,13 @@ export async function submitStudent() {
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
     msgEl.textContent = id ? 'Student updated.' : 'Student created.';
-    msgEl.className = 'modal-msg';
-    msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+    msgEl.className = 'modal-msg success';
     btn.textContent = 'saved ✓';
 
     setTimeout(() => {
       closeStudentModal();
       loadStudents(currentStudentFilter);
-    }, 1200);
+    }, MESSAGE_TIMEOUT_MS);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';

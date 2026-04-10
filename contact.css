@@ -141,3 +141,11 @@ html[data-device='tablet'] button[type='submit'] {
   text-align: right;
   margin-top: 0.3rem;
 }
+
+.form-error {
+  display: none;
+  color: #c0392b;
+  font-size: 0.78rem;
+  margin-top: 0.8rem;
+  text-align: center;
+}

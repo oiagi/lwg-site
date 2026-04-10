@@ -1,4 +1,5 @@
 /* ── Shared formatters & DOM utilities ─────────────────────────────── */
+import { MESSAGE_TIMEOUT_MS, LOCALE_DATETIME } from './constants.js';
 
 export function esc(str) {
   if (!str && str !== 0) return '';
@@ -10,21 +11,21 @@ export function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-export function fmt(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
-}
-
 export function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('de-CH', {
+  return new Date(iso).toLocaleString(LOCALE_DATETIME, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function showMessage(el, text, ms = MESSAGE_TIMEOUT_MS) {
+  el.textContent = text;
+  el.style.display = 'inline';
+  setTimeout(() => (el.style.display = 'none'), ms);
 }
 
 export function dl(key, val) {

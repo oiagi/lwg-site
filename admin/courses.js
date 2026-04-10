@@ -1,7 +1,8 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
-import { fmtDate, esc } from './helpers.js';
+import { fmtDate, esc, showMessage } from './helpers.js';
 import { loadTeachers } from './teachers.js';
+import { MESSAGE_TIMEOUT_MS } from './constants.js';
 
 let currentCourseFilter = 'active';
 let participantCount = 1;
@@ -68,9 +69,7 @@ function renderCourses(courses) {
 
       const rebookFlag =
         total && remaining !== null && remaining <= 3
-          ? `<span style="font-size:0.68rem;letter-spacing:0.08em;color:#e67e22;margin-left:0.5rem;">
-           ⚠ ${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}
-         </span>`
+          ? `<span class="rebook-flag">⚠ ${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
           : '';
 
       const sessions = (c.sessions || [])
@@ -80,7 +79,7 @@ function renderCourses(courses) {
       <div class="session-row" id="sess-${s.id}">
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDate(s.scheduled_at)}</div>
-        <div style="font-size:0.78rem;color:#888;text-transform:uppercase;letter-spacing:0.08em;">${s.status}</div>
+        <div class="session-status-label">${s.status}</div>
         <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
         ${
           s.status === 'scheduled'
@@ -99,37 +98,32 @@ function renderCourses(courses) {
         (c.students || [])
           .map(
             (s) => `
-      <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f0f0f0;">
-        <p style="font-size:0.78rem;color:#1a1a1a;margin-bottom:0.3rem;">
+      <div class="progress-block">
+        <p class="progress-name">
           ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
-          ${s.current_level ? '<span style="color:#888;"> · ' + esc(s.current_level) + '</span>' : ''}
+          ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
         </p>
-        <textarea id="notes-${s.id}"
-          style="width:100%;background:transparent;border:none;border-bottom:1px solid #ddd;
-          font-family:inherit;font-size:0.82rem;font-weight:300;color:#555;outline:none;
-          resize:none;height:50px;padding:0.2rem 0;margin-top:0.3rem;"
+        <textarea id="notes-${s.id}" class="progress-textarea"
           placeholder="progress notes…">${esc(s.progress_notes)}</textarea>
-        <div style="margin-top:0.3rem;display:flex;gap:0.5rem;align-items:center;">
+        <div class="progress-row">
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
-            style="background:transparent;border:none;border-bottom:1px solid #ddd;
-            font-family:inherit;font-size:0.75rem;color:#555;outline:none;width:60px;"
-            placeholder="level" />
+            class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
       </div>
     `
           )
-          .join('') || '<p style="font-size:0.78rem;color:#aaa;">No student records yet.</p>';
+          .join('') || '<p class="detail-muted">No student records yet.</p>';
 
       const noSessions = !c.sessions?.length
-        ? `<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-           <p style="font-size:0.78rem;color:#aaa;">No sessions synced yet.</p>
+        ? `<div class="sync-row">
+           <p class="detail-muted">No sessions synced yet.</p>
            <button class="save-btn" data-action="syncCalendar" data-args="${c.id}">sync calendar</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`
-        : `<div style="text-align:right;margin-bottom:0.4rem;display:flex;gap:0.5rem;justify-content:flex-end;align-items:center;">
-           <button class="save-btn" style="font-size:0.65rem;" data-action="syncCalendar" data-args="${c.id}">↻ sync</button>
+        : `<div class="sync-row sync-row--right">
+           <button class="save-btn sync-btn" data-action="syncCalendar" data-args="${c.id}">↻ sync</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`;
 
@@ -143,10 +137,10 @@ function renderCourses(courses) {
           <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem;">
+          <div class="detail-grid detail-grid--gap-lg">
             <div>
-              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">details</p>
-              <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+              <p class="detail-meta">details</p>
+              <p class="detail-body">
                 Service: ${esc(c.service) || '—'}<br>
                 Level: ${esc(c.level) || '—'}<br>
                 Group: ${esc(c.group_type) || '—'}<br>
@@ -154,23 +148,23 @@ function renderCourses(courses) {
               </p>
             </div>
             <div>
-              <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.4rem;">contact</p>
+              <p class="detail-meta">contact</p>
               ${
                 (c.participants || [])
                   .map(
                     (p) => `
-                <p style="font-size:0.82rem;color:#555;line-height:1.8;">
+                <p class="detail-body">
                   ${esc([p.firstName, p.lastName].filter(Boolean).join(' '))}
-                  ${p.email ? '<br><span style="color:#aaa;">' + esc(p.email) + '</span>' : ''}
-                  ${p.phone ? '<br><span style="color:#aaa;">' + esc(p.phone) + '</span>' : ''}
+                  ${p.email ? '<br><span class="detail-muted">' + esc(p.email) + '</span>' : ''}
+                  ${p.phone ? '<br><span class="detail-muted">' + esc(p.phone) + '</span>' : ''}
                 </p>
               `
                   )
-                  .join('') || '<p style="font-size:0.82rem;color:#aaa;">—</p>'
+                  .join('') || '<p class="detail-body detail-muted">—</p>'
               }
             </div>
           </div>
-          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin-bottom:0.8rem;">students & progress</p>
+          <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
           ${studentBlocks}
           <button class="save-btn" style="margin-top:0.4rem;"
             data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
@@ -195,10 +189,7 @@ export async function syncCalendar(courseId) {
       body: { course_id: courseId },
     });
     if (res.ok) {
-      if (msg) {
-        msg.style.display = 'inline';
-        setTimeout(() => (msg.style.display = 'none'), 2000);
-      }
+      if (msg) showMessage(msg, 'synced');
       loadCourses(currentCourseFilter);
     }
   } catch (err) {
@@ -244,10 +235,7 @@ export async function saveStudent(studentId) {
     });
     if (res.ok) {
       const msg = document.getElementById('student-saved-' + studentId);
-      if (msg) {
-        msg.style.display = 'inline';
-        setTimeout(() => (msg.style.display = 'none'), 2000);
-      }
+      if (msg) showMessage(msg, 'saved');
     }
   } catch (err) {
     console.error('Save student error:', err);
@@ -292,24 +280,20 @@ function renderParticipantBlock(i, { showRemove = false } = {}) {
     <div class="participant-block modal-grid" id="nc-p-${i}" data-selected-student-id="" style="${i > 0 ? 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;' : ''}">
       ${
         showRemove
-          ? `<div class="full" style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
-               <span style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;">Participant ${i + 1}</span>
-               <button data-action="removeParticipantBlock" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:#c0392b;">remove</button>
+          ? `<div class="participant-block-header">
+               <span class="detail-meta" style="margin:0;">Participant ${i + 1}</span>
+               <button class="remove-participant-btn" data-action="removeParticipantBlock">remove</button>
              </div>`
           : ''
       }
-      <div class="modal-field" style="grid-column:1/-1;">
-        <label>Search existing student <span style="font-size:0.65rem;color:#ccc;text-transform:none;">(optional)</span></label>
-        <div style="position:relative;">
+      <div class="modal-field full">
+        <label>Search existing student <span class="label-hint">(optional)</span></label>
+        <div class="modal-field--relative">
           <input type="text" id="nc-p${i}-search" class="participant-search"
             placeholder="Type name or email…" autocomplete="off"
             role="combobox" aria-expanded="false" aria-haspopup="listbox"
             aria-controls="nc-p${i}-dropdown">
-          <ul id="nc-p${i}-dropdown" role="listbox"
-            style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;
-            border:1px solid #e0e0e0;border-radius:4px;max-height:220px;overflow-y:auto;
-            z-index:200;list-style:none;margin:2px 0 0;padding:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          </ul>
+          <ul id="nc-p${i}-dropdown" class="search-dropdown" role="listbox" style="display:none;"></ul>
         </div>
       </div>
       <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
@@ -326,77 +310,86 @@ function hideDropdown(i) {
   if (search) search.setAttribute('aria-expanded', 'false');
 }
 
-function attachSearchListeners(i) {
-  const search = document.getElementById(`nc-p${i}-search`);
-  const dropdown = document.getElementById(`nc-p${i}-dropdown`);
-  if (!search || !dropdown) return;
+/* ── Shared student search autocomplete ────────────────────────── */
+function buildStudentSearch(inputEl, dropdownEl, onSelect) {
+  function hide() {
+    dropdownEl.style.display = 'none';
+    inputEl.setAttribute('aria-expanded', 'false');
+  }
 
-  search.addEventListener('input', () => {
-    const q = search.value.trim().toLowerCase();
+  inputEl.addEventListener('input', () => {
+    const q = inputEl.value.trim().toLowerCase();
     if (!q) {
-      hideDropdown(i);
+      hide();
       return;
     }
     const matches = studentCache
       .filter((s) => {
         const name = `${s.first_name || ''} ${s.last_name || ''}`.trim().toLowerCase();
-        const email = (s.email || '').toLowerCase();
-        return name.includes(q) || email.includes(q);
+        return name.includes(q) || (s.email || '').toLowerCase().includes(q);
       })
       .slice(0, 8);
 
     if (!matches.length) {
-      hideDropdown(i);
+      hide();
       return;
     }
 
-    dropdown.innerHTML = matches
-      .map((s, idx) => {
+    dropdownEl.innerHTML = matches
+      .map((s) => {
         const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' '));
         const email = esc(s.email || '');
-        return `<li role="option" data-idx="${idx}"
-          style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f5f5f5;"
+        return `<li role="option" class="search-result"
           data-first="${esc(s.first_name || '')}" data-last="${esc(s.last_name || '')}"
           data-email="${esc(s.email || '')}" data-phone="${esc(s.phone || '')}"
           data-student-id="${esc(s.id || '')}">
-          ${fullName} <span style="color:#aaa;font-size:0.75rem;">${email}</span>
+          ${fullName} <span class="detail-muted">${email}</span>
         </li>`;
       })
       .join('');
 
-    dropdown.style.display = 'block';
-    search.setAttribute('aria-expanded', 'true');
+    dropdownEl.style.display = 'block';
+    inputEl.setAttribute('aria-expanded', 'true');
 
-    dropdown.querySelectorAll('li').forEach((li) => {
+    dropdownEl.querySelectorAll('li').forEach((li) => {
       li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
       li.addEventListener('mouseout', () => (li.style.background = ''));
     });
   });
 
-  search.addEventListener('blur', () => {
-    setTimeout(() => hideDropdown(i), 150);
+  inputEl.addEventListener('blur', () => {
+    setTimeout(() => hide(), 150);
   });
 
-  search.addEventListener('keydown', (e) => {
+  inputEl.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
-    const first = dropdown.querySelector('li');
-    if (first && dropdown.style.display !== 'none') {
+    const first = dropdownEl.querySelector('li');
+    if (first && dropdownEl.style.display !== 'none') {
       e.preventDefault();
       first.click();
     }
   });
 
-  dropdown.addEventListener('click', (e) => {
+  dropdownEl.addEventListener('click', (e) => {
     const li = e.target.closest('li');
     if (!li) return;
-    document.getElementById(`nc-p${i}-first`).value = li.dataset.first;
-    document.getElementById(`nc-p${i}-last`).value = li.dataset.last;
-    document.getElementById(`nc-p${i}-email`).value = li.dataset.email;
-    document.getElementById(`nc-p${i}-phone`).value = li.dataset.phone;
+    onSelect(li.dataset);
+    inputEl.value = [li.dataset.first, li.dataset.last].filter(Boolean).join(' ');
+    hide();
+  });
+}
+
+function attachSearchListeners(i) {
+  const inputEl = document.getElementById(`nc-p${i}-search`);
+  const dropdownEl = document.getElementById(`nc-p${i}-dropdown`);
+  if (!inputEl || !dropdownEl) return;
+  buildStudentSearch(inputEl, dropdownEl, (data) => {
+    document.getElementById(`nc-p${i}-first`).value = data.first;
+    document.getElementById(`nc-p${i}-last`).value = data.last;
+    document.getElementById(`nc-p${i}-email`).value = data.email;
+    document.getElementById(`nc-p${i}-phone`).value = data.phone;
     const block = document.getElementById(`nc-p-${i}`);
-    if (block) block.dataset.selectedStudentId = li.dataset.studentId;
-    search.value = [li.dataset.first, li.dataset.last].filter(Boolean).join(' ');
-    hideDropdown(i);
+    if (block) block.dataset.selectedStudentId = data.studentId;
   });
 }
 
@@ -538,14 +531,13 @@ export async function submitNewCourse() {
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
     msgEl.textContent = `Created. Course: ${result.course_code}`;
-    msgEl.className = 'modal-msg';
-    msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+    msgEl.className = 'modal-msg success';
     btn.textContent = 'created ✓';
 
     setTimeout(() => {
       closeNewCourseModal();
       loadCourses(currentCourseFilter);
-    }, 1500);
+    }, MESSAGE_TIMEOUT_MS);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
@@ -679,11 +671,10 @@ export async function submitAttendance() {
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
     msgEl.textContent = `Saved attendance for ${result.saved_count} student(s).`;
-    msgEl.className = 'modal-msg';
-    msgEl.style.cssText = 'display:block;color:#27ae60;font-size:0.75rem;margin-top:0.8rem;';
+    msgEl.className = 'modal-msg success';
     btn.textContent = 'saved ✓';
 
-    setTimeout(() => closeAttendanceModal(), 1200);
+    setTimeout(() => closeAttendanceModal(), MESSAGE_TIMEOUT_MS);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
@@ -699,81 +690,16 @@ export function initAddParticipantSearch() {
   if (apSearchListenersAttached) return;
   apSearchListenersAttached = true;
 
-  const search = document.getElementById('ap-search');
-  const dropdown = document.getElementById('ap-dropdown');
-  if (!search || !dropdown) return;
+  const inputEl = document.getElementById('ap-search');
+  const dropdownEl = document.getElementById('ap-dropdown');
+  if (!inputEl || !dropdownEl) return;
 
-  search.addEventListener('input', () => {
-    const q = search.value.trim().toLowerCase();
-    if (!q) {
-      dropdown.style.display = 'none';
-      search.setAttribute('aria-expanded', 'false');
-      return;
-    }
-    const matches = studentCache
-      .filter((s) => {
-        const name = `${s.first_name || ''} ${s.last_name || ''}`.trim().toLowerCase();
-        const email = (s.email || '').toLowerCase();
-        return name.includes(q) || email.includes(q);
-      })
-      .slice(0, 8);
-
-    if (!matches.length) {
-      dropdown.style.display = 'none';
-      search.setAttribute('aria-expanded', 'false');
-      return;
-    }
-
-    dropdown.innerHTML = matches
-      .map(
-        (s) =>
-          `<li role="option"
-            style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.82rem;border-bottom:1px solid #f5f5f5;"
-            data-first="${esc(s.first_name || '')}" data-last="${esc(s.last_name || '')}"
-            data-email="${esc(s.email || '')}" data-phone="${esc(s.phone || '')}"
-            data-student-id="${esc(s.id || '')}">
-            ${esc([s.first_name, s.last_name].filter(Boolean).join(' '))}
-            <span style="color:#aaa;font-size:0.75rem;">${esc(s.email || '')}</span>
-          </li>`
-      )
-      .join('');
-
-    dropdown.style.display = 'block';
-    search.setAttribute('aria-expanded', 'true');
-
-    dropdown.querySelectorAll('li').forEach((li) => {
-      li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
-      li.addEventListener('mouseout', () => (li.style.background = ''));
-    });
-  });
-
-  search.addEventListener('blur', () => {
-    setTimeout(() => {
-      dropdown.style.display = 'none';
-      search.setAttribute('aria-expanded', 'false');
-    }, 150);
-  });
-
-  search.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-    const first = dropdown.querySelector('li');
-    if (first && dropdown.style.display !== 'none') {
-      e.preventDefault();
-      first.click();
-    }
-  });
-
-  dropdown.addEventListener('click', (e) => {
-    const li = e.target.closest('li');
-    if (!li) return;
-    document.getElementById('ap-selected-id').value = li.dataset.studentId;
-    document.getElementById('ap-first').value = li.dataset.first;
-    document.getElementById('ap-last').value = li.dataset.last;
-    document.getElementById('ap-email').value = li.dataset.email;
-    document.getElementById('ap-phone').value = li.dataset.phone;
-    search.value = [li.dataset.first, li.dataset.last].filter(Boolean).join(' ');
-    dropdown.style.display = 'none';
-    search.setAttribute('aria-expanded', 'false');
+  buildStudentSearch(inputEl, dropdownEl, (data) => {
+    document.getElementById('ap-selected-id').value = data.studentId;
+    document.getElementById('ap-first').value = data.first;
+    document.getElementById('ap-last').value = data.last;
+    document.getElementById('ap-email').value = data.email;
+    document.getElementById('ap-phone').value = data.phone;
   });
 }
 
