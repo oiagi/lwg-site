@@ -1,11 +1,11 @@
-/* ── Teachers cache (shared between enquiries & courses) ──────────── */
+/* ── Teachers cache ────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
 import { getAccessToken } from './auth.js';
 import { esc } from './helpers.js';
 
 let teachersCache = null;
 
-export function clearTeachersCache() {
+function clearTeachersCache() {
   teachersCache = null;
 }
 
@@ -21,7 +21,7 @@ export async function loadTeachers() {
   }
 }
 
-export async function populateTeacherSelects() {
+async function populateTeacherSelects() {
   const teachers = await loadTeachers();
   document.querySelectorAll('[id^="confirm-teacher-"]').forEach((sel) => {
     const enquiryId = sel.id.replace('confirm-teacher-', '');

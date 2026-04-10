@@ -10,12 +10,6 @@ export function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-export function fmt(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
-}
-
 export function fmtDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('de-CH', {
