@@ -71,10 +71,18 @@ p {
   font-size: 0.78rem;
   color: #888;
   line-height: 1.7;
-  padding-left: 1.2rem;
+  padding-left: 0;
+  list-style: none;
 }
 .sources li {
   margin-bottom: 0.6rem;
+  padding-left: 1.2rem;
+  position: relative;
+}
+.sources li::before {
+  content: '*';
+  position: absolute;
+  left: 0;
 }
 .sources a {
   color: inherit;
