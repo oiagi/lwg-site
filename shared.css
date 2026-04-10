@@ -39,9 +39,6 @@ body {
 body {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 300;
-  cursor:
-    url('cloud-cursor.png') 8 5,
-    auto;
   transition: background-color 0.6s ease;
   animation: pageIn 0.4s ease both;
 }

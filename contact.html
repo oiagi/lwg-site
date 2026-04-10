@@ -23,7 +23,7 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="contact.css">
 
@@ -34,12 +34,12 @@
   <script src="device-detect.js"></script>
 </head>
 <body>
-
+  <a class="skip-link" href="#main">skip to content</a>
 
   <!-- ── Contact form ───────────────────────────────────────────────
        Submits via JS to /api/submit-contact (sends via Resend).
        On success, redirects to thankyou.html. -->
-  <div class="form-container">
+  <div class="form-container" id="main">
     <h1>get in touch :)</h1>
     <form id="contact-form">
       <div class="field">
@@ -69,7 +69,7 @@
         <span class="char-counter"><span id="char-count">0</span>/500</span>
       </div>
       <button type="submit">send</button>
-      <p id="form-error" style="display:none;color:#c0392b;font-size:0.78rem;margin-top:0.8rem;text-align:center;"></p>
+      <p id="form-error" class="form-error"></p>
     </form>
   </div>
 

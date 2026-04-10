@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="sessions.css">
   <!-- ── Device detection ─────────────────────────────────────────────
@@ -19,8 +19,9 @@
   <script src="device-detect.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">skip to content</a>
 
-  <div class="container" id="content">
+  <div class="container" id="main">
     <div class="error-state">loading…</div>
   </div>
 
@@ -41,7 +42,7 @@
 
     async function load() {
       const token   = new URLSearchParams(window.location.search).get('token');
-      const content = document.getElementById('content');
+      const content = document.getElementById('main');
 
       if (!token) {
         content.innerHTML = '<div class="error-state">No session link provided.<br>Please use the link sent to you by your teacher.</div>';
