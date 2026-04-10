@@ -1,7 +1,7 @@
 /* ── Enquiries tab ────────────────────────────────────────────────── */
 import { apiFetch } from './api.js';
 import { fmt, dl, esc } from './helpers.js';
-import { populateTeacherSelects, loadTeachers, authoriseTeacher } from './teachers.js';
+import { populateTeacherSelects } from './teachers.js';
 
 let currentFilter = 'all';
 

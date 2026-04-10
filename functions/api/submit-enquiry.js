@@ -58,23 +58,6 @@ function formatBooking(b) {
   return lines;
 }
 
-function formatDays(days) {
-  return Array.isArray(days) ? days.join(', ') : days || '—';
-}
-
-function formatTimeOfDay(tod) {
-  return Array.isArray(tod) ? tod.join(', ') : tod || '—';
-}
-
-function participantLines(participants) {
-  if (!participants || participants.length === 0) return ['—'];
-  return participants.map((p, i) => {
-    const name = [p.firstName, p.lastName].filter(Boolean).join(' ');
-    const contact = [p.email, p.phone].filter(Boolean).join(' · ');
-    return `${i + 1}. ${name}${contact ? ' — ' + contact : ''}`;
-  });
-}
-
 // ── Customer confirmation email ───────────────────────────────────────────
 function buildCustomerEmail(booking, contact) {
   const lead = contact.lead || contact;

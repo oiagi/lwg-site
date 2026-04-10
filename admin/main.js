@@ -9,6 +9,7 @@ import {
   saveNotes,
   deleteEnquiry,
   confirmBooking,
+  unlinkStudent,
 } from './enquiries.js';
 import {
   loadCourses,
@@ -76,6 +77,7 @@ const actions = {
   saveNotes,
   deleteEnquiry,
   confirmBooking,
+  unlinkStudent,
   // Courses
   filterCourses,
   toggleCourse,
