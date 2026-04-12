@@ -58,7 +58,7 @@
           content.innerHTML = `<h1>your sessions</h1>
   <div class="empty-state">
     <p>No sessions scheduled yet.</p>
-    <a class="book-link" href="/booking.html">make a booking enquiry →</a>
+    <a class="book-link" href="/enquiry.html">make an enquiry →</a>
   </div>`;
           return;
         }
@@ -79,9 +79,9 @@
             : `${completed} sessions completed`;
 
           const rebookNote = total && remaining <= 3 && remaining > 0
-            ? `<p class="rebook-note">You have ${remaining} session${remaining === 1 ? '' : 's'} remaining. Ready to continue? <a href="/booking.html">Make a new enquiry →</a></p>`
+            ? `<p class="rebook-note">You have ${remaining} session${remaining === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry →</a></p>`
             : total && remaining === 0
-            ? `<p class="rebook-note">Your current block is complete. <a href="/booking.html">Book your next block →</a></p>`
+            ? `<p class="rebook-note">Your current block is complete. <a href="/enquiry.html">Book your next block →</a></p>`
             : '';
 
           const sessionRows = course.sessions.map(s => `
