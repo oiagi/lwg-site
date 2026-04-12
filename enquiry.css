@@ -128,17 +128,6 @@ select {
   background-size: 8px 5px;
 }
 
-/* ── Location travel disclaimer ─────────────────────────────── */
-.location-disclaimer {
-  font-size: 0.72rem;
-  color: #777;
-  margin-top: 0.4rem;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  display: none;
-}
-
 /* ── Continue button ────────────────────────────────────────── */
 button.submit {
   margin-top: 2rem;

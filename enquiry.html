@@ -42,46 +42,6 @@
       <div class="error" id="err-lesson-type">Please describe what you are looking for.</div>
     </div>
 
-    <!-- ── Course format ───────────────────────────────────────────────── -->
-    <div class="field">
-      <label for="course-format">course format</label>
-      <select id="course-format" name="course_format">
-        <option value="" disabled selected></option>
-        <option value="Online">Online</option>
-        <option value="In-person">In-person</option>
-        <option value="Either">Either</option>
-      </select>
-      <div class="error" id="err-course-format">Please select a course format.</div>
-    </div>
-
-    <!-- ── Group size ──────────────────────────────────────────────────── -->
-    <div class="field">
-      <label for="group-size">group size</label>
-      <select id="group-size" name="group_size">
-        <option value="" disabled selected></option>
-        <option value="Private">Private</option>
-        <option value="Duo">Duo</option>
-        <option value="Group">Group</option>
-      </select>
-      <div class="error" id="err-group-size">Please select a group size.</div>
-    </div>
-
-    <!-- ── Location (hidden when Online) ──────────────────────────────── -->
-    <div class="field" id="field-location" style="display:none;">
-      <label for="location">desired location</label>
-      <select id="location" name="location">
-        <option value="" disabled selected></option>
-        <option value="My home">My home</option>
-        <option value="My company">My company</option>
-        <option value="Teacher's home">Teacher's home</option>
-        <option value="Classroom in Zurich city">Classroom in Zurich city</option>
-      </select>
-      <div class="location-disclaimer" id="location-disclaimer">
-        For locations outside of Zurich city area, travel costs will apply in addition to course costs.
-      </div>
-      <div class="error" id="err-location">Please select a location.</div>
-    </div>
-
     <!-- ── Your details ────────────────────────────────────────────────── -->
     <p class="section-label">your details</p>
 
@@ -132,18 +92,12 @@
   <script src="nav.js"></script>
   <script>
     /* ══════════════════════════════════════════════════════════════════
-       BOOKING FORM — single page
-       Fields: lesson type (textarea), format, group size, location
-               (conditional), first/last name, email, phone, preferred
-               contact method.
+       ENQUIRY FORM — single page
+       Fields: lesson type (textarea), first/last name, email, phone,
+               preferred contact method.
        Submits directly to /api/submit-enquiry; no sessionStorage relay.
     ══════════════════════════════════════════════════════════════════ */
 
-    const formatSelect      = document.getElementById('course-format');
-    const locationField     = document.getElementById('field-location');
-    const locationSelect    = document.getElementById('location');
-    const disclaimerEl      = document.getElementById('location-disclaimer');
-    const locationErr       = document.getElementById('err-location');
     const preferredContact  = document.getElementById('preferred-contact');
     const phoneLabel        = document.getElementById('label-lead-phone');
 
@@ -153,23 +107,6 @@
       phoneLabel.textContent = emailOnly ? 'phone (optional)' : 'phone';
     }
     preferredContact.addEventListener('change', updatePhoneLabel);
-
-    /* ── Show/hide location based on format ─────────────────────────── */
-    formatSelect.addEventListener('change', () => {
-      const isOnline = formatSelect.value === 'Online';
-      locationField.style.display = isOnline ? 'none' : 'block';
-      if (isOnline) {
-        locationSelect.value       = '';
-        disclaimerEl.style.display = 'none';
-        locationErr.style.display  = 'none';
-      }
-    });
-
-    /* ── Show travel disclaimer when "My home" is selected ─────────── */
-    locationSelect.addEventListener('change', () => {
-      disclaimerEl.style.display =
-        locationSelect.value === 'My home' ? 'block' : 'none';
-    });
 
     /* ── Submit ─────────────────────────────────────────────────────── */
     document.getElementById('submit-btn').addEventListener('click', async () => {
@@ -183,18 +120,6 @@
 
       const lessonType = document.getElementById('lesson-type').value.trim();
       showErr('err-lesson-type', !lessonType); if (!lessonType) valid = false;
-
-      const format = formatSelect.value;
-      showErr('err-course-format', !format); if (!format) valid = false;
-
-      const groupSize = document.getElementById('group-size').value;
-      showErr('err-group-size', !groupSize); if (!groupSize) valid = false;
-
-      const isOnline = format === 'Online';
-      const location = locationSelect.value;
-      if (!isOnline) {
-        showErr('err-location', !location); if (!location) valid = false;
-      }
 
       const leadFirst = document.getElementById('lead-first').value.trim();
       showErr('err-lead-first', !leadFirst); if (!leadFirst) valid = false;
@@ -223,12 +148,7 @@
         return;
       }
 
-      const booking = {
-        lessonType,
-        format,
-        groupSize,
-        location: isOnline ? null : location,
-      };
+      const booking = { lessonType };
       const contact = {
         lead: {
           firstName: leadFirst,
