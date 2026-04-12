@@ -23,13 +23,7 @@ const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 // ── Label map for booking fields ─────────────────────────────────────────
 function label(key) {
-  const map = {
-    lessonType: "What they're looking for",
-    format: 'Format',
-    groupSize: 'Group size',
-    location: 'Location',
-  };
-  return map[key] || key;
+  return key === 'lessonType' ? "What they're looking for" : key;
 }
 
 // ── Format booking object into display lines ──────────────────────────────
@@ -205,18 +199,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   });
   if (bookingErr) return errorResponse(bookingErr, 400);
 
-  // ── Normalise / constrain booking fields ──────────────────────────────
-  const ALLOWED_FORMATS = ['Online', 'In-person', 'Either'];
-  const ALLOWED_GROUP = ['Private', 'Duo', 'Group'];
-  const ALLOWED_LOC = ['My home', 'My company', "Teacher's home", 'Classroom in Zurich city'];
-  booking.lessonType = booking.lessonType.replace(/\s+/g, ' ').trim();
-  if (!ALLOWED_FORMATS.includes(booking.format)) booking.format = null;
-  if (!ALLOWED_GROUP.includes(booking.groupSize)) booking.groupSize = null;
-  if (booking.format === 'Online') {
-    booking.location = null;
-  } else if (!ALLOWED_LOC.includes(booking.location)) {
-    booking.location = null;
-  }
+  // ── Whitelist booking to only the expected field ──────────────────────
+  // Rebuild explicitly so extra client-supplied keys never reach formatBooking()
+  // or get persisted in booking_data.
+  booking = { lessonType: booking.lessonType.replace(/\s+/g, ' ').trim() };
 
   const lead = contact.lead || contact;
 
