@@ -17,8 +17,7 @@
     '<div class="nav-menu" id="nav-menu">' +
     '<a href="index.html">Home</a>' +
     '<a href="info.html">info</a>' +
-    '<a href="booking.html">book</a>' +
-    '<a href="contact.html">contact</a>' +
+    '<a href="enquiry.html">enquiry</a>' +
     '</div>' +
     '</nav>';
 

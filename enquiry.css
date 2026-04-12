@@ -32,25 +32,6 @@ h1 {
   text-align: center;
 }
 
-/* ── Contact link at top ─────────────────────────────────────── */
-.contact-hint {
-  text-align: center;
-  margin-bottom: 1.8rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: #777;
-}
-.contact-hint a {
-  color: #1a1a1a;
-  text-decoration: none;
-  border-bottom: 1px solid #aaa;
-  padding-bottom: 1px;
-  transition: border-color 0.2s;
-}
-.contact-hint a:hover {
-  border-color: #1a1a1a;
-}
-
 /* ── Section divider ──────────────────────────────────────────── */
 .section-label {
   font-size: 0.68rem;

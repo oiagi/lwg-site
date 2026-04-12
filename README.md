@@ -15,7 +15,7 @@ Language courses, exam preparation and tutoring in Zurich.
 
 ```
 .
-├── *.html              # Static pages (index, info, booking, contact, etc.)
+├── *.html              # Static pages (index, info, enquiry, etc.)
 ├── *.css               # Page-specific stylesheets
 ├── shared.css          # Global styles, navigation, animations
 ├── nav.js              # Injected navigation component

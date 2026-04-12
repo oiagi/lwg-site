@@ -1,2 +1,8 @@
 # scheduling.html removed — redirect to contact details
 /scheduling.html  /contact-details.html  301
+
+# booking.html renamed to enquiry.html
+/booking.html  /enquiry.html  301
+
+# contact.html removed — redirect to enquiry
+/contact.html  /enquiry.html  301

@@ -1,6 +1,6 @@
 // form-validate.js
 // Shared client-side form validation helpers.
-// Used by contact.html, intake.js, and potentially booking.html.
+// Used by enquiry.html, intake.js, and related form pages.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
