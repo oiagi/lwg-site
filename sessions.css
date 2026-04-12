@@ -57,7 +57,7 @@ h1 {
   line-height: 1.6;
 }
 .progress-bar-wrap {
-  height: 3px;
+  height: 5px;
   background: #e8e8e8;
   margin-bottom: 1.6rem;
   border-radius: 2px;
@@ -106,14 +106,21 @@ h1 {
   color: #aaa;
 }
 .rebook-note {
-  margin-top: 1.2rem;
-  font-size: 0.82rem;
-  color: #888;
+  margin-top: 1.4rem;
+  padding: 0.8rem 0.9rem;
+  background: rgba(26, 26, 26, 0.04);
+  border-left: 2px solid rgba(26, 26, 26, 0.2);
+  font-size: 0.84rem;
+  color: #555;
   font-style: italic;
   line-height: 1.6;
 }
 .rebook-note a {
   color: #1a1a1a;
+  font-weight: 400;
+  font-style: normal;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .error-state {
   text-align: center;

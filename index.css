@@ -54,6 +54,28 @@ body.nav-active {
   margin: 0.4rem auto;
 }
 
+/* ── Home CTA ────────────────────────────────────────────────── */
+.home-cta {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  animation: fadeUp 1s ease 0.3s both;
+}
+.home-cta:hover {
+  opacity: 1;
+}
+html[data-touch='true'] .home-cta:hover {
+  opacity: 0.5;
+}
+html[data-touch='true'] .home-cta:active {
+  opacity: 1;
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 html[data-device='mobile'] body {
   padding: 4.5rem 1rem 3rem;
