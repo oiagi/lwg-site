@@ -36,9 +36,10 @@ import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
-function getGroupType(group) {
+function getGroupType(booking) {
+  const group = (booking.groupSize || booking.group || '').toLowerCase();
   if (!group || group.includes('private') || group.includes('1')) return 'private';
-  if (group.includes('2')) return 'duo';
+  if (group.includes('duo') || group.includes('2')) return 'duo';
   return 'group';
 }
 
@@ -135,7 +136,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   // ── Course code ───────────────────────────────────────────────────────
-  const groupType = getGroupType(booking.group);
+  const groupType = getGroupType(booking);
   const levelCode = getLevelCode(booking);
 
   let courseCode = course_code_override;

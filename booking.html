@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Make a Booking Enquiry — Learning with Gioia</title>
-  <meta name="description" content="Book a language course, exam preparation class or tutoring session with Learning with Gioia in Zürich.">
+  <title>Make a Booking Enquiry — Learning with Gioia</title>
+  <meta name="description" content="Make a quick booking enquiry with Learning with Gioia — language courses, exam prep and tutoring in Zürich.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://oiagi.org/booking.html">
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="learning with gioia">
   <meta property="og:title"       content="Make a Booking Enquiry — Learning with Gioia">
-  <meta property="og:description" content="Book a language course, exam preparation class or tutoring session with Learning with Gioia in Zürich.">
+  <meta property="og:description" content="Make a quick booking enquiry with Learning with Gioia — language courses, exam prep and tutoring in Zürich.">
   <meta property="og:url"         content="https://oiagi.org/booking.html">
   <meta property="og:image"       content="https://oiagi.org/gioia_logo.png">
   <!-- Twitter/X card -->
   <meta name="twitter:card"        content="summary">
   <meta name="twitter:title"       content="Make a Booking Enquiry — Learning with Gioia">
-  <meta name="twitter:description" content="Book a language course, exam preparation class or tutoring session with Learning with Gioia in Zürich.">
+  <meta name="twitter:description" content="Make a quick booking enquiry with Learning with Gioia — language courses, exam prep and tutoring in Zürich.">
   <meta name="twitter:image"       content="https://oiagi.org/gioia_logo.png">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
@@ -26,314 +26,107 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="booking.css">
-  <!-- ── Device detection ─────────────────────────────────────────────
-       Runs synchronously before first paint to set data-device on <html>.
-       Detects phone / tablet / desktop using screen size + pointer type
-       + user-agent so CSS can adapt per device class.                  -->
   <script src="device-detect.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">skip to content</a>
 
-  <!-- ── Nav overlay ───────────────────────────────────────────────────
-       Dims and blurs page content when the nav menu is open.          -->
-
   <div class="form-container" id="main">
     <h1>make a booking enquiry</h1>
-    <p class="step-indicator">Step 1 of 2</p>
 
-    <!-- ── Not sure? Contact hint ────────────────────────────────────── -->
     <p class="contact-hint">not sure what you need? <a href="contact.html">get in touch</a></p>
 
-    <!-- ── Service tab toggle ────────────────────────────────────────────
-         Three mutually exclusive tabs. selectTab(service) shows the
-         matching form and hides the other two.                         -->
-    <div class="service-toggle" role="tablist">
-      <button class="service-tab" id="tab-language" role="tab" aria-selected="true"  aria-controls="l-form" tabindex="0"  onclick="selectTab('language')">Language course</button>
-      <button class="service-tab" id="tab-exam"     role="tab" aria-selected="false" aria-controls="e-form" tabindex="-1" onclick="selectTab('exam')">Exam prep</button>
-      <button class="service-tab" id="tab-tutoring" role="tab" aria-selected="false" aria-controls="t-form" tabindex="-1" onclick="selectTab('tutoring')">Tutoring</button>
+    <!-- ── What are you looking for? ──────────────────────────────────── -->
+    <div class="field">
+      <label for="lesson-type">what are you looking for?</label>
+      <textarea id="lesson-type" name="lesson_type"
+                placeholder="e.g. German A2 course, IELTS exam prep, Maths tutoring – Gymnasium year 9, Gymivorbereitung grade 6…"></textarea>
+      <div class="error" id="err-lesson-type">Please describe what you are looking for.</div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════════════
-         LANGUAGE COURSE FORM  (id prefix: l-)
-         Shown when "Language course" tab is active.
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="l-form" role="tabpanel" aria-labelledby="tab-language" style="display:none;">
+    <!-- ── Course format ───────────────────────────────────────────────── -->
+    <div class="field">
+      <label for="course-format">course format</label>
+      <select id="course-format" name="course_format">
+        <option value="" disabled selected></option>
+        <option value="Online">Online</option>
+        <option value="In-person">In-person</option>
+        <option value="Either">Either</option>
+      </select>
+      <div class="error" id="err-course-format">Please select a course format.</div>
+    </div>
 
-      <!-- Language -->
-      <div class="field">
-        <label>Language</label>
-        <div class="toggle-group">
-          <input type="radio" name="l-language" id="l-lang-de"  value="German"><label for="l-lang-de">German</label>
-          <input type="radio" name="l-language" id="l-lang-ch"  value="Swiss German"><label for="l-lang-ch">Swiss German</label>
-          <input type="radio" name="l-language" id="l-lang-en"  value="English"><label for="l-lang-en">English</label>
-          <input type="radio" name="l-language" id="l-lang-oth" value="Other"><label for="l-lang-oth">Other</label>
-        </div>
-        <div class="error" id="l-err-language">Please select a language.</div>
+    <!-- ── Group size ──────────────────────────────────────────────────── -->
+    <div class="field">
+      <label for="group-size">group size</label>
+      <select id="group-size" name="group_size">
+        <option value="" disabled selected></option>
+        <option value="Private">Private</option>
+        <option value="Duo">Duo</option>
+        <option value="Group">Group</option>
+      </select>
+      <div class="error" id="err-group-size">Please select a group size.</div>
+    </div>
+
+    <!-- ── Location (hidden when Online) ──────────────────────────────── -->
+    <div class="field" id="field-location" style="display:none;">
+      <label for="location">desired location</label>
+      <select id="location" name="location">
+        <option value="" disabled selected></option>
+        <option value="My home">My home</option>
+        <option value="My company">My company</option>
+        <option value="Teacher's home">Teacher's home</option>
+        <option value="Classroom in Zurich city">Classroom in Zurich city</option>
+      </select>
+      <div class="location-disclaimer" id="location-disclaimer">
+        Travel costs will apply in addition to course costs.
       </div>
+      <div class="error" id="err-location">Please select a location.</div>
+    </div>
 
-      <!-- Background (free text) -->
-      <div class="field">
-        <label>Language background</label>
-        <textarea id="l-background" name="l_background"
-                  placeholder="e.g. native English speaker, A2 German, studied French at school…"></textarea>
-        <p class="hint">Please describe your current level and any relevant language background.</p>
-        <div class="error" id="l-err-background">Please tell us a little about your background.</div>
+    <!-- ── Your details ────────────────────────────────────────────────── -->
+    <p class="section-label">your details</p>
+
+    <div style="display:flex; gap:1rem;">
+      <div class="field" style="flex:1;">
+        <label for="lead-first">first name</label>
+        <input type="text" id="lead-first" name="lead_first" autocomplete="given-name" />
+        <div class="error" id="err-lead-first">Please enter a first name.</div>
       </div>
-
-      <!-- Course level -->
-      <div class="field">
-        <label>Course level</label>
-        <div class="toggle-group">
-          <input type="radio" name="l-level" id="l-lvl-a1" value="A1"><label for="l-lvl-a1">A1</label>
-          <input type="radio" name="l-level" id="l-lvl-a2" value="A2"><label for="l-lvl-a2">A2</label>
-          <input type="radio" name="l-level" id="l-lvl-b1" value="B1"><label for="l-lvl-b1">B1</label>
-          <input type="radio" name="l-level" id="l-lvl-b2" value="B2"><label for="l-lvl-b2">B2</label>
-          <input type="radio" name="l-level" id="l-lvl-c1" value="C1"><label for="l-lvl-c1">C1</label>
-          <input type="radio" name="l-level" id="l-lvl-c2" value="C2"><label for="l-lvl-c2">C2</label>
-        </div>
-        <div class="error" id="l-err-level">Please select a course level.</div>
+      <div class="field" style="flex:1;">
+        <label for="lead-last">last name</label>
+        <input type="text" id="lead-last" name="lead_last" autocomplete="family-name" />
+        <div class="error" id="err-lead-last">Please enter a last name.</div>
       </div>
+    </div>
 
-      <!-- Format -->
-      <div class="field">
-        <label>Format</label>
-        <div class="toggle-group">
-          <input type="radio" name="l-format" id="l-fmt-online"    value="Online"><label for="l-fmt-online">Online</label>
-          <input type="radio" name="l-format" id="l-fmt-inperson"  value="In-person"><label for="l-fmt-inperson">In-person</label>
-          <input type="radio" name="l-format" id="l-fmt-flexible"  value="I'm flexible"><label for="l-fmt-flexible">I'm flexible</label>
-        </div>
-        <div class="error" id="l-err-format">Please select a format.</div>
-      </div>
+    <div class="field">
+      <label for="lead-email">email</label>
+      <input type="email" id="lead-email" name="lead_email" autocomplete="email" />
+      <div class="error" id="err-lead-email">Please enter an email address.</div>
+    </div>
 
-      <!-- Location — shown only when In-person is selected -->
-      <div class="field" id="l-field-location" style="display:none;">
-        <label>Location</label>
-        <div class="toggle-group">
-          <input type="radio" name="l-location" id="l-loc-company"   value="My company"><label for="l-loc-company">My company</label>
-          <input type="radio" name="l-location" id="l-loc-home"      value="My home"><label for="l-loc-home">My home</label>
-          <input type="radio" name="l-location" id="l-loc-teacher"   value="Teacher's home"><label for="l-loc-teacher">Teacher's home</label>
-          <input type="radio" name="l-location" id="l-loc-classroom" value="Classroom"><label for="l-loc-classroom">Classroom</label>
-        </div>
-        <div class="hint" id="l-loc-hint" style="display:none;"></div>
-        <div class="error" id="l-err-location">Please select a location.</div>
-      </div>
+    <div class="field">
+      <label for="lead-phone">phone</label>
+      <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" />
+      <div class="error" id="err-lead-phone">Please enter a phone number.</div>
+    </div>
 
-      <!-- Group size -->
-      <div class="field">
-        <label>Group size</label>
-        <div class="toggle-group">
-          <input type="radio" name="l-group" id="l-grp-1" value="Private (1 person)"><label for="l-grp-1">Private</label>
-          <input type="radio" name="l-group" id="l-grp-2" value="2 people"><label for="l-grp-2">2 people</label>
-          <input type="radio" name="l-group" id="l-grp-3" value="3–5 people"><label for="l-grp-3">3–5 people</label>
-        </div>
-        <div class="error" id="l-err-group">Please select a group size.</div>
-      </div>
+    <div class="field">
+      <label for="preferred-contact">preferred contact method</label>
+      <select id="preferred-contact" name="preferred_contact">
+        <option value="" disabled selected></option>
+        <option value="Email">Email</option>
+        <option value="Phone">Phone</option>
+        <option value="Either">Either</option>
+      </select>
+      <div class="error" id="err-preferred-contact">Please select a preferred contact method.</div>
+    </div>
 
-    </div><!-- /#l-form -->
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         EXAM PREP FORM  (id prefix: e-)
-         Shown when "Exam prep" tab is active.
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="e-form" role="tabpanel" aria-labelledby="tab-exam" style="display:none;">
-
-      <!-- Exam type -->
-      <div class="field">
-        <label>Exam</label>
-        <div class="toggle-group">
-          <input type="radio" name="e-exam" id="e-exam-cambridge" value="Cambridge"><label for="e-exam-cambridge">Cambridge</label>
-          <input type="radio" name="e-exam" id="e-exam-toefl"     value="TOEFL"><label for="e-exam-toefl">TOEFL</label>
-          <input type="radio" name="e-exam" id="e-exam-ielts"     value="IELTS"><label for="e-exam-ielts">IELTS</label>
-          <input type="radio" name="e-exam" id="e-exam-telc"      value="TELC"><label for="e-exam-telc">TELC</label>
-          <input type="radio" name="e-exam" id="e-exam-goethe"    value="Goethe"><label for="e-exam-goethe">Goethe</label>
-        </div>
-        <div class="hint">Classes are held in the exam language. Other teaching languages available on request.</div>
-        <div class="error" id="e-err-exam">Please select an exam.</div>
-      </div>
-
-      <!-- Exam date (optional) -->
-      <div class="field">
-        <label>Exam date <span style="font-size:0.7rem; letter-spacing:0.08em; color:#888; text-transform:none;">(optional)</span></label>
-        <input type="date" id="e-exam-date" name="e_exam_date" style="width:100%;background:transparent;border:none;border-bottom:1px solid #1a1a1a;padding:0.4rem 0;font-family:inherit;font-size:1rem;font-weight:300;color:#1a1a1a;outline:none;" />
-      </div>
-
-      <!-- Course level -->
-      <div class="field">
-        <label>Course level</label>
-        <div class="toggle-group">
-          <input type="radio" name="e-level" id="e-lvl-a1" value="A1"><label for="e-lvl-a1">A1</label>
-          <input type="radio" name="e-level" id="e-lvl-a2" value="A2"><label for="e-lvl-a2">A2</label>
-          <input type="radio" name="e-level" id="e-lvl-b1" value="B1"><label for="e-lvl-b1">B1</label>
-          <input type="radio" name="e-level" id="e-lvl-b2" value="B2"><label for="e-lvl-b2">B2</label>
-          <input type="radio" name="e-level" id="e-lvl-c1" value="C1"><label for="e-lvl-c1">C1</label>
-          <input type="radio" name="e-level" id="e-lvl-c2" value="C2"><label for="e-lvl-c2">C2</label>
-        </div>
-        <div class="error" id="e-err-level">Please select a course level.</div>
-      </div>
-
-      <!-- Format -->
-      <div class="field">
-        <label>Format</label>
-        <div class="toggle-group">
-          <input type="radio" name="e-format" id="e-fmt-online"   value="Online"><label for="e-fmt-online">Online</label>
-          <input type="radio" name="e-format" id="e-fmt-inperson" value="In-person"><label for="e-fmt-inperson">In-person</label>
-          <input type="radio" name="e-format" id="e-fmt-flexible" value="I'm flexible"><label for="e-fmt-flexible">I'm flexible</label>
-        </div>
-        <div class="error" id="e-err-format">Please select a format.</div>
-      </div>
-
-      <!-- Location — shown only when In-person is selected -->
-      <div class="field" id="e-field-location" style="display:none;">
-        <label>Location</label>
-        <div class="toggle-group">
-          <input type="radio" name="e-location" id="e-loc-company"   value="My company"><label for="e-loc-company">My company</label>
-          <input type="radio" name="e-location" id="e-loc-home"      value="My home"><label for="e-loc-home">My home</label>
-          <input type="radio" name="e-location" id="e-loc-teacher"   value="Teacher's home"><label for="e-loc-teacher">Teacher's home</label>
-          <input type="radio" name="e-location" id="e-loc-classroom" value="Classroom"><label for="e-loc-classroom">Classroom</label>
-        </div>
-        <div class="hint" id="e-loc-hint" style="display:none;"></div>
-        <div class="error" id="e-err-location">Please select a location.</div>
-      </div>
-
-      <!-- Group size -->
-      <div class="field">
-        <label>Group size</label>
-        <div class="toggle-group">
-          <input type="radio" name="e-group" id="e-grp-1" value="Private (1 person)"><label for="e-grp-1">Private</label>
-          <input type="radio" name="e-group" id="e-grp-2" value="2 people"><label for="e-grp-2">2 people</label>
-          <input type="radio" name="e-group" id="e-grp-3" value="3–5 people"><label for="e-grp-3">3–5 people</label>
-        </div>
-        <div class="error" id="e-err-group">Please select a group size.</div>
-      </div>
-
-    </div><!-- /#e-form -->
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         TUTORING FORM  (id prefix: t-)
-         Shown when "Tutoring" tab is active.
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="t-form" role="tabpanel" aria-labelledby="tab-tutoring" style="display:none;">
-
-      <!-- Student grade -->
-      <div class="field">
-        <label>Student's grade</label>
-        <div class="toggle-group">
-          <input type="radio" name="t-grade" id="t-gr-primar" value="Primar"><label for="t-gr-primar">Primar</label>
-          <input type="radio" name="t-grade" id="t-gr-sek"    value="Sekundar"><label for="t-gr-sek">Sekundar</label>
-          <input type="radio" name="t-grade" id="t-gr-lgym"   value="Langzeitgymnasium"><label for="t-gr-lgym">Langzeitgymnasium</label>
-          <input type="radio" name="t-grade" id="t-gr-kgym"   value="Kurzzeitgymnasium"><label for="t-gr-kgym">Kurzzeitgymnasium</label>
-          <input type="radio" name="t-grade" id="t-gr-bms"    value="BMS"><label for="t-gr-bms">BMS</label>
-          <input type="radio" name="t-grade" id="t-gr-efz"    value="EFZ"><label for="t-gr-efz">EFZ</label>
-          <input type="radio" name="t-grade" id="t-gr-fms"    value="FMS"><label for="t-gr-fms">FMS</label>
-          <input type="radio" name="t-grade" id="t-gr-eba"    value="EBA"><label for="t-gr-eba">EBA</label>
-        </div>
-        <div class="error" id="t-err-grade">Please select the student's grade.</div>
-      </div>
-
-      <!-- Subjects (multi-select checkboxes) -->
-      <div class="field">
-        <label>Subjects</label>
-        <div class="toggle-group">
-          <input type="checkbox" name="t-subjects" id="t-sub-math"  value="Mathematik"><label for="t-sub-math">Mathematik</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-phys"  value="Physik"><label for="t-sub-phys">Physik</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-info"  value="Informatik"><label for="t-sub-info">Informatik</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-en"    value="Englisch"><label for="t-sub-en">Englisch</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-fr"    value="Französisch"><label for="t-sub-fr">Französisch</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-de"    value="Deutsch"><label for="t-sub-de">Deutsch</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-gymi"  value="Gymivorbereitung"><label for="t-sub-gymi">Gymivorbereitung</label>
-          <input type="checkbox" name="t-subjects" id="t-sub-other" value="Other"><label for="t-sub-other">Other</label>
-        </div>
-        <div class="error" id="t-err-subjects">Please select at least one subject.</div>
-      </div>
-
-      <!-- Other subject free text — shown when Other is ticked -->
-      <div class="field" id="t-field-subject-other" style="display:none;">
-        <label>Please specify</label>
-        <textarea id="t-subject-other" name="t_subject_other"
-                  placeholder="e.g. Chemistry, History, Latin…"></textarea>
-        <div class="error" id="t-err-subject-other">Please tell us which subject you need help with.</div>
-      </div>
-
-      <!-- Format -->
-      <div class="field">
-        <label>Format</label>
-        <div class="toggle-group">
-          <input type="radio" name="t-format" id="t-fmt-online"   value="Online"><label for="t-fmt-online">Online</label>
-          <input type="radio" name="t-format" id="t-fmt-inperson" value="In-person"><label for="t-fmt-inperson">In-person</label>
-          <input type="radio" name="t-format" id="t-fmt-flexible" value="I'm flexible"><label for="t-fmt-flexible">I'm flexible</label>
-        </div>
-        <div class="error" id="t-err-format">Please select a format.</div>
-      </div>
-
-      <!-- Location — shown only when In-person is selected -->
-      <div class="field" id="t-field-location" style="display:none;">
-        <label>Location</label>
-        <div class="toggle-group">
-          <input type="radio" name="t-location" id="t-loc-company"   value="My company"><label for="t-loc-company">My company</label>
-          <input type="radio" name="t-location" id="t-loc-home"      value="My home"><label for="t-loc-home">My home</label>
-          <input type="radio" name="t-location" id="t-loc-teacher"   value="Teacher's home"><label for="t-loc-teacher">Teacher's home</label>
-          <input type="radio" name="t-location" id="t-loc-classroom" value="Classroom"><label for="t-loc-classroom">Classroom</label>
-        </div>
-        <div class="hint" id="t-loc-hint" style="display:none;"></div>
-        <div class="error" id="t-err-location">Please select a location.</div>
-      </div>
-
-      <!-- Group size -->
-      <div class="field">
-        <label>Group size</label>
-        <div class="toggle-group">
-          <input type="radio" name="t-group" id="t-grp-1" value="Private (1 person)"><label for="t-grp-1">Private</label>
-          <input type="radio" name="t-group" id="t-grp-2" value="2 people"><label for="t-grp-2">2 people</label>
-          <input type="radio" name="t-group" id="t-grp-3" value="3–5 people"><label for="t-grp-3">3–5 people</label>
-        </div>
-        <div class="error" id="t-err-group">Please select a group size.</div>
-      </div>
-
-    </div><!-- /#t-form -->
-
-
-    <!-- ════════════════════════════════════════════════════════════════
-         SCHEDULING PREFERENCES  (shared across all service tabs)
-         ════════════════════════════════════════════════════════════════ -->
-    <div id="scheduling-section" style="display:none;">
-      <p class="section-label">scheduling preferences</p>
-
-      <div class="field">
-        <label>preferred days</label>
-        <div class="toggle-group">
-          <input type="checkbox" name="days" id="day-any" value="Any"><label for="day-any">Any</label>
-          <input type="checkbox" name="days" id="day-mon" value="Monday"><label for="day-mon">Mon</label>
-          <input type="checkbox" name="days" id="day-tue" value="Tuesday"><label for="day-tue">Tue</label>
-          <input type="checkbox" name="days" id="day-wed" value="Wednesday"><label for="day-wed">Wed</label>
-          <input type="checkbox" name="days" id="day-thu" value="Thursday"><label for="day-thu">Thu</label>
-          <input type="checkbox" name="days" id="day-fri" value="Friday"><label for="day-fri">Fri</label>
-          <input type="checkbox" name="days" id="day-sat" value="Saturday"><label for="day-sat">Sat</label>
-          <input type="checkbox" name="days" id="day-sun" value="Sunday"><label for="day-sun">Sun</label>
-        </div>
-        <div class="error" id="err-days">Please select at least one day.</div>
-      </div>
-
-      <div class="field">
-        <label>preferred time of day</label>
-        <div class="toggle-group">
-          <input type="checkbox" name="time_of_day" id="tod-morning"   value="Morning"><label for="tod-morning">Morning</label>
-          <input type="checkbox" name="time_of_day" id="tod-lunch"     value="Lunchtime"><label for="tod-lunch">Lunchtime</label>
-          <input type="checkbox" name="time_of_day" id="tod-afternoon" value="Afternoon"><label for="tod-afternoon">Afternoon</label>
-          <input type="checkbox" name="time_of_day" id="tod-evening"   value="Evening"><label for="tod-evening">Evening</label>
-        </div>
-        <div class="error" id="err-time-of-day">Please select at least one time of day.</div>
-      </div>
-
-      <div class="field">
-        <label for="scheduling-notes">anything else we should know? <span style="font-size:0.7rem; letter-spacing:0.08em; color:#888; text-transform:none;">(optional)</span></label>
-        <input type="text" id="scheduling-notes" name="scheduling_notes"
-               placeholder="e.g. only free after 6pm on weekdays…" />
-      </div>
-
-      <button class="submit" id="continue-btn">continue →</button>
+    <button class="submit" id="submit-btn">send enquiry →</button>
+    <div class="error" id="submit-error" style="display:none;text-align:center;margin-top:1rem;">
+      Something went wrong — please try again or email us at
+      <a href="mailto:info@oiagi.org">info@oiagi.org</a>.
     </div>
 
   </div><!-- /.form-container -->
@@ -341,326 +134,120 @@
   <script src="nav.js"></script>
   <script>
     /* ══════════════════════════════════════════════════════════════════
-       BOOKING FORM LOGIC
-       ══════════════════════════════════════════════════════════════════
-
-       Three service tabs: Language course / Exam prep / Tutoring.
-       Each has its own form section with a consistent id prefix:
-         l-  language
-         e-  exam prep
-         t-  tutoring
-
-       On continue, the form data is validated, saved to sessionStorage
-       as 'booking', and the user is forwarded to contact-details.html.
-
-       URL pre-selection:
-         ?tab=language|exam|tutoring   opens that tab on load
-         ?group=private|duo|group      pre-ticks group size (language tab)
+       BOOKING FORM — single page
+       Fields: lesson type (textarea), format, group size, location
+               (conditional), first/last name, email, phone, preferred
+               contact method.
+       Submits directly to /api/submit-enquiry; no sessionStorage relay.
     ══════════════════════════════════════════════════════════════════ */
 
-    let activeTab = 'language';
+    const formatSelect   = document.getElementById('course-format');
+    const locationField  = document.getElementById('field-location');
+    const locationSelect = document.getElementById('location');
+    const disclaimerEl   = document.getElementById('location-disclaimer');
+    const locationErr    = document.getElementById('err-location');
 
-    /* ── Tab switching ───────────────────────────────────────────────── */
-    function selectTab(service) {
-      /* Hide all three forms */
-      ['l-form', 'e-form', 't-form'].forEach(id => {
-        document.getElementById(id).style.display = 'none';
-      });
-      /* Deactivate all tab buttons */
-      ['tab-language', 'tab-exam', 'tab-tutoring'].forEach(id => {
+    /* ── Show/hide location based on format ─────────────────────────── */
+    formatSelect.addEventListener('change', () => {
+      const isOnline = formatSelect.value === 'Online';
+      locationField.style.display = isOnline ? 'none' : 'block';
+      if (isOnline) {
+        locationSelect.value       = '';
+        disclaimerEl.style.display = 'none';
+        locationErr.style.display  = 'none';
+      }
+    });
+
+    /* ── Show travel disclaimer when "My home" is selected ─────────── */
+    locationSelect.addEventListener('change', () => {
+      disclaimerEl.style.display =
+        locationSelect.value === 'My home' ? 'block' : 'none';
+    });
+
+    /* ── Submit ─────────────────────────────────────────────────────── */
+    document.getElementById('submit-btn').addEventListener('click', async () => {
+
+      function showErr(id, show) {
         const el = document.getElementById(id);
-        el.classList.remove('active');
-        el.setAttribute('aria-selected', 'false');
-      });
-      /* Show the selected form and activate its tab */
-      const formMap = { language: 'l-form', exam: 'e-form', tutoring: 't-form' };
-      const tabMap  = { language: 'tab-language', exam: 'tab-exam', tutoring: 'tab-tutoring' };
-      document.getElementById(formMap[service]).style.display = 'block';
-      const activeTabEl = document.getElementById(tabMap[service]);
-      activeTabEl.classList.add('active');
-      activeTabEl.setAttribute('aria-selected', 'true');
-      /* Show scheduling section once a tab is selected */
-      document.getElementById('scheduling-section').style.display = 'block';
-      activeTab = service;
-      /* Roving tabindex */
-      document.querySelectorAll('[role="tab"]').forEach(t => {
-        t.setAttribute('tabindex', t.id === `tab-${service}` ? '0' : '-1');
-      });
-    }
-
-    /* ── Tab keyboard navigation ────────────────────────────────────── */
-    document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
-      const tabs = [...document.querySelectorAll('[role="tab"]')];
-      const idx = tabs.indexOf(document.activeElement);
-      if (idx === -1) return;
-      let next;
-      if (e.key === 'ArrowRight') next = tabs[(idx + 1) % tabs.length];
-      if (e.key === 'ArrowLeft')  next = tabs[(idx - 1 + tabs.length) % tabs.length];
-      if (e.key === 'Home')       next = tabs[0];
-      if (e.key === 'End')        next = tabs[tabs.length - 1];
-      if (next) { e.preventDefault(); next.focus(); }
-      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement.matches('[role="tab"]')) {
-        e.preventDefault();
-        document.activeElement.click();
+        if (el) el.style.display = show ? 'block' : 'none';
       }
-    });
 
-    /* ── Unsaved-changes guard ──────────────────────────────────────── */
-    let formTouched = false;
-    document.querySelector('.form-container').addEventListener('input', () => { formTouched = true; }, { once: true });
-    window.addEventListener('beforeunload', e => {
-      if (formTouched) {
-        e.preventDefault();
-        e.returnValue = '';
+      let valid = true;
+
+      const lessonType = document.getElementById('lesson-type').value.trim();
+      showErr('err-lesson-type', !lessonType); if (!lessonType) valid = false;
+
+      const format = formatSelect.value;
+      showErr('err-course-format', !format); if (!format) valid = false;
+
+      const groupSize = document.getElementById('group-size').value;
+      showErr('err-group-size', !groupSize); if (!groupSize) valid = false;
+
+      const isOnline = format === 'Online';
+      const location = locationSelect.value;
+      if (!isOnline) {
+        showErr('err-location', !location); if (!location) valid = false;
       }
-    });
 
-    /* ── URL pre-selection on page load ─────────────────────────────── */
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-      const tab    = params.get('tab') || 'language';
-      selectTab(tab);
+      const leadFirst = document.getElementById('lead-first').value.trim();
+      showErr('err-lead-first', !leadFirst); if (!leadFirst) valid = false;
 
-      /* Pre-tick group size in language form if ?group= is set */
-      const groupParam = params.get('group');
-      if (groupParam) {
-        const groupMap = {
-          private: 'l-grp-1',
-          duo:     'l-grp-2',
-          group:   'l-grp-3',
-        };
-        const el = document.getElementById(groupMap[groupParam]);
-        if (el) el.checked = true;
-      }
-    })();
+      const leadLast = document.getElementById('lead-last').value.trim();
+      showErr('err-lead-last', !leadLast); if (!leadLast) valid = false;
 
-    /* ── Helper: show/hide location field when format changes ───────── */
-    function bindFormatLocation(formatName, locationFieldId, locationName, hintId) {
-      document.querySelectorAll(`input[name="${formatName}"]`).forEach(r => {
-        r.addEventListener('change', () => {
-          const locField = document.getElementById(locationFieldId);
-          const isInPerson = r.value === 'In-person';
-          locField.style.display = isInPerson ? 'block' : 'none';
-          if (!isInPerson) {
-            document.querySelectorAll(`input[name="${locationName}"]`).forEach(l => l.checked = false);
-            const hint = document.getElementById(hintId);
-            hint.style.display = 'none';
-            hint.textContent   = '';
-          }
-        });
-      });
-    }
+      const leadEmail = document.getElementById('lead-email').value.trim();
+      showErr('err-lead-email', !leadEmail); if (!leadEmail) valid = false;
 
-    /* ── Helper: show address hint when teacher/classroom is selected ─ */
-    function bindLocationHint(locationName, hintId) {
-      document.querySelectorAll(`input[name="${locationName}"]`).forEach(r => {
-        r.addEventListener('change', () => {
-          const hint = document.getElementById(hintId);
-          if (r.value === "Teacher's home") {
-            hint.textContent   = '8008 Zürich';
-            hint.style.display = 'block';
-          } else if (r.value === 'Classroom') {
-            hint.textContent   = '8001 Zürich';
-            hint.style.display = 'block';
-          } else {
-            hint.textContent   = '';
-            hint.style.display = 'none';
-          }
-        });
-      });
-    }
+      const leadPhone = document.getElementById('lead-phone').value.trim();
+      showErr('err-lead-phone', !leadPhone); if (!leadPhone) valid = false;
 
-    /* Bind format/location for all three forms */
-    bindFormatLocation('l-format', 'l-field-location', 'l-location', 'l-loc-hint');
-    bindFormatLocation('e-format', 'e-field-location', 'e-location', 'e-loc-hint');
-    bindFormatLocation('t-format', 't-field-location', 't-location', 't-loc-hint');
+      const preferredContact = document.getElementById('preferred-contact').value;
+      showErr('err-preferred-contact', !preferredContact); if (!preferredContact) valid = false;
 
-    bindLocationHint('l-location', 'l-loc-hint');
-    bindLocationHint('e-location', 'e-loc-hint');
-    bindLocationHint('t-location', 't-loc-hint');
-
-    /* ── "Any" day deselects individual days and vice versa ─────────── */
-    document.getElementById('day-any').addEventListener('change', e => {
-      if (e.target.checked)
-        ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun']
-          .forEach(id => document.getElementById(id).checked = false);
-    });
-    ['day-mon','day-tue','day-wed','day-thu','day-fri','day-sat','day-sun'].forEach(id => {
-      document.getElementById(id).addEventListener('change', e => {
-        if (e.target.checked) document.getElementById('day-any').checked = false;
-      });
-    });
-
-    /* ── Tutoring: show Other subject text field when ticked ─────────── */
-    document.querySelectorAll('input[name="t-subjects"]').forEach(cb => {
-      cb.addEventListener('change', () => {
-        if (cb.value === 'Other') {
-          document.getElementById('t-field-subject-other').style.display =
-            cb.checked ? 'block' : 'none';
-          if (!cb.checked) document.getElementById('t-subject-other').value = '';
+      if (!valid) {
+        const first = [...document.querySelectorAll('.error')]
+          .find(e => e.style.display === 'block');
+        if (first) {
+          first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const input = first.closest('.field')?.querySelector('input, select, textarea');
+          if (input) input.focus({ preventScroll: true });
         }
-      });
-    });
-
-    /* ── Helper: show/hide an error element ─────────────────────────── */
-    function setError(id, show) {
-      document.getElementById(id).style.display = show ? 'block' : 'none';
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       VALIDATION HELPERS — per-service
-    ══════════════════════════════════════════════════════════════════ */
-    function validateLanguage() {
-      let valid = true;
-
-      const langSel = document.querySelector('input[name="l-language"]:checked');
-      setError('l-err-language', !langSel); if (!langSel) valid = false;
-
-      const bg = document.getElementById('l-background').value.trim();
-      setError('l-err-background', !bg); if (!bg) valid = false;
-
-      const levelSel = document.querySelector('input[name="l-level"]:checked');
-      setError('l-err-level', !levelSel); if (!levelSel) valid = false;
-
-      const formatSel = document.querySelector('input[name="l-format"]:checked');
-      setError('l-err-format', !formatSel); if (!formatSel) valid = false;
-
-      const lLocVisible = document.getElementById('l-field-location').style.display !== 'none';
-      if (lLocVisible) {
-        const locSel = document.querySelector('input[name="l-location"]:checked');
-        setError('l-err-location', !locSel); if (!locSel) valid = false;
+        return;
       }
-
-      const groupSel = document.querySelector('input[name="l-group"]:checked');
-      setError('l-err-group', !groupSel); if (!groupSel) valid = false;
-
-      if (!valid) return null;
 
       const booking = {
-        service:    'language course',
-        language:   langSel.value,
-        background: bg,
-        level:      levelSel.value,
-        format:     formatSel.value,
-        group:      groupSel.value,
+        lessonType,
+        format,
+        groupSize,
+        location: isOnline ? null : location,
       };
-      const locEl = document.querySelector('input[name="l-location"]:checked');
-      if (locEl) booking.location = locEl.value;
-      return booking;
-    }
-
-    function validateExam() {
-      let valid = true;
-
-      const examSel = document.querySelector('input[name="e-exam"]:checked');
-      setError('e-err-exam', !examSel); if (!examSel) valid = false;
-
-      const levelSel = document.querySelector('input[name="e-level"]:checked');
-      setError('e-err-level', !levelSel); if (!levelSel) valid = false;
-
-      const formatSel = document.querySelector('input[name="e-format"]:checked');
-      setError('e-err-format', !formatSel); if (!formatSel) valid = false;
-
-      const eLocVisible = document.getElementById('e-field-location').style.display !== 'none';
-      if (eLocVisible) {
-        const locSel = document.querySelector('input[name="e-location"]:checked');
-        setError('e-err-location', !locSel); if (!locSel) valid = false;
-      }
-
-      const groupSel = document.querySelector('input[name="e-group"]:checked');
-      setError('e-err-group', !groupSel); if (!groupSel) valid = false;
-
-      if (!valid) return null;
-
-      const examDate = document.getElementById('e-exam-date').value;
-      const booking = {
-        service:  'exam prep',
-        exam:     examSel.value,
-        level:    levelSel.value,
-        format:   formatSel.value,
-        group:    groupSel.value,
+      const contact = {
+        lead: {
+          firstName: leadFirst,
+          lastName:  leadLast,
+          email:     leadEmail,
+          phone:     leadPhone,
+        },
+        preferredContact,
       };
-      if (examDate) booking.examDate = examDate;
-      const locEl = document.querySelector('input[name="e-location"]:checked');
-      if (locEl) booking.location = locEl.value;
-      return booking;
-    }
 
-    function validateTutoring() {
-      let valid = true;
+      const btn = document.getElementById('submit-btn');
+      btn.dataset.loading = '';
+      btn.disabled        = true;
 
-      const gradesSel = document.querySelectorAll('input[name="t-grade"]:checked');
-      setError('t-err-grade', gradesSel.length === 0); if (gradesSel.length === 0) valid = false;
-
-      const subjectsSel = document.querySelectorAll('input[name="t-subjects"]:checked');
-      setError('t-err-subjects', subjectsSel.length === 0); if (subjectsSel.length === 0) valid = false;
-
-      const otherVisible = document.getElementById('t-field-subject-other').style.display !== 'none';
-      if (otherVisible) {
-        const otherText = document.getElementById('t-subject-other').value.trim();
-        setError('t-err-subject-other', !otherText); if (!otherText) valid = false;
+      try {
+        const res = await fetch('/api/submit-enquiry', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ booking, contact }),
+        });
+        if (!res.ok) throw new Error('Server error');
+        window.location.href = 'thankyou.html';
+      } catch {
+        delete btn.dataset.loading;
+        btn.disabled = false;
+        document.getElementById('submit-error').style.display = 'block';
       }
-
-      const formatSel = document.querySelector('input[name="t-format"]:checked');
-      setError('t-err-format', !formatSel); if (!formatSel) valid = false;
-
-      const tLocVisible = document.getElementById('t-field-location').style.display !== 'none';
-      if (tLocVisible) {
-        const locSel = document.querySelector('input[name="t-location"]:checked');
-        setError('t-err-location', !locSel); if (!locSel) valid = false;
-      }
-
-      const groupSel = document.querySelector('input[name="t-group"]:checked');
-      setError('t-err-group', !groupSel); if (!groupSel) valid = false;
-
-      if (!valid) return null;
-
-      const subjects = Array.from(subjectsSel).map(s => s.value);
-      const otherText = document.getElementById('t-subject-other').value.trim();
-      if (otherText) subjects.push(otherText);
-
-      const booking = {
-        service:  'tutoring',
-        grades:   Array.from(gradesSel).map(g => g.value),
-        subjects,
-        format:   formatSel.value,
-        group:    groupSel.value,
-      };
-      const locEl = document.querySelector('input[name="t-location"]:checked');
-      if (locEl) booking.location = locEl.value;
-      return booking;
-    }
-
-    /* ══════════════════════════════════════════════════════════════════
-       SHARED CONTINUE BUTTON — validates active tab + scheduling
-    ══════════════════════════════════════════════════════════════════ */
-    document.getElementById('continue-btn').addEventListener('click', () => {
-      /* Validate active service tab */
-      const validators = { language: validateLanguage, exam: validateExam, tutoring: validateTutoring };
-      const booking = validators[activeTab]();
-
-      /* Validate scheduling */
-      let schedValid = true;
-
-      const daysSel = document.querySelectorAll('input[name="days"]:checked');
-      setError('err-days', daysSel.length === 0);
-      if (daysSel.length === 0) schedValid = false;
-
-      const todSel = document.querySelectorAll('input[name="time_of_day"]:checked');
-      setError('err-time-of-day', todSel.length === 0);
-      if (todSel.length === 0) schedValid = false;
-
-      if (!booking || !schedValid) return;
-
-      /* Attach scheduling to booking object */
-      booking.days      = Array.from(daysSel).map(d => d.value);
-      booking.timeOfDay = Array.from(todSel).map(t => t.value);
-      const notes = document.getElementById('scheduling-notes').value.trim();
-      if (notes) booking.notes = notes;
-
-      sessionStorage.setItem('booking', JSON.stringify(booking));
-      formTouched = false;
-      window.location.href = 'contact-details.html';
     });
 
   </script>
