@@ -32,6 +32,19 @@
   const overlay = document.getElementById('nav-overlay');
   let menuOpen = false;
 
+  // ── Mark active nav link ────────────────────────────────────────
+  const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
+  navMenu.querySelectorAll('a').forEach(function (link) {
+    const linkPath = new URL(link.href, window.location.href).pathname.replace(/\/$/, '');
+    if (
+      linkPath === currentPath ||
+      (currentPath === '' && linkPath === '/index.html') ||
+      (currentPath.endsWith('/') && linkPath === currentPath.slice(0, -1))
+    ) {
+      link.setAttribute('aria-current', 'page');
+    }
+  });
+
   // ── Ripple effect ───────────────────────────────────────────────
   function triggerRipple(x, y) {
     const ripple = document.createElement('div');
@@ -56,12 +69,17 @@
     if (menuOpen && x !== undefined) triggerRipple(x, y);
   }
 
-  // ── Scroll: hide nav + close menu ───────────────────────────────
+  // ── Scroll: hide on scroll-down, reveal on scroll-up ───────────
+  let lastScrollY = window.scrollY;
   window.addEventListener('scroll', function () {
-    if (window.scrollY > 10) {
+    const y = window.scrollY;
+    const scrollingDown = y > lastScrollY;
+    lastScrollY = y;
+
+    if (y > 60 && scrollingDown) {
       nav.classList.add('hidden');
       if (menuOpen) toggleMenu(false);
-    } else {
+    } else if (!scrollingDown) {
       nav.classList.remove('hidden');
     }
   });

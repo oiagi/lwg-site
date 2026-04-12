@@ -159,6 +159,13 @@ button[data-loading]::after {
   opacity: 1;
 }
 
+/* ── Active nav link (current page) ────────────────────────────── */
+.nav-menu a[aria-current='page'] {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── Nav menu links ────────────────────────────────────────────── */
 .nav-menu {
   display: none;

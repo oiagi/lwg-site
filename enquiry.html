@@ -105,7 +105,7 @@
     </div>
 
     <div class="field">
-      <label for="lead-phone">phone</label>
+      <label for="lead-phone" id="label-lead-phone">phone</label>
       <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" />
       <div class="error" id="err-lead-phone">Please enter a phone number.</div>
     </div>
@@ -139,11 +139,20 @@
        Submits directly to /api/submit-enquiry; no sessionStorage relay.
     ══════════════════════════════════════════════════════════════════ */
 
-    const formatSelect   = document.getElementById('course-format');
-    const locationField  = document.getElementById('field-location');
-    const locationSelect = document.getElementById('location');
-    const disclaimerEl   = document.getElementById('location-disclaimer');
-    const locationErr    = document.getElementById('err-location');
+    const formatSelect      = document.getElementById('course-format');
+    const locationField     = document.getElementById('field-location');
+    const locationSelect    = document.getElementById('location');
+    const disclaimerEl      = document.getElementById('location-disclaimer');
+    const locationErr       = document.getElementById('err-location');
+    const preferredContact  = document.getElementById('preferred-contact');
+    const phoneLabel        = document.getElementById('label-lead-phone');
+
+    /* ── Toggle phone optional when Email-only preferred ────────────── */
+    function updatePhoneLabel() {
+      const emailOnly = preferredContact.value === 'Email';
+      phoneLabel.textContent = emailOnly ? 'phone (optional)' : 'phone';
+    }
+    preferredContact.addEventListener('change', updatePhoneLabel);
 
     /* ── Show/hide location based on format ─────────────────────────── */
     formatSelect.addEventListener('change', () => {
@@ -197,10 +206,11 @@
       showErr('err-lead-email', !leadEmail); if (!leadEmail) valid = false;
 
       const leadPhone = document.getElementById('lead-phone').value.trim();
-      showErr('err-lead-phone', !leadPhone); if (!leadPhone) valid = false;
+      const phoneRequired = preferredContact.value !== 'Email';
+      showErr('err-lead-phone', phoneRequired && !leadPhone); if (phoneRequired && !leadPhone) valid = false;
 
-      const preferredContact = document.getElementById('preferred-contact').value;
-      showErr('err-preferred-contact', !preferredContact); if (!preferredContact) valid = false;
+      const preferredContactVal = preferredContact.value;
+      showErr('err-preferred-contact', !preferredContactVal); if (!preferredContactVal) valid = false;
 
       if (!valid) {
         const first = [...document.querySelectorAll('.error')]
@@ -224,9 +234,9 @@
           firstName: leadFirst,
           lastName:  leadLast,
           email:     leadEmail,
-          phone:     leadPhone,
+          phone:     leadPhone || null,
         },
-        preferredContact,
+        preferredContact: preferredContactVal,
       };
 
       const btn = document.getElementById('submit-btn');
