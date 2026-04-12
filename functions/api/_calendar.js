@@ -54,7 +54,10 @@ export async function createCourseCalendarEvent({
       body: JSON.stringify({
         summary: eventTitle,
         description:
-          `Course: ${courseCode}\nService: ${booking.service || ''}\n` +
+          `Course: ${courseCode}\n` +
+          (booking.lessonType
+            ? `What: ${booking.lessonType}\n`
+            : `Service: ${booking.service || ''}\n`) +
           (booking.level ? `Level: ${booking.level}\n` : '') +
           (booking.language ? `Language: ${booking.language}\n` : '') +
           (booking.exam ? `Exam: ${booking.exam}\n` : '') +

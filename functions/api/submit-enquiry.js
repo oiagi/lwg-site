@@ -24,34 +24,18 @@ const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 // ── Label map for booking fields ─────────────────────────────────────────
 function label(key) {
   const map = {
-    language: 'Language',
-    background: 'Background',
-    level: 'Course level',
-    exam: 'Exam',
-    examDate: 'Exam date',
+    lessonType: "What they're looking for",
     format: 'Format',
+    groupSize: 'Group size',
     location: 'Location',
-    group: 'Group size',
-    grades: 'School year',
-    subjects: 'Subjects',
-    days: 'Preferred days',
-    timeOfDay: 'Time of day',
-    notes: 'Scheduling notes',
   };
   return map[key] || key;
 }
 
 // ── Format booking object into display lines ──────────────────────────────
 function formatBooking(b) {
-  const svc =
-    b.service === 'tutoring'
-      ? 'Tutoring'
-      : b.service === 'exam prep'
-        ? 'Exam preparation'
-        : 'Language course';
-  const lines = [`Service: ${svc}`];
+  const lines = [];
   for (const [k, v] of Object.entries(b)) {
-    if (k === 'service') continue;
     const val = Array.isArray(v) ? v.join(', ') : v;
     if (val) lines.push(`${label(k)}: ${val}`);
   }
@@ -156,7 +140,12 @@ function buildNotificationEmail(booking, contact, enquiryId) {
     .join('');
 
   return {
-    subject: `New enquiry — ${lead.firstName || ''} ${lead.lastName || ''} (${booking.service || 'unknown'})`,
+    subject: `New enquiry — ${lead.firstName || ''} ${lead.lastName || ''} (${
+      (booking.lessonType || '')
+        .replace(/[\r\n]+/g, ' ')
+        .trim()
+        .slice(0, 50) || 'no details'
+    })`,
     html: `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"></head>
@@ -212,13 +201,22 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   const bookingErr = validate(booking, {
-    service: {
-      required: true,
-      type: 'string',
-      oneOf: ['language course', 'exam prep', 'tutoring'],
-    },
+    lessonType: { required: true, type: 'string', maxLength: 3000 },
   });
   if (bookingErr) return errorResponse(bookingErr, 400);
+
+  // ── Normalise / constrain booking fields ──────────────────────────────
+  const ALLOWED_FORMATS = ['Online', 'In-person', 'Either'];
+  const ALLOWED_GROUP = ['Private', 'Duo', 'Group'];
+  const ALLOWED_LOC = ['My home', 'My company', "Teacher's home", 'Classroom in Zurich city'];
+  booking.lessonType = booking.lessonType.replace(/\s+/g, ' ').trim();
+  if (!ALLOWED_FORMATS.includes(booking.format)) booking.format = null;
+  if (!ALLOWED_GROUP.includes(booking.groupSize)) booking.groupSize = null;
+  if (booking.format === 'Online') {
+    booking.location = null;
+  } else if (!ALLOWED_LOC.includes(booking.location)) {
+    booking.location = null;
+  }
 
   const lead = contact.lead || contact;
 
@@ -235,7 +233,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       method: 'POST',
       headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
-        service: booking.service || null,
+        service: null,
         lead_first: lead.firstName || null,
         lead_last: lead.lastName || null,
         lead_email: lead.email || null,
