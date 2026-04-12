@@ -36,9 +36,11 @@
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
   navMenu.querySelectorAll('a').forEach(function (link) {
     const linkPath = new URL(link.href, window.location.href).pathname.replace(/\/$/, '');
-    if (linkPath === currentPath ||
-        (currentPath === '' && linkPath === '/index.html') ||
-        (currentPath.endsWith('/') && linkPath === currentPath.slice(0, -1))) {
+    if (
+      linkPath === currentPath ||
+      (currentPath === '' && linkPath === '/index.html') ||
+      (currentPath.endsWith('/') && linkPath === currentPath.slice(0, -1))
+    ) {
       link.setAttribute('aria-current', 'page');
     }
   });
