@@ -61,8 +61,9 @@
             <label>Service</label>
             <select id="nc-service">
               <option value="language course">Language course</option>
-              <option value="exam prep">Exam prep</option>
+              <option value="exam preparation">Exam preparation</option>
               <option value="tutoring">Tutoring</option>
+              <option value="gymivorbereitung">Gymivorbereitung</option>
             </select>
           </div>
           <div class="modal-field">
@@ -171,6 +172,7 @@
         <div id="sm-billing-section" style="display:none;">
           <div class="modal-grid">
             <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+            <div class="modal-field"><label>Billing phone</label><input type="tel" id="sm-billing-phone" placeholder="+41…"></div>
             <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
             <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
             <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
@@ -194,8 +196,9 @@
             <select id="sm-service">
               <option value="">—</option>
               <option value="language course">Language course</option>
-              <option value="exam prep">Exam prep</option>
+              <option value="exam preparation">Exam preparation</option>
               <option value="tutoring">Tutoring</option>
+              <option value="gymivorbereitung">Gymivorbereitung</option>
             </select>
           </div>
           <div id="sm-lang-fields" style="display:contents;">
@@ -214,8 +217,23 @@
               <label>Current level</label>
               <select id="sm-level">
                 <option value="">—</option>
-                <option>A1</option><option>A2</option><option>B1</option>
-                <option>B2</option><option>C1</option><option>C2</option>
+                <optgroup label="Language course">
+                  <option>A1</option><option>A2</option><option>B1</option>
+                  <option>B2</option><option>C1</option><option>C2</option>
+                </optgroup>
+                <optgroup label="Exam preparation">
+                  <option value="Cambridge">Cambridge</option>
+                  <option value="TOEFL">TOEFL</option>
+                  <option value="IELTS">IELTS</option>
+                  <option value="Goethe">Goethe</option>
+                  <option value="TELC">TELC</option>
+                </optgroup>
+                <optgroup label="Tutoring">
+                  <option value="Primarschule">Primarschule</option>
+                  <option value="Sekundarschule">Sekundarschule</option>
+                  <option value="Gymnasium">Gymnasium</option>
+                </optgroup>
+                <option value="Other">Other</option>
               </select>
             </div>
           </div>
@@ -240,12 +258,12 @@
             </div>
           </div>
           <div class="modal-field">
-            <label>Course type</label>
+            <label>Size</label>
             <select id="sm-course-type">
               <option value="">—</option>
-              <option value="private">Private</option>
-              <option value="duo">Duo</option>
-              <option value="group">Group</option>
+              <option value="individual">Individual</option>
+              <option value="2 people">2 people</option>
+              <option value="3-5 people">3–5 people</option>
             </select>
           </div>
           <div class="modal-field">
@@ -262,9 +280,10 @@
             <select id="sm-location">
               <option value="">—</option>
               <option value="my home">My home</option>
+              <option value="my company">My company</option>
               <option value="teacher's home">Teacher's home</option>
               <option value="classroom">Classroom</option>
-              <option value="my company">My company</option>
+              <option value="online">Online</option>
             </select>
           </div>
           <div class="modal-field"><label>Desired start date</label><input type="date" id="sm-desired-start"></div>

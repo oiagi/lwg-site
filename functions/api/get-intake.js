@@ -21,7 +21,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,nationality,street,street_number,postcode,city,emergency_contact,ec_phone,ec_email,ec_relationship,native_language,target_language,current_level,learning_goals,desired_start_date,course_type,course_format,location,billing_name,billing_address,billing_street,billing_street_number,billing_postcode,billing_city,billing_email,payment_method,referral_source,token_created_at,created_at`,
+      `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=first_name,last_name,email,phone,street,street_number,postcode,city,emergency_contact,ec_phone,ec_email,ec_relationship,service,current_level,course_type,course_format,location,billing_name,billing_address,billing_street,billing_street_number,billing_postcode,billing_city,billing_email,billing_phone,payment_method,token_created_at,created_at`,
       { headers: H }
     );
     if (!res.ok) return errorResponse('Database error');
@@ -29,16 +29,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const students = await res.json();
     if (!students.length) return errorResponse('Student not found', 404);
 
-    // ── Token expiry check (90 days) ──────────────────────────────────
     const student = students[0];
-    const tokenDate = student.token_created_at || student.created_at;
-    if (tokenDate) {
-      const ageMs = Date.now() - new Date(tokenDate).getTime();
-      const maxAgeMs = 90 * 24 * 60 * 60 * 1000;
-      if (ageMs > maxAgeMs) {
-        return errorResponse('This link has expired. Please contact us for a new one.', 410);
-      }
-    }
 
     // Strip internal date fields before returning
     const { token_created_at: _t, created_at: _c, ...formData } = student;
