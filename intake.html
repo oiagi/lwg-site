@@ -46,19 +46,14 @@
 
       <div class="field-row">
         <div class="field">
+          <label for="in-phone">Phone</label>
+          <input type="tel" id="in-phone" autocomplete="tel" placeholder="+41 79 123 45 67">
+        </div>
+        <div class="field">
           <label for="in-email">Email *</label>
           <input type="email" id="in-email" autocomplete="email">
           <div class="error" id="err-email">A valid email is required.</div>
         </div>
-        <div class="field">
-          <label for="in-phone">Phone</label>
-          <input type="tel" id="in-phone" autocomplete="tel" placeholder="+41…">
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="in-nationality">Nationality</label>
-        <input type="text" id="in-nationality">
       </div>
 
       <div class="field-row">
@@ -92,14 +87,31 @@
       </div>
 
       <div id="billing-fields" style="display:none;">
-        <div class="field">
-          <label for="in-billing-name">Billing name</label>
-          <input type="text" id="in-billing-name" placeholder="Full name or company name">
+        <div class="field-row">
+          <div class="field">
+            <label for="in-billing-first-name">First name</label>
+            <input type="text" id="in-billing-first-name" autocomplete="billing given-name">
+          </div>
+          <div class="field">
+            <label for="in-billing-last-name">Last name</label>
+            <input type="text" id="in-billing-last-name" autocomplete="billing family-name">
+          </div>
         </div>
 
         <div class="field-row">
           <div class="field">
-            <label for="in-billing-street">Billing street</label>
+            <label for="in-billing-phone">Phone</label>
+            <input type="tel" id="in-billing-phone" autocomplete="billing tel" placeholder="+41 79 123 45 67">
+          </div>
+          <div class="field">
+            <label for="in-billing-email">Email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
+            <input type="email" id="in-billing-email" autocomplete="billing email">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="in-billing-street">Street</label>
             <input type="text" id="in-billing-street" autocomplete="billing street-address">
           </div>
           <div class="field" style="max-width:120px;">
@@ -118,20 +130,67 @@
             <input type="text" id="in-billing-city" autocomplete="billing address-level2">
           </div>
         </div>
+      </div>
 
-        <div class="field">
-          <label for="in-billing-email">Billing email <span style="font-weight:300;text-transform:none;font-size:0.65rem;color:#aaa;">(if different from above)</span></label>
-          <input type="email" id="in-billing-email" placeholder="billing@example.com">
+      <div class="field">
+        <label>Payment method</label>
+        <div class="toggle-group" id="in-payment-method">
+          <input type="radio" name="payment-method" id="pm-bank" value="bank">
+          <label for="pm-bank">Bank transfer</label>
+          <input type="radio" name="payment-method" id="pm-twint" value="twint">
+          <label for="pm-twint">Twint</label>
         </div>
+      </div>
 
-        <div class="field">
-          <label>Payment method</label>
-          <div class="toggle-group" id="in-payment-method">
-            <input type="radio" name="payment-method" id="pm-bank" value="bank">
-            <label for="pm-bank">Bank transfer</label>
-            <input type="radio" name="payment-method" id="pm-twint" value="twint">
-            <label for="pm-twint">Twint</label>
-          </div>
+      <!-- ── Course Selection ───────────────────────────────────────── -->
+      <p class="section-label">course selection</p>
+
+      <div class="field">
+        <label for="in-service">Course type</label>
+        <select id="in-service">
+          <option value="">— please select —</option>
+          <option value="language course">Language course</option>
+          <option value="exam preparation">Exam preparation</option>
+          <option value="tutoring">Tutoring</option>
+          <option value="gymivorbereitung">Gymivorbereitung</option>
+        </select>
+      </div>
+
+      <div class="field" id="level-field" style="display:none;">
+        <label for="in-level">Level</label>
+        <select id="in-level">
+          <option value="">— please select —</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Location</label>
+        <div class="toggle-group" id="in-location">
+          <input type="radio" name="location" id="loc-home" value="my home">
+          <label for="loc-home">My home</label>
+          <input type="radio" name="location" id="loc-company" value="my company">
+          <label for="loc-company">My company</label>
+          <input type="radio" name="location" id="loc-teacher" value="teacher's home">
+          <label for="loc-teacher">Teacher's home</label>
+          <input type="radio" name="location" id="loc-classroom" value="classroom">
+          <label for="loc-classroom">Classroom</label>
+          <input type="radio" name="location" id="loc-online" value="online">
+          <label for="loc-online">Online</label>
+        </div>
+        <p class="field-disclaimer" id="travel-disclaimer" style="display:none;">
+          For lessons outside of Zurich city, travel costs will apply in addition to the course fees.
+        </p>
+      </div>
+
+      <div class="field">
+        <label>Size</label>
+        <div class="toggle-group" id="in-course-size">
+          <input type="radio" name="course-size" id="cs-individual" value="individual">
+          <label for="cs-individual">Individual</label>
+          <input type="radio" name="course-size" id="cs-duo" value="2 people">
+          <label for="cs-duo">2 people <span class="toggle-hint">(with your partner)</span></label>
+          <input type="radio" name="course-size" id="cs-group" value="3-5 people">
+          <label for="cs-group">3–5 people</label>
         </div>
       </div>
 
@@ -140,120 +199,27 @@
 
       <div class="field-row">
         <div class="field">
-          <label for="in-ec-name">Name</label>
-          <input type="text" id="in-ec-name">
+          <label for="in-ec-first-name">First name</label>
+          <input type="text" id="in-ec-first-name">
         </div>
+        <div class="field">
+          <label for="in-ec-last-name">Last name</label>
+          <input type="text" id="in-ec-last-name">
+        </div>
+      </div>
+      <div class="field-row">
         <div class="field">
           <label for="in-ec-relationship">Relationship</label>
           <input type="text" id="in-ec-relationship" placeholder="e.g. Partner, Parent">
         </div>
-      </div>
-      <div class="field-row">
         <div class="field">
           <label for="in-ec-phone">Phone</label>
           <input type="tel" id="in-ec-phone" placeholder="+41…">
         </div>
-        <div class="field">
-          <label for="in-ec-email">Email</label>
-          <input type="email" id="in-ec-email">
-        </div>
       </div>
-
-      <!-- ── Course Preferences ─────────────────────────────────────── -->
-      <p class="section-label">course preferences</p>
-
       <div class="field">
-        <label>Course type</label>
-        <div class="toggle-group" id="in-course-type">
-          <input type="radio" name="course-type" id="ct-private" value="private">
-          <label for="ct-private">Private</label>
-          <input type="radio" name="course-type" id="ct-duo" value="duo">
-          <label for="ct-duo">Duo</label>
-          <input type="radio" name="course-type" id="ct-group" value="group">
-          <label for="ct-group">Group</label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Format</label>
-        <div class="toggle-group" id="in-course-format">
-          <input type="radio" name="course-format" id="cf-online" value="online">
-          <label for="cf-online">Online</label>
-          <input type="radio" name="course-format" id="cf-inperson" value="in-person">
-          <label for="cf-inperson">In-person</label>
-          <input type="radio" name="course-format" id="cf-flexible" value="flexible">
-          <label for="cf-flexible">Flexible</label>
-        </div>
-      </div>
-
-      <div class="field" id="location-field" style="display:none;">
-        <label>Location</label>
-        <div class="toggle-group" id="in-location">
-          <input type="radio" name="location" id="loc-home" value="my home">
-          <label for="loc-home">My home</label>
-          <input type="radio" name="location" id="loc-teacher" value="teacher's home">
-          <label for="loc-teacher">Teacher's home</label>
-          <input type="radio" name="location" id="loc-classroom" value="classroom">
-          <label for="loc-classroom">Classroom</label>
-          <input type="radio" name="location" id="loc-company" value="my company">
-          <label for="loc-company">My company</label>
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="in-target-lang">Target language</label>
-          <select id="in-target-lang">
-            <option value="">—</option>
-            <option value="German">German</option>
-            <option value="Swiss German">Swiss German</option>
-            <option value="English">English</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="in-native-lang">Native language</label>
-          <input type="text" id="in-native-lang">
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="in-level">Current level</label>
-        <select id="in-level">
-          <option value="">I'm not sure</option>
-          <option value="A1">A1 — Beginner</option>
-          <option value="A2">A2 — Elementary</option>
-          <option value="B1">B1 — Intermediate</option>
-          <option value="B2">B2 — Upper intermediate</option>
-          <option value="C1">C1 — Advanced</option>
-          <option value="C2">C2 — Proficient</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="in-goals">Learning goals</label>
-        <textarea id="in-goals" placeholder="e.g. Improve conversational German for work, prepare for a certification…"></textarea>
-      </div>
-
-      <div class="field">
-        <label for="in-start-date">Desired start date</label>
-        <input type="date" id="in-start-date">
-      </div>
-
-      <!-- ── Other ──────────────────────────────────────────────────── -->
-      <p class="section-label">other</p>
-
-      <div class="field">
-        <label for="in-referral">How did you hear about us?</label>
-        <select id="in-referral">
-          <option value="">—</option>
-          <option value="Google">Google</option>
-          <option value="Social media">Social media</option>
-          <option value="Friend or family">Friend or family</option>
-          <option value="School or university">School or university</option>
-          <option value="Company">Company</option>
-          <option value="Other">Other</option>
-        </select>
+        <label for="in-ec-email">Email</label>
+        <input type="email" id="in-ec-email">
       </div>
 
       <!-- ── Consent ────────────────────────────────────────────────── -->

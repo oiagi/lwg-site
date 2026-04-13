@@ -114,6 +114,8 @@ function renderStudentDetail(container, s) {
         <p class="detail-meta">billing</p>
         <p class="detail-body">
           ${esc(s.billing_name) || '—'}<br>
+          ${s.billing_email ? '<span class="detail-muted">' + esc(s.billing_email) + '</span><br>' : ''}
+          ${s.billing_phone ? '<span class="detail-muted">' + esc(s.billing_phone) + '</span><br>' : ''}
           ${
             s.billing_street || s.billing_postcode
               ? esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' ')) +
@@ -121,7 +123,6 @@ function renderStudentDetail(container, s) {
                 esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))
               : esc(s.billing_address) || '—'
           }<br>
-          ${s.billing_email ? '<span class="detail-muted">' + esc(s.billing_email) + '</span><br>' : ''}
           ${s.vat_number ? 'VAT: ' + esc(s.vat_number) : ''}
         </p>
       </div>
@@ -130,15 +131,15 @@ function renderStudentDetail(container, s) {
       <div>
         <p class="detail-meta">preferences</p>
         <p class="detail-body">
-          ${s.service ? 'Service: ' + esc(s.service) + '<br>' : ''}
+          ${s.service ? 'Course type: ' + esc(s.service) + '<br>' : ''}
+          ${s.current_level ? 'Level: ' + esc(s.current_level) + '<br>' : ''}
+          ${s.course_type ? 'Size: ' + esc(s.course_type) + '<br>' : ''}
+          ${s.location ? 'Location: ' + esc(s.location) + '<br>' : ''}
+          ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
           ${s.native_language ? 'Native: ' + esc(s.native_language) + '<br>' : ''}
           ${s.target_language ? 'Target: ' + esc(s.target_language) + '<br>' : ''}
-          ${s.current_level ? 'Level: ' + esc(s.current_level) + '<br>' : ''}
           ${s.grade ? 'Grade: ' + esc(s.grade) + '<br>' : ''}
-          ${s.subjects ? 'Subjects: ' + esc(s.subjects) + '<br>' : ''}
-          ${s.course_type ? 'Type: ' + esc(s.course_type) + '<br>' : ''}
-          ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
-          ${s.location ? 'Location: ' + esc(s.location) : ''}
+          ${s.subjects ? 'Subjects: ' + esc(s.subjects) : ''}
         </p>
         ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
         ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
@@ -200,6 +201,7 @@ export function openStudentModal(existingData) {
     'sm-course-format',
     'sm-location',
     'sm-billing-name',
+    'sm-billing-phone',
     'sm-billing-street',
     'sm-billing-street-number',
     'sm-billing-postcode',
@@ -252,6 +254,7 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-course-format').value = existingData.course_format || '';
     document.getElementById('sm-location').value = existingData.location || '';
     document.getElementById('sm-billing-name').value = existingData.billing_name || '';
+    document.getElementById('sm-billing-phone').value = existingData.billing_phone || '';
     document.getElementById('sm-billing-email').value = existingData.billing_email || '';
     // Billing address — prefer split fields, fall back to parsing legacy billing_address
     if (existingData.billing_street || existingData.billing_postcode) {
@@ -311,6 +314,7 @@ function resetBillingToggle(hasBillingData) {
     if (!show) {
       [
         'sm-billing-name',
+        'sm-billing-phone',
         'sm-billing-email',
         'sm-billing-street',
         'sm-billing-street-number',
@@ -329,9 +333,9 @@ function resetServiceToggle(service) {
   const tutFields = document.getElementById('sm-tutoring-fields');
 
   function apply(val) {
-    const isTutoring = val === 'tutoring';
+    const isTutoring = val === 'tutoring' || val === 'gymivorbereitung';
     langFields.style.display = isTutoring ? 'none' : 'contents';
-    tutFields.style.display = isTutoring ? 'contents' : 'none';
+    tutFields.style.display = val === 'tutoring' ? 'contents' : 'none';
   }
 
   sel.value = service || '';
@@ -408,6 +412,7 @@ export async function submitStudent() {
     ...(document.getElementById('sm-billing-separate').checked
       ? {
           billing_name: document.getElementById('sm-billing-name').value.trim() || null,
+          billing_phone: document.getElementById('sm-billing-phone').value.trim() || null,
           billing_street: document.getElementById('sm-billing-street').value.trim() || null,
           billing_street_number:
             document.getElementById('sm-billing-street-number').value.trim() || null,
@@ -417,6 +422,7 @@ export async function submitStudent() {
         }
       : {
           billing_name: null,
+          billing_phone: null,
           billing_street: null,
           billing_street_number: null,
           billing_postcode: null,
