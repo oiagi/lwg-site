@@ -166,7 +166,6 @@ function renderStudentDetail(container, s) {
     ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
-      <button class="action-btn" data-action="copyIntakeLink" data-args="${s.id},${s.access_token || ''}">copy intake link</button>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
@@ -479,51 +478,4 @@ export async function deleteStudent(studentId) {
   } catch {
     alert('Could not delete student.');
   }
-}
-
-export async function copyIntakeLink(studentId, accessToken, el) {
-  let tokenToUse = accessToken || null;
-  const generatingNew = !tokenToUse;
-
-  const saveBody = { id: studentId, token_created_at: new Date().toISOString() };
-  if (generatingNew) {
-    tokenToUse = crypto.randomUUID();
-    saveBody.access_token = tokenToUse;
-  }
-
-  try {
-    const res = await apiFetch('/api/save-student', { method: 'POST', body: saveBody });
-    if (!res.ok) {
-      if (generatingNew) {
-        alert('Could not generate intake link. Please try again.');
-        return;
-      }
-      // Existing token: non-fatal — still copy the link
-    } else if (generatingNew && el) {
-      // Persist the new token in the button so repeat clicks reuse it
-      el.dataset.args = `${studentId},${tokenToUse}`;
-    }
-  } catch {
-    if (generatingNew) {
-      alert('Could not generate intake link. Please try again.');
-      return;
-    }
-    // Existing token: non-fatal
-  }
-
-  const url = window.location.origin + '/intake.html?token=' + tokenToUse;
-  navigator.clipboard
-    .writeText(url)
-    .then(() => {
-      if (el) {
-        const orig = el.textContent;
-        el.textContent = 'copied!';
-        setTimeout(() => {
-          el.textContent = orig;
-        }, 1500);
-      }
-    })
-    .catch(() => {
-      prompt('Copy this link:', url);
-    });
 }

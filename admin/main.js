@@ -34,7 +34,6 @@ import {
   editStudent,
   submitStudent,
   deleteStudent,
-  copyIntakeLink,
 } from './students.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
@@ -77,7 +76,6 @@ const actions = {
   editStudent,
   submitStudent,
   deleteStudent,
-  copyIntakeLink,
   // Teachers
   authoriseTeacher,
   // Availability

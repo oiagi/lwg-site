@@ -20,7 +20,6 @@ Language courses, exam preparation and tutoring in Zurich.
 ├── shared.css          # Global styles, navigation, animations
 ├── nav.js              # Injected navigation component
 ├── device-detect.js    # Responsive device detection (mobile/tablet/desktop)
-├── form-validate.js    # Shared client-side form validation
 ├── admin/              # Admin dashboard modules (13 JS files + CSS)
 │   ├── main.js         # Entry point, event delegation, tab switching
 │   ├── auth.js         # Supabase authentication
