@@ -364,6 +364,34 @@ button.submit:hover {
   background: #fff;
   color: #1a1a1a;
 }
+.students-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.secondary-btn {
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid #1a1a1a;
+  background: transparent;
+  color: #1a1a1a;
+  padding: 0.3rem 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.secondary-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .delete-course-btn {
   font-family: inherit;
   font-size: 0.68rem;
@@ -1499,6 +1527,47 @@ html[data-device='mobile'] .avail-day {
   color: #c0392b;
   font-size: 0.82rem;
 }
+
+/* ── Admin section (student detail) ─────────────────────────────── */
+.admin-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.2rem 1.2rem;
+  margin-bottom: 0.8rem;
+}
+.admin-course-table-wrap {
+  overflow-x: auto;
+  margin: 0.4rem 0 0.6rem;
+}
+.admin-course-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.admin-course-table th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 0.6rem 0.4rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.admin-course-table td {
+  padding: 0.5rem 0.6rem 0.5rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text);
+  vertical-align: top;
+}
+.admin-course-table .admin-course-code {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.admin-course-table .charges-open {
+  color: #c0392b;
+  font-weight: 600;
+}
 .course-tag {
   display: inline-block;
   background: rgba(26, 26, 26, 0.06);
@@ -1543,6 +1612,30 @@ html[data-device='mobile'] .avail-day {
 }
 .sync-btn {
   font-size: 0.65rem;
+}
+
+/* ── Open invoices list inside student progress block ─────────────── */
+.course-invoice-list {
+  margin-top: 0.5rem;
+}
+.course-invoice-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.2rem 0 0;
+}
+.course-invoice-list-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 0.2rem;
+}
+.course-invoice-row {
+  font-size: 0.8rem;
+  padding: 0.15rem 0;
+}
+.course-invoice-number {
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 /* ── Student progress block (inside course detail) ────────────────── */

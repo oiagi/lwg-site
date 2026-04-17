@@ -85,6 +85,11 @@ export async function createCourseCalendarEvent({
 /**
  * Fetch expanded single events from Google Calendar matching a course code.
  *
+ * Starts from 90 days ago so we don't blow past the 250-event cap with
+ * legacy sessions, and matches the course code as a prefix followed by a
+ * non-alphanumeric boundary — otherwise "12345" would false-positive on a
+ * summary starting with "123456".
+ *
  * @param {object} opts
  * @param {string} opts.accessToken
  * @param {string} opts.calendarId
@@ -92,23 +97,34 @@ export async function createCourseCalendarEvent({
  * @returns {Promise<{active: object[], cancelled: object[]}>}
  */
 export async function fetchCourseEvents({ accessToken, calendarId, courseCode }) {
+  const timeMin = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
-      `q=${encodeURIComponent(courseCode)}&singleEvents=true&orderBy=startTime&maxResults=250`,
+      `q=${encodeURIComponent(courseCode)}` +
+      `&singleEvents=true&orderBy=startTime&maxResults=250` +
+      `&timeMin=${encodeURIComponent(timeMin)}`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
   );
 
   if (!res.ok) {
     const err = await res.text();
     console.error('Calendar fetch error:', err);
-    throw new Error('Calendar API error');
+    throw new Error(`Calendar API error: ${err.slice(0, 200)}`);
   }
 
   const data = await res.json();
   const items = data.items || [];
 
+  const matches = (e) => {
+    const s = e.summary || '';
+    if (!s.startsWith(courseCode)) return false;
+    const next = s.charAt(courseCode.length);
+    return next === '' || /[^A-Za-z0-9]/.test(next);
+  };
+
   return {
-    active: items.filter((e) => e.summary?.startsWith(courseCode) && e.status !== 'cancelled'),
-    cancelled: items.filter((e) => e.summary?.startsWith(courseCode) && e.status === 'cancelled'),
+    active: items.filter((e) => matches(e) && e.status !== 'cancelled'),
+    cancelled: items.filter((e) => matches(e) && e.status === 'cancelled'),
   };
 }

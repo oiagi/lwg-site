@@ -43,24 +43,16 @@ function getGroupType(booking) {
   return 'group';
 }
 
-function getCoursePrefix(groupType) {
-  return groupType === 'private' ? 'P' : groupType === 'duo' ? 'D' : 'G';
-}
-
 function getLevelCode(booking) {
   if (booking.language === 'Swiss German') return 'CH';
   if (booking.service === 'tutoring') return 'SUB';
   return booking.level || 'XX';
 }
 
-async function getNextCourseCode(prefix, levelCode, env) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/get_next_course_code`, {
-    method: 'POST',
-    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify({ prefix, level_code: levelCode }),
-  });
-  if (!res.ok) throw new Error(`Course code error: ${await res.text()}`);
-  return res.json();
+// 5-digit random course code (10000–99999). Uniqueness is enforced by the
+// courses.course_code unique index; callers retry on insert collision.
+function generateCourseCode() {
+  return String(10000 + Math.floor(Math.random() * 90000));
 }
 
 // ── Main handler ─────────────────────────────────────────────────────
@@ -76,6 +68,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     sessions_total,
     first_session_at,
     duration_minutes,
+    session_length_minutes,
+    price_per_session,
+    location,
     course_code_override,
     booking_data,
     contact_data;
@@ -86,6 +81,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       sessions_total,
       first_session_at,
       duration_minutes = 50,
+      session_length_minutes,
+      price_per_session,
+      location,
       course_code_override,
       booking_data,
       contact_data,
@@ -141,11 +139,20 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   let courseCode = course_code_override;
   if (!courseCode) {
-    const prefix = getCoursePrefix(groupType);
-    try {
-      courseCode = await getNextCourseCode(prefix, levelCode, env);
-    } catch (err) {
-      console.error('Course code error:', err);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidate = generateCourseCode();
+      const check = await fetch(
+        `${SUPABASE_URL}/rest/v1/courses?course_code=eq.${candidate}&select=id`,
+        { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
+      );
+      const existing = await check.json();
+      if (Array.isArray(existing) && existing.length === 0) {
+        courseCode = candidate;
+        break;
+      }
+    }
+    if (!courseCode) {
+      console.error('Course code generation: exhausted retries');
       return errorResponse('Could not generate course code');
     }
   }
@@ -188,6 +195,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         participants,
         sessions_total: sessions_total || null,
         sessions_completed: 0,
+        session_length_minutes: session_length_minutes || duration_minutes || null,
+        price_per_session: price_per_session ?? null,
+        location: location || null,
         recurrence_rule: recurrenceRule,
         calendar_event_id: calendarEventId,
         enquiry_id: enquiry_id || null,
@@ -237,14 +247,17 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const studentIds = [];
   for (const p of participants) {
     try {
-      const sid = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-        first_name: p.firstName,
-        last_name: p.lastName,
-        email: p.email,
-        phone: p.phone,
-        postcode: p.postcode,
-        source,
-      });
+      // Existing student was picked from autocomplete: skip dedup, use id directly.
+      const sid = p.studentId
+        ? p.studentId
+        : await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+            first_name: p.firstName,
+            last_name: p.lastName,
+            email: p.email,
+            phone: p.phone,
+            postcode: p.postcode,
+            source,
+          });
       studentIds.push(sid);
       await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
         method: 'POST',

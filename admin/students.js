@@ -227,38 +227,7 @@ function renderStudentDetail(container, s) {
       </p>
     </div>`;
 
-  const prefParts = [];
-  if (s.service) prefParts.push(['Service', esc(s.service)]);
-  if (s.target_language) prefParts.push(['Target', esc(s.target_language)]);
-  if (s.native_language) prefParts.push(['Native', esc(s.native_language)]);
-  if (s.current_level) prefParts.push(['Level', esc(s.current_level)]);
-  if (s.course_type) prefParts.push(['Size', esc(s.course_type)]);
-  if (s.course_format) prefParts.push(['Format', esc(s.course_format)]);
-  if (s.location) prefParts.push(['Location', esc(s.location)]);
-  if (s.grade) prefParts.push(['Grade', esc(s.grade)]);
-  if (s.subjects) prefParts.push(['Subjects', esc(s.subjects)]);
-  const prefsHtml = prefParts.length
-    ? prefParts
-        .map(
-          ([k, v]) =>
-            `<span class="detail-body" style="display:inline-block;margin-right:1rem;"><span class="detail-muted">${k}:</span> ${v}</span>`
-        )
-        .join('')
-    : '<span class="detail-muted">none set</span>';
-
-  const adminParts = [];
-  if (s.rate_per_session)
-    adminParts.push(['Rate', `${esc(s.rate_per_session)} ${esc(s.currency || 'CHF')}`]);
-  if (s.payment_method) adminParts.push(['Payment', esc(s.payment_method)]);
-  if (s.referral_source) adminParts.push(['Referral', esc(s.referral_source)]);
-  const adminHtml = adminParts.length
-    ? adminParts
-        .map(
-          ([k, v]) =>
-            `<span class="detail-body" style="display:inline-block;margin-right:1rem;"><span class="detail-muted">${k}:</span> ${v}</span>`
-        )
-        .join('')
-    : '';
+  const adminHtml = renderAdminSection(s);
 
   container.innerHTML = `
     ${breadcrumb}
@@ -280,27 +249,96 @@ function renderStudentDetail(container, s) {
       </div>
     </div>
     <div class="detail-section">
-      <p class="detail-meta">Course preferences</p>
-      <div>${prefsHtml}</div>
-      ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
-      ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
-    </div>
-    ${
-      adminHtml || s.progress_notes
-        ? `
-    <div class="detail-section">
       <p class="detail-meta">Admin</p>
-      <div>${adminHtml}</div>
-      ${s.progress_notes ? '<p class="detail-note">' + esc(s.progress_notes) + '</p>' : ''}
-    </div>`
-        : ''
-    }
+      ${adminHtml}
+    </div>
     ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+// Admin section: one read-only row per enrolled course. Values come directly
+// from the course record; open charges are the sum of the student's unpaid
+// invoices linked to that course.
+function renderAdminSection(s) {
+  const courses = s.courses || [];
+  const invoices = s.invoices || [];
+
+  const openByCourse = {};
+  for (const inv of invoices) {
+    if (inv.status === 'paid' || !inv.course_id) continue;
+    openByCourse[inv.course_id] =
+      (openByCourse[inv.course_id] || 0) + Number(inv.total_amount || 0);
+  }
+
+  const metaRows = [
+    ['status', esc(statusLabel(s))],
+    ['payment method', esc(s.payment_method) || '—'],
+    ['VAT number', esc(s.vat_number) || '—'],
+  ]
+    .map(
+      ([k, v]) =>
+        `<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`
+    )
+    .join('');
+
+  const metaBlock = `<div class="admin-meta-grid">${metaRows}</div>`;
+
+  const notesBlock = s.progress_notes ? `<p class="detail-note">${esc(s.progress_notes)}</p>` : '';
+
+  if (!courses.length) {
+    return `${metaBlock}${notesBlock}<p class="detail-muted" style="margin-top:0.8rem;">No courses enrolled yet.</p>`;
+  }
+
+  const courseRows = courses
+    .map((c) => {
+      const currency = esc(c.currency || 'CHF');
+      const priceCell =
+        c.price_per_session !== null && c.price_per_session !== undefined
+          ? `${Number(c.price_per_session).toFixed(2)} ${currency}`
+          : '—';
+      const lengthCell = c.session_length_minutes ? `${c.session_length_minutes} min` : '—';
+      const openAmount = openByCourse[c.id] || 0;
+      const openCell = openAmount
+        ? `<span class="charges-open">${openAmount.toFixed(2)} ${currency}</span>`
+        : '<span class="detail-muted">none</span>';
+      return `
+      <tr>
+        <td class="admin-course-code">${esc(c.course_code) || '—'}</td>
+        <td>${c.sessions_total !== null && c.sessions_total !== undefined ? esc(String(c.sessions_total)) : '<span class="detail-muted">open</span>'}</td>
+        <td>${lengthCell}</td>
+        <td>${priceCell}</td>
+        <td>${openCell}</td>
+        <td>${esc(c.level) || '—'}</td>
+        <td>${esc(c.service) || '—'}</td>
+        <td>${esc(c.location) || '—'}</td>
+      </tr>`;
+    })
+    .join('');
+
+  const courseTable = `
+    <div class="admin-course-table-wrap">
+      <table class="admin-course-table">
+        <thead>
+          <tr>
+            <th>course</th>
+            <th>sessions</th>
+            <th>length</th>
+            <th>price/session</th>
+            <th>open charges</th>
+            <th>level</th>
+            <th>subject</th>
+            <th>location</th>
+          </tr>
+        </thead>
+        <tbody>${courseRows}</tbody>
+      </table>
+    </div>`;
+
+  return `${metaBlock}${courseTable}${notesBlock}`;
 }
 
 export function backToCourse(courseId) {
@@ -328,17 +366,6 @@ export function openStudentModal(existingData) {
     'sm-ec-phone',
     'sm-ec-email',
     'sm-ec-relationship',
-    'sm-service',
-    'sm-native-lang',
-    'sm-target-lang',
-    'sm-level',
-    'sm-grade',
-    'sm-subjects',
-    'sm-learning-goals',
-    'sm-desired-start',
-    'sm-course-type',
-    'sm-course-format',
-    'sm-location',
     'sm-billing-name',
     'sm-billing-phone',
     'sm-billing-street',
@@ -346,10 +373,8 @@ export function openStudentModal(existingData) {
     'sm-billing-postcode',
     'sm-billing-city',
     'sm-billing-email',
-    'sm-rate',
     'sm-vat',
     'sm-payment-method',
-    'sm-referral',
     'sm-notes',
   ];
   allFields.forEach((id) => {
@@ -381,17 +406,6 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-ec-phone').value = existingData.ec_phone || '';
     document.getElementById('sm-ec-email').value = existingData.ec_email || '';
     document.getElementById('sm-ec-relationship').value = existingData.ec_relationship || '';
-    document.getElementById('sm-service').value = existingData.service || '';
-    document.getElementById('sm-native-lang').value = existingData.native_language || '';
-    document.getElementById('sm-target-lang').value = existingData.target_language || '';
-    document.getElementById('sm-level').value = existingData.current_level || '';
-    document.getElementById('sm-grade').value = existingData.grade || '';
-    document.getElementById('sm-subjects').value = existingData.subjects || '';
-    document.getElementById('sm-learning-goals').value = existingData.learning_goals || '';
-    document.getElementById('sm-desired-start').value = existingData.desired_start_date || '';
-    document.getElementById('sm-course-type').value = existingData.course_type || '';
-    document.getElementById('sm-course-format').value = existingData.course_format || '';
-    document.getElementById('sm-location').value = existingData.location || '';
     document.getElementById('sm-billing-name').value = existingData.billing_name || '';
     document.getElementById('sm-billing-phone').value = existingData.billing_phone || '';
     document.getElementById('sm-billing-email').value = existingData.billing_email || '';
@@ -419,10 +433,8 @@ export function openStudentModal(existingData) {
         document.getElementById('sm-billing-city').value = cityM[2];
       }
     }
-    document.getElementById('sm-rate').value = existingData.rate_per_session || '';
     document.getElementById('sm-vat').value = existingData.vat_number || '';
     document.getElementById('sm-payment-method').value = existingData.payment_method || '';
-    document.getElementById('sm-referral').value = existingData.referral_source || '';
     document.getElementById('sm-notes').value = existingData.progress_notes || '';
     // Resolve status from status field, falling back to active boolean for old records
     const resolvedStatus =
@@ -437,7 +449,6 @@ export function openStudentModal(existingData) {
     existingData?.billing_name
   );
   resetBillingToggle(hasBilling);
-  resetServiceToggle(existingData?.service);
 
   document.getElementById('student-modal').classList.add('open');
 }
@@ -467,22 +478,6 @@ function resetBillingToggle(hasBillingData) {
       });
     }
   };
-}
-
-function resetServiceToggle(service) {
-  const sel = document.getElementById('sm-service');
-  const langFields = document.getElementById('sm-lang-fields');
-  const tutFields = document.getElementById('sm-tutoring-fields');
-
-  function apply(val) {
-    const isTutoring = val === 'tutoring' || val === 'gymivorbereitung';
-    langFields.style.display = isTutoring ? 'none' : 'contents';
-    tutFields.style.display = val === 'tutoring' ? 'contents' : 'none';
-  }
-
-  sel.value = service || '';
-  apply(sel.value);
-  sel.onchange = (e) => apply(e.target.value);
 }
 
 export function closeStudentModal() {
@@ -530,27 +525,6 @@ export async function submitStudent() {
     ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
     ec_email: document.getElementById('sm-ec-email').value.trim() || null,
     ec_relationship: document.getElementById('sm-ec-relationship').value.trim() || null,
-    service: document.getElementById('sm-service').value || null,
-    ...(document.getElementById('sm-service').value === 'tutoring'
-      ? {
-          native_language: null,
-          target_language: null,
-          current_level: null,
-          grade: document.getElementById('sm-grade').value || null,
-          subjects: document.getElementById('sm-subjects').value.trim() || null,
-        }
-      : {
-          native_language: document.getElementById('sm-native-lang').value.trim() || null,
-          target_language: document.getElementById('sm-target-lang').value || null,
-          current_level: document.getElementById('sm-level').value || null,
-          grade: null,
-          subjects: null,
-        }),
-    learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
-    desired_start_date: document.getElementById('sm-desired-start').value || null,
-    course_type: document.getElementById('sm-course-type').value || null,
-    course_format: document.getElementById('sm-course-format').value || null,
-    location: document.getElementById('sm-location').value || null,
     ...(document.getElementById('sm-billing-separate').checked
       ? {
           billing_name: document.getElementById('sm-billing-name').value.trim() || null,
@@ -571,12 +545,8 @@ export async function submitStudent() {
           billing_city: null,
           billing_email: null,
         }),
-    rate_per_session: document.getElementById('sm-rate').value
-      ? parseFloat(document.getElementById('sm-rate').value)
-      : null,
     vat_number: document.getElementById('sm-vat').value.trim() || null,
     payment_method: document.getElementById('sm-payment-method').value || null,
-    referral_source: document.getElementById('sm-referral').value.trim() || null,
     progress_notes: document.getElementById('sm-notes').value.trim() || null,
     status: document.getElementById('sm-status').value,
   };

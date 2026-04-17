@@ -37,6 +37,13 @@ import {
   submitStudent,
   deleteStudent,
 } from './students.js';
+import {
+  exportStudents,
+  openImportModal,
+  closeImportModal,
+  handleImportFile,
+  submitImport,
+} from './excel.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
 import { trapFocus, releaseFocus } from './helpers.js';
@@ -80,6 +87,11 @@ const actions = {
   editStudent,
   submitStudent,
   deleteStudent,
+  exportStudents,
+  openImportModal,
+  closeImportModal,
+  handleImportFile,
+  submitImport,
   // Teachers
   authoriseTeacher,
   // Availability

@@ -58,7 +58,7 @@
             <select id="nc-teacher"><option value="">loading…</option></select>
           </div>
           <div class="modal-field">
-            <label>Service</label>
+            <label>Subject</label>
             <select id="nc-service">
               <option value="language course">Language course</option>
               <option value="exam preparation">Exam preparation</option>
@@ -67,7 +67,7 @@
             </select>
           </div>
           <div class="modal-field">
-            <label>Level <span class="label-hint">(leave blank for tutoring)</span></label>
+            <label>Course level <span class="label-hint">(leave blank for tutoring)</span></label>
             <select id="nc-level">
               <option value="">—</option>
               <option>A1</option><option>A2</option><option>B1</option>
@@ -77,16 +77,35 @@
             </select>
           </div>
           <div class="modal-field">
-            <label>Group type</label>
+            <label>Group size</label>
             <select id="nc-group">
-              <option value="private">Private</option>
-              <option value="duo">Duo</option>
-              <option value="group">Group</option>
+              <option value="private">Private (1)</option>
+              <option value="duo">Duo (2)</option>
+              <option value="group">Group (3+)</option>
             </select>
           </div>
           <div class="modal-field">
-            <label>Sessions in block <span class="label-hint">(leave blank for open-ended)</span></label>
+            <label>Number of sessions <span class="label-hint">(leave blank for open-ended)</span></label>
             <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
+          </div>
+          <div class="modal-field">
+            <label>Session length (min)</label>
+            <input type="number" id="nc-session-length" min="15" step="5" value="50" placeholder="50">
+          </div>
+          <div class="modal-field">
+            <label>Price per session <span class="label-hint">(CHF)</span></label>
+            <input type="number" id="nc-price" min="0" step="0.01" placeholder="e.g. 80">
+          </div>
+          <div class="modal-field">
+            <label>Location</label>
+            <select id="nc-location">
+              <option value="">—</option>
+              <option value="online">Online</option>
+              <option value="teacher's home">Teacher's home</option>
+              <option value="student's home">Student's home</option>
+              <option value="company">Company</option>
+              <option value="classroom">Classroom</option>
+            </select>
           </div>
           <div class="modal-field">
             <label>First session date &amp; time</label>
@@ -129,7 +148,11 @@
           <button class="filter-btn" data-student-status="all" data-action="filterStudents" data-args="all">all</button>
           <button class="filter-btn" data-student-status="inactive" data-action="filterStudents" data-args="inactive">inactive</button>
         </div>
-        <button class="new-course-btn" data-action="openStudentModal">+ new student</button>
+        <div class="students-header-actions">
+          <button class="secondary-btn" id="students-export-btn" data-action="exportStudents">export xlsx</button>
+          <button class="secondary-btn" data-action="openImportModal">import xlsx</button>
+          <button class="new-course-btn" data-action="openStudentModal">+ new student</button>
+        </div>
       </div>
       <div class="students-layout">
         <div class="students-sidebar">
@@ -197,133 +220,8 @@
         </section>
 
         <section class="modal-section">
-        <p class="modal-section-label">Course preferences</p>
-        <div class="modal-grid">
-          <div class="modal-field">
-            <label>Service type</label>
-            <select id="sm-service">
-              <option value="">—</option>
-              <option value="language course">Language course</option>
-              <option value="exam preparation">Exam preparation</option>
-              <option value="tutoring">Tutoring</option>
-              <option value="gymivorbereitung">Gymivorbereitung</option>
-            </select>
-          </div>
-          <div id="sm-lang-fields" style="display:contents;">
-            <div class="modal-field"><label>Native language</label><input type="text" id="sm-native-lang" placeholder="e.g. German"></div>
-            <div class="modal-field">
-              <label>Target language</label>
-              <select id="sm-target-lang">
-                <option value="">—</option>
-                <option value="German">German</option>
-                <option value="Swiss German">Swiss German</option>
-                <option value="English">English</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="modal-field">
-              <label>Current level</label>
-              <select id="sm-level">
-                <option value="">—</option>
-                <optgroup label="Language course">
-                  <option>A1</option><option>A2</option><option>B1</option>
-                  <option>B2</option><option>C1</option><option>C2</option>
-                </optgroup>
-                <optgroup label="Exam preparation">
-                  <option value="Cambridge">Cambridge</option>
-                  <option value="TOEFL">TOEFL</option>
-                  <option value="IELTS">IELTS</option>
-                  <option value="Goethe">Goethe</option>
-                  <option value="TELC">TELC</option>
-                </optgroup>
-                <optgroup label="Tutoring">
-                  <option value="Primarschule">Primarschule</option>
-                  <option value="Sekundarschule">Sekundarschule</option>
-                  <option value="Gymnasium">Gymnasium</option>
-                </optgroup>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          <div id="sm-tutoring-fields" style="display:none;">
-            <div class="modal-field">
-              <label>School level / grade</label>
-              <select id="sm-grade">
-                <option value="">—</option>
-                <option>Primar</option>
-                <option>Sekundar</option>
-                <option>Langzeitgymnasium</option>
-                <option>Kurzzeitgymnasium</option>
-                <option>BMS</option>
-                <option>EFZ</option>
-                <option>FMS</option>
-                <option>EBA</option>
-              </select>
-            </div>
-            <div class="modal-field">
-              <label>Subjects</label>
-              <input type="text" id="sm-subjects" placeholder="e.g. Mathematik, Englisch">
-            </div>
-          </div>
-          <div class="modal-field">
-            <label>Size</label>
-            <select id="sm-course-type">
-              <option value="">—</option>
-              <option value="individual">Individual</option>
-              <option value="2 people">2 people</option>
-              <option value="3-5 people">3–5 people</option>
-            </select>
-          </div>
-          <div class="modal-field">
-            <label>Course format</label>
-            <select id="sm-course-format">
-              <option value="">—</option>
-              <option value="online">Online</option>
-              <option value="in-person">In-person</option>
-              <option value="flexible">Flexible</option>
-            </select>
-          </div>
-          <div class="modal-field">
-            <label>Location</label>
-            <select id="sm-location">
-              <option value="">—</option>
-              <option value="my home">My home</option>
-              <option value="my company">My company</option>
-              <option value="teacher's home">Teacher's home</option>
-              <option value="classroom">Classroom</option>
-              <option value="online">Online</option>
-            </select>
-          </div>
-          <div class="modal-field"><label>Desired start date</label><input type="date" id="sm-desired-start"></div>
-          <div class="modal-field full"><label>Learning goals</label><input type="text" id="sm-learning-goals" placeholder="e.g. Improve conversational German for work"></div>
-        </div>
-        </section>
-
-        <section class="modal-section">
           <p class="modal-section-label">Admin</p>
           <div class="modal-grid">
-            <div class="modal-field"><label>Rate per session (CHF)</label><input type="number" id="sm-rate" step="0.01" placeholder="e.g. 80"></div>
-            <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
-            <div class="modal-field">
-              <label>Payment method</label>
-              <select id="sm-payment-method">
-                <option value="">—</option>
-                <option value="bank">Bank transfer</option>
-                <option value="twint">Twint</option>
-              </select>
-            </div>
-            <div class="modal-field">
-              <label>Referral source</label>
-              <select id="sm-referral">
-                <option value="">—</option>
-                <option value="Google">Google</option>
-                <option value="Social media">Social media</option>
-                <option value="Friend or family">Friend or family</option>
-                <option value="School or university">School or university</option>
-                <option value="Company">Company</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
             <div class="modal-field">
               <label>Status</label>
               <select id="sm-status">
@@ -332,6 +230,15 @@
                 <option value="inactive">inactive</option>
               </select>
             </div>
+            <div class="modal-field">
+              <label>Payment method</label>
+              <select id="sm-payment-method">
+                <option value="">—</option>
+                <option value="bank">Bank transfer</option>
+                <option value="twint">Twint</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
             <div class="modal-field full"><label>Notes</label><input type="text" id="sm-notes" placeholder="Internal notes"></div>
           </div>
         </section>
@@ -341,6 +248,28 @@
           <button class="modal-submit" id="sm-submit" data-action="submitStudent">save student</button>
         </div>
         <p class="modal-msg" id="sm-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Import students modal ─────────────────────────────────────── -->
+    <div class="modal-overlay" id="import-modal">
+      <div class="modal">
+        <h2>import students</h2>
+        <p class="label-hint" style="margin-bottom:0.8rem;">
+          Upload an .xlsx file with column headers matching student fields
+          (first_name, last_name, email, phone, status, …). Rows with a
+          matching email are updated; the rest are created as new students.
+        </p>
+        <div class="modal-field">
+          <label>Excel file</label>
+          <input type="file" id="import-file" accept=".xlsx,.xls,.csv" data-action-change="handleImportFile">
+        </div>
+        <div id="import-preview" style="margin-top:0.8rem;"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeImportModal">cancel</button>
+          <button class="modal-submit" id="import-submit" data-action="submitImport" disabled>import</button>
+        </div>
+        <p class="modal-msg" id="import-msg"></p>
       </div>
     </div>
 
