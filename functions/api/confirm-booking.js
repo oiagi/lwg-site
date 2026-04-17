@@ -43,24 +43,16 @@ function getGroupType(booking) {
   return 'group';
 }
 
-function getCoursePrefix(groupType) {
-  return groupType === 'private' ? 'P' : groupType === 'duo' ? 'D' : 'G';
-}
-
 function getLevelCode(booking) {
   if (booking.language === 'Swiss German') return 'CH';
   if (booking.service === 'tutoring') return 'SUB';
   return booking.level || 'XX';
 }
 
-async function getNextCourseCode(prefix, levelCode, env) {
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/get_next_course_code`, {
-    method: 'POST',
-    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify({ prefix, level_code: levelCode }),
-  });
-  if (!res.ok) throw new Error(`Course code error: ${await res.text()}`);
-  return res.json();
+// 5-digit random course code (10000–99999). Uniqueness is enforced by the
+// courses.course_code unique index; callers retry on insert collision.
+function generateCourseCode() {
+  return String(10000 + Math.floor(Math.random() * 90000));
 }
 
 // ── Main handler ─────────────────────────────────────────────────────
@@ -141,11 +133,20 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   let courseCode = course_code_override;
   if (!courseCode) {
-    const prefix = getCoursePrefix(groupType);
-    try {
-      courseCode = await getNextCourseCode(prefix, levelCode, env);
-    } catch (err) {
-      console.error('Course code error:', err);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidate = generateCourseCode();
+      const check = await fetch(
+        `${SUPABASE_URL}/rest/v1/courses?course_code=eq.${candidate}&select=id`,
+        { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
+      );
+      const existing = await check.json();
+      if (Array.isArray(existing) && existing.length === 0) {
+        courseCode = candidate;
+        break;
+      }
+    }
+    if (!courseCode) {
+      console.error('Course code generation: exhausted retries');
       return errorResponse('Could not generate course code');
     }
   }
