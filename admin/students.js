@@ -5,6 +5,7 @@ import { MESSAGE_TIMEOUT_MS } from './constants.js';
 
 let currentStudentFilter = 'active';
 let selectedStudentId = null;
+let fromCourseContext = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -41,6 +42,18 @@ export async function loadStudents(status = 'active') {
   }
 }
 
+function subjectLabel(s) {
+  if (s.target_language) return s.target_language;
+  if (s.service === 'tutoring' || s.service === 'gymivorbereitung') return 'Tutoring';
+  if (s.service === 'exam preparation') return 'Exam prep';
+  if (s.service === 'language course') return 'Language';
+  return '';
+}
+
+function statusLabel(s) {
+  return s.status || (s.active === false ? 'inactive' : 'active');
+}
+
 function renderStudents(students) {
   const list = document.getElementById('student-list');
   if (!students.length) {
@@ -48,24 +61,48 @@ function renderStudents(students) {
     return;
   }
 
-  list.innerHTML = students
+  const header = `
+    <div class="student-list-header">
+      <span>Ref</span>
+      <span>Name</span>
+      <span style="text-align:right;">Status</span>
+    </div>`;
+
+  const rows = students
     .map((s) => {
-      const name = [s.first_name, s.last_name].filter(Boolean).join(' ');
+      const name = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
+      const ref = esc(s.customer_reference) || '—';
+      const subject = esc(subjectLabel(s));
+      const level = esc(s.current_level || '');
+      const status = statusLabel(s);
+      const subParts = [subject, level].filter(Boolean);
+      const subLine = subParts.length
+        ? subParts.join('<span class="sep">·</span>')
+        : '<span class="detail-muted">no course set</span>';
       return `
     <div class="student-row" id="student-${s.id}"
          role="option" aria-selected="false" tabindex="0"
          data-action="selectStudent" data-args="${s.id}">
-      <span class="student-name">${esc(name)}</span>
-      <span class="student-email">${esc(s.email) || '—'}</span>
+      <span class="student-ref">${ref}</span>
+      <span class="student-name">${name}</span>
+      <span class="student-status ${esc(status)}">${esc(status)}</span>
+      <span class="student-sub">${subLine}</span>
     </div>`;
     })
     .join('');
+
+  list.innerHTML = header + rows;
 }
 
 export async function selectStudent(id) {
   if (selectedStudentId === id) return;
   selectedStudentId = id;
+  // Selections triggered from within the students tab clear any course breadcrumb.
+  fromCourseContext = null;
+  await fetchAndRenderStudent(id);
+}
 
+async function fetchAndRenderStudent(id) {
   document.querySelectorAll('.student-row').forEach((row) => {
     const isSelected = row.id === 'student-' + id;
     row.classList.toggle('selected', isSelected);
@@ -86,6 +123,38 @@ export async function selectStudent(id) {
   }
 }
 
+export async function selectStudentFromCourse(studentId, courseId, courseCode) {
+  fromCourseContext = { courseId, courseCode };
+  // Skip the default loadStudents so loadStudentsKeepingContext can scroll-to-row instead.
+  const ev = new CustomEvent('admin:switchTab', {
+    detail: { tab: 'students', skipReload: true },
+  });
+  document.dispatchEvent(ev);
+  selectedStudentId = studentId;
+  await loadStudentsKeepingContext(currentStudentFilter, studentId);
+  await fetchAndRenderStudent(studentId);
+}
+
+async function loadStudentsKeepingContext(status, keepSelectedId) {
+  const list = document.getElementById('student-list');
+  if (!list.querySelector('.student-row')) {
+    list.innerHTML = '<div class="loading-state">loading…</div>';
+  }
+  try {
+    const qs = status !== 'all' ? `?status=${status}` : '';
+    const res = await apiFetch('/api/get-students' + qs);
+    if (!res.ok) throw new Error();
+    const students = await res.json();
+    renderStudents(students);
+    if (keepSelectedId) {
+      const row = document.getElementById('student-' + keepSelectedId);
+      if (row) row.scrollIntoView({ block: 'nearest' });
+    }
+  } catch {
+    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+  }
+}
+
 function renderStudentDetail(container, s) {
   const coursesHtml =
     s.courses && s.courses.length
@@ -97,69 +166,132 @@ function renderStudentDetail(container, s) {
           .join('')
       : '<span class="detail-muted">no courses</span>';
 
+  const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
+  const status = statusLabel(s);
+  const refLine = s.customer_reference
+    ? `<span class="detail-header-ref">${esc(s.customer_reference)}</span>`
+    : '';
+
+  const breadcrumb = fromCourseContext
+    ? `<button class="detail-breadcrumb" data-action="backToCourse" data-args="${esc(fromCourseContext.courseId)}">
+         <span class="crumb-arrow">←</span> back to course ${esc(fromCourseContext.courseCode || '')}
+       </button>`
+    : '';
+
+  const hasPersonalAddress = s.street || s.postcode || s.city;
+  const hasBillingAddress =
+    s.billing_street || s.billing_postcode || s.billing_city || s.billing_name;
+
+  const personalBlock = `
+    <div>
+      <p class="detail-meta">Personal</p>
+      <p class="detail-body">
+        ${fullName}<br>
+        ${s.email ? esc(s.email) + '<br>' : ''}
+        ${s.phone ? esc(s.phone) + '<br>' : ''}
+        ${hasPersonalAddress ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' + esc([s.postcode, s.city].filter(Boolean).join(' ')) : '<span class="detail-muted">no address</span>'}
+      </p>
+    </div>`;
+
+  const ecBlock =
+    s.emergency_contact || s.ec_phone || s.ec_email
+      ? `
+    <div>
+      <p class="detail-meta">Emergency contact</p>
+      <p class="detail-body">
+        ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' <span class="detail-muted">(' + esc(s.ec_relationship) + ')</span>' : ''}<br>
+        ${s.ec_phone ? esc(s.ec_phone) + '<br>' : ''}
+        ${s.ec_email ? esc(s.ec_email) : ''}
+      </p>
+    </div>`
+      : `
+    <div>
+      <p class="detail-meta">Emergency contact</p>
+      <p class="detail-body detail-muted">—</p>
+    </div>`;
+
+  const billingBlock = `
+    <div>
+      <p class="detail-meta">Billing</p>
+      <p class="detail-body">
+        ${
+          hasBillingAddress
+            ? `${esc(s.billing_name) || fullName}<br>
+               ${s.billing_email ? esc(s.billing_email) + '<br>' : ''}
+               ${s.billing_phone ? esc(s.billing_phone) + '<br>' : ''}
+               ${esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' '))}<br>
+               ${esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))}`
+            : '<span class="detail-muted">same as personal</span>'
+        }
+        ${s.vat_number ? '<br><span class="detail-muted">VAT: ' + esc(s.vat_number) + '</span>' : ''}
+      </p>
+    </div>`;
+
+  const prefParts = [];
+  if (s.service) prefParts.push(['Service', esc(s.service)]);
+  if (s.target_language) prefParts.push(['Target', esc(s.target_language)]);
+  if (s.native_language) prefParts.push(['Native', esc(s.native_language)]);
+  if (s.current_level) prefParts.push(['Level', esc(s.current_level)]);
+  if (s.course_type) prefParts.push(['Size', esc(s.course_type)]);
+  if (s.course_format) prefParts.push(['Format', esc(s.course_format)]);
+  if (s.location) prefParts.push(['Location', esc(s.location)]);
+  if (s.grade) prefParts.push(['Grade', esc(s.grade)]);
+  if (s.subjects) prefParts.push(['Subjects', esc(s.subjects)]);
+  const prefsHtml = prefParts.length
+    ? prefParts
+        .map(
+          ([k, v]) =>
+            `<span class="detail-body" style="display:inline-block;margin-right:1rem;"><span class="detail-muted">${k}:</span> ${v}</span>`
+        )
+        .join('')
+    : '<span class="detail-muted">none set</span>';
+
+  const adminParts = [];
+  if (s.rate_per_session)
+    adminParts.push(['Rate', `${esc(s.rate_per_session)} ${esc(s.currency || 'CHF')}`]);
+  if (s.payment_method) adminParts.push(['Payment', esc(s.payment_method)]);
+  if (s.referral_source) adminParts.push(['Referral', esc(s.referral_source)]);
+  const adminHtml = adminParts.length
+    ? adminParts
+        .map(
+          ([k, v]) =>
+            `<span class="detail-body" style="display:inline-block;margin-right:1rem;"><span class="detail-muted">${k}:</span> ${v}</span>`
+        )
+        .join('')
+    : '';
+
   container.innerHTML = `
-    <div class="detail-grid">
+    ${breadcrumb}
+    <div class="detail-header">
       <div>
-        <p class="detail-meta">personal</p>
-        <p class="detail-body">
-          ${esc(s.first_name)} ${esc(s.last_name)}<br>
-          ${s.email ? '<span class="detail-muted">' + esc(s.email) + '</span><br>' : ''}
-          ${s.phone ? '<span class="detail-muted">' + esc(s.phone) + '</span><br>' : ''}
-          ${s.street || s.street_number ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' : ''}
-          ${s.postcode || s.city ? esc([s.postcode, s.city].filter(Boolean).join(' ')) : ''}
-        </p>
-        ${s.emergency_contact || s.ec_phone || s.ec_email ? `<p class="detail-note">Emergency: ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' (' + esc(s.ec_relationship) + ')' : ''}${s.ec_phone ? ' · ' + esc(s.ec_phone) : ''}${s.ec_email ? ' · ' + esc(s.ec_email) : ''}</p>` : ''}
+        <span class="detail-header-name">${fullName}</span>${refLine}
       </div>
-      <div>
-        <p class="detail-meta">billing</p>
-        <p class="detail-body">
-          ${esc(s.billing_name) || '—'}<br>
-          ${s.billing_email ? '<span class="detail-muted">' + esc(s.billing_email) + '</span><br>' : ''}
-          ${s.billing_phone ? '<span class="detail-muted">' + esc(s.billing_phone) + '</span><br>' : ''}
-          ${
-            s.billing_street || s.billing_postcode
-              ? esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' ')) +
-                '<br>' +
-                esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))
-              : esc(s.billing_address) || '—'
-          }<br>
-          ${s.vat_number ? 'VAT: ' + esc(s.vat_number) : ''}
-        </p>
-      </div>
+      <span class="detail-header-status ${esc(status)}">${esc(status)}</span>
     </div>
     <div class="detail-grid">
+      ${personalBlock}
+      ${ecBlock}
+    </div>
+    <div class="detail-grid">
+      ${billingBlock}
       <div>
-        <p class="detail-meta">preferences</p>
-        <p class="detail-body">
-          ${s.service ? 'Course type: ' + esc(s.service) + '<br>' : ''}
-          ${s.current_level ? 'Level: ' + esc(s.current_level) + '<br>' : ''}
-          ${s.course_type ? 'Size: ' + esc(s.course_type) + '<br>' : ''}
-          ${s.location ? 'Location: ' + esc(s.location) + '<br>' : ''}
-          ${s.course_format ? 'Format: ' + esc(s.course_format) + '<br>' : ''}
-          ${s.native_language ? 'Native: ' + esc(s.native_language) + '<br>' : ''}
-          ${s.target_language ? 'Target: ' + esc(s.target_language) + '<br>' : ''}
-          ${s.grade ? 'Grade: ' + esc(s.grade) + '<br>' : ''}
-          ${s.subjects ? 'Subjects: ' + esc(s.subjects) : ''}
-        </p>
-        ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
-        ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
-      </div>
-      <div>
-        <p class="detail-meta">courses</p>
+        <p class="detail-meta">Courses</p>
         <div>${coursesHtml}</div>
       </div>
     </div>
+    <div class="detail-section">
+      <p class="detail-meta">Course preferences</p>
+      <div>${prefsHtml}</div>
+      ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
+      ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
+    </div>
     ${
-      s.referral_source || s.payment_method || s.rate_per_session || s.progress_notes
+      adminHtml || s.progress_notes
         ? `
     <div class="detail-section">
-      <p class="detail-meta">admin</p>
-      <p class="detail-body">
-        ${s.payment_method ? 'Payment: ' + esc(s.payment_method) + '<br>' : ''}
-        ${s.referral_source ? 'Referral: ' + esc(s.referral_source) + '<br>' : ''}
-        ${s.rate_per_session ? '<strong>' + esc(s.rate_per_session) + ' ' + esc(s.currency || 'CHF') + '</strong> per session<br>' : ''}
-        ${s.progress_notes ? '<span class="detail-muted">' + esc(s.progress_notes) + '</span>' : ''}
-      </p>
+      <p class="detail-meta">Admin</p>
+      <div>${adminHtml}</div>
+      ${s.progress_notes ? '<p class="detail-note">' + esc(s.progress_notes) + '</p>' : ''}
     </div>`
         : ''
     }
@@ -169,6 +301,14 @@ function renderStudentDetail(container, s) {
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+export function backToCourse(courseId) {
+  fromCourseContext = null;
+  const ev = new CustomEvent('admin:switchTab', {
+    detail: { tab: 'courses', openCourseId: courseId },
+  });
+  document.dispatchEvent(ev);
 }
 
 /* ── Student modal ───────────────────────────────────────────────── */
@@ -305,11 +445,14 @@ export function openStudentModal(existingData) {
 function resetBillingToggle(hasBillingData) {
   const cb = document.getElementById('sm-billing-separate');
   const section = document.getElementById('sm-billing-section');
+  const hint = document.getElementById('sm-billing-hint');
   cb.checked = hasBillingData;
   section.style.display = hasBillingData ? 'block' : 'none';
+  if (hint) hint.style.display = hasBillingData ? 'none' : 'block';
   cb.onchange = (e) => {
     const show = e.target.checked;
     section.style.display = show ? 'block' : 'none';
+    if (hint) hint.style.display = show ? 'none' : 'block';
     if (!show) {
       [
         'sm-billing-name',

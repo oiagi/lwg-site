@@ -100,7 +100,10 @@ function renderCourses(courses) {
             (s) => `
       <div class="progress-block">
         <p class="progress-name">
-          ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
+          <button class="student-link" data-action="selectStudentFromCourse"
+            data-args="${s.id},${c.id},${esc(c.course_code || '')}">
+            ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
+          </button>
           ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
         </p>
         <textarea id="notes-${s.id}" class="progress-textarea"

@@ -13,13 +13,28 @@ body {
 }
 body {
   --page-bg: #d6eaf8;
-  background-color: #d6eaf8;
+  --text: #1a1a1a;
+  --text-soft: #333333;
+  --text-muted: #666666;
+  --text-faint: #888888;
+  --border: #c8d8e4;
+  --border-soft: #e0e6ed;
+  background-color: var(--page-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 4rem 1rem 5rem;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 300;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+  font-weight: 400;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.6s ease;
 }
 body.nav-active {
@@ -34,10 +49,10 @@ body.nav-active {
   animation: fadeUp 0.6s ease both;
 }
 #login-screen h1 {
-  font-size: 2rem;
-  font-weight: 300;
-  letter-spacing: 0.08em;
-  color: #1a1a1a;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
   margin-bottom: 2.4rem;
   text-align: center;
 }
@@ -46,10 +61,11 @@ body.nav-active {
 }
 label {
   display: block;
-  font-size: 0.72rem;
-  letter-spacing: 0.15em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text);
   margin-bottom: 0.6rem;
 }
 input[type='password'],
@@ -57,12 +73,12 @@ input[type='email'] {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--text);
   padding: 0.4rem 0;
   font-family: inherit;
-  font-size: 1rem;
-  font-weight: 300;
-  color: #1a1a1a;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text);
   outline: none;
 }
 .error-msg {
@@ -76,13 +92,14 @@ button.submit {
   margin-top: 1rem;
   display: block;
   width: 100%;
-  background: #1a1a1a;
+  background: var(--text);
   color: #d6eaf8;
   border: none;
   padding: 0.9rem;
   font-family: inherit;
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   transition:
@@ -112,10 +129,10 @@ button.submit:hover {
   align-items: center;
 }
 .dashboard-header h1 {
-  font-size: 2rem;
-  font-weight: 300;
-  letter-spacing: 0.08em;
-  color: #1a1a1a;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
 }
 .filter-row {
   display: flex;
@@ -123,11 +140,13 @@ button.submit:hover {
   flex-wrap: wrap;
 }
 .filter-btn {
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  padding: 0.3rem 0.8rem;
-  border: 1px solid #1a1a1a;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--text);
   background: transparent;
+  color: var(--text);
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -135,7 +154,7 @@ button.submit:hover {
     color 0.15s;
 }
 .filter-btn.active {
-  background: #1a1a1a;
+  background: var(--text);
   color: #d6eaf8;
 }
 
@@ -145,18 +164,19 @@ button.submit:hover {
   gap: 0;
   position: relative;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--text);
 }
 .main-tab {
   font-family: inherit;
   font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.6rem 1.4rem;
+  padding: 0.7rem 1.4rem;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #888;
+  color: var(--text-muted);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition:
@@ -164,11 +184,11 @@ button.submit:hover {
     border-color 0.15s;
 }
 .main-tab.active {
-  color: #1a1a1a;
-  border-bottom-color: #1a1a1a;
+  color: var(--text);
+  border-bottom-color: var(--text);
 }
 .main-tab:hover {
-  color: #1a1a1a;
+  color: var(--text);
 }
 .logout-btn {
   position: absolute;
@@ -177,11 +197,12 @@ button.submit:hover {
   transform: translateY(-50%);
   font-family: inherit;
   font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   background: transparent;
-  border: 1px solid #aaa;
-  color: #888;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
   padding: 0.3rem 0.8rem;
   cursor: pointer;
   transition:
@@ -189,8 +210,8 @@ button.submit:hover {
     border-color 0.15s;
 }
 .logout-btn:hover {
-  color: #1a1a1a;
-  border-color: #1a1a1a;
+  color: var(--text);
+  border-color: var(--text);
 }
 
 /* ── Course list ──────────────────────────────────────────────── */
@@ -379,13 +400,14 @@ button.submit:hover {
 }
 .modal {
   background: #fff;
-  padding: 2rem 2rem 0;
+  padding: 0 2rem 0;
   width: min(92vw, 600px);
-  max-height: min(85vh, 700px);
+  max-height: min(88vh, 780px);
   overflow-y: auto;
   margin: auto;
   flex-shrink: 0;
   animation: fadeUp 0.2s ease both;
+  border-radius: 2px;
 }
 .modal.modal-wide {
   width: min(92vw, 900px);
@@ -399,11 +421,23 @@ button.submit:hover {
   grid-column: 1 / -1;
 }
 .modal h2 {
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 1.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text);
+  padding: 1.6rem 0 1.2rem;
+  margin: 0 -2rem 0;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 5;
+  border-bottom: 1px solid var(--border-soft);
+}
+.modal > h2 + * {
+  margin-top: 1.4rem;
 }
 .modal-field {
   margin-bottom: 1.2rem;
@@ -411,9 +445,10 @@ button.submit:hover {
 .modal-field label {
   display: block;
   font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #aaa;
+  color: var(--text);
   margin-bottom: 0.4rem;
 }
 .modal-field input,
@@ -421,13 +456,22 @@ button.submit:hover {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #b8c7d4;
   font-family: inherit;
-  font-size: 0.88rem;
-  font-weight: 300;
-  color: #1a1a1a;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text);
   outline: none;
-  padding: 0.3rem 0;
+  padding: 0.35rem 0;
+  transition: border-color 0.15s;
+}
+.modal-field input:focus,
+.modal-field select:focus {
+  border-bottom-color: var(--text);
+}
+.modal-field input::placeholder {
+  color: #aaa;
+  font-weight: 400;
 }
 .modal-field select {
   appearance: none;
@@ -436,23 +480,26 @@ button.submit:hover {
 .modal-actions {
   display: flex;
   gap: 0.8rem;
-  margin-top: 1.6rem;
+  margin-top: 1.8rem;
   position: sticky;
   bottom: 0;
   background: #fff;
-  padding: 1rem 2rem 1.5rem;
+  padding: 1rem 2rem 1.4rem;
   margin-left: -2rem;
   margin-right: -2rem;
+  border-top: 1px solid var(--border-soft);
+  z-index: 5;
 }
 .modal-submit {
   font-family: inherit;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: #1a1a1a;
+  background: var(--text);
   color: #d6eaf8;
-  border: 1px solid #1a1a1a;
-  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--text);
+  padding: 0.6rem 1.2rem;
   cursor: pointer;
   transition:
     background 0.15s,
@@ -461,22 +508,23 @@ button.submit:hover {
 }
 .modal-submit:hover {
   background: #fff;
-  color: #1a1a1a;
+  color: var(--text);
 }
 .modal-cancel {
   font-family: inherit;
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   background: transparent;
-  color: #aaa;
-  border: 1px solid #ddd;
-  padding: 0.5rem 1.2rem;
+  color: var(--text-muted);
+  border: 1px solid #b8c7d4;
+  padding: 0.6rem 1.2rem;
   cursor: pointer;
 }
 .modal-cancel:hover {
-  color: #1a1a1a;
-  border-color: #1a1a1a;
+  color: var(--text);
+  border-color: var(--text);
 }
 .modal-msg {
   font-size: 0.75rem;
@@ -899,62 +947,177 @@ html[data-device='mobile'] .student-detail-pane {
 }
 
 /* ── Student rows ─────────────────────────────────────────────── */
-.student-row {
-  border-top: 1px solid #eee;
-  padding: 0.6rem 0.8rem;
-  cursor: pointer;
+.student-list-header {
+  display: grid;
+  grid-template-columns: 54px 1fr 70px;
+  gap: 0 0.6rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
-.student-row:last-child {
-  border-bottom: none;
+.student-row {
+  display: grid;
+  grid-template-columns: 54px 1fr 70px;
+  gap: 0.15rem 0.6rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.12s;
 }
 .student-row:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
 }
 .student-row.selected {
-  background: rgba(41, 128, 185, 0.08);
+  background: rgba(26, 26, 26, 0.06);
+  border-left: 3px solid var(--text);
+  padding-left: calc(0.9rem - 3px);
 }
-.student-row:focus {
-  outline: 2px solid rgba(41, 128, 185, 0.4);
+.student-row:focus-visible {
+  outline: 2px solid var(--text);
   outline-offset: -2px;
 }
-.student-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+.student-ref {
+  font-family: 'Inter', monospace;
+  font-feature-settings: 'tnum' 1;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 .student-name {
-  font-size: 0.88rem;
-  color: #1a1a1a;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.25;
 }
-.student-email {
-  font-size: 0.75rem;
-  color: #888;
+.student-sub {
+  grid-column: 2;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.25;
+  margin-top: 0.15rem;
+}
+.student-sub .sep {
+  color: var(--text-faint);
+  margin: 0 0.35rem;
+}
+.student-status {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  justify-self: end;
+  align-self: center;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.student-status.active {
+  color: #27ae60;
+}
+.student-status.prospect {
+  color: #e67e22;
+}
+.student-status.inactive {
+  color: var(--text-faint);
 }
 
 /* ── Students two-panel layout ───────────────────────────────────── */
 .students-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 360px 1fr;
   height: calc(100vh - 14rem);
   overflow: hidden;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.35);
 }
 .students-sidebar {
   overflow-y: auto;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.3);
 }
 .student-detail-pane {
   overflow-y: auto;
-  padding: 0.5rem 0 2rem 1.5rem;
+  padding: 1.2rem 1.6rem 2rem;
 }
 .student-detail-empty {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #aaa;
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+}
+
+/* ── Detail breadcrumb (when opened from a course) ───────────────── */
+.detail-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.6rem 0.3rem 0;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+.detail-breadcrumb:hover {
+  color: var(--text);
+}
+.detail-breadcrumb .crumb-arrow {
+  font-size: 0.9rem;
+}
+
+/* ── Detail header (name + status line at top of student pane) ───── */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.detail-header-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.detail-header-ref {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-left: 0.6rem;
+}
+.detail-header-status {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.detail-header-status.active {
+  color: #27ae60;
+}
+.detail-header-status.prospect {
+  color: #e67e22;
+}
+.detail-header-status.inactive {
+  color: var(--text-faint);
 }
 
 /* ── Attendance checkbox row ────────────────────────────────────── */
@@ -1308,39 +1471,42 @@ html[data-device='mobile'] .avail-day {
 }
 .detail-meta {
   font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #aaa;
-  margin-bottom: 0.4rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
 }
 .detail-body {
-  font-size: 0.82rem;
-  color: #555;
-  line-height: 1.8;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.65;
 }
 .detail-note {
-  font-size: 0.75rem;
-  color: #888;
-  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin-top: 0.4rem;
 }
 .detail-hint {
-  font-size: 0.7rem;
-  color: #aaa;
+  font-size: 0.72rem;
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 .detail-muted {
-  color: #aaa;
+  color: var(--text-muted);
 }
 .detail-error {
   color: #c0392b;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
 }
 .course-tag {
   display: inline-block;
-  background: #f5f5f5;
-  padding: 0.15rem 0.5rem;
+  background: rgba(26, 26, 26, 0.06);
+  padding: 0.25rem 0.6rem;
   border-radius: 3px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
   margin: 0.15rem 0.2rem 0.15rem 0;
 }
 
@@ -1383,12 +1549,32 @@ html[data-device='mobile'] .avail-day {
 .progress-block {
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-soft);
 }
 .progress-name {
-  font-size: 0.78rem;
-  color: #1a1a1a;
-  margin-bottom: 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.student-link {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px dashed transparent;
+  transition: border-color 0.15s;
+}
+.student-link:hover {
+  border-bottom-color: var(--text);
 }
 .progress-textarea {
   width: 100%;
@@ -1439,32 +1625,55 @@ html[data-device='mobile'] .avail-day {
 }
 
 /* ── Modal section labels & helpers ──────────────────────────────── */
+.modal-section {
+  padding: 1.4rem 0 0.2rem;
+  border-top: 1px solid var(--border-soft);
+  margin-top: 0.4rem;
+}
+.modal-section:first-of-type {
+  border-top: none;
+  padding-top: 0.6rem;
+  margin-top: 0;
+}
 .modal-section-label {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #aaa;
-  margin: 1.2rem 0 0.6rem;
+  color: var(--text);
+  margin: 0 0 1rem;
 }
 .modal-section-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.7rem;
-  margin: 1.2rem 0 0.6rem;
+  margin: 0 0 1rem;
+}
+.modal-section-header .modal-section-label {
+  margin: 0;
 }
 .checkbox-label {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-soft);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   cursor: pointer;
-  font-weight: 300;
+}
+.checkbox-label input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--text);
+  cursor: pointer;
 }
 .label-hint {
   font-size: 0.65rem;
-  color: #ccc;
+  font-weight: 400;
+  color: var(--text-faint);
   text-transform: none;
+  letter-spacing: 0.02em;
 }
 .modal-field--relative {
   position: relative;
