@@ -29,6 +29,8 @@ import {
   getCurrentStudentFilter,
   filterStudents,
   selectStudent,
+  selectStudentFromCourse,
+  backToCourse,
   openStudentModal,
   closeStudentModal,
   editStudent,
@@ -71,6 +73,8 @@ const actions = {
   // Students
   filterStudents,
   selectStudent,
+  selectStudentFromCourse,
+  backToCourse,
   openStudentModal,
   closeStudentModal,
   editStudent,
@@ -119,16 +123,32 @@ document.addEventListener('change', (e) => {
 });
 
 /* ── Tab switching ───────────────────────────────────────────────── */
-function switchTab(tab) {
+function switchTab(tab, options = {}) {
   const tabs = TABS;
   for (const t of tabs) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
   }
-  if (tab === 'courses') loadCourses(getCurrentCourseFilter());
-  if (tab === 'students') loadStudents(getCurrentStudentFilter());
+  if (tab === 'courses') {
+    loadCourses(getCurrentCourseFilter()).then(() => {
+      if (options.openCourseId) {
+        const detail = document.getElementById('course-detail-' + options.openCourseId);
+        if (detail) {
+          detail.classList.add('open');
+          const row = document.getElementById('course-' + options.openCourseId);
+          if (row) row.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+      }
+    });
+  }
+  if (tab === 'students' && !options.skipReload) loadStudents(getCurrentStudentFilter());
   if (tab === 'teachers') loadAvailability();
 }
+
+document.addEventListener('admin:switchTab', (e) => {
+  const { tab, ...rest } = e.detail || {};
+  if (tab) switchTab(tab, rest);
+});
 
 /* ── Show dashboard ──────────────────────────────────────────────── */
 function showDashboard() {
