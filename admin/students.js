@@ -297,7 +297,9 @@ function renderAdminSection(s) {
     .map((c) => {
       const currency = esc(c.currency || 'CHF');
       const priceCell =
-        c.price_per_session != null ? `${Number(c.price_per_session).toFixed(2)} ${currency}` : '—';
+        c.price_per_session !== null && c.price_per_session !== undefined
+          ? `${Number(c.price_per_session).toFixed(2)} ${currency}`
+          : '—';
       const lengthCell = c.session_length_minutes ? `${c.session_length_minutes} min` : '—';
       const openAmount = openByCourse[c.id] || 0;
       const openCell = openAmount
@@ -306,7 +308,7 @@ function renderAdminSection(s) {
       return `
       <tr>
         <td class="admin-course-code">${esc(c.course_code) || '—'}</td>
-        <td>${c.sessions_total != null ? esc(String(c.sessions_total)) : '<span class="detail-muted">open</span>'}</td>
+        <td>${c.sessions_total !== null && c.sessions_total !== undefined ? esc(String(c.sessions_total)) : '<span class="detail-muted">open</span>'}</td>
         <td>${lengthCell}</td>
         <td>${priceCell}</td>
         <td>${openCell}</td>

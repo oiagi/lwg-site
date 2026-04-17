@@ -100,7 +100,7 @@ function renderCourses(courses) {
             const openInvoices = (s.open_invoices || [])
               .map((inv) => {
                 const amount =
-                  inv.total_amount != null
+                  inv.total_amount !== null && inv.total_amount !== undefined
                     ? `${Number(inv.total_amount).toFixed(2)} ${esc(inv.currency || 'CHF')}`
                     : '—';
                 const num = esc(inv.invoice_number || '—');
@@ -164,7 +164,7 @@ function renderCourses(courses) {
                 Group size: ${esc(c.group_type) || '—'}<br>
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
-                Price/session: ${c.price_per_session != null ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
+                Price/session: ${c.price_per_session !== null && c.price_per_session !== undefined ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
                 Location: ${esc(c.location) || '—'}
               </p>
             </div>
