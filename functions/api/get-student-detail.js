@@ -67,7 +67,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         { headers: H }
       ),
       fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date`,
+        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date,course_id`,
         { headers: H }
       ),
     ]);
@@ -81,12 +81,20 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const enquiries = enquiriesRes.ok ? await enquiriesRes.json() : [];
     const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
 
+    // Aggregate outstanding balance: sum of unpaid invoices (status !== 'paid')
+    const outstanding_balance = invoices
+      .filter((inv) => inv.status !== 'paid' && inv.status !== 'void')
+      .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+    const outstanding_currency = invoices.find((inv) => inv.currency)?.currency || 'CHF';
+
     return jsonResponse({
       ...student,
       company_name,
       courses,
       enquiries,
       invoices,
+      outstanding_balance,
+      outstanding_currency,
     });
   } catch (err) {
     console.error('Error:', err);

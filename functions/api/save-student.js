@@ -71,6 +71,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'nationality',
     'native_language',
     'target_language',
+    'subject',
     'learning_goals',
     'emergency_contact',
     'ec_phone',

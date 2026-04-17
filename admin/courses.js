@@ -144,10 +144,12 @@ function renderCourses(courses) {
             <div>
               <p class="detail-meta">details</p>
               <p class="detail-body">
-                Service: ${esc(c.service) || '—'}<br>
+                Subject: ${esc(c.subject || c.service) || '—'}<br>
                 Level: ${esc(c.level) || '—'}<br>
                 Group: ${esc(c.group_type) || '—'}<br>
-                Block: ${total ? total + ' sessions' : 'open-ended'}
+                Block: ${total ? total + ' sessions' : 'open-ended'}<br>
+                Session: ${c.session_length_min ? esc(c.session_length_min) + ' min' : '—'}<br>
+                Price/60 min: ${c.price_per_60min != null ? 'CHF ' + esc(Number(c.price_per_60min).toFixed(2)) : '<span class="detail-muted">not set</span>'}
               </p>
             </div>
             <div>
@@ -398,12 +400,20 @@ function attachSearchListeners(i) {
 
 /* ── New course modal ───────────────────────────────────────────── */
 export function openNewCourseModal() {
-  ['nc-teacher', 'nc-service', 'nc-level', 'nc-group', 'nc-sessions', 'nc-datetime'].forEach(
-    (id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
-    }
-  );
+  [
+    'nc-teacher',
+    'nc-subject',
+    'nc-level',
+    'nc-group',
+    'nc-sessions',
+    'nc-datetime',
+    'nc-price',
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
+  });
+  const lenEl = document.getElementById('nc-session-length');
+  if (lenEl) lenEl.value = '60';
   participantCount = 1;
   const container = document.getElementById('nc-participants');
   container.innerHTML = renderParticipantBlock(0);
@@ -484,11 +494,13 @@ export async function submitNewCourse() {
   msgEl.style.display = 'none';
 
   const teacherId = document.getElementById('nc-teacher').value;
-  const service = document.getElementById('nc-service').value;
+  const subject = document.getElementById('nc-subject').value;
   const level = document.getElementById('nc-level').value;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
   const datetime = document.getElementById('nc-datetime').value;
+  const priceRaw = document.getElementById('nc-price').value;
+  const sessionLenRaw = document.getElementById('nc-session-length').value;
 
   if (!teacherId || !datetime) {
     msgEl.textContent = 'Please select a teacher and set a first session date.';
@@ -518,14 +530,18 @@ export async function submitNewCourse() {
   btn.disabled = true;
 
   try {
+    const sessionLen = sessionLenRaw ? parseInt(sessionLenRaw, 10) : 60;
     const res = await apiFetch('/api/confirm-booking', {
       method: 'POST',
       body: {
         teacher_id: teacherId,
         sessions_total: sessions ? parseInt(sessions) : null,
         first_session_at: new Date(datetime).toISOString(),
-        duration_minutes: 50,
-        booking_data: { service, level, group: groupType },
+        duration_minutes: sessionLen,
+        subject: subject || null,
+        price_per_60min: priceRaw ? parseFloat(priceRaw) : null,
+        session_length_min: sessionLen,
+        booking_data: { subject, level, group: groupType },
         contact_data: { participants },
       },
     });

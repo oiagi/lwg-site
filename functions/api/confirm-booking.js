@@ -47,10 +47,25 @@ function getCoursePrefix(groupType) {
   return groupType === 'private' ? 'P' : groupType === 'duo' ? 'D' : 'G';
 }
 
+const ACADEMIC_SUBJECTS = new Set([
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Mixed',
+  'Tutoring',
+]);
+
 function getLevelCode(booking) {
-  if (booking.language === 'Swiss German') return 'CH';
-  if (booking.service === 'tutoring') return 'SUB';
+  if (booking.subject === 'Swiss German' || booking.language === 'Swiss German') return 'CH';
+  if (booking.service === 'tutoring' || ACADEMIC_SUBJECTS.has(booking.subject)) return 'SUB';
   return booking.level || 'XX';
+}
+
+function deriveServiceFromSubject(subject) {
+  if (!subject) return null;
+  if (ACADEMIC_SUBJECTS.has(subject)) return 'tutoring';
+  return 'language course';
 }
 
 async function getNextCourseCode(prefix, levelCode, env) {
@@ -78,7 +93,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     duration_minutes,
     course_code_override,
     booking_data,
-    contact_data;
+    contact_data,
+    subject,
+    price_per_60min,
+    session_length_min;
   try {
     ({
       enquiry_id,
@@ -89,6 +107,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       course_code_override,
       booking_data,
       contact_data,
+      subject,
+      price_per_60min,
+      session_length_min,
     } = await request.json());
   } catch (err) {
     console.error('Failed to parse confirm-booking request body:', err);
@@ -180,7 +201,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
         course_code: courseCode,
-        service: booking.service || null,
+        service: booking.service || deriveServiceFromSubject(subject || booking.subject) || null,
+        subject: subject || booking.subject || booking.service || null,
         level: levelCode,
         group_type: groupType,
         teacher_id,
@@ -188,6 +210,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         participants,
         sessions_total: sessions_total || null,
         sessions_completed: 0,
+        price_per_60min: price_per_60min ?? null,
+        session_length_min: session_length_min ?? 60,
         recurrence_rule: recurrenceRule,
         calendar_event_id: calendarEventId,
         enquiry_id: enquiry_id || null,

@@ -1510,6 +1510,67 @@ html[data-device='mobile'] .avail-day {
   margin: 0.15rem 0.2rem 0.15rem 0;
 }
 
+/* ── Billing / outstanding balance ────────────────────────────────── */
+.billing-section {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  background: rgba(26, 26, 26, 0.02);
+}
+.billing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.6rem;
+}
+.billing-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.invoice-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border-soft);
+}
+.invoice-row:first-child {
+  border-top: none;
+}
+.invoice-num {
+  font-weight: 600;
+  color: var(--text);
+}
+.invoice-date {
+  color: var(--text-soft);
+}
+.invoice-amount {
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+.invoice-status {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.invoice-status.overdue {
+  color: #c0392b;
+}
+.invoice-status.paid {
+  color: #27ae60;
+}
+
 /* ── Modal success message ────────────────────────────────────────── */
 .modal-msg.success {
   display: block;

@@ -3,6 +3,36 @@ import { apiFetch } from './api.js';
 import { esc } from './helpers.js';
 import { MESSAGE_TIMEOUT_MS } from './constants.js';
 
+const LANGUAGE_SUBJECTS = new Set([
+  'German',
+  'Swiss German',
+  'English',
+  'French',
+  'Italian',
+  'Spanish',
+]);
+const ACADEMIC_SUBJECTS = new Set([
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Mixed',
+  'Tutoring',
+]);
+
+function subjectCategory(subject) {
+  if (!subject) return 'none';
+  if (LANGUAGE_SUBJECTS.has(subject)) return 'language';
+  if (ACADEMIC_SUBJECTS.has(subject)) return 'academic';
+  return 'other';
+}
+
+function formatMoney(amount, currency = 'CHF') {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '—';
+  return `${currency} ${n.toFixed(2)}`;
+}
+
 let currentStudentFilter = 'active';
 let selectedStudentId = null;
 let fromCourseContext = null;
@@ -43,6 +73,8 @@ export async function loadStudents(status = 'active') {
 }
 
 function subjectLabel(s) {
+  if (s.subject) return s.subject;
+  // Legacy fallback for records created before Phase 2
   if (s.target_language) return s.target_language;
   if (s.service === 'tutoring' || s.service === 'gymivorbereitung') return 'Tutoring';
   if (s.service === 'exam preparation') return 'Exam prep';
@@ -228,8 +260,8 @@ function renderStudentDetail(container, s) {
     </div>`;
 
   const prefParts = [];
-  if (s.service) prefParts.push(['Service', esc(s.service)]);
-  if (s.target_language) prefParts.push(['Target', esc(s.target_language)]);
+  const subjectDisplay = subjectLabel(s);
+  if (subjectDisplay) prefParts.push(['Subject', esc(subjectDisplay)]);
   if (s.native_language) prefParts.push(['Native', esc(s.native_language)]);
   if (s.current_level) prefParts.push(['Level', esc(s.current_level)]);
   if (s.course_type) prefParts.push(['Size', esc(s.course_type)]);
@@ -247,8 +279,6 @@ function renderStudentDetail(container, s) {
     : '<span class="detail-muted">none set</span>';
 
   const adminParts = [];
-  if (s.rate_per_session)
-    adminParts.push(['Rate', `${esc(s.rate_per_session)} ${esc(s.currency || 'CHF')}`]);
   if (s.payment_method) adminParts.push(['Payment', esc(s.payment_method)]);
   if (s.referral_source) adminParts.push(['Referral', esc(s.referral_source)]);
   const adminHtml = adminParts.length
@@ -259,6 +289,42 @@ function renderStudentDetail(container, s) {
         )
         .join('')
     : '';
+
+  // Outstanding balance block
+  const unpaidInvoices = (s.invoices || []).filter(
+    (inv) => inv.status !== 'paid' && inv.status !== 'void'
+  );
+  const outstandingTotal = Number(s.outstanding_balance || 0);
+  const outstandingCurrency = s.outstanding_currency || 'CHF';
+  const billingBlockHtml = unpaidInvoices.length
+    ? `
+    <div class="detail-section billing-section">
+      <div class="billing-header">
+        <p class="detail-meta" style="margin:0;">Outstanding balance</p>
+        <span class="billing-total">${formatMoney(outstandingTotal, outstandingCurrency)}</span>
+      </div>
+      <div class="invoice-list">
+        ${unpaidInvoices
+          .map(
+            (inv) => `
+          <div class="invoice-row">
+            <span class="invoice-num">${esc(inv.invoice_number) || '—'}</span>
+            <span class="invoice-date">${inv.issued_date ? new Date(inv.issued_date).toLocaleDateString('de-CH') : '—'}</span>
+            <span class="invoice-amount">${formatMoney(inv.total_amount, inv.currency || outstandingCurrency)}</span>
+            <span class="invoice-status ${esc(inv.status || 'issued')}">${esc(inv.status || 'issued')}</span>
+            <button class="save-btn" data-action="markInvoicePaid" data-args="${esc(inv.id)}">mark paid</button>
+          </div>`
+          )
+          .join('')}
+      </div>
+    </div>`
+    : outstandingTotal === 0 && (s.invoices || []).length
+      ? `
+    <div class="detail-section billing-section">
+      <p class="detail-meta" style="margin:0;">Outstanding balance</p>
+      <p class="detail-body detail-muted" style="margin-top:0.4rem;">All invoices paid.</p>
+    </div>`
+      : '';
 
   container.innerHTML = `
     ${breadcrumb}
@@ -285,6 +351,7 @@ function renderStudentDetail(container, s) {
       ${s.learning_goals ? '<p class="detail-note">Goals: ' + esc(s.learning_goals) + '</p>' : ''}
       ${s.desired_start_date ? '<p class="detail-note">Start date: ' + esc(s.desired_start_date) + '</p>' : ''}
     </div>
+    ${billingBlockHtml}
     ${
       adminHtml || s.progress_notes
         ? `
@@ -328,9 +395,8 @@ export function openStudentModal(existingData) {
     'sm-ec-phone',
     'sm-ec-email',
     'sm-ec-relationship',
-    'sm-service',
+    'sm-subject',
     'sm-native-lang',
-    'sm-target-lang',
     'sm-level',
     'sm-grade',
     'sm-subjects',
@@ -346,7 +412,6 @@ export function openStudentModal(existingData) {
     'sm-billing-postcode',
     'sm-billing-city',
     'sm-billing-email',
-    'sm-rate',
     'sm-vat',
     'sm-payment-method',
     'sm-referral',
@@ -381,9 +446,15 @@ export function openStudentModal(existingData) {
     document.getElementById('sm-ec-phone').value = existingData.ec_phone || '';
     document.getElementById('sm-ec-email').value = existingData.ec_email || '';
     document.getElementById('sm-ec-relationship').value = existingData.ec_relationship || '';
-    document.getElementById('sm-service').value = existingData.service || '';
+    // Subject: prefer the unified field; fall back to legacy target_language/service
+    const resolvedSubject =
+      existingData.subject ||
+      existingData.target_language ||
+      (existingData.service === 'tutoring' || existingData.service === 'gymivorbereitung'
+        ? 'Tutoring'
+        : '');
+    document.getElementById('sm-subject').value = resolvedSubject;
     document.getElementById('sm-native-lang').value = existingData.native_language || '';
-    document.getElementById('sm-target-lang').value = existingData.target_language || '';
     document.getElementById('sm-level').value = existingData.current_level || '';
     document.getElementById('sm-grade').value = existingData.grade || '';
     document.getElementById('sm-subjects').value = existingData.subjects || '';
@@ -419,7 +490,6 @@ export function openStudentModal(existingData) {
         document.getElementById('sm-billing-city').value = cityM[2];
       }
     }
-    document.getElementById('sm-rate').value = existingData.rate_per_session || '';
     document.getElementById('sm-vat').value = existingData.vat_number || '';
     document.getElementById('sm-payment-method').value = existingData.payment_method || '';
     document.getElementById('sm-referral').value = existingData.referral_source || '';
@@ -437,7 +507,10 @@ export function openStudentModal(existingData) {
     existingData?.billing_name
   );
   resetBillingToggle(hasBilling);
-  resetServiceToggle(existingData?.service);
+
+  // Subject → field visibility
+  const initialSubject = document.getElementById('sm-subject').value;
+  resetSubjectToggle(initialSubject);
 
   document.getElementById('student-modal').classList.add('open');
 }
@@ -469,18 +542,18 @@ function resetBillingToggle(hasBillingData) {
   };
 }
 
-function resetServiceToggle(service) {
-  const sel = document.getElementById('sm-service');
+function resetSubjectToggle(subject) {
+  const sel = document.getElementById('sm-subject');
   const langFields = document.getElementById('sm-lang-fields');
   const tutFields = document.getElementById('sm-tutoring-fields');
 
   function apply(val) {
-    const isTutoring = val === 'tutoring' || val === 'gymivorbereitung';
-    langFields.style.display = isTutoring ? 'none' : 'contents';
-    tutFields.style.display = val === 'tutoring' ? 'contents' : 'none';
+    const cat = subjectCategory(val);
+    langFields.style.display = cat === 'language' ? 'contents' : 'none';
+    tutFields.style.display = cat === 'academic' ? 'contents' : 'none';
   }
 
-  sel.value = service || '';
+  sel.value = subject || '';
   apply(sel.value);
   sel.onchange = (e) => apply(e.target.value);
 }
@@ -517,6 +590,9 @@ export async function submitStudent() {
   btn.textContent = 'saving…';
   btn.disabled = true;
 
+  const subject = document.getElementById('sm-subject').value || null;
+  const cat = subjectCategory(subject);
+
   const body = {
     first_name: firstName,
     last_name: lastName,
@@ -530,22 +606,27 @@ export async function submitStudent() {
     ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
     ec_email: document.getElementById('sm-ec-email').value.trim() || null,
     ec_relationship: document.getElementById('sm-ec-relationship').value.trim() || null,
-    service: document.getElementById('sm-service').value || null,
-    ...(document.getElementById('sm-service').value === 'tutoring'
+    subject,
+    ...(cat === 'academic'
       ? {
           native_language: null,
-          target_language: null,
           current_level: null,
           grade: document.getElementById('sm-grade').value || null,
           subjects: document.getElementById('sm-subjects').value.trim() || null,
         }
-      : {
-          native_language: document.getElementById('sm-native-lang').value.trim() || null,
-          target_language: document.getElementById('sm-target-lang').value || null,
-          current_level: document.getElementById('sm-level').value || null,
-          grade: null,
-          subjects: null,
-        }),
+      : cat === 'language'
+        ? {
+            native_language: document.getElementById('sm-native-lang').value.trim() || null,
+            current_level: document.getElementById('sm-level').value || null,
+            grade: null,
+            subjects: null,
+          }
+        : {
+            native_language: null,
+            current_level: null,
+            grade: null,
+            subjects: null,
+          }),
     learning_goals: document.getElementById('sm-learning-goals').value.trim() || null,
     desired_start_date: document.getElementById('sm-desired-start').value || null,
     course_type: document.getElementById('sm-course-type').value || null,
@@ -571,9 +652,6 @@ export async function submitStudent() {
           billing_city: null,
           billing_email: null,
         }),
-    rate_per_session: document.getElementById('sm-rate').value
-      ? parseFloat(document.getElementById('sm-rate').value)
-      : null,
     vat_number: document.getElementById('sm-vat').value.trim() || null,
     payment_method: document.getElementById('sm-payment-method').value || null,
     referral_source: document.getElementById('sm-referral').value.trim() || null,
@@ -605,6 +683,20 @@ export async function submitStudent() {
     msgEl.style.display = 'block';
     btn.textContent = 'save student';
     btn.disabled = false;
+  }
+}
+
+export async function markInvoicePaid(invoiceId) {
+  if (!selectedStudentId) return;
+  try {
+    const res = await apiFetch('/api/mark-invoice-paid', {
+      method: 'PATCH',
+      body: { invoice_id: invoiceId, paid: true },
+    });
+    if (!res.ok) throw new Error();
+    await fetchAndRenderStudent(selectedStudentId);
+  } catch {
+    alert('Could not mark invoice as paid.');
   }
 }
 

@@ -36,6 +36,7 @@ import {
   editStudent,
   submitStudent,
   deleteStudent,
+  markInvoicePaid,
 } from './students.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
@@ -80,6 +81,7 @@ const actions = {
   editStudent,
   submitStudent,
   deleteStudent,
+  markInvoicePaid,
   // Teachers
   authoriseTeacher,
   // Availability
