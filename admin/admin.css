@@ -1499,6 +1499,47 @@ html[data-device='mobile'] .avail-day {
   color: #c0392b;
   font-size: 0.82rem;
 }
+
+/* ── Admin section (student detail) ─────────────────────────────── */
+.admin-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.2rem 1.2rem;
+  margin-bottom: 0.8rem;
+}
+.admin-course-table-wrap {
+  overflow-x: auto;
+  margin: 0.4rem 0 0.6rem;
+}
+.admin-course-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.admin-course-table th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 0.6rem 0.4rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.admin-course-table td {
+  padding: 0.5rem 0.6rem 0.5rem 0;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text);
+  vertical-align: top;
+}
+.admin-course-table .admin-course-code {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.admin-course-table .charges-open {
+  color: #c0392b;
+  font-weight: 600;
+}
 .course-tag {
   display: inline-block;
   background: rgba(26, 26, 26, 0.06);

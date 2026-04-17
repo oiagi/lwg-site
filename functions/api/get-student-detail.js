@@ -49,7 +49,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (courseIds.length) {
       const courseFilter = courseIds.map((cid) => `id.eq.${cid}`).join(',');
       const courseRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,status,sessions_total,sessions_completed`,
+        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,currency,location`,
         { headers: H }
       );
       courses = courseRes.ok ? await courseRes.json() : [];
@@ -67,7 +67,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         { headers: H }
       ),
       fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date`,
+        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date,course_id`,
         { headers: H }
       ),
     ]);
