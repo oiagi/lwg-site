@@ -125,6 +125,91 @@
       </div>
     </div>
 
+    <!-- ── Edit course modal ─────────────────────────────────────────── -->
+    <div class="modal-overlay" id="edit-course-modal">
+      <div class="modal modal-wide">
+        <h2>edit course</h2>
+        <input type="hidden" id="ec-id" value="">
+        <p class="label-hint" id="ec-code-label" style="margin-bottom:0.8rem;"></p>
+
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Subject</label>
+            <select id="ec-service">
+              <option value="language course">Language course</option>
+              <option value="exam preparation">Exam preparation</option>
+              <option value="tutoring">Tutoring</option>
+              <option value="gymivorbereitung">Gymivorbereitung</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Course level</label>
+            <select id="ec-level">
+              <option value="">—</option>
+              <option>A1</option><option>A2</option><option>B1</option>
+              <option>B2</option><option>C1</option><option>C2</option>
+              <option value="CH">CH (Swiss German)</option>
+              <option value="SUB">SUB (Tutoring)</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Group size</label>
+            <select id="ec-group">
+              <option value="private">Private (1)</option>
+              <option value="duo">Duo (2)</option>
+              <option value="group">Group (3+)</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Status</label>
+            <select id="ec-status">
+              <option value="active">active</option>
+              <option value="paused">paused</option>
+              <option value="completed">completed</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Number of sessions <span class="label-hint">(blank = open-ended)</span></label>
+            <input type="number" id="ec-sessions" min="1" placeholder="e.g. 30">
+          </div>
+          <div class="modal-field">
+            <label>Session length (min)</label>
+            <input type="number" id="ec-session-length" min="15" step="5" placeholder="50">
+          </div>
+          <div class="modal-field">
+            <label>Price per session</label>
+            <input type="number" id="ec-price" min="0" step="0.01" placeholder="e.g. 80">
+          </div>
+          <div class="modal-field">
+            <label>Currency</label>
+            <select id="ec-currency">
+              <option value="CHF">CHF</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Location</label>
+            <select id="ec-location">
+              <option value="">—</option>
+              <option value="online">Online</option>
+              <option value="teacher's home">Teacher's home</option>
+              <option value="student's home">Student's home</option>
+              <option value="company">Company</option>
+              <option value="classroom">Classroom</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeEditCourseModal">cancel</button>
+          <button class="modal-submit" id="ec-submit" data-action="submitEditCourse">save changes</button>
+        </div>
+        <p class="modal-msg" id="ec-msg"></p>
+      </div>
+    </div>
+
     <div id="panel-courses" style="display:none;">
       <div class="dashboard-header students-header">
         <div class="course-filter-row">
@@ -284,6 +369,24 @@
       </div>
       <div id="availability-content">
         <div class="empty-state">select a teacher to view their schedule</div>
+      </div>
+    </div>
+
+    <!-- ── Enroll student in course modal ────────────────────────────── -->
+    <div class="modal-overlay" id="enroll-student-modal">
+      <div class="modal">
+        <h2>enroll in course</h2>
+        <div class="modal-field">
+          <label>Course</label>
+          <select id="es-course">
+            <option value="">loading courses…</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeEnrollStudentModal">cancel</button>
+          <button class="modal-submit" id="es-submit" data-action="submitEnrollStudent" disabled>enroll</button>
+        </div>
+        <p class="modal-msg" id="es-msg"></p>
       </div>
     </div>
 

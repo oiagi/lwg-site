@@ -23,6 +23,9 @@ import {
   closeAddParticipantModal,
   submitAddParticipant,
   initAddParticipantSearch,
+  openEditCourseModal,
+  closeEditCourseModal,
+  submitEditCourse,
 } from './courses.js';
 import {
   loadStudents,
@@ -36,6 +39,9 @@ import {
   editStudent,
   submitStudent,
   deleteStudent,
+  openEnrollStudentModal,
+  closeEnrollStudentModal,
+  submitEnrollStudent,
 } from './students.js';
 import {
   exportStudents,
@@ -77,6 +83,9 @@ const actions = {
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
+  openEditCourseModal,
+  closeEditCourseModal,
+  submitEditCourse,
   // Students
   filterStudents,
   selectStudent,
@@ -87,6 +96,9 @@ const actions = {
   editStudent,
   submitStudent,
   deleteStudent,
+  openEnrollStudentModal,
+  closeEnrollStudentModal,
+  submitEnrollStudent,
   exportStudents,
   openImportModal,
   closeImportModal,

@@ -50,6 +50,25 @@ function subjectLabel(s) {
   return '';
 }
 
+function courseSubLine(s) {
+  const activeCourses = (s.courses || []).filter(
+    (c) => c.status !== 'cancelled' && c.status !== 'completed'
+  );
+  const primary = activeCourses[0] || (s.courses && s.courses[0]);
+  if (primary) {
+    const parts = [primary.course_code, primary.level, primary.service].filter(Boolean);
+    const label = parts.join(' · ');
+    const extra = s.courses.length - 1 > 0 ? ` +${s.courses.length - 1}` : '';
+    return esc(label) + esc(extra);
+  }
+  const subject = esc(subjectLabel(s));
+  const level = esc(s.current_level || '');
+  const fallback = [subject, level].filter(Boolean);
+  return fallback.length
+    ? fallback.join('<span class="sep">·</span>')
+    : '<span class="detail-muted">no course</span>';
+}
+
 function statusLabel(s) {
   return s.status || (s.active === false ? 'inactive' : 'active');
 }
@@ -72,13 +91,8 @@ function renderStudents(students) {
     .map((s) => {
       const name = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
       const ref = esc(s.customer_reference) || '—';
-      const subject = esc(subjectLabel(s));
-      const level = esc(s.current_level || '');
       const status = statusLabel(s);
-      const subParts = [subject, level].filter(Boolean);
-      const subLine = subParts.length
-        ? subParts.join('<span class="sep">·</span>')
-        : '<span class="detail-muted">no course set</span>';
+      const subLine = courseSubLine(s);
       return `
     <div class="student-row" id="student-${s.id}"
          role="option" aria-selected="false" tabindex="0"
@@ -166,6 +180,8 @@ function renderStudentDetail(container, s) {
           .join('')
       : '<span class="detail-muted">no courses</span>';
 
+  const enrolButton = `<button class="save-btn" data-action="openEnrollStudentModal" data-args="${esc(s.id)}" style="margin-top:0.6rem;">+ enroll in course</button>`;
+
   const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
   const status = statusLabel(s);
   const refLine = s.customer_reference
@@ -246,6 +262,7 @@ function renderStudentDetail(container, s) {
       <div>
         <p class="detail-meta">Courses</p>
         <div>${coursesHtml}</div>
+        ${enrolButton}
       </div>
     </div>
     <div class="detail-section">
@@ -574,6 +591,106 @@ export async function submitStudent() {
     msgEl.className = 'modal-msg err';
     msgEl.style.display = 'block';
     btn.textContent = 'save student';
+    btn.disabled = false;
+  }
+}
+
+/* ── Enroll-in-course modal ──────────────────────────────────────── */
+
+let enrollStudentId = null;
+
+export async function openEnrollStudentModal(studentId) {
+  enrollStudentId = studentId;
+  const modal = document.getElementById('enroll-student-modal');
+  const sel = document.getElementById('es-course');
+  const msg = document.getElementById('es-msg');
+  const btn = document.getElementById('es-submit');
+
+  msg.style.display = 'none';
+  msg.textContent = '';
+  btn.textContent = 'enroll';
+  btn.disabled = true;
+  sel.innerHTML = '<option value="">loading courses…</option>';
+
+  modal.classList.add('open');
+
+  try {
+    // Load active + all courses, and currently enrolled courses, in parallel.
+    const [coursesRes, studentRes] = await Promise.all([
+      apiFetch('/api/get-courses?status=active'),
+      apiFetch('/api/get-student-detail?id=' + studentId),
+    ]);
+    if (!coursesRes.ok) throw new Error('Could not load courses');
+    const courses = await coursesRes.json();
+    const student = studentRes.ok ? await studentRes.json() : { courses: [] };
+    const enrolledIds = new Set((student.courses || []).map((c) => c.id));
+
+    const available = courses.filter((c) => !enrolledIds.has(c.id));
+    if (!available.length) {
+      sel.innerHTML = '<option value="">no available courses</option>';
+      msg.textContent = 'Student is already enrolled in all active courses.';
+      msg.className = 'modal-msg';
+      msg.style.display = 'block';
+      return;
+    }
+
+    sel.innerHTML =
+      '<option value="">select a course…</option>' +
+      available
+        .map((c) => {
+          const label = [c.course_code, c.service, c.level].filter(Boolean).join(' · ');
+          return `<option value="${esc(c.id)}">${esc(label || c.id)}</option>`;
+        })
+        .join('');
+
+    sel.onchange = () => {
+      btn.disabled = !sel.value;
+    };
+  } catch {
+    sel.innerHTML = '<option value="">error loading</option>';
+    msg.textContent = 'Could not load courses.';
+    msg.className = 'modal-msg err';
+    msg.style.display = 'block';
+  }
+}
+
+export function closeEnrollStudentModal() {
+  document.getElementById('enroll-student-modal').classList.remove('open');
+  enrollStudentId = null;
+}
+
+export async function submitEnrollStudent() {
+  const btn = document.getElementById('es-submit');
+  const msg = document.getElementById('es-msg');
+  const courseId = document.getElementById('es-course').value;
+  if (!courseId || !enrollStudentId) return;
+
+  btn.disabled = true;
+  btn.textContent = 'enrolling…';
+  msg.style.display = 'none';
+
+  try {
+    const res = await apiFetch('/api/add-enrollment', {
+      method: 'POST',
+      body: { course_id: courseId, student_id: enrollStudentId },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed');
+    }
+    btn.textContent = 'enrolled ✓';
+    const sid = enrollStudentId;
+    setTimeout(async () => {
+      closeEnrollStudentModal();
+      selectedStudentId = sid;
+      await loadStudentsKeepingContext(currentStudentFilter, sid);
+      await fetchAndRenderStudent(sid);
+    }, MESSAGE_TIMEOUT_MS);
+  } catch (e) {
+    msg.textContent = 'Error: ' + e.message;
+    msg.className = 'modal-msg err';
+    msg.style.display = 'block';
+    btn.textContent = 'enroll';
     btn.disabled = false;
   }
 }
