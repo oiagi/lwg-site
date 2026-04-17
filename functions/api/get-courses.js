@@ -62,6 +62,20 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       allStudents = studRes.ok ? await studRes.json() : [];
     }
 
+    // ── Batch fetch open invoices for these courses ───────────────────
+    // "Open" = anything not marked paid. Attached to the specific
+    // (student_id, course_id) pair so the course overview can list
+    // unpaid charges next to each enrolled student.
+    let openInvoices = [];
+    if (courseIds.length) {
+      const invFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
+      const invRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&status=neq.paid&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
+        { headers: H }
+      );
+      openInvoices = invRes.ok ? await invRes.json() : [];
+    }
+
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
     for (const s of allSessions) {
@@ -78,14 +92,28 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       studentsById[s.id] = s;
     }
 
+    // invoicesByCourseStudent[course_id][student_id] = [invoice, …]
+    const invoicesByCourseStudent = {};
+    for (const inv of openInvoices) {
+      const byStudent = (invoicesByCourseStudent[inv.course_id] ||= {});
+      (byStudent[inv.student_id] ||= []).push(inv);
+    }
+
     // ── Enrich courses ────────────────────────────────────────────────
-    const enriched = courses.map((course) => ({
-      ...course,
-      sessions: sessionsByCourse[course.id] || [],
-      students: [...(studentIdsByCourse[course.id] || [])]
-        .map((id) => studentsById[id])
-        .filter(Boolean),
-    }));
+    const enriched = courses.map((course) => {
+      const invByStudent = invoicesByCourseStudent[course.id] || {};
+      return {
+        ...course,
+        sessions: sessionsByCourse[course.id] || [],
+        students: [...(studentIdsByCourse[course.id] || [])]
+          .map((id) => {
+            const s = studentsById[id];
+            if (!s) return null;
+            return { ...s, open_invoices: invByStudent[id] || [] };
+          })
+          .filter(Boolean),
+      };
+    });
 
     return jsonResponse(enriched);
   } catch (err) {

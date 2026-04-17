@@ -68,6 +68,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     sessions_total,
     first_session_at,
     duration_minutes,
+    session_length_minutes,
+    price_per_session,
+    location,
     course_code_override,
     booking_data,
     contact_data;
@@ -78,6 +81,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       sessions_total,
       first_session_at,
       duration_minutes = 50,
+      session_length_minutes,
+      price_per_session,
+      location,
       course_code_override,
       booking_data,
       contact_data,
@@ -189,6 +195,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         participants,
         sessions_total: sessions_total || null,
         sessions_completed: 0,
+        session_length_minutes: session_length_minutes || duration_minutes || null,
+        price_per_session: price_per_session ?? null,
+        location: location || null,
         recurrence_rule: recurrenceRule,
         calendar_event_id: calendarEventId,
         enquiry_id: enquiry_id || null,
@@ -238,14 +247,17 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const studentIds = [];
   for (const p of participants) {
     try {
-      const sid = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-        first_name: p.firstName,
-        last_name: p.lastName,
-        email: p.email,
-        phone: p.phone,
-        postcode: p.postcode,
-        source,
-      });
+      // Existing student was picked from autocomplete: skip dedup, use id directly.
+      const sid = p.studentId
+        ? p.studentId
+        : await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+            first_name: p.firstName,
+            last_name: p.lastName,
+            email: p.email,
+            phone: p.phone,
+            postcode: p.postcode,
+            source,
+          });
       studentIds.push(sid);
       await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
         method: 'POST',

@@ -96,8 +96,22 @@ function renderCourses(courses) {
 
       const studentBlocks =
         (c.students || [])
-          .map(
-            (s) => `
+          .map((s) => {
+            const openInvoices = (s.open_invoices || [])
+              .map((inv) => {
+                const amount =
+                  inv.total_amount != null
+                    ? `${Number(inv.total_amount).toFixed(2)} ${esc(inv.currency || 'CHF')}`
+                    : '—';
+                const num = esc(inv.invoice_number || '—');
+                const status = esc(inv.status || 'open');
+                return `<li class="course-invoice-row"><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></li>`;
+              })
+              .join('');
+            const invoiceBlock = openInvoices
+              ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
+              : '';
+            return `
       <div class="progress-block">
         <p class="progress-name">
           <button class="student-link" data-action="selectStudentFromCourse"
@@ -114,9 +128,10 @@ function renderCourses(courses) {
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
+        ${invoiceBlock}
       </div>
-    `
-          )
+    `;
+          })
           .join('') || '<p class="detail-muted">No student records yet.</p>';
 
       const noSessions = !c.sessions?.length
@@ -144,10 +159,13 @@ function renderCourses(courses) {
             <div>
               <p class="detail-meta">details</p>
               <p class="detail-body">
-                Service: ${esc(c.service) || '—'}<br>
+                Subject: ${esc(c.service) || '—'}<br>
                 Level: ${esc(c.level) || '—'}<br>
-                Group: ${esc(c.group_type) || '—'}<br>
-                Block: ${total ? total + ' sessions' : 'open-ended'}
+                Group size: ${esc(c.group_type) || '—'}<br>
+                Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
+                Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
+                Price/session: ${c.price_per_session != null ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
+                Location: ${esc(c.location) || '—'}
               </p>
             </div>
             <div>
@@ -398,12 +416,23 @@ function attachSearchListeners(i) {
 
 /* ── New course modal ───────────────────────────────────────────── */
 export function openNewCourseModal() {
-  ['nc-teacher', 'nc-service', 'nc-level', 'nc-group', 'nc-sessions', 'nc-datetime'].forEach(
-    (id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value : '';
-    }
-  );
+  [
+    'nc-teacher',
+    'nc-service',
+    'nc-level',
+    'nc-group',
+    'nc-sessions',
+    'nc-session-length',
+    'nc-price',
+    'nc-location',
+    'nc-datetime',
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.value = el.options[0]?.value;
+    else if (id === 'nc-session-length') el.value = '50';
+    else el.value = '';
+  });
   participantCount = 1;
   const container = document.getElementById('nc-participants');
   container.innerHTML = renderParticipantBlock(0);
@@ -488,6 +517,9 @@ export async function submitNewCourse() {
   const level = document.getElementById('nc-level').value;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
+  const sessionLength = document.getElementById('nc-session-length').value;
+  const price = document.getElementById('nc-price').value;
+  const location = document.getElementById('nc-location').value;
   const datetime = document.getElementById('nc-datetime').value;
 
   if (!teacherId || !datetime) {
@@ -504,12 +536,15 @@ export async function submitNewCourse() {
     const last = document.getElementById(`nc-p${idx}-last`)?.value?.trim();
     const email = document.getElementById(`nc-p${idx}-email`)?.value?.trim();
     const phone = document.getElementById(`nc-p${idx}-phone`)?.value?.trim();
-    if (first || last || email) {
+    const selectedStudentId = block.dataset.selectedStudentId || '';
+    // New students only require a first name; existing selections need no input here.
+    if (selectedStudentId || first) {
       participants.push({
         firstName: first || '',
         lastName: last || '',
         email: email || '',
         phone: phone || '',
+        studentId: selectedStudentId || '',
       });
     }
   });
@@ -518,13 +553,17 @@ export async function submitNewCourse() {
   btn.disabled = true;
 
   try {
+    const durationMinutes = parseInt(sessionLength) || 50;
     const res = await apiFetch('/api/confirm-booking', {
       method: 'POST',
       body: {
         teacher_id: teacherId,
         sessions_total: sessions ? parseInt(sessions) : null,
         first_session_at: new Date(datetime).toISOString(),
-        duration_minutes: 50,
+        duration_minutes: durationMinutes,
+        session_length_minutes: durationMinutes,
+        price_per_session: price ? parseFloat(price) : null,
+        location: location || null,
         booking_data: { service, level, group: groupType },
         contact_data: { participants },
       },

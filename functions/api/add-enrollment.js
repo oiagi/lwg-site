@@ -12,8 +12,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { course_id, student_id, first_name, last_name, email, phone } = await request.json();
 
   if (!course_id) return errorResponse('course_id required', 400);
-  if (!student_id && !email && !(first_name && last_name)) {
-    return errorResponse('Provide student_id, or email, or first and last name', 400);
+  if (!student_id && !email && !first_name) {
+    return errorResponse('Provide student_id, or email, or first name', 400);
   }
 
   const H = supabaseHeaders(env.SUPABASE_SERVICE_KEY);
