@@ -364,6 +364,34 @@ button.submit:hover {
   background: #fff;
   color: #1a1a1a;
 }
+.students-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.secondary-btn {
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid #1a1a1a;
+  background: transparent;
+  color: #1a1a1a;
+  padding: 0.3rem 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.secondary-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #d6eaf8;
+}
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .delete-course-btn {
   font-family: inherit;
   font-size: 0.68rem;
