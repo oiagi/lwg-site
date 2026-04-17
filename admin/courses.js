@@ -209,12 +209,23 @@ export async function syncCalendar(courseId) {
       method: 'POST',
       body: { course_id: courseId },
     });
-    if (res.ok) {
-      if (msg) showMessage(msg, 'synced');
-      loadCourses(currentCourseFilter);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const reason = body.error || `HTTP ${res.status}`;
+      console.error('Sync failed:', reason, body);
+      alert('Calendar sync failed: ' + reason);
+      return;
     }
+    if (msg) {
+      const parts = [];
+      if (typeof body.events_found === 'number') parts.push(`${body.events_found} events`);
+      if (typeof body.completed === 'number') parts.push(`${body.completed} completed`);
+      showMessage(msg, parts.length ? 'synced · ' + parts.join(', ') : 'synced');
+    }
+    loadCourses(currentCourseFilter);
   } catch (err) {
     console.error('Sync error:', err);
+    alert('Calendar sync failed: ' + (err.message || err));
   }
 }
 
