@@ -54,16 +54,28 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     });
 
     // Load all enrolments for course counts, and enquiry links for enquiry counts
-    const [enrolRes, enquiryRes] = await Promise.all([
+    const [enrolRes, enquiryRes, courseRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/enrolments?select=student_id,course_id`, { headers: H }),
       fetch(`${SUPABASE_URL}/rest/v1/enquiries?select=student_id&student_id=not.is.null`, {
         headers: H,
       }),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/courses?select=id,course_code,service,level,status,group_type`,
+        { headers: H }
+      ),
     ]);
     const enrolments = enrolRes.ok ? await enrolRes.json() : [];
-    const courseCountMap = {};
+    const courses = courseRes.ok ? await courseRes.json() : [];
+    const coursesById = {};
+    courses.forEach((c) => {
+      coursesById[c.id] = c;
+    });
+
+    const coursesByStudent = {};
     enrolments.forEach((e) => {
-      courseCountMap[e.student_id] = (courseCountMap[e.student_id] || 0) + 1;
+      const c = coursesById[e.course_id];
+      if (!c) return;
+      (coursesByStudent[e.student_id] ||= []).push(c);
     });
 
     const enquiries = enquiryRes.ok ? await enquiryRes.json() : [];
@@ -72,12 +84,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       enquiryCountMap[e.student_id] = (enquiryCountMap[e.student_id] || 0) + 1;
     });
 
-    const enriched = students.map((s) => ({
-      ...s,
-      company_name: s.company_id ? companyMap[s.company_id] || '—' : null,
-      course_count: courseCountMap[s.id] || 0,
-      enquiry_count: enquiryCountMap[s.id] || 0,
-    }));
+    const enriched = students.map((s) => {
+      const studentCourses = coursesByStudent[s.id] || [];
+      return {
+        ...s,
+        company_name: s.company_id ? companyMap[s.company_id] || '—' : null,
+        course_count: studentCourses.length,
+        courses: studentCourses,
+        enquiry_count: enquiryCountMap[s.id] || 0,
+      };
+    });
 
     return jsonResponse(enriched);
   } catch (err) {

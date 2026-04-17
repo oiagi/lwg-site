@@ -402,13 +402,31 @@ button.submit:hover {
   color: #c0392b;
   padding: 0.2rem 0.6rem;
   cursor: pointer;
-  margin-left: auto;
   transition:
     background 0.15s,
     color 0.15s;
 }
 .delete-course-btn:hover {
   background: #c0392b;
+  color: #fff;
+}
+.edit-course-btn {
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid #1a1a1a;
+  background: transparent;
+  color: #1a1a1a;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  margin-left: auto;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.edit-course-btn:hover {
+  background: #1a1a1a;
   color: #fff;
 }
 

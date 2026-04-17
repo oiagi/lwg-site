@@ -11,6 +11,7 @@ let studentCache = [];
 let clickAwayHandler = null;
 let addParticipantCourseId = null;
 let apSearchListenersAttached = false;
+let coursesCache = [];
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -41,6 +42,7 @@ export async function loadCourses(status = 'active') {
     const res = await apiFetch('/api/get-courses?status=' + status);
     if (!res.ok) throw new Error('Failed to load courses');
     const courses = await res.json();
+    coursesCache = courses;
     renderCourses(courses);
 
     openIds.forEach((id) => {
@@ -152,6 +154,7 @@ function renderCourses(courses) {
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
           <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
+          <button class="edit-course-btn" data-action="openEditCourseModal" data-args="${c.id}">edit</button>
           <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
@@ -788,6 +791,99 @@ export function openAddParticipantModal(courseId) {
 export function closeAddParticipantModal() {
   document.getElementById('add-participant-modal').classList.remove('open');
   addParticipantCourseId = null;
+}
+
+/* ── Edit course modal ──────────────────────────────────────────── */
+
+export function openEditCourseModal(courseId) {
+  const course = coursesCache.find((c) => c.id === courseId);
+  if (!course) {
+    alert('Could not find course.');
+    return;
+  }
+
+  document.getElementById('ec-id').value = course.id;
+  document.getElementById('ec-code-label').textContent = course.course_code
+    ? 'Course code: ' + course.course_code
+    : '';
+  document.getElementById('ec-service').value = course.service || 'language course';
+  document.getElementById('ec-level').value = course.level || '';
+  document.getElementById('ec-group').value = course.group_type || 'private';
+  document.getElementById('ec-status').value = course.status || 'active';
+  document.getElementById('ec-sessions').value =
+    course.sessions_total !== null && course.sessions_total !== undefined
+      ? course.sessions_total
+      : '';
+  document.getElementById('ec-session-length').value = course.session_length_minutes || '';
+  document.getElementById('ec-price').value =
+    course.price_per_session !== null && course.price_per_session !== undefined
+      ? course.price_per_session
+      : '';
+  document.getElementById('ec-currency').value = course.currency || 'CHF';
+  document.getElementById('ec-location').value = course.location || '';
+
+  const msg = document.getElementById('ec-msg');
+  msg.style.display = 'none';
+  msg.textContent = '';
+  const btn = document.getElementById('ec-submit');
+  btn.textContent = 'save changes';
+  btn.disabled = false;
+
+  document.getElementById('edit-course-modal').classList.add('open');
+}
+
+export function closeEditCourseModal() {
+  document.getElementById('edit-course-modal').classList.remove('open');
+}
+
+export async function submitEditCourse() {
+  const btn = document.getElementById('ec-submit');
+  const msg = document.getElementById('ec-msg');
+  msg.style.display = 'none';
+
+  const courseId = document.getElementById('ec-id').value;
+  if (!courseId) return;
+
+  const sessionsVal = document.getElementById('ec-sessions').value;
+  const lengthVal = document.getElementById('ec-session-length').value;
+  const priceVal = document.getElementById('ec-price').value;
+
+  const body = {
+    course_id: courseId,
+    service: document.getElementById('ec-service').value,
+    level: document.getElementById('ec-level').value || null,
+    group_type: document.getElementById('ec-group').value,
+    status: document.getElementById('ec-status').value,
+    sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
+    session_length_minutes: lengthVal === '' ? null : parseInt(lengthVal, 10),
+    price_per_session: priceVal === '' ? null : parseFloat(priceVal),
+    currency: document.getElementById('ec-currency').value || 'CHF',
+    location: document.getElementById('ec-location').value || null,
+  };
+
+  btn.textContent = 'saving…';
+  btn.disabled = true;
+
+  try {
+    const res = await apiFetch('/api/update-course', { method: 'PATCH', body });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Unknown error');
+
+    msg.textContent = 'Course updated.';
+    msg.className = 'modal-msg success';
+    btn.textContent = 'saved ✓';
+
+    setTimeout(() => {
+      closeEditCourseModal();
+      loadCourses(currentCourseFilter);
+    }, MESSAGE_TIMEOUT_MS);
+  } catch (err) {
+    msg.textContent = 'Error: ' + err.message;
+    msg.className = 'modal-msg err';
+    msg.style.display = 'block';
+    btn.textContent = 'save changes';
+    btn.disabled = false;
+  }
 }
 
 export async function submitAddParticipant() {
