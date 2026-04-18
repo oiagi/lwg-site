@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gioia — new course</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/device-detect.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+  <div id="page-loading" class="page-form-shell">
+    <p class="loading-state">loading…</p>
+  </div>
+
+  <main id="page-content" class="page-form-shell" style="display:none;">
+    <a href="/admin.html#courses" class="page-form-back">← back to courses</a>
+    <h1>new course</h1>
+
+    <form id="course-new-form" novalidate>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <label>Teacher</label>
+          <select id="nc-teacher"><option value="">loading…</option></select>
+        </div>
+        <div class="modal-field">
+          <label>Subject</label>
+          <select id="nc-service">
+            <option value="language course">Language course</option>
+            <option value="exam preparation">Exam preparation</option>
+            <option value="tutoring">Tutoring</option>
+            <option value="gymivorbereitung">Gymivorbereitung</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Course level <span class="label-hint">(leave blank for tutoring)</span></label>
+          <select id="nc-level">
+            <option value="">—</option>
+            <option>A1</option><option>A2</option><option>B1</option>
+            <option>B2</option><option>C1</option><option>C2</option>
+            <option value="CH">CH (Swiss German)</option>
+            <option value="SUB">SUB (Tutoring)</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Group size</label>
+          <select id="nc-group">
+            <option value="private">Private (1)</option>
+            <option value="duo">Duo (2)</option>
+            <option value="group">Group (3+)</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Number of sessions <span class="label-hint">(leave blank for open-ended)</span></label>
+          <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
+        </div>
+        <div class="modal-field">
+          <label>Session length (min)</label>
+          <input type="number" id="nc-session-length" min="15" step="5" value="50" placeholder="50">
+        </div>
+        <div class="modal-field">
+          <label>Price per session <span class="label-hint">(CHF)</span></label>
+          <input type="number" id="nc-price" min="0" step="0.01" placeholder="e.g. 80">
+        </div>
+        <div class="modal-field">
+          <label>Location</label>
+          <select id="nc-location">
+            <option value="">—</option>
+            <option value="online">Online</option>
+            <option value="teacher's home">Teacher's home</option>
+            <option value="student's home">Student's home</option>
+            <option value="company">Company</option>
+            <option value="classroom">Classroom</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>First session date &amp; time</label>
+          <input type="datetime-local" id="nc-datetime">
+        </div>
+      </div>
+
+      <p class="modal-section-label" style="margin: 1.4rem 0 0.8rem; border-top: 1px solid var(--border-soft); padding-top: 1.2rem;">Participants</p>
+      <div id="nc-participants"></div>
+      <button type="button" class="add-participant-btn" id="nc-add-participant">+ add participant</button>
+
+      <div class="page-form-actions">
+        <a href="/admin.html#courses" class="modal-cancel">cancel</a>
+        <button type="submit" class="modal-submit" id="nc-submit">create course &amp; calendar event</button>
+      </div>
+      <p class="modal-msg" id="nc-msg"></p>
+    </form>
+  </main>
+
+  <script type="module" src="/admin/course-new.js"></script>
+</body>
+</html>

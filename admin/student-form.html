@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gioia — student</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/device-detect.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+  <div id="page-loading" class="page-form-shell">
+    <p class="loading-state">loading…</p>
+  </div>
+
+  <main id="page-content" class="page-form-shell" style="display:none;">
+    <a href="/admin.html#students" class="page-form-back">← back to students</a>
+    <h1 id="student-form-title">new student</h1>
+
+    <form id="student-form" novalidate>
+      <input type="hidden" id="sm-id" value="">
+
+      <section class="modal-section">
+        <p class="modal-section-label">Personal information</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>First name *</label><input type="text" id="sm-first-name" placeholder="First name"></div>
+          <div class="modal-field"><label>Last name *</label><input type="text" id="sm-last-name" placeholder="Last name"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="sm-email" placeholder="student@example.com"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="sm-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Street</label><input type="text" id="sm-street" placeholder="e.g. Bahnhofstrasse"></div>
+          <div class="modal-field"><label>Street number</label><input type="text" id="sm-street-number" placeholder="e.g. 3a"></div>
+          <div class="modal-field"><label>Postcode</label><input type="text" id="sm-postcode" placeholder="e.g. 8001"></div>
+          <div class="modal-field"><label>City</label><input type="text" id="sm-city" autocomplete="address-level2" placeholder="e.g. Zürich"></div>
+        </div>
+      </section>
+
+      <section class="modal-section">
+        <p class="modal-section-label">Emergency contact</p>
+        <div class="modal-grid">
+          <div class="modal-field"><label>Name</label><input type="text" id="sm-ec-name" placeholder="Full name"></div>
+          <div class="modal-field"><label>Relationship</label><input type="text" id="sm-ec-relationship" placeholder="e.g. Partner, Parent"></div>
+          <div class="modal-field"><label>Phone</label><input type="tel" id="sm-ec-phone" placeholder="+41…"></div>
+          <div class="modal-field"><label>Email</label><input type="email" id="sm-ec-email" placeholder="ec@example.com"></div>
+        </div>
+      </section>
+
+      <section class="modal-section">
+        <div class="modal-section-header">
+          <p class="modal-section-label">Billing</p>
+          <label class="checkbox-label">
+            <input type="checkbox" id="sm-billing-separate"> differs from student address
+          </label>
+        </div>
+        <div id="sm-billing-section" style="display:none;">
+          <div class="modal-grid">
+            <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+            <div class="modal-field"><label>Billing phone</label><input type="tel" id="sm-billing-phone" placeholder="+41…"></div>
+            <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
+            <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>
+            <div class="modal-field"><label>Billing street number</label><input type="text" id="sm-billing-street-number" placeholder="e.g. 3a"></div>
+            <div class="modal-field"><label>Billing postcode</label><input type="text" id="sm-billing-postcode" placeholder="e.g. 8001"></div>
+            <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
+          </div>
+        </div>
+        <p class="label-hint" id="sm-billing-hint" style="margin-top:0.4rem;">Student's personal address will be used for billing.</p>
+      </section>
+
+      <section class="modal-section">
+        <p class="modal-section-label">Admin</p>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Status</label>
+            <select id="sm-status">
+              <option value="active">active</option>
+              <option value="prospect">prospect</option>
+              <option value="inactive">inactive</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label>Payment method</label>
+            <select id="sm-payment-method">
+              <option value="">—</option>
+              <option value="bank">Bank transfer</option>
+              <option value="twint">Twint</option>
+            </select>
+          </div>
+          <div class="modal-field"><label>VAT number</label><input type="text" id="sm-vat" placeholder="CHE-…"></div>
+          <div class="modal-field full"><label>Notes</label><input type="text" id="sm-notes" placeholder="Internal notes"></div>
+        </div>
+      </section>
+
+      <div class="page-form-actions">
+        <a href="/admin.html#students" class="modal-cancel">cancel</a>
+        <button type="submit" class="modal-submit" id="sm-submit">save student</button>
+      </div>
+      <p class="modal-msg" id="sm-msg"></p>
+    </form>
+  </main>
+
+  <script type="module" src="/admin/student-form.js"></script>
+</body>
+</html>

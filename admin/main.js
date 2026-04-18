@@ -10,11 +10,6 @@ import {
   cancelSession,
   saveStudent,
   logSession,
-  openNewCourseModal,
-  closeNewCourseModal,
-  addParticipantBlock,
-  removeParticipantBlock,
-  submitNewCourse,
   deleteCourse,
   openAttendanceModal,
   closeAttendanceModal,
@@ -23,9 +18,6 @@ import {
   closeAddParticipantModal,
   submitAddParticipant,
   initAddParticipantSearch,
-  openEditCourseModal,
-  closeEditCourseModal,
-  submitEditCourse,
 } from './courses.js';
 import {
   loadStudents,
@@ -34,10 +26,7 @@ import {
   selectStudent,
   selectStudentFromCourse,
   backToCourse,
-  openStudentModal,
-  closeStudentModal,
   editStudent,
-  submitStudent,
   deleteStudent,
   openEnrollStudentModal,
   closeEnrollStudentModal,
@@ -71,11 +60,6 @@ const actions = {
   cancelSession,
   saveStudent,
   logSession,
-  openNewCourseModal,
-  closeNewCourseModal,
-  addParticipantBlock,
-  removeParticipantBlock,
-  submitNewCourse,
   deleteCourse,
   openAttendanceModal,
   closeAttendanceModal,
@@ -83,18 +67,12 @@ const actions = {
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
-  openEditCourseModal,
-  closeEditCourseModal,
-  submitEditCourse,
   // Students
   filterStudents,
   selectStudent,
   selectStudentFromCourse,
   backToCourse,
-  openStudentModal,
-  closeStudentModal,
   editStudent,
-  submitStudent,
   deleteStudent,
   openEnrollStudentModal,
   closeEnrollStudentModal,
@@ -178,7 +156,10 @@ document.addEventListener('admin:switchTab', (e) => {
 function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  loadStudents(getCurrentStudentFilter());
+  const hash = window.location.hash.replace('#', '');
+  const tab = TABS.includes(hash) ? hash : 'students';
+  if (hash && TABS.includes(hash)) history.replaceState({}, '', '/admin.html');
+  switchTab(tab);
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */
