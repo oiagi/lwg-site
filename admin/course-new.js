@@ -44,14 +44,20 @@ function buildStudentSearch(inputEl, dropdownEl, onSelect) {
 
   inputEl.addEventListener('input', () => {
     const q = inputEl.value.trim().toLowerCase();
-    if (!q) { hide(); return; }
+    if (!q) {
+      hide();
+      return;
+    }
     const matches = studentCache
       .filter((s) => {
         const name = `${s.first_name || ''} ${s.last_name || ''}`.trim().toLowerCase();
         return name.includes(q) || (s.email || '').toLowerCase().includes(q);
       })
       .slice(0, 8);
-    if (!matches.length) { hide(); return; }
+    if (!matches.length) {
+      hide();
+      return;
+    }
 
     dropdownEl.innerHTML = matches
       .map((s) => {
@@ -240,8 +246,12 @@ async function handleSubmit(e) {
   // Load student cache for search (fire-and-forget)
   apiFetch('/api/get-students?status=all')
     .then((r) => (r.ok ? r.json() : []))
-    .then((data) => { studentCache = data; })
-    .catch(() => { studentCache = []; });
+    .then((data) => {
+      studentCache = data;
+    })
+    .catch(() => {
+      studentCache = [];
+    });
 
   // Add participant button
   document.getElementById('nc-add-participant').addEventListener('click', addParticipantBlock);

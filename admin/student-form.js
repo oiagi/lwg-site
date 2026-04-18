@@ -42,9 +42,7 @@ function populate(data) {
     setValue('sm-billing-city', data.billing_city);
   } else if (data.billing_address) {
     // Legacy fallback: parse combined address "Street 3a, 8001 Zürich"
-    const [streetPart = '', cityPart = ''] = data.billing_address
-      .split(',')
-      .map((p) => p.trim());
+    const [streetPart = '', cityPart = ''] = data.billing_address.split(',').map((p) => p.trim());
     const streetM = streetPart.match(/^(.+?)\s+(\d+\w*)$/);
     if (streetM) {
       setValue('sm-billing-street', streetM[1]);
