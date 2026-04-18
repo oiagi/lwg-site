@@ -154,7 +154,7 @@ function renderCourses(courses) {
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
           <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
-          <button class="edit-course-btn" data-action="openEditCourseModal" data-args="${c.id}">edit</button>
+          <a class="edit-course-btn" href="/admin/course-edit.html?id=${c.id}">edit</a>
           <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">

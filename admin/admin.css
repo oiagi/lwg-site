@@ -1828,3 +1828,44 @@ html[data-device='mobile'] .avail-day {
   z-index: 200;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
+/* ── Standalone form pages (student-form, course-new, course-edit) ── */
+.page-form-shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.4rem 1.6rem 3rem;
+}
+.page-form-shell h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  margin: 0 0 1.6rem;
+}
+.page-form-back {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 1.2rem;
+}
+.page-form-back:hover {
+  color: var(--text);
+}
+.page-form-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border-soft);
+}
+.page-form-actions .modal-cancel,
+.page-form-actions .modal-submit {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
