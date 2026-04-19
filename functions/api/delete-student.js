@@ -1,8 +1,9 @@
 // functions/api/delete-student.js
 // DELETE /api/delete-student?id=<uuid>
 //
-// Deletes a student record. Blocked with 409 if the student has any linked
-// enrolments, enquiries, or invoices — caller should deactivate instead.
+// Deletes a student and all records that reference them (attendance,
+// enrolments, enquiries, invoices), then removes the student itself.
+// The frontend confirms the destructive action before calling.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
@@ -14,6 +15,10 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+
+// Tables that reference students.id via student_id. Ordered so that any
+// FK constraints with ON DELETE RESTRICT won't block the final delete.
+const RELATED_TABLES = ['attendance', 'enrolments', 'enquiries', 'invoices'];
 
 export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -27,33 +32,15 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
-  // Check for related records in parallel
-  const [enrolRes, enquiryRes, invoiceRes] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/enrolments?student_id=eq.${id}&select=id`, { headers: H }),
-    fetch(`${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&select=id`, { headers: H }),
-    fetch(`${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&select=id`, { headers: H }),
-  ]);
-
-  const [enrolments, enquiries, invoices] = await Promise.all([
-    enrolRes.ok ? enrolRes.json() : [],
-    enquiryRes.ok ? enquiryRes.json() : [],
-    invoiceRes.ok ? invoiceRes.json() : [],
-  ]);
-
-  const counts = {
-    courses: enrolments.length,
-    enquiries: enquiries.length,
-    invoices: invoices.length,
-  };
-
-  if (counts.courses > 0 || counts.enquiries > 0 || counts.invoices > 0) {
-    return jsonResponse(
-      {
-        error: 'Cannot delete: student has linked records. Deactivate instead.',
-        counts,
-      },
-      409
-    );
+  for (const table of RELATED_TABLES) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?student_id=eq.${id}`, {
+      method: 'DELETE',
+      headers: H,
+    });
+    if (!res.ok) {
+      console.error(`Failed to delete related ${table}:`, await res.text());
+      return errorResponse(`Could not delete student's ${table}`);
+    }
   }
 
   const delRes = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}`, {
