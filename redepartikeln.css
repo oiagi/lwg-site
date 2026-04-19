@@ -49,7 +49,7 @@ body {
   padding: 0 1rem 2rem;
   flex-wrap: wrap;
   border-bottom: 1px solid rgba(26, 26, 26, 0.12);
-  margin-bottom: 2.5rem;
+  margin-bottom: 3.25rem;
 }
 
 .tab {
@@ -93,7 +93,8 @@ body {
   background: #fff;
   border-radius: 8px;
   padding: 1.25rem 1.4rem;
-  margin-bottom: 1.4rem;
+  margin-top: 0.5rem;
+  margin-bottom: 2rem;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(26, 26, 26, 0.12);
   border-left: 3px solid #2980b9;
@@ -166,11 +167,6 @@ body {
   text-transform: uppercase;
   color: #888;
   margin-bottom: 0.75rem;
-}
-
-.particle-card .particle-function.cat-questions,
-.particle-card .particle-function.cat-hedging {
-  color: #2980b9;
 }
 
 .particle-card .particle-contexts {
@@ -499,11 +495,6 @@ body {
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(26, 26, 26, 0.15);
-}
-
-.cs-group h3.cat-questions,
-.cs-group h3.cat-hedging {
-  color: #2980b9;
 }
 
 .cs-row {
