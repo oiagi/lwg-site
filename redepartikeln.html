@@ -292,11 +292,11 @@ const particles = [
 ];
 
 const categories = {
-  softening: { label: "Abschwächung", blue: false },
-  emphasis:  { label: "Verstärkung",  blue: false },
-  questions: { label: "Fragen",        blue: true  },
-  urgency:   { label: "Dringlichkeit", blue: false },
-  hedging:   { label: "Absicherung",   blue: true  }
+  softening: { label: "Abschwächung" },
+  emphasis:  { label: "Verstärkung"  },
+  questions: { label: "Fragen"       },
+  urgency:   { label: "Dringlichkeit" },
+  hedging:   { label: "Absicherung"  }
 };
 
 // ========== QUIZ DATA ==========
@@ -371,8 +371,6 @@ function switchTab(tabName, activeBtn) {
 function renderReference() {
   const grid = document.getElementById('particleGrid');
   grid.innerHTML = particles.map((p) => {
-    const cat = categories[p.category];
-    const catClass = cat.blue ? 'cat-' + p.category : '';
     const exHtml = p.examples.map((ex) => {
       const deHtml = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '<span class="highlight">$1</span>');
       const typeHtml = ex.type ? `<div class="example-type">${ex.type}</div>` : '';
@@ -388,7 +386,7 @@ function renderReference() {
                 aria-expanded="false"
                 onclick="this.classList.toggle('expanded'); this.setAttribute('aria-expanded', this.classList.contains('expanded'))">
       <div class="particle-name">${p.name}</div>
-      <div class="particle-function ${catClass}">${p.function}</div>
+      <div class="particle-function">${p.function}</div>
       ${contextsHtml}
       <div class="particle-meaning">${p.meaning}</div>
       ${exHtml}
@@ -562,8 +560,7 @@ function renderCheatSheet() {
   let html = '';
   for (const [cat, items] of Object.entries(groups)) {
     const catInfo = categories[cat];
-    const cls = catInfo.blue ? 'cat-' + cat : '';
-    html += `<div class="cs-group"><h3 class="${cls}">${catInfo.label}</h3>`;
+    html += `<div class="cs-group"><h3>${catInfo.label}</h3>`;
     items.forEach((p) => {
       const ex = p.examples[0];
       const exText = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '$1');
