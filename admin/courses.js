@@ -116,6 +116,10 @@ function renderCourses(courses) {
             const invoiceBlock = openInvoices
               ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
               : '';
+            const scheduleBtn = s.email
+              ? `<button class="action-btn" data-action="sendStudentSchedule" data-args="${s.id},${c.id}">✉ send schedule</button>
+                 <span class="saved-msg" id="schedule-msg-${s.id}">sent</span>`
+              : '';
             return `
       <div class="progress-block">
         <p class="progress-name">
@@ -132,6 +136,7 @@ function renderCourses(courses) {
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
+          ${scheduleBtn}
         </div>
         ${invoiceBlock}
       </div>
@@ -193,8 +198,13 @@ function renderCourses(courses) {
           </div>
           <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
           ${studentBlocks}
-          <button class="save-btn" style="margin-top:0.4rem;"
-            data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
+          <div class="course-actions-row" style="margin-top:0.4rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
+            <button class="save-btn"
+              data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
+            <button class="save-btn"
+              data-action="sendCourseConfirmation" data-args="${c.id}">✉ send confirmation</button>
+            <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+          </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
           ${sessions}
@@ -923,5 +933,44 @@ export async function submitAddParticipant() {
     msgEl.style.display = 'block';
     btn.textContent = 'add';
     btn.disabled = false;
+  }
+}
+
+/* ── Email: course confirmation + schedule updates ───────────────── */
+export async function sendCourseConfirmation(courseId) {
+  if (
+    !confirm(
+      'Send course confirmation email (overview, scheduled lessons, AGB) to all enrolled students?'
+    )
+  )
+    return;
+  const msg = document.getElementById('confirm-msg-' + courseId);
+  try {
+    const res = await apiFetch('/api/send-course-confirmation', {
+      method: 'POST',
+      body: { course_id: courseId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
+    if (msg) showMessage(msg, label);
+  } catch (err) {
+    alert('Could not send confirmation: ' + (err.message || err));
+  }
+}
+
+export async function sendStudentSchedule(studentId, courseId) {
+  if (!confirm('Send the current schedule to this student?')) return;
+  const msg = document.getElementById('schedule-msg-' + studentId);
+  try {
+    const res = await apiFetch('/api/send-session-schedule', {
+      method: 'POST',
+      body: { course_id: courseId, student_id: studentId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    if (msg) showMessage(msg, 'schedule sent');
+  } catch (err) {
+    alert('Could not send schedule: ' + (err.message || err));
   }
 }
