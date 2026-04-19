@@ -146,6 +146,7 @@ async function handleSubmit(e) {
   const sessionLength = document.getElementById('nc-session-length').value;
   const price = document.getElementById('nc-price').value;
   const location = document.getElementById('nc-location').value;
+  const singleSession = document.getElementById('nc-single-session')?.checked || false;
 
   const participants = [];
   document.querySelectorAll('#nc-participants .participant-block').forEach((block) => {
@@ -181,6 +182,7 @@ async function handleSubmit(e) {
         session_length_minutes: durationMinutes,
         price_per_session: price ? parseFloat(price) : null,
         location: location || null,
+        single_session: singleSession,
         booking_data: { service, level, group: groupType },
         contact_data: { participants },
       },

@@ -14,6 +14,9 @@
  * @param {string} opts.firstSessionAt — ISO datetime for first session
  * @param {number} opts.durationMinutes — Session duration (default 50)
  * @param {number|null} opts.sessionsTotal — Block size or null for open-ended
+ * @param {boolean} opts.singleSession — If true, create only the first session
+ *   (no RRULE). Teachers add subsequent sessions manually in Google Calendar,
+ *   keeping the course code in the event title so sync picks them up.
  * @returns {Promise<string>} Calendar event ID
  */
 export async function createCourseCalendarEvent({
@@ -26,6 +29,7 @@ export async function createCourseCalendarEvent({
   firstSessionAt,
   durationMinutes = 50,
   sessionsTotal,
+  singleSession = false,
 }) {
   const participants = contact.participants || [];
   const participantNames = participants.map((p) => p.firstName).filter(Boolean);
@@ -36,39 +40,46 @@ export async function createCourseCalendarEvent({
     ? `${courseCode} — ${participantNames.join('+')} <> ${teacherName}`
     : `${courseCode} <> ${teacherName}`;
 
-  const sessionsLine = sessionsTotal
-    ? `Sessions: ${sessionsTotal} × 50min\n`
-    : 'Sessions: open-ended\n';
+  const sessionsLine = singleSession
+    ? `Sessions: ${sessionsTotal ? sessionsTotal + ' planned manually' : 'planned manually'}\n`
+    : sessionsTotal
+      ? `Sessions: ${sessionsTotal} × 50min\n`
+      : 'Sessions: open-ended\n';
 
-  const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-  const rruleDay = dayNames[startTime.getDay()];
-  const recurrence = sessionsTotal
-    ? [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay};COUNT=${sessionsTotal}`]
-    : [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`];
+  let recurrence;
+  if (!singleSession) {
+    const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+    const rruleDay = dayNames[startTime.getDay()];
+    recurrence = sessionsTotal
+      ? [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay};COUNT=${sessionsTotal}`]
+      : [`RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`];
+  }
+
+  const eventBody = {
+    summary: eventTitle,
+    description:
+      `Course: ${courseCode}\n` +
+      (booking.lessonType
+        ? `What: ${booking.lessonType}\n`
+        : `Service: ${booking.service || ''}\n`) +
+      (booking.level ? `Level: ${booking.level}\n` : '') +
+      (booking.language ? `Language: ${booking.language}\n` : '') +
+      (booking.exam ? `Exam: ${booking.exam}\n` : '') +
+      sessionsLine +
+      `\nLead: ${contact.lead?.firstName || ''} ${contact.lead?.lastName || ''}` +
+      `\nEmail: ${contact.lead?.email || ''}` +
+      `\nPhone: ${contact.lead?.phone || ''}`,
+    start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
+    end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Zurich' },
+  };
+  if (recurrence) eventBody.recurrence = recurrence;
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?sendUpdates=none`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-      body: JSON.stringify({
-        summary: eventTitle,
-        description:
-          `Course: ${courseCode}\n` +
-          (booking.lessonType
-            ? `What: ${booking.lessonType}\n`
-            : `Service: ${booking.service || ''}\n`) +
-          (booking.level ? `Level: ${booking.level}\n` : '') +
-          (booking.language ? `Language: ${booking.language}\n` : '') +
-          (booking.exam ? `Exam: ${booking.exam}\n` : '') +
-          sessionsLine +
-          `\nLead: ${contact.lead?.firstName || ''} ${contact.lead?.lastName || ''}` +
-          `\nEmail: ${contact.lead?.email || ''}` +
-          `\nPhone: ${contact.lead?.phone || ''}`,
-        start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
-        end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Zurich' },
-        recurrence,
-      }),
+      body: JSON.stringify(eventBody),
     }
   );
 
@@ -79,7 +90,10 @@ export async function createCourseCalendarEvent({
   }
 
   const data = await res.json();
-  return { eventId: data.id, recurrenceRule: recurrence[0].replace('RRULE:', '') };
+  return {
+    eventId: data.id,
+    recurrenceRule: recurrence ? recurrence[0].replace('RRULE:', '') : null,
+  };
 }
 
 /**
