@@ -76,9 +76,12 @@ function renderCourses(courses) {
 
       const sessions = (c.sessions || [])
         .filter((s) => s.status !== 'cancelled')
+        .slice()
+        .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
         .map(
-          (s) => `
+          (s, idx) => `
       <div class="session-row" id="sess-${s.id}">
+        <div class="session-number">${idx + 1}.</div>
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDate(s.scheduled_at)}</div>
         <div class="session-status-label">${s.status}</div>

@@ -72,6 +72,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     price_per_session,
     location,
     course_code_override,
+    single_session,
     booking_data,
     contact_data;
   try {
@@ -85,6 +86,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       price_per_session,
       location,
       course_code_override,
+      single_session = false,
       booking_data,
       contact_data,
     } = await request.json());
@@ -170,6 +172,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       firstSessionAt: first_session_at,
       durationMinutes: duration_minutes,
       sessionsTotal: sessions_total,
+      singleSession: single_session,
     }));
   } catch (err) {
     console.error('Calendar API error:', err);
