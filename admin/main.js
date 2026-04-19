@@ -18,6 +18,8 @@ import {
   closeAddParticipantModal,
   submitAddParticipant,
   initAddParticipantSearch,
+  sendCourseConfirmation,
+  sendStudentSchedule,
 } from './courses.js';
 import {
   loadStudents,
@@ -67,6 +69,8 @@ const actions = {
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
+  sendCourseConfirmation,
+  sendStudentSchedule,
   // Students
   filterStudents,
   selectStudent,
