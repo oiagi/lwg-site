@@ -35,6 +35,15 @@
     <div class="main">
 
       <div id="tab-reference" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-reference">
+        <aside class="position-note" aria-label="Stellung im Satz">
+          <h2>Stellung im Satz</h2>
+          <p>
+            Modalpartikeln stehen immer im <strong>Mittelfeld</strong> des Satzes &mdash;
+            meist vor <em>auch</em> oder <em>nicht</em>, bzw. vor Modal- und Lokalangaben und
+            vor den <em>Verbgefährten</em> (Wörter und Informationen, die direkt zum Verb
+            gehören oder direkt mit ihm verbunden sind).
+          </p>
+        </aside>
         <div class="particle-grid" id="particleGrid"></div>
       </div>
 
@@ -55,35 +64,40 @@ const particles = [
   {
     name: "mal",
     function: "Abschwächung / Höflichkeit",
-    meaning: "Makes requests softer and friendlier. Turns a command into a casual suggestion.",
+    contexts: "Aufforderungen · Aussagesätze",
+    meaning: "Makes requests softer and friendlier. Turns a command into a casual suggestion; in statements signals a brief, tentative action.",
     examples: [
-      { de: "Kannst du {mal} kurz helfen?", en: "Can you help me for a sec?" },
-      { de: "Schau {mal}!", en: "Look! / Have a look!" },
-      { de: "Probier das {mal}.", en: "Why don't you try this." }
+      { type: "Aufforderung", de: "Kannst du {mal} kurz helfen?", en: "Can you help me for a sec?" },
+      { type: "Aufforderung", de: "Schau {mal}!", en: "Look! / Have a look!" },
+      { type: "Aussagesatz", de: "Ich muss {mal} kurz nachdenken.", en: "I need to think for a moment." },
+      { type: "Aussagesatz", de: "Das ist {mal} ein guter Kaffee!", en: "Now THAT is a good coffee!" }
     ],
-    tip: "Use 'mal' to soften any imperative. Compare: 'Komm her!' vs. 'Komm mal her!' (Come here, would you?).",
+    tip: "Use 'mal' to soften any imperative. Compare: 'Komm her!' vs. 'Komm mal her!' (Come here, would you?). In statements it can mean 'for a moment' or — with stress — 'now THAT is a…'.",
     category: "softening"
   },
   {
     name: "doch",
     function: "Widerspruch / Nachdruck",
-    meaning: "Expresses contradiction, surprise, or reinforces something the speaker considers obvious. Very versatile!",
+    contexts: "Aussagesätze · Aufforderungen (doch mal) · Ausrufesätze · Wunschsätze",
+    meaning: "Expresses contradiction, urges action, intensifies exclamations, or conveys longing in wishes. Very versatile!",
     examples: [
-      { de: "Das ist {doch} Unsinn!", en: "That's nonsense! (come on!)" },
-      { de: "Du weißt {doch}, dass ich recht habe.", en: "You know (perfectly well) that I'm right." },
-      { de: "Komm {doch} mit!", en: "Come along! (why wouldn't you?)" }
+      { type: "Aussagesatz", de: "Du weißt {doch}, dass ich recht habe.", en: "You know (perfectly well) that I'm right." },
+      { type: "Aufforderung", de: "Komm {doch mal} mit!", en: "Come along! (why wouldn't you?)" },
+      { type: "Ausrufesatz", de: "Das ist {doch} Unsinn!", en: "That's nonsense! (come on!)" },
+      { type: "Wunschsatz", de: "Wenn er {doch} nur hier wäre!", en: "If only he were here!" }
     ],
-    tip: "'Doch' is one of the most important particles. In statements: 'but actually / after all'. In imperatives: urgency or encouragement. Standalone: 'Yes, it IS!' to contradict a negative question.",
+    tip: "'Doch' is one of the most versatile particles. Statements: 'after all / as you know'. Imperatives (often 'doch mal'): urgency or encouragement. Exclamations: indignation or surprise. Wishes: longing, especially combined with 'nur'/'bloß'.",
     category: "emphasis"
   },
   {
     name: "denn",
     function: "Interesse / Neugier",
+    contexts: "Fragen (W-Fragen und Ja-Nein-Fragen)",
     meaning: "Shows genuine curiosity or interest in questions. Makes questions warmer and less interrogative.",
     examples: [
-      { de: "Was machst du {denn} hier?", en: "What are you doing here? (I'm curious!)" },
-      { de: "Wie heißt du {denn}?", en: "So what's your name?" },
-      { de: "Hast du {denn} keine Zeit?", en: "Don't you have time? (I'm surprised)" }
+      { type: "W-Frage", de: "Was machst du {denn} hier?", en: "What are you doing here? (I'm curious!)" },
+      { type: "W-Frage", de: "Wie heißt du {denn}?", en: "So what's your name?" },
+      { type: "Ja-Nein-Frage", de: "Hast du {denn} keine Zeit?", en: "Don't you have time? (I'm surprised)" }
     ],
     tip: "Without 'denn', questions can sound like a police interrogation. With 'denn', they become friendly and conversational. Use it in almost every casual question!",
     category: "questions"
@@ -91,59 +105,81 @@ const particles = [
   {
     name: "eigentlich",
     function: "Themenwechsel / echtes Interesse",
-    meaning: "Signals a change of topic, deeper curiosity, or 'when you think about it...'",
+    contexts: "Fragen (W-Fragen und Ja-Nein-Fragen)",
+    meaning: "Signals a change of topic or deeper curiosity: 'by the way...' / 'when you think about it...'",
     examples: [
-      { de: "Was willst du {eigentlich} werden?", en: "What do you actually want to become?" },
-      { de: "Wer ist das {eigentlich}?", en: "Who is that, anyway?" },
-      { de: "{Eigentlich} wollte ich zu Hause bleiben.", en: "Actually, I wanted to stay home." }
+      { type: "W-Frage", de: "Was willst du {eigentlich} werden?", en: "What do you actually want to become?" },
+      { type: "W-Frage", de: "Wer ist das {eigentlich}?", en: "Who is that, anyway?" },
+      { type: "Ja-Nein-Frage", de: "Bist du {eigentlich} müde?", en: "Are you actually tired (by the way)?" }
     ],
-    tip: "'Eigentlich' in questions signals 'I've been wondering...' or 'by the way...'. In statements it means 'actually / to be honest'. Great for steering conversations.",
+    tip: "'Eigentlich' in questions signals 'I've been wondering...' or 'by the way...'. Great for steering conversations toward new topics.",
     category: "questions"
   },
   {
     name: "ja",
     function: "Bestätigung / gemeinsames Wissen",
-    meaning: "Signals that something is obvious or already known to both speakers. 'As you/we know...'",
+    contexts: "Aussagesätze · Aufforderungssätze · Ausrufesätze",
+    meaning: "Signals shared knowledge in statements, urgent warnings in imperatives, and strong surprise in exclamations.",
     examples: [
-      { de: "Das ist {ja} toll!", en: "That's great! (wow, I see!)" },
-      { de: "Du weißt {ja}, wie er ist.", en: "You know how he is. (as we both know)" },
-      { de: "Es ist {ja} nicht so einfach.", en: "It's not that easy, (as you know)." }
+      { type: "Aussagesatz", de: "Du weißt {ja}, wie er ist.", en: "You know how he is. (as we both know)" },
+      { type: "Aufforderungssatz", de: "Sei {ja} vorsichtig!", en: "Be careful — I really mean it!" },
+      { type: "Aufforderungssatz", de: "Mach das {ja} nicht!", en: "Don't you dare do that!" },
+      { type: "Ausrufesatz", de: "Das ist {ja} toll!", en: "Wow, that's great!" },
+      { type: "Ausrufesatz", de: "Du bist {ja} völlig durchgefroren!", en: "You're completely frozen through!" }
     ],
-    tip: "'Ja' as a particle ≠ 'ja' as 'yes'. It reminds the listener that you share common knowledge. Can also express surprise: 'Das ist ja unglaublich!' = 'Wow, that's incredible!'",
+    tip: "'Ja' as a particle ≠ 'ja' as 'yes'. Statements: shared knowledge ('as you know'). Imperatives: urgent warning ('make sure you…!'). Exclamations: surprise ('wow!').",
     category: "emphasis"
   },
   {
     name: "aber",
     function: "Überraschung / Verstärkung",
+    contexts: "Ausrufesätze",
     meaning: "Expresses surprise or intensifies an exclamation. Similar to 'really' or 'wow'.",
     examples: [
-      { de: "Das ist {aber} nett!", en: "That's really nice! (more than expected)" },
-      { de: "Du bist {aber} groß geworden!", en: "Wow, you've really grown!" },
-      { de: "Das war {aber} teuer!", en: "That was really expensive!" }
+      { type: "Ausrufesatz", de: "Das ist {aber} nett!", en: "That's really nice! (more than expected)" },
+      { type: "Ausrufesatz", de: "Du bist {aber} groß geworden!", en: "Wow, you've really grown!" },
+      { type: "Ausrufesatz", de: "Das war {aber} teuer!", en: "That was really expensive!" }
     ],
     tip: "'Aber' as a particle is NOT 'but'. It exclaims surprise at intensity: something is more [adjective] than expected. Think of it as 'wow, really!'",
     category: "emphasis"
   },
   {
+    name: "auch",
+    function: "Vergewisserung / Bedenken",
+    contexts: "Ja-Nein-Fragen · W-Fragen",
+    meaning: "In questions: expresses doubt, concern, or the need for reassurance. In W-questions it can also signal frustration.",
+    examples: [
+      { type: "Ja-Nein-Frage", de: "Hast du {auch} abgeschlossen?", en: "Did you really lock up? (I want to be sure)" },
+      { type: "Ja-Nein-Frage", de: "Bist du dir {auch} sicher?", en: "Are you really sure?" },
+      { type: "W-Frage", de: "Warum ist er {auch} so stur?", en: "Why does he have to be so stubborn?!" },
+      { type: "W-Frage", de: "Wer geht {auch} bei dem Wetter raus?", en: "Who on earth goes outside in this weather?" }
+    ],
+    tip: "'Auch' as a particle ≠ 'also / too'. In Ja-Nein-Fragen it seeks reassurance ('really?'). In W-Fragen it often expresses frustration or reproach: 'why does it have to be…?!'",
+    category: "questions"
+  },
+  {
     name: "ruhig",
     function: "Ermutigung / Erlaubnis",
+    contexts: "Aussagesätze · Aufforderungen",
     meaning: "Encourages someone to do something freely, without worry. 'Go ahead, feel free!'",
     examples: [
-      { de: "Du kannst {ruhig} bleiben.", en: "You can stay, no problem." },
-      { de: "Frag {ruhig}!", en: "Go ahead and ask! (don't be shy)" },
-      { de: "Nimm dir {ruhig} noch ein Stück.", en: "Help yourself to another piece." }
+      { type: "Aussagesatz", de: "Du kannst {ruhig} bleiben.", en: "You can stay, no problem." },
+      { type: "Aufforderung", de: "Frag {ruhig}!", en: "Go ahead and ask! (don't be shy)" },
+      { type: "Aufforderung", de: "Nimm dir {ruhig} noch ein Stück.", en: "Help yourself to another piece." }
     ],
     tip: "'Ruhig' as a particle ≠ 'quiet/calm'. It gives permission or encouragement. Signals: 'I'm okay with it, don't hold back!'",
     category: "softening"
   },
   {
     name: "bloß",
-    function: "Warnung / Verstärkung",
-    meaning: "Adds urgency to warnings or intensifies questions. Can express worry or emphasis.",
+    function: "Warnung / Verzweiflung",
+    contexts: "Aufforderungen · W-Fragen",
+    meaning: "Adds urgency to warnings and intensifies W-questions with desperation or bewilderment.",
     examples: [
-      { de: "Mach das {bloß} nicht!", en: "Don't you dare do that!" },
-      { de: "Was habe ich {bloß} getan?", en: "What on earth have I done?" },
-      { de: "Fahr {bloß} vorsichtig!", en: "Drive carefully! (I mean it!)" }
+      { type: "Aufforderung", de: "Mach das {bloß} nicht!", en: "Don't you dare do that!" },
+      { type: "Aufforderung", de: "Fahr {bloß} vorsichtig!", en: "Drive carefully! (I mean it!)" },
+      { type: "W-Frage", de: "Was habe ich {bloß} getan?", en: "What on earth have I done?" },
+      { type: "W-Frage", de: "Warum hast du {bloß} nichts gesagt?", en: "Why on earth didn't you say anything?" }
     ],
     tip: "'Bloß' in imperatives = strong warning. In W-questions = desperation or bewilderment. Synonym: 'nur' works the same way as a particle.",
     category: "urgency"
@@ -151,35 +187,51 @@ const particles = [
   {
     name: "halt",
     function: "Resignation / Unabänderlichkeit",
+    contexts: "Aussagesätze",
     meaning: "Signals acceptance: 'that's just how it is.' Similar to 'eben' but more colloquial (southern German).",
     examples: [
-      { de: "Das ist {halt} so.", en: "That's just the way it is." },
-      { de: "Dann musst du {halt} früher aufstehen.", en: "Then you just have to get up earlier." },
-      { de: "Man kann {halt} nicht alles haben.", en: "You just can't have everything." }
+      { type: "Aussagesatz", de: "Das ist {halt} so.", en: "That's just the way it is." },
+      { type: "Aussagesatz", de: "Dann musst du {halt} früher aufstehen.", en: "Then you just have to get up earlier." },
+      { type: "Aussagesatz", de: "Man kann {halt} nicht alles haben.", en: "You just can't have everything." }
     ],
-    tip: "'Halt' is very common in spoken German, especially in the south. Expresses resignation — there's no alternative. 'Eben' is the more standard equivalent.",
+    tip: "'Halt' is very common in spoken German, especially in the south. Expresses resignation — there's no alternative. 'Eben' and 'nun (ein)mal' are near-equivalents.",
     category: "emphasis"
   },
   {
     name: "eben",
     function: "Bestätigung / Unvermeidlichkeit",
+    contexts: "Aussagesätze",
     meaning: "Confirms something as inevitable or obvious. 'That's precisely it / exactly.'",
     examples: [
-      { de: "Das ist {eben} der Unterschied.", en: "That's precisely the difference." },
-      { de: "Er ist {eben} so.", en: "He's just like that. (nothing to do about it)" },
-      { de: "Dann bleiben wir {eben} hier.", en: "Then we'll just stay here." }
+      { type: "Aussagesatz", de: "Das ist {eben} der Unterschied.", en: "That's precisely the difference." },
+      { type: "Aussagesatz", de: "Er ist {eben} so.", en: "He's just like that. (nothing to do about it)" },
+      { type: "Aussagesatz", de: "Dann bleiben wir {eben} hier.", en: "Then we'll just stay here." }
     ],
-    tip: "'Eben' and 'halt' are near-synonyms. 'Eben' is more common in northern Germany, 'halt' in the south. Both signal 'no alternative, deal with it.'",
+    tip: "'Eben', 'halt' and 'nun (ein)mal' are near-synonyms. 'Eben' is more common in northern Germany, 'halt' in the south. All signal 'no alternative, deal with it.'",
+    category: "emphasis"
+  },
+  {
+    name: "nun einmal",
+    function: "Unabänderlichkeit / Akzeptanz",
+    contexts: "Aussagesätze",
+    meaning: "Expresses 'that's just how it is' — a resigned acceptance. Synonym of 'eben' and 'halt'. Very often shortened to 'nun mal'.",
+    examples: [
+      { type: "Aussagesatz", de: "Das ist {nun einmal} so.", en: "That's just the way it is." },
+      { type: "Aussagesatz", de: "Er ist {nun mal} der Chef.", en: "He's the boss, and that's that." },
+      { type: "Aussagesatz", de: "So ist das Leben {nun mal}.", en: "That's life, simple as that." }
+    ],
+    tip: "Fully interchangeable with 'eben' and 'halt'. 'Nun mal' is the everyday spoken form; 'nun einmal' feels slightly more formal. Both particles travel together as a unit.",
     category: "emphasis"
   },
   {
     name: "wohl",
     function: "Vermutung / Unsicherheit",
+    contexts: "Aussagesätze",
     meaning: "Expresses assumption or probability. 'Probably / I suppose / presumably.'",
     examples: [
-      { de: "Er ist {wohl} krank.", en: "He's probably sick." },
-      { de: "Das wird {wohl} stimmen.", en: "That's presumably true." },
-      { de: "Du hast {wohl} recht.", en: "I suppose you're right." }
+      { type: "Aussagesatz", de: "Er ist {wohl} krank.", en: "He's probably sick." },
+      { type: "Aussagesatz", de: "Das wird {wohl} stimmen.", en: "That's presumably true." },
+      { type: "Aussagesatz", de: "Du hast {wohl} recht.", en: "I suppose you're right." }
     ],
     tip: "'Wohl' signals you're not 100% sure but it's your best guess. Softer than 'wahrscheinlich' — more like 'I'd think so.'",
     category: "hedging"
@@ -187,23 +239,26 @@ const particles = [
   {
     name: "schon",
     function: "Zuversicht / Einschränkung",
-    meaning: "Expresses confidence, concession, or reassurance. 'Sure / don't worry / I suppose.'",
+    contexts: "Aussagesätze · W-Fragen (rhetorisch)",
+    meaning: "In statements: reassuring confidence ('don't worry, it'll be fine') or concession. In rhetorical W-questions: implies 'nobody'.",
     examples: [
-      { de: "Das wird {schon} klappen.", en: "It'll work out. (don't worry)" },
-      { de: "Das stimmt {schon}, aber...", en: "That's true, sure, but..." },
-      { de: "Wer will das {schon}?", en: "Who'd want that? (rhetorical)" }
+      { type: "Aussagesatz", de: "Das wird {schon} klappen.", en: "It'll work out. (don't worry)" },
+      { type: "Aussagesatz", de: "Das stimmt {schon}, aber...", en: "That's true, sure, but..." },
+      { type: "W-Frage", de: "Wer will das {schon}?", en: "Who'd want that? (nobody, rhetorical)" },
+      { type: "W-Frage", de: "Was soll {schon} passieren?", en: "What could possibly go wrong? (nothing)" }
     ],
-    tip: "'Schon' as a particle ≠ 'already'. Often reassuring ('Das wird schon!') or concessive ('stimmt schon, aber...'). In rhetorical questions it implies 'nobody'.",
+    tip: "'Schon' as a particle ≠ 'already'. Statements: reassurance or concession. Rhetorical W-questions: the implied answer is 'nobody / nothing'.",
     category: "hedging"
   },
   {
     name: "nur",
-    function: "Warnung / Einschränkung",
-    meaning: "Adds urgency to warnings (like 'bloß'). In questions expresses helplessness.",
+    function: "Warnung / Verzweiflung / Wunsch",
+    contexts: "Aufforderungen · Fragen · Wunschsätze",
+    meaning: "Adds urgency to warnings (like 'bloß'). In W-questions expresses helplessness. In 'wenn'-wishes means 'if only'.",
     examples: [
-      { de: "Lass das {nur}!", en: "Stop that! (I'm warning you)" },
-      { de: "Was soll ich {nur} machen?", en: "What am I supposed to do? (helpless)" },
-      { de: "Wenn er {nur} hier wäre!", en: "If only he were here!" }
+      { type: "Aufforderung", de: "Lass das {nur}!", en: "Stop that! (I'm warning you)" },
+      { type: "W-Frage", de: "Was soll ich {nur} machen?", en: "What am I supposed to do? (helpless)" },
+      { type: "Wunschsatz", de: "Wenn er {nur} hier wäre!", en: "If only he were here!" }
     ],
     tip: "'Nur' as a particle = 'bloß'. In wishes with 'wenn...nur' it means 'if only'. Don't confuse with 'nur' meaning 'only'.",
     category: "urgency"
@@ -211,11 +266,12 @@ const particles = [
   {
     name: "etwa",
     function: "Unglaube / rhetorische Frage",
+    contexts: "Ja-Nein-Fragen",
     meaning: "Signals disbelief in yes/no questions. The speaker hopes the answer is 'no'.",
     examples: [
-      { de: "Bist du {etwa} krank?", en: "Don't tell me you're sick?!" },
-      { de: "Willst du {etwa} aufgeben?", en: "You're not going to give up, are you?!" },
-      { de: "Hast du {etwa} gelogen?", en: "Did you actually lie?! (please say no)" }
+      { type: "Ja-Nein-Frage", de: "Bist du {etwa} krank?", en: "Don't tell me you're sick?!" },
+      { type: "Ja-Nein-Frage", de: "Willst du {etwa} aufgeben?", en: "You're not going to give up, are you?!" },
+      { type: "Ja-Nein-Frage", de: "Hast du {etwa} gelogen?", en: "Did you actually lie?! (please say no)" }
     ],
     tip: "'Etwa' in questions means 'surely not?!' or 'don't tell me...'. The speaker expects and hopes for 'nein'. Shows shock or disbelief.",
     category: "questions"
@@ -223,11 +279,12 @@ const particles = [
   {
     name: "vielleicht",
     function: "Überraschung / Ausruf",
+    contexts: "Ausrufesätze",
     meaning: "In exclamations: expresses strong surprise or disbelief. Not 'maybe'!",
     examples: [
-      { de: "Das ist {vielleicht} ein Chaos!", en: "What a mess this is! (wow)" },
-      { de: "Du bist {vielleicht} ein Held!", en: "Some hero you are! (ironic)" },
-      { de: "Das war {vielleicht} ein Tag!", en: "What a day that was!" }
+      { type: "Ausrufesatz", de: "Das ist {vielleicht} ein Chaos!", en: "What a mess this is! (wow)" },
+      { type: "Ausrufesatz", de: "Du bist {vielleicht} ein Held!", en: "Some hero you are! (ironic)" },
+      { type: "Ausrufesatz", de: "Das war {vielleicht} ein Tag!", en: "What a day that was!" }
     ],
     tip: "As a particle, 'vielleicht' does NOT mean 'maybe'. Expresses amazement at how extreme something is. Always in exclamations, never in questions.",
     category: "emphasis"
@@ -258,7 +315,12 @@ const quizQuestions = [
   { sentence: "Bist du ___ krank?", translation: "Don't tell me you're sick?!", answer: "etwa", options: ["etwa", "denn", "vielleicht", "wohl"], context: "Shocked reaction — hoping the answer is 'no'.", explanation: "'Etwa' expresses disbelief in questions — the speaker really hopes the answer is 'no'. It's 'surely not?!'" },
   { sentence: "Das ist ___ ein Chaos!", translation: "What a mess! (wow)", answer: "vielleicht", options: ["aber", "vielleicht", "ja", "doch"], context: "Exclaiming about how extreme a situation is.", explanation: "'Vielleicht' as a particle ≠ 'maybe'. In exclamations it means 'what a...!' expressing surprise at intensity." },
   { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answer: "nur", options: ["nur", "bloß", "mal", "doch"], context: "Expressing a wish — longing for someone's presence.", explanation: "'Nur' (or 'bloß') in wishes with 'wenn' means 'if only'. Both particles work identically here." },
-  { sentence: "Dann bleiben wir ___ hier.", translation: "Then we'll just stay here.", answer: "eben", options: ["eben", "halt", "schon", "ruhig"], context: "Accepting a situation — the restaurant is full, so...", explanation: "'Eben' signals resigned acceptance — 'there's no alternative, so we'll just do this.' 'Halt' would also work." }
+  { sentence: "Dann bleiben wir ___ hier.", translation: "Then we'll just stay here.", answer: "eben", options: ["eben", "halt", "schon", "ruhig"], context: "Accepting a situation — the restaurant is full, so...", explanation: "'Eben' signals resigned acceptance — 'there's no alternative, so we'll just do this.' 'Halt' or 'nun mal' would also work." },
+  { sentence: "Hast du ___ abgeschlossen?", translation: "Did you really lock up? (I want to be sure)", answer: "auch", options: ["auch", "denn", "etwa", "eigentlich"], context: "Leaving the house and double-checking with your partner.", explanation: "'Auch' in Ja-Nein-Fragen seeks reassurance — 'are you really sure?'. It's about confirming, not adding information." },
+  { sentence: "Warum ist er ___ so stur?", translation: "Why does he have to be so stubborn?!", answer: "auch", options: ["auch", "bloß", "denn", "schon"], context: "Frustrated about a stubborn friend.", explanation: "'Auch' in W-Fragen expresses frustration or reproach — 'why does it have to be like this?!' It's a particle of exasperation here." },
+  { sentence: "Er ist ___ der Chef.", translation: "He's the boss, and that's that.", answer: "nun mal", options: ["nun mal", "ja", "wohl", "schon"], context: "Resigned acceptance of a hierarchy.", explanation: "'Nun mal' (or 'nun einmal') signals 'that's just the way it is' — interchangeable with 'eben' and 'halt'." },
+  { sentence: "Sei ___ vorsichtig!", translation: "Be careful — I really mean it!", answer: "ja", options: ["ja", "mal", "ruhig", "doch"], context: "Urgent warning to someone heading into a risky situation.", explanation: "'Ja' in Aufforderungen is an urgent warning — 'make sure you…!'. Stronger and more insistent than a plain imperative." },
+  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answer: "doch", options: ["doch", "ja", "eben", "schon"], context: "Wishing for someone's presence at an important moment.", explanation: "'Doch' in Wunschsätzen expresses longing — often combined with 'nur' or 'bloß' for extra emphasis." }
 ];
 
 
@@ -312,18 +374,22 @@ function renderReference() {
     const cat = categories[p.category];
     const catClass = cat.blue ? 'cat-' + p.category : '';
     const exHtml = p.examples.map((ex) => {
-      const deHtml = ex.de.replace(/\{(\w+)\}/g, '<span class="highlight">$1</span>');
+      const deHtml = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '<span class="highlight">$1</span>');
+      const typeHtml = ex.type ? `<div class="example-type">${ex.type}</div>` : '';
       return `<div class="example-box">
+        ${typeHtml}
         <div class="de">${deHtml}</div>
         <div class="en">${ex.en}</div>
       </div>`;
     }).join('');
+    const contextsHtml = p.contexts ? `<div class="particle-contexts">${p.contexts}</div>` : '';
 
     return `<div class="particle-card" role="button" tabindex="0"
                 aria-expanded="false"
                 onclick="this.classList.toggle('expanded'); this.setAttribute('aria-expanded', this.classList.contains('expanded'))">
       <div class="particle-name">${p.name}</div>
       <div class="particle-function ${catClass}">${p.function}</div>
+      ${contextsHtml}
       <div class="particle-meaning">${p.meaning}</div>
       ${exHtml}
       <div class="expand-hint">▸ Tipp anzeigen</div>
@@ -500,7 +566,7 @@ function renderCheatSheet() {
     html += `<div class="cs-group"><h3 class="${cls}">${catInfo.label}</h3>`;
     items.forEach((p) => {
       const ex = p.examples[0];
-      const exText = ex.de.replace(/\{(\w+)\}/g, '$1');
+      const exText = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '$1');
       html += `<div class="cs-row">
         <div class="cs-particle">${p.name}</div>
         <div class="cs-function">${p.function}</div>
