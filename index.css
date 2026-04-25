@@ -24,8 +24,20 @@ body.nav-active {
   text-align: center;
   animation: fadeUp 0.8s ease both;
 }
+.hero-cap {
+  width: 88px;
+  height: auto;
+  display: block;
+  color: var(--ink);
+  opacity: 0.78;
+  margin-bottom: 1.6rem;
+  transition: opacity 0.3s ease;
+}
+.hero:hover .hero-cap {
+  opacity: 0.95;
+}
 .hero-mark {
-  width: min(72vw, 440px);
+  width: min(72vw, 540px);
   height: auto;
   display: block;
   color: var(--ink);
@@ -57,14 +69,14 @@ body.nav-active {
 .rule {
   border: 0;
   border-top: 1px solid var(--rule);
-  width: min(72vw, 540px);
+  width: min(72vw, 600px);
   margin: 2.4rem auto;
   animation: fadeIn 1s ease 0.2s both;
 }
 
 /* ── Lede / blurb ────────────────────────────────────────────── */
 .lede {
-  max-width: 32rem;
+  max-width: 36rem;
   text-align: center;
   animation: fadeUp 0.9s ease 0.15s both;
 }
@@ -132,9 +144,54 @@ html[data-touch='true'] .home-cta:active {
   opacity: 1;
 }
 
-/* ── Responsive ─────────────────────────────────────────────── */
+/* ── Desktop: stronger editorial presence ─────────────────────── */
+html[data-device='desktop'] body {
+  padding: 5rem 2rem 4rem;
+}
+html[data-device='desktop'] .hero-cap {
+  width: 110px;
+  margin-bottom: 2rem;
+}
+html[data-device='desktop'] .hero-mark {
+  width: min(60vw, 620px);
+}
+html[data-device='desktop'] .hero-tagline {
+  font-size: 1.15rem;
+  margin-top: 1.8rem;
+  letter-spacing: 0.02em;
+}
+html[data-device='desktop'] .rule {
+  width: min(50vw, 520px);
+  margin: 3.2rem auto;
+}
+html[data-device='desktop'] .lede p {
+  font-size: 1.25rem;
+  line-height: 1.75;
+}
+html[data-device='desktop'] .lede .ornament {
+  margin: 1.4rem auto;
+}
+html[data-device='desktop'] .home-cta {
+  margin-top: 3.2rem;
+  font-size: 0.72rem;
+}
+
+/* ── Tablet ────────────────────────────────────────────────── */
+html[data-device='tablet'] .hero-mark {
+  width: min(64vw, 480px);
+}
+html[data-device='tablet'] .hero-cap {
+  width: 96px;
+  margin-bottom: 1.8rem;
+}
+
+/* ── Mobile ────────────────────────────────────────────────── */
 html[data-device='mobile'] body {
   padding: 4.5rem 1.25rem 3rem;
+}
+html[data-device='mobile'] .hero-cap {
+  width: 70px;
+  margin-bottom: 1.2rem;
 }
 html[data-device='mobile'] .hero-mark {
   width: min(86vw, 340px);
@@ -150,8 +207,4 @@ html[data-device='mobile'] .rule {
 html[data-device='mobile'] .lede p {
   font-size: 1.05rem;
   line-height: 1.65;
-}
-
-html[data-device='tablet'] .hero-mark {
-  width: min(64vw, 400px);
 }

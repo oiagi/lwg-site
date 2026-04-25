@@ -183,3 +183,50 @@ html[data-device='tablet'] .container {
 html[data-device='tablet'] .book-cta {
   min-height: 48px;
 }
+
+/* ── Desktop: editorial two-column section layout ────────────── */
+html[data-device='desktop'] body {
+  padding: 5rem 2rem 6rem;
+}
+html[data-device='desktop'] .container {
+  width: min(86vw, 820px);
+  margin-top: 1.4rem;
+}
+html[data-device='desktop'] h1 {
+  font-size: 2.4rem;
+  margin-bottom: 3.2rem;
+}
+html[data-device='desktop'] .section {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  column-gap: 3rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+html[data-device='desktop'] .section h2 {
+  margin-bottom: 0;
+  padding-top: 0.45rem;
+  text-align: right;
+}
+html[data-device='desktop'] .section p {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+html[data-device='desktop'] .divider {
+  margin-bottom: 3rem;
+}
+html[data-device='desktop'] .pricing-grid {
+  gap: 1rem;
+}
+html[data-device='desktop'] .pricing-card {
+  padding: 1.6rem 1rem;
+}
+html[data-device='desktop'] .pricing-card__price {
+  font-size: 1.35rem;
+}
+html[data-device='desktop'] .book-cta {
+  margin-top: 3.5rem;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}

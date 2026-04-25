@@ -48,6 +48,17 @@ h1 {
 .field {
   margin-bottom: 1.8rem;
 }
+.field-row {
+  display: flex;
+  gap: 1rem;
+}
+.field-row .field {
+  flex: 1;
+}
+html[data-device='mobile'] .field-row {
+  flex-direction: column;
+  gap: 0;
+}
 
 /* ── Field labels ───────────────────────────────────────────── */
 label {
@@ -192,4 +203,30 @@ html[data-device='tablet'] .form-container {
 }
 html[data-device='tablet'] button.submit {
   min-height: 48px;
+}
+
+/* ── Desktop: roomier layout, two-up rows ─────────────────────── */
+html[data-device='desktop'] body {
+  padding: 5rem 2rem 5rem;
+}
+html[data-device='desktop'] .form-container {
+  width: min(80vw, 620px);
+  margin-top: 1.4rem;
+}
+html[data-device='desktop'] h1 {
+  font-size: 2.4rem;
+  margin-bottom: 3.2rem;
+}
+html[data-device='desktop'] .section-label {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+html[data-device='desktop'] .field-row {
+  gap: 1.4rem;
+}
+html[data-device='desktop'] button.submit {
+  margin-top: 2.6rem;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
 }

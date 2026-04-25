@@ -1,13 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Learning with Gioia">
   <rect width="64" height="64" rx="10" fill="#f8f6f0"/>
-  <text
-    x="32"
-    y="48"
-    text-anchor="middle"
-    font-family="Garamond, 'Cormorant Garamond', 'Times New Roman', serif"
-    font-weight="500"
-    font-style="italic"
-    font-size="54"
-    fill="#1a1614"
-  >G</text>
+  <path
+    d="M14 44
+       C 9 44 7 40 8 36
+       C 9 32 13 30 16 31
+       C 16 24 22 21 27 23
+       C 28 18 35 17 39 21
+       C 42 18 48 19 50 24
+       C 55 24 58 28 57 33
+       C 60 35 59 41 54 42
+       L 18 42
+       C 16 43 15 44 14 44 Z"
+    fill="none"
+    stroke="#1a1614"
+    stroke-width="2.4"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
 </svg>
