@@ -1,6 +1,7 @@
 body {
-  --page-bg: #d6eaf8; /* used by nav gradient to match page bg */
-  background-color: #d6eaf8;
+  --page-bg: var(--paper);
+  background-color: var(--paper);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,10 +10,9 @@ body {
   font-weight: 300;
   transition: background-color 0.6s ease;
 }
-/* Background turns slightly deeper blue when nav is open */
 body.nav-active {
-  --page-bg: #b8d9f0;
-  background-color: #b8d9f0;
+  --page-bg: var(--paper-deep);
+  background-color: var(--paper-deep);
 }
 
 .container {
@@ -24,7 +24,7 @@ h1 {
   font-size: 2rem;
   font-weight: 300;
   letter-spacing: 0.08em;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-bottom: 0.4rem;
   text-align: center;
 }
@@ -32,13 +32,13 @@ h1 {
   text-align: center;
   font-size: 0.82rem;
   letter-spacing: 0.08em;
-  color: #888;
+  color: var(--ink-mute);
   margin-bottom: 2.8rem;
 }
 .course-block {
   margin-bottom: 2.8rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--rule);
 }
 .course-block:last-child {
   border-bottom: none;
@@ -47,24 +47,24 @@ h1 {
   font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #888;
+  color: var(--ink-mute);
   margin-bottom: 0.4rem;
 }
 .session-count {
   font-size: 1rem;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-bottom: 1.6rem;
   line-height: 1.6;
 }
 .progress-bar-wrap {
   height: 5px;
-  background: #e8e8e8;
+  background: rgba(26, 22, 20, 0.08);
   margin-bottom: 1.6rem;
   border-radius: 2px;
 }
 .progress-bar {
   height: 100%;
-  background: #1a1a1a;
+  background: var(--ink);
   border-radius: 2px;
   transition: width 0.4s ease;
 }
@@ -73,7 +73,7 @@ h1 {
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(26, 22, 20, 0.07);
 }
 .session-row:last-child {
   border-bottom: none;
@@ -85,38 +85,38 @@ h1 {
   flex-shrink: 0;
 }
 .session-dot.completed {
-  background: #1a1a1a;
+  background: var(--ink);
 }
 .session-dot.scheduled {
-  background: #ccc;
-  border: 1px solid #999;
+  background: var(--paper-deep);
+  border: 1px solid var(--ink-mute);
 }
 .session-dot.cancelled {
-  background: #e8e8e8;
+  background: rgba(26, 22, 20, 0.1);
 }
 .session-date {
   font-size: 0.88rem;
-  color: #555;
+  color: var(--ink-soft);
   flex: 1;
 }
 .session-label {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #aaa;
+  color: var(--ink-mute);
 }
 .rebook-note {
   margin-top: 1.4rem;
   padding: 0.8rem 0.9rem;
-  background: rgba(26, 26, 26, 0.04);
-  border-left: 2px solid rgba(26, 26, 26, 0.2);
+  background: rgba(26, 22, 20, 0.04);
+  border-left: 2px solid var(--rule);
   font-size: 0.84rem;
-  color: #555;
+  color: var(--ink-soft);
   font-style: italic;
   line-height: 1.6;
 }
 .rebook-note a {
-  color: #1a1a1a;
+  color: var(--ink);
   font-weight: 400;
   font-style: normal;
   text-decoration: underline;
@@ -125,7 +125,7 @@ h1 {
 .error-state {
   text-align: center;
   padding: 3rem 0;
-  color: #888;
+  color: var(--ink-mute);
   font-size: 0.9rem;
   line-height: 1.8;
 }
@@ -143,7 +143,7 @@ html[data-device='tablet'] h1 {
   margin-top: 2.5rem;
 }
 .empty-state p {
-  color: #888;
+  color: var(--ink-mute);
   font-size: 0.95rem;
   margin-bottom: 1.2rem;
 }
@@ -151,6 +151,6 @@ html[data-device='tablet'] h1 {
   font-size: 0.8rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #1a1a1a;
+  color: var(--ink);
   text-decoration: underline;
 }
