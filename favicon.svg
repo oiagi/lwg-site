@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Learning with Gioia">
+  <rect width="64" height="64" rx="10" fill="#f8f6f0"/>
+  <text
+    x="32"
+    y="48"
+    text-anchor="middle"
+    font-family="Garamond, 'Cormorant Garamond', 'Times New Roman', serif"
+    font-weight="500"
+    font-style="italic"
+    font-size="54"
+    fill="#1a1614"
+  >G</text>
+</svg>
