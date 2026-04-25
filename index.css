@@ -33,11 +33,12 @@ body.nav-active {
   animation: fadeUp 0.8s ease both;
 }
 .hero-mark {
-  width: min(64vw, 380px);
+  width: min(72vw, 440px);
   height: auto;
   display: block;
+  color: var(--ink);
   opacity: 0.92;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s ease;
 }
 .hero:hover .hero-mark {
   opacity: 1;
@@ -144,7 +145,7 @@ html[data-device='mobile'] body {
   padding: 4.5rem 1.25rem 3rem;
 }
 html[data-device='mobile'] .hero-mark {
-  width: min(82vw, 320px);
+  width: min(86vw, 340px);
 }
 html[data-device='mobile'] .hero-tagline {
   font-size: 0.95rem;
@@ -160,5 +161,5 @@ html[data-device='mobile'] .lede p {
 }
 
 html[data-device='tablet'] .hero-mark {
-  width: min(60vw, 360px);
+  width: min(64vw, 400px);
 }
