@@ -1,6 +1,19 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
 body {
-  --page-bg: #d6eaf8;
-  background-color: #d6eaf8;
+  width: 100%;
+  min-height: 100vh;
+}
+body {
+  --page-bg: var(--paper);
+  background-color: var(--paper);
+  color: var(--ink);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,8 +23,8 @@ body {
   transition: background-color 0.6s ease;
 }
 body.nav-active {
-  --page-bg: #b8d9f0;
-  background-color: #b8d9f0;
+  --page-bg: var(--paper-deep);
+  background-color: var(--paper-deep);
 }
 
 /* ── Form container ─────────────────────────────────────────── */
@@ -24,7 +37,7 @@ h1 {
   font-size: 2rem;
   font-weight: 300;
   letter-spacing: 0.08em;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-bottom: 2.4rem;
   text-align: center;
 }
@@ -38,7 +51,7 @@ label {
   font-size: 0.72rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--ink-soft);
   margin-bottom: 0.6rem;
 }
 
@@ -49,19 +62,19 @@ input[type='tel'] {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--ink);
   padding: 0.4rem 0;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 300;
-  color: #1a1a1a;
+  color: var(--ink);
   outline: none;
   transition: border-color 0.2s;
 }
 input[type='text']:focus,
 input[type='email']:focus,
 input[type='tel']:focus {
-  border-bottom-color: #555;
+  border-bottom-color: var(--ink-soft);
 }
 
 /* ── Select ──────────────────────────────────────────────────── */
@@ -69,12 +82,12 @@ select {
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--ink);
   padding: 0.4rem 0;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 300;
-  color: #1a1a1a;
+  color: var(--ink);
   outline: none;
   transition: border-color 0.2s;
   cursor: pointer;
@@ -87,9 +100,9 @@ button.submit {
   margin-top: 2rem;
   display: block;
   width: 100%;
-  background: #1a1a1a;
-  color: #d6eaf8;
-  border: none;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
   padding: 0.9rem;
   font-family: inherit;
   font-size: 0.8rem;
@@ -101,14 +114,14 @@ button.submit {
     color 0.2s;
 }
 button.submit:hover {
-  background: #ffffff;
-  color: #1a1a1a;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 /* ── Inline errors ───────────────────────────────────────────── */
 .error {
   font-size: 0.72rem;
-  color: #c0392b;
+  color: #b8492e;
   margin-top: 0.3rem;
   letter-spacing: 0.04em;
   display: none;

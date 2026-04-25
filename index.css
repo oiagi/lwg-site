@@ -1,12 +1,4 @@
 /* ── Index page: editorial style exploration ─────────────────── */
-:root {
-  --paper: #f8f6f0;
-  --ink: #1a1614;
-  --ink-soft: #4a463f;
-  --ink-mute: #8a857c;
-  --rule: rgba(26, 22, 20, 0.18);
-}
-
 body {
   --page-bg: var(--paper);
   background-color: var(--paper);
@@ -20,8 +12,8 @@ body {
   gap: 0;
 }
 body.nav-active {
-  --page-bg: #d6eaf8;
-  background-color: #d6eaf8;
+  --page-bg: var(--paper-deep);
+  background-color: var(--paper-deep);
 }
 
 /* ── Hero ────────────────────────────────────────────────────── */
