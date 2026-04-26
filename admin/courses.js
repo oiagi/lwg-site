@@ -129,8 +129,6 @@ function renderCourses(courses) {
           </button>
           ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
         </p>
-        <textarea id="notes-${s.id}" class="progress-textarea"
-          placeholder="progress notes…">${esc(s.progress_notes)}</textarea>
         <div class="progress-row">
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             class="level-input" placeholder="level" />
@@ -274,12 +272,11 @@ export async function cancelSession(sessionId, courseId) {
 }
 
 export async function saveStudent(studentId) {
-  const notes = document.getElementById('notes-' + studentId)?.value || '';
   const level = document.getElementById('level-' + studentId)?.value || '';
   try {
     const res = await apiFetch('/api/update-student', {
       method: 'PATCH',
-      body: { student_id: studentId, progress_notes: notes, current_level: level },
+      body: { student_id: studentId, current_level: level },
     });
     if (res.ok) {
       const msg = document.getElementById('student-saved-' + studentId);

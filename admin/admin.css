@@ -358,6 +358,7 @@ button.submit:hover {
   font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  text-decoration: none;
   border: 1px solid #1a1a1a;
   background: #1a1a1a;
   color: #d6eaf8;
@@ -422,6 +423,7 @@ button.submit:hover {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  text-decoration: none;
   border: 1px solid #1a1a1a;
   background: transparent;
   color: #1a1a1a;
@@ -1693,21 +1695,6 @@ html[data-device='mobile'] .avail-day {
 }
 .student-link:hover {
   border-bottom-color: var(--text);
-}
-.progress-textarea {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #ddd;
-  font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 300;
-  color: #555;
-  outline: none;
-  resize: none;
-  height: 50px;
-  padding: 0.2rem 0;
-  margin-top: 0.3rem;
 }
 .progress-row {
   margin-top: 0.3rem;
