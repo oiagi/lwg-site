@@ -18,7 +18,7 @@ import {
 import { validate } from './_validate.js';
 import { findOrCreateStudent } from './_student-utils.js';
 
-const NOTIFY_EMAIL = 'info@oiagi.org';
+const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 // ── Label map for booking fields ─────────────────────────────────────────
@@ -271,6 +271,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const notificationEmail = buildNotificationEmail(booking, contact, enquiryId);
 
   const sendEmail = async (to, email) => {
+    const toList = Array.isArray(to) ? to : [to];
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -279,19 +280,19 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to: [to],
-        reply_to: NOTIFY_EMAIL,
+        to: toList,
+        reply_to: NOTIFY_EMAILS,
         subject: email.subject,
         html: email.html,
       }),
     });
-    if (!res.ok) console.error(`Email error (to: ${to}):`, await res.text());
+    if (!res.ok) console.error(`Email error (to: ${toList.join(', ')}):`, await res.text());
     return res.ok;
   };
 
   await Promise.allSettled([
     sendEmail(lead.email, customerEmail),
-    sendEmail(NOTIFY_EMAIL, notificationEmail),
+    sendEmail(NOTIFY_EMAILS, notificationEmail),
   ]);
 
   return jsonResponse({ success: true, id: enquiryId });

@@ -19,7 +19,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
-const NOTIFY_EMAIL = 'info@oiagi.org';
+const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
@@ -193,7 +193,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: [student.email],
-            reply_to: NOTIFY_EMAIL,
+            reply_to: NOTIFY_EMAILS,
             subject: email.subject,
             html: email.html,
           }),
