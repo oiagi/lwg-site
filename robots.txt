@@ -8,4 +8,4 @@ Disallow: /admin.html
 Disallow: /sessions.html
 Disallow: /redepartikeln.html
 
-Sitemap: https://oiagi.org/sitemap.xml
+Sitemap: https://learningwithgioia.ch/sitemap.xml

@@ -6,3 +6,10 @@
 
 # contact.html removed — redirect to enquiry
 /contact.html  /enquiry.html  301
+
+# Legacy domain — oiagi.org is kept as a custom domain on this Pages
+# project so this rule can 301 every path to learningwithgioia.ch.
+# The trailing `!` forces the redirect even when a matching static asset
+# exists, so the new domain is always canonical.
+https://oiagi.org/*       https://learningwithgioia.ch/:splat  301!
+https://www.oiagi.org/*   https://learningwithgioia.ch/:splat  301!

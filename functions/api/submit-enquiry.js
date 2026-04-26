@@ -94,7 +94,7 @@ function buildCustomerEmail(booking, contact) {
               <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-              <a href="https://oiagi.org" style="color:#aaa;">oiagi.org</a>
+              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
             </p>
           </td>
         </tr>
@@ -161,7 +161,7 @@ function buildNotificationEmail(booking, contact, enquiryId) {
         </tr>
         <tr>
           <td style="padding:16px 40px 28px;border-top:1px solid #eee;">
-            <a href="https://oiagi.org/admin.html" style="font-size:12px;color:#888;">View in admin dashboard →</a>
+            <a href="https://learningwithgioia.ch/admin.html" style="font-size:12px;color:#888;">View in admin dashboard →</a>
           </td>
         </tr>
       </table>

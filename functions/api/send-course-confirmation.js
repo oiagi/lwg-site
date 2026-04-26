@@ -148,7 +148,7 @@ function buildConfirmationEmail({ course, sessions, studentFirstName }) {
               <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-              <a href="https://oiagi.org" style="color:#aaa;">oiagi.org</a>
+              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
             </p>
           </td>
         </tr>
