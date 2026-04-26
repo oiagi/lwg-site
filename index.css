@@ -24,17 +24,19 @@ body.nav-active {
   text-align: center;
   animation: fadeUp 0.8s ease both;
 }
-.hero-cap {
-  width: 88px;
+.hero-cloud {
+  width: 110px;
   height: auto;
   display: block;
-  color: var(--ink);
-  opacity: 0.78;
+  opacity: 0.85;
   margin-bottom: 1.6rem;
-  transition: opacity 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s ease;
 }
-.hero:hover .hero-cap {
-  opacity: 0.95;
+.hero:hover .hero-cloud {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 .hero-mark {
   width: min(72vw, 540px);
@@ -148,9 +150,9 @@ html[data-touch='true'] .home-cta:active {
 html[data-device='desktop'] body {
   padding: 5rem 2rem 4rem;
 }
-html[data-device='desktop'] .hero-cap {
-  width: 110px;
-  margin-bottom: 2rem;
+html[data-device='desktop'] .hero-cloud {
+  width: 140px;
+  margin-bottom: 2.2rem;
 }
 html[data-device='desktop'] .hero-mark {
   width: min(60vw, 620px);
@@ -180,8 +182,8 @@ html[data-device='desktop'] .home-cta {
 html[data-device='tablet'] .hero-mark {
   width: min(64vw, 480px);
 }
-html[data-device='tablet'] .hero-cap {
-  width: 96px;
+html[data-device='tablet'] .hero-cloud {
+  width: 120px;
   margin-bottom: 1.8rem;
 }
 
@@ -189,8 +191,8 @@ html[data-device='tablet'] .hero-cap {
 html[data-device='mobile'] body {
   padding: 4.5rem 1.25rem 3rem;
 }
-html[data-device='mobile'] .hero-cap {
-  width: 70px;
+html[data-device='mobile'] .hero-cloud {
+  width: 88px;
   margin-bottom: 1.2rem;
 }
 html[data-device='mobile'] .hero-mark {
