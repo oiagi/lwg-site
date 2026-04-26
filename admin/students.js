@@ -272,9 +272,38 @@ function renderStudentDetail(container, s) {
     ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
     <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
+      ${
+        s.access_token
+          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>
+             <span class="detail-action-msg" id="intake-msg-${s.id}"></span>`
+          : ''
+      }
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+export function copyIntakeLink(token, btn) {
+  const url = `${window.location.origin}/intake.html?token=${encodeURIComponent(token)}`;
+  const msgEl = btn?.parentElement?.querySelector('.detail-action-msg');
+  const done = (text) => {
+    if (msgEl) {
+      msgEl.textContent = text;
+      msgEl.style.display = 'inline';
+      setTimeout(() => {
+        msgEl.style.display = 'none';
+      }, MESSAGE_TIMEOUT_MS);
+    }
+  };
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => done('link copied'))
+      .catch(() => prompt('Copy this intake link:', url));
+  } else {
+    prompt('Copy this intake link:', url);
+  }
 }
 
 // Admin section: one read-only row per enrolled course. Values come directly
