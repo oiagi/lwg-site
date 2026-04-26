@@ -129,13 +129,7 @@ function renderCourses(courses) {
           </button>
           ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
         </p>
-        <div class="progress-row">
-          <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
-            class="level-input" placeholder="level" />
-          <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
-          <span class="saved-msg" id="student-saved-${s.id}">saved</span>
-          ${scheduleBtn}
-        </div>
+        ${scheduleBtn ? `<div class="progress-row">${scheduleBtn}</div>` : ''}
         ${invoiceBlock}
       </div>
     `;
@@ -268,22 +262,6 @@ export async function cancelSession(sessionId, courseId) {
     }
   } catch {
     alert('Could not cancel session. Please try again.');
-  }
-}
-
-export async function saveStudent(studentId) {
-  const level = document.getElementById('level-' + studentId)?.value || '';
-  try {
-    const res = await apiFetch('/api/update-student', {
-      method: 'PATCH',
-      body: { student_id: studentId, current_level: level },
-    });
-    if (res.ok) {
-      const msg = document.getElementById('student-saved-' + studentId);
-      if (msg) showMessage(msg, 'saved');
-    }
-  } catch (err) {
-    console.error('Save student error:', err);
   }
 }
 

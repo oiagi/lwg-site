@@ -1702,16 +1702,6 @@ html[data-device='mobile'] .avail-day {
   gap: 0.5rem;
   align-items: center;
 }
-.level-input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #ddd;
-  font-family: inherit;
-  font-size: 0.75rem;
-  color: #555;
-  outline: none;
-  width: 60px;
-}
 
 /* ── Student search autocomplete result item ──────────────────────── */
 .search-result {
