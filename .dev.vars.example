@@ -16,8 +16,9 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 # SITE_URL=http://localhost:8788
 
 # ── CORS ─────────────────────────────────────────────────────────
-# Comma-separated list of allowed origins (defaults to https://oiagi.org,http://localhost)
-# ALLOWED_ORIGINS=https://oiagi.org,http://localhost:8788
+# Comma-separated list of allowed origins
+# (defaults to https://learningwithgioia.ch,https://oiagi.org,http://localhost)
+# ALLOWED_ORIGINS=https://learningwithgioia.ch,http://localhost:8788
 
 # ── Invoicing / QR-bill ─────────────────────────────────────────
 QR_IBAN=CH00 0000 0000 0000 0000 0

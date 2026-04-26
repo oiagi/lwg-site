@@ -14,7 +14,7 @@ import {
 } from './_utils.js';
 import { validate } from './_validate.js';
 
-const NOTIFY_EMAIL = 'info@oiagi.org';
+const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function buildContactNotification({ name, email, phone, preferred_contact, message }) {
@@ -114,7 +114,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
-        to: [NOTIFY_EMAIL],
+        to: NOTIFY_EMAILS,
         reply_to: email,
         subject: notification.subject,
         html: notification.html,

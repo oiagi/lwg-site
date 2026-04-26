@@ -19,7 +19,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
-const NOTIFY_EMAIL = 'info@oiagi.org';
+const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
@@ -100,7 +100,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName }) {
               <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-              <a href="https://oiagi.org" style="color:#aaa;">oiagi.org</a>
+              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
             </p>
           </td>
         </tr>
@@ -193,7 +193,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: [student.email],
-            reply_to: NOTIFY_EMAIL,
+            reply_to: NOTIFY_EMAILS,
             subject: email.subject,
             html: email.html,
           }),

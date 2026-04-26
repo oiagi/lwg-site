@@ -101,10 +101,10 @@ export function validateOrigin(request, env) {
   const referer = request.headers.get('Referer') || '';
   const source = origin || referer;
 
-  // Allow configured origins, or default to oiagi.org + localhost
+  // Allow configured origins, or default to learningwithgioia.ch (+ legacy oiagi.org) + localhost
   const allowed = env.ALLOWED_ORIGINS
     ? env.ALLOWED_ORIGINS.split(',').map((s) => s.trim())
-    : ['https://oiagi.org', 'http://localhost'];
+    : ['https://learningwithgioia.ch', 'https://oiagi.org', 'http://localhost'];
 
   if (!source) return errorResponse('Forbidden', 403);
 
