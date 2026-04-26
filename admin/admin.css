@@ -786,6 +786,12 @@ button.submit:hover {
   background: #c0392b;
   color: #fff;
 }
+.detail-action-msg {
+  display: none;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: #2a7a4a;
+}
 .confirm-panel {
   margin-top: 1.4rem;
   padding: 1.2rem;
