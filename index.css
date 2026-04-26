@@ -25,11 +25,11 @@ body.nav-active {
   animation: fadeUp 0.8s ease both;
 }
 .hero-cloud {
-  width: 110px;
+  width: 72px;
   height: auto;
   display: block;
   opacity: 0.85;
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.2rem;
   transition:
     opacity 0.3s ease,
     transform 0.4s ease;
@@ -148,33 +148,33 @@ html[data-touch='true'] .home-cta:active {
 
 /* ── Desktop: stronger editorial presence ─────────────────────── */
 html[data-device='desktop'] body {
-  padding: 5rem 2rem 4rem;
+  padding: 3rem 2rem 2.5rem;
 }
 html[data-device='desktop'] .hero-cloud {
-  width: 140px;
-  margin-bottom: 2.2rem;
+  width: 88px;
+  margin-bottom: 1.4rem;
 }
 html[data-device='desktop'] .hero-mark {
-  width: min(60vw, 620px);
+  width: min(50vw, 520px);
 }
 html[data-device='desktop'] .hero-tagline {
-  font-size: 1.15rem;
-  margin-top: 1.8rem;
+  font-size: 1.1rem;
+  margin-top: 1.2rem;
   letter-spacing: 0.02em;
 }
 html[data-device='desktop'] .rule {
-  width: min(50vw, 520px);
-  margin: 3.2rem auto;
+  width: min(45vw, 460px);
+  margin: 2rem auto;
 }
 html[data-device='desktop'] .lede p {
-  font-size: 1.25rem;
-  line-height: 1.75;
+  font-size: 1.18rem;
+  line-height: 1.7;
 }
 html[data-device='desktop'] .lede .ornament {
-  margin: 1.4rem auto;
+  margin: 0.8rem auto;
 }
 html[data-device='desktop'] .home-cta {
-  margin-top: 3.2rem;
+  margin-top: 2rem;
   font-size: 0.72rem;
 }
 
@@ -183,8 +183,8 @@ html[data-device='tablet'] .hero-mark {
   width: min(64vw, 480px);
 }
 html[data-device='tablet'] .hero-cloud {
-  width: 120px;
-  margin-bottom: 1.8rem;
+  width: 76px;
+  margin-bottom: 1.2rem;
 }
 
 /* ── Mobile ────────────────────────────────────────────────── */
@@ -192,8 +192,8 @@ html[data-device='mobile'] body {
   padding: 4.5rem 1.25rem 3rem;
 }
 html[data-device='mobile'] .hero-cloud {
-  width: 88px;
-  margin-bottom: 1.2rem;
+  width: 60px;
+  margin-bottom: 0.9rem;
 }
 html[data-device='mobile'] .hero-mark {
   width: min(86vw, 340px);
