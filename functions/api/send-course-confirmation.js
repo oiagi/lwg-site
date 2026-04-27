@@ -47,6 +47,13 @@ function formatPrice(amount, currency) {
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
 }
 
+function formatLocation(course) {
+  const line1 = [course.location_street, course.location_street_number].filter(Boolean).join(' ');
+  const line2 = [course.location_postal_code, course.location_city].filter(Boolean).join(' ');
+  const address = [line1, line2].filter(Boolean).join(', ');
+  return address || course.location || '—';
+}
+
 function courseDetailRows(course) {
   const rows = [
     ['Kurscode', course.course_code || '—'],
@@ -56,7 +63,7 @@ function courseDetailRows(course) {
     ['Anzahl Lektionen', course.sessions_total ? String(course.sessions_total) : 'offen'],
     ['Lektionsdauer', course.session_length_minutes ? `${course.session_length_minutes} min` : '—'],
     ['Preis pro Lektion', formatPrice(course.price_per_session, course.currency)],
-    ['Ort', course.location || '—'],
+    ['Ort', formatLocation(course)],
   ];
   return rows
     .map(

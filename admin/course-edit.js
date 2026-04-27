@@ -31,6 +31,10 @@ function populate(course) {
   );
   setVal('ec-currency', course.currency || 'CHF');
   setVal('ec-location', course.location || '');
+  setVal('ec-loc-street', course.location_street || '');
+  setVal('ec-loc-number', course.location_street_number || '');
+  setVal('ec-loc-postal', course.location_postal_code || '');
+  setVal('ec-loc-city', course.location_city || '');
 }
 
 async function handleSubmit(e) {
@@ -57,6 +61,10 @@ async function handleSubmit(e) {
     price_per_session: priceVal === '' ? null : parseFloat(priceVal),
     currency: document.getElementById('ec-currency').value || 'CHF',
     location: document.getElementById('ec-location').value || null,
+    location_street: document.getElementById('ec-loc-street').value.trim() || null,
+    location_street_number: document.getElementById('ec-loc-number').value.trim() || null,
+    location_postal_code: document.getElementById('ec-loc-postal').value.trim() || null,
+    location_city: document.getElementById('ec-loc-city').value.trim() || null,
   };
 
   btn.textContent = 'saving…';

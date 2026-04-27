@@ -1,7 +1,9 @@
 // functions/api/update-course.js
 // PATCH /api/update-course
 // Body: { course_id, service?, level?, group_type?, status?, sessions_total?,
-//         session_length_minutes?, price_per_session?, currency?, location? }
+//         session_length_minutes?, price_per_session?, currency?, location?,
+//         location_street?, location_street_number?, location_postal_code?,
+//         location_city? }
 //
 // Updates mutable fields on an existing course.
 
@@ -23,6 +25,10 @@ const ALLOWED_FIELDS = [
   'price_per_session',
   'currency',
   'location',
+  'location_street',
+  'location_street_number',
+  'location_postal_code',
+  'location_city',
 ];
 
 export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
