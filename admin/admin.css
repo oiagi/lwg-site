@@ -592,6 +592,84 @@ button.submit:hover {
 .modal-msg.ok {
   color: #27ae60;
 }
+.cs-meta {
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 0.4rem;
+}
+.cs-recipients {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  font-size: 0.85rem;
+  max-height: 9rem;
+  overflow-y: auto;
+}
+.cs-recipients li {
+  padding: 0.15rem 0;
+  line-height: 1.4;
+}
+.cs-recipient-name {
+  font-weight: 500;
+}
+.cs-recipient-email {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-left: 0.3rem;
+}
+.cs-subject {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  font-size: 0.85rem;
+}
+.cs-content {
+  padding: 0.6rem 0.8rem;
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  font-size: 0.85rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.cs-content > *:first-child {
+  margin-top: 0;
+}
+.cs-content > *:last-child {
+  margin-bottom: 0;
+}
+.cs-section-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0.8rem 0 0.4rem;
+}
+.cs-detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cs-detail-list li {
+  padding: 0.1rem 0;
+}
+.cs-session-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.cs-session-list li {
+  padding: 0.1rem 0;
+}
+.cs-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
 .participant-block {
   border-top: 1px solid #f0f0f0;
   padding-top: 1rem;

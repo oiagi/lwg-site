@@ -3,6 +3,7 @@ import { apiFetch } from './api.js';
 import { fmtDate, esc, showMessage } from './helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { openConfirmSend } from './confirm-send.js';
 
 let currentCourseFilter = 'active';
 let participantCount = 1;
@@ -934,40 +935,113 @@ export async function submitAddParticipant() {
 }
 
 /* ── Email: course confirmation + schedule updates ───────────────── */
+function studentDisplayName(s) {
+  return [s.first_name, s.last_name].filter(Boolean).join(' ') || '—';
+}
+
+function upcomingSessions(course) {
+  return (course.sessions || [])
+    .filter((s) => s.status !== 'cancelled')
+    .slice()
+    .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+}
+
 export async function sendCourseConfirmation(courseId) {
-  if (
-    !confirm(
-      'Send course confirmation email (overview, scheduled lessons, AGB) to all enrolled students?'
-    )
-  )
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (!course) {
+    alert('Course not found. Please reload and try again.');
     return;
-  const msg = document.getElementById('confirm-msg-' + courseId);
-  try {
-    const res = await apiFetch('/api/send-course-confirmation', {
-      method: 'POST',
-      body: { course_id: courseId },
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-    const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
-    if (msg) showMessage(msg, label);
-  } catch (err) {
-    alert('Could not send confirmation: ' + (err.message || err));
   }
+  const recipients = (course.students || [])
+    .filter((s) => s.email)
+    .map((s) => ({ name: studentDisplayName(s), email: s.email }));
+  if (!recipients.length) {
+    alert('No enrolled students with an email address.');
+    return;
+  }
+
+  const sessions = upcomingSessions(course);
+  const sessionListHtml = sessions.length
+    ? `<ol class="cs-session-list">${sessions
+        .map((s) => `<li>${esc(fmtDate(s.scheduled_at))}</li>`)
+        .join('')}</ol>`
+    : '<p class="cs-empty">No lessons scheduled yet.</p>';
+
+  const contentHtml = `
+    <p class="cs-section-label">course overview</p>
+    <ul class="cs-detail-list">
+      <li>Code: ${esc(course.course_code || '—')}</li>
+      <li>Subject: ${esc(course.service || '—')}</li>
+      <li>Level: ${esc(course.level || '—')}</li>
+      <li>Sessions: ${course.sessions_total ? esc(String(course.sessions_total)) : 'open-ended'}</li>
+      <li>Location: ${esc(course.location || '—')}</li>
+    </ul>
+    <p class="cs-section-label">scheduled lessons (${sessions.length})</p>
+    ${sessionListHtml}
+    <p class="cs-section-label">also included</p>
+    <ul class="cs-detail-list">
+      <li>24-hour cancellation policy</li>
+      <li>AGB (terms &amp; conditions)</li>
+    </ul>
+  `;
+
+  openConfirmSend({
+    title: 'send course confirmation',
+    recipients,
+    subject: `Kursbestätigung — ${course.course_code || 'Ihr Kurs'} · learning with gioia`,
+    contentHtml,
+    onConfirm: async () => {
+      const msg = document.getElementById('confirm-msg-' + courseId);
+      const res = await apiFetch('/api/send-course-confirmation', {
+        method: 'POST',
+        body: { course_id: courseId },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
+      if (msg) showMessage(msg, label);
+    },
+  });
 }
 
 export async function sendStudentSchedule(studentId, courseId) {
-  if (!confirm('Send the current schedule to this student?')) return;
-  const msg = document.getElementById('schedule-msg-' + studentId);
-  try {
-    const res = await apiFetch('/api/send-session-schedule', {
-      method: 'POST',
-      body: { course_id: courseId, student_id: studentId },
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-    if (msg) showMessage(msg, 'schedule sent');
-  } catch (err) {
-    alert('Could not send schedule: ' + (err.message || err));
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (!course) {
+    alert('Course not found. Please reload and try again.');
+    return;
   }
+  const student = (course.students || []).find((s) => String(s.id) === String(studentId));
+  if (!student || !student.email) {
+    alert('Student has no email address on file.');
+    return;
+  }
+
+  const sessions = upcomingSessions(course);
+  const sessionListHtml = sessions.length
+    ? `<ol class="cs-session-list">${sessions
+        .map((s) => `<li>${esc(fmtDate(s.scheduled_at))}</li>`)
+        .join('')}</ol>`
+    : '<p class="cs-empty">No upcoming lessons currently scheduled.</p>';
+
+  const contentHtml = `
+    <p class="cs-section-label">updated schedule for ${esc(course.course_code || 'course')} (${sessions.length})</p>
+    ${sessionListHtml}
+  `;
+
+  openConfirmSend({
+    title: 'send schedule update',
+    recipients: [{ name: studentDisplayName(student), email: student.email }],
+    subject: `Aktualisierter Lektionsplan${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
+    contentHtml,
+    onConfirm: async () => {
+      const msg = document.getElementById('schedule-msg-' + studentId);
+      const res = await apiFetch('/api/send-session-schedule', {
+        method: 'POST',
+        body: { course_id: courseId, student_id: studentId },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      if (msg) showMessage(msg, 'schedule sent');
+    },
+  });
 }

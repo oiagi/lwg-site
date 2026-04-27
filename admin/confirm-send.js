@@ -1,0 +1,65 @@
+/* ── Confirm-send modal: preview recipients + content before sending ── */
+import { esc } from './helpers.js';
+
+let pendingHandler = null;
+
+export function openConfirmSend({ title, recipients, subject, contentHtml, onConfirm }) {
+  const modal = document.getElementById('confirm-send-modal');
+  const titleEl = document.getElementById('cs-title');
+  const recipientsEl = document.getElementById('cs-recipients');
+  const countEl = document.getElementById('cs-recipients-count');
+  const subjectEl = document.getElementById('cs-subject');
+  const contentEl = document.getElementById('cs-content');
+  const msg = document.getElementById('cs-msg');
+  const btn = document.getElementById('cs-submit');
+
+  titleEl.textContent = title || 'confirm send';
+
+  const list = recipients || [];
+  countEl.textContent = list.length ? `(${list.length})` : '';
+  recipientsEl.innerHTML = list.length
+    ? list
+        .map(
+          (r) =>
+            `<li><span class="cs-recipient-name">${esc(r.name || '—')}</span> <span class="cs-recipient-email">&lt;${esc(r.email)}&gt;</span></li>`
+        )
+        .join('')
+    : '<li class="cs-empty">No recipients with an email address.</li>';
+
+  subjectEl.textContent = subject || '';
+  contentEl.innerHTML = contentHtml || '';
+
+  msg.textContent = '';
+  msg.className = 'modal-msg';
+  msg.style.display = 'none';
+
+  btn.disabled = list.length === 0;
+  btn.textContent = 'send';
+
+  pendingHandler = onConfirm;
+  modal.classList.add('open');
+}
+
+export function closeConfirmSend() {
+  document.getElementById('confirm-send-modal').classList.remove('open');
+  pendingHandler = null;
+}
+
+export async function submitConfirmSend() {
+  if (!pendingHandler) return;
+  const btn = document.getElementById('cs-submit');
+  const msg = document.getElementById('cs-msg');
+  const handler = pendingHandler;
+  btn.disabled = true;
+  btn.textContent = 'sending…';
+  try {
+    await handler();
+    closeConfirmSend();
+  } catch (err) {
+    msg.textContent = 'Error: ' + (err.message || err);
+    msg.className = 'modal-msg err';
+    msg.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'send';
+  }
+}
