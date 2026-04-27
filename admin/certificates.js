@@ -168,11 +168,11 @@ function buildCertificateData(recipient, course, opts) {
   const fmt = (d) =>
     d ? d.toLocaleDateString(dateLocale, { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
 
-  const totalMinutes =
-    course.session_length_minutes && sessions.length
-      ? course.session_length_minutes * sessions.length
-      : null;
-  const totalHours = totalMinutes ? Math.round((totalMinutes / 60) * 10) / 10 : null;
+  const sessionsDisplay = sessions.length
+    ? course.session_length_minutes
+      ? `${sessions.length} × ${course.session_length_minutes}min`
+      : String(sessions.length)
+    : '';
 
   return {
     fullName,
@@ -182,7 +182,7 @@ function buildCertificateData(recipient, course, opts) {
     location: course.location || '',
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
     sessionCount: sessions.length,
-    totalHours,
+    sessionsDisplay,
     attendedSessions: recipient.attended_sessions,
     totalSessions: recipient.total_sessions,
     issueDate: new Date().toLocaleDateString(dateLocale, {
@@ -206,8 +206,7 @@ function strings(isEN) {
         levelLabel: 'Level',
         codeLabel: 'Course code',
         periodLabel: 'Period',
-        sessionsLabel: 'Sessions',
-        hoursLabel: 'Total hours',
+        sessionsLabel: 'Lessons',
         locationLabel: 'Location',
         attendance: (att, tot) => `Attended ${att} of ${tot} sessions.`,
         certId: 'Certificate ID',
@@ -222,7 +221,6 @@ function strings(isEN) {
         codeLabel: 'Kurscode',
         periodLabel: 'Zeitraum',
         sessionsLabel: 'Lektionen',
-        hoursLabel: 'Stunden gesamt',
         locationLabel: 'Ort',
         attendance: (att, tot) => `Anwesend in ${att} von ${tot} Lektionen.`,
         certId: 'Bestätigungsnummer',
@@ -251,8 +249,7 @@ function buildPreviewHtml(data) {
         ${detailRow(t.levelLabel, data.level)}
         ${detailRow(t.codeLabel, data.courseCode)}
         ${detailRow(t.periodLabel, data.dateRange)}
-        ${detailRow(t.sessionsLabel, data.sessionCount ? String(data.sessionCount) : '')}
-        ${detailRow(t.hoursLabel, data.totalHours ? String(data.totalHours) : '')}
+        ${detailRow(t.sessionsLabel, data.sessionsDisplay)}
         ${detailRow(t.locationLabel, data.location)}
       </div>
       ${attendanceLine}
@@ -433,8 +430,7 @@ function buildCertificatePdf(data) {
     [t.levelLabel, data.level],
     [t.codeLabel, data.courseCode],
     [t.periodLabel, data.dateRange],
-    [t.sessionsLabel, data.sessionCount ? String(data.sessionCount) : ''],
-    [t.hoursLabel, data.totalHours ? String(data.totalHours) : ''],
+    [t.sessionsLabel, data.sessionsDisplay],
     [t.locationLabel, data.location],
   ].filter(([, v]) => v);
 
