@@ -6,6 +6,17 @@ import { esc } from './helpers.js';
 let studentCache = [];
 let participantCount = 1;
 
+const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+
+function syncPlusEnabled(baseId, plusId) {
+  const baseEl = document.getElementById(baseId);
+  const plusEl = document.getElementById(plusId);
+  if (!baseEl || !plusEl) return;
+  const enabled = PLUSABLE_LEVELS.has(baseEl.value);
+  plusEl.disabled = !enabled;
+  if (!enabled) plusEl.value = '';
+}
+
 /* ── Participant block ───────────────────────────────────────────── */
 function renderParticipantBlock(i, showRemove = false) {
   return `
@@ -140,7 +151,9 @@ async function handleSubmit(e) {
   }
 
   const service = document.getElementById('nc-service').value;
-  const level = document.getElementById('nc-level').value;
+  const levelBase = document.getElementById('nc-level').value;
+  const levelPlus = document.getElementById('nc-level-plus').value || '';
+  const level = levelBase + levelPlus;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
   const sessionLength = document.getElementById('nc-session-length').value;
@@ -291,6 +304,10 @@ async function handleSubmit(e) {
   });
 
   document.getElementById('course-new-form').addEventListener('submit', handleSubmit);
+  document
+    .getElementById('nc-level')
+    .addEventListener('change', () => syncPlusEnabled('nc-level', 'nc-level-plus'));
+  syncPlusEnabled('nc-level', 'nc-level-plus');
 
   document.getElementById('page-loading').style.display = 'none';
   document.getElementById('page-content').style.display = '';

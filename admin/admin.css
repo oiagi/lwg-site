@@ -1842,6 +1842,21 @@ html[data-device='mobile'] .avail-day {
   outline: none;
   width: 60px;
 }
+.level-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: end;
+}
+.level-row > select:first-child {
+  flex: 1;
+}
+.level-row > select:last-child {
+  flex: 0 0 3.2rem;
+}
+.level-row > select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ── Student search autocomplete result item ──────────────────────── */
 .search-result {
