@@ -4,6 +4,7 @@ import { fmtDate, esc, showMessage } from './helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from './constants.js';
 import { openConfirmSend } from './confirm-send.js';
+import { openCertificateModal as openCertificates } from './certificates.js';
 
 let currentCourseFilter = 'active';
 let participantCount = 1;
@@ -203,6 +204,9 @@ function renderCourses(courses) {
             <button class="save-btn"
               data-action="sendCourseConfirmation" data-args="${c.id}">✉ send confirmation</button>
             <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+            <button class="save-btn"
+              data-action="openCertificateModal" data-args="${c.id}">✉ send certificates</button>
+            <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
           </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
@@ -1002,6 +1006,10 @@ export async function sendCourseConfirmation(courseId) {
       if (msg) showMessage(msg, label);
     },
   });
+}
+
+export function openCertificateModal(courseId) {
+  return openCertificates(courseId, coursesCache);
 }
 
 export async function sendStudentSchedule(studentId, courseId) {

@@ -1947,3 +1947,211 @@ html[data-device='mobile'] .avail-day {
   align-items: center;
   justify-content: center;
 }
+
+/* ── Certificates modal ─────────────────────────────────────────── */
+.cert-students {
+  max-height: 14rem;
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  background: #f4f8fb;
+  padding: 0.4rem 0.6rem;
+}
+.cert-student-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.3rem 0;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin-bottom: 0;
+}
+.cert-student-row + .cert-student-row {
+  border-top: 1px solid var(--border-soft);
+}
+.cert-student-row input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+.cert-student-name {
+  font-weight: 500;
+}
+.cert-student-email {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+.cert-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.6rem;
+  align-items: start;
+}
+.cert-radio-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.2rem;
+}
+.cert-radio {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+.cert-radio input[type='radio'] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+.cert-preview {
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  padding: 0.8rem;
+  max-height: 26rem;
+  overflow-y: auto;
+}
+.cert-prev-page {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 1.6rem 2rem 1.4rem;
+  font-family: Georgia, serif;
+  color: #1a1a1a;
+  text-align: center;
+  position: relative;
+}
+.cert-prev-logo {
+  display: block;
+  height: 32px;
+  margin: 0 auto 0.6rem;
+}
+.cert-prev-title {
+  font-size: 1.4rem;
+  font-weight: normal;
+  margin: 0.4rem 0 0.6rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.4rem;
+  display: inline-block;
+}
+.cert-prev-intro {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0.6rem 0 0.2rem;
+}
+.cert-prev-name {
+  font-size: 1.3rem;
+  font-style: italic;
+  margin: 0.2rem 0 0.4rem;
+  color: #1a1a1a;
+}
+.cert-prev-body {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0 0 0.8rem;
+}
+.cert-prev-details {
+  display: inline-block;
+  text-align: left;
+  margin: 0.4rem auto;
+  font-size: 0.82rem;
+}
+.cert-prev-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 0.8rem;
+  padding: 0.15rem 0;
+}
+.cert-prev-row span:first-child {
+  color: #999;
+}
+.cert-prev-row span:last-child {
+  color: #1a1a1a;
+}
+.cert-prev-attendance {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0.6rem 0 0.4rem;
+}
+.cert-prev-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 1.4rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #eee;
+  text-align: left;
+  gap: 1rem;
+}
+.cert-prev-meta {
+  font-size: 0.7rem;
+  color: #999;
+}
+.cert-prev-meta-label {
+  display: block;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+}
+.cert-prev-meta-val {
+  font-family: 'Inter', monospace;
+  letter-spacing: 0.04em;
+  color: #555;
+}
+.cert-prev-signature {
+  text-align: center;
+  min-width: 180px;
+}
+.cert-prev-signature img {
+  height: 36px;
+  display: block;
+  margin: 0 auto;
+}
+.cert-prev-sig-placeholder {
+  height: 36px;
+  border-bottom: 1px solid #aaa;
+  margin-bottom: 0.2rem;
+  color: #bbb;
+  font-style: italic;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.2rem;
+}
+.cert-prev-signature img + .cert-prev-sig-name {
+  border-top: 1px solid #aaa;
+  padding-top: 0.2rem;
+}
+.cert-prev-sig-name {
+  font-size: 0.82rem;
+  margin: 0;
+  color: #1a1a1a;
+}
+.cert-prev-sig-title {
+  font-size: 0.7rem;
+  color: #999;
+  margin: 0;
+}
+.cert-prev-place {
+  font-size: 0.7rem;
+  color: #999;
+  margin: 0.3rem 0 0;
+}
+html[data-device='mobile'] .cert-options {
+  grid-template-columns: 1fr;
+}
+html[data-device='mobile'] .cert-prev-footer {
+  flex-direction: column;
+  align-items: flex-start;
+}

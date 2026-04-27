@@ -20,7 +20,9 @@ import {
   initAddParticipantSearch,
   sendCourseConfirmation,
   sendStudentSchedule,
+  openCertificateModal,
 } from './courses.js';
+import { closeCertificateModal, submitCertificates } from './certificates.js';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -73,6 +75,9 @@ const actions = {
   submitAddParticipant,
   sendCourseConfirmation,
   sendStudentSchedule,
+  openCertificateModal,
+  closeCertificateModal,
+  submitCertificates,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,
   submitConfirmSend,
