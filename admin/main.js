@@ -45,6 +45,7 @@ import {
 import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
 import { loadAvailability, onTeacherSelect } from './availability.js';
 import { trapFocus, releaseFocus } from './helpers.js';
+import { closeConfirmSend, submitConfirmSend } from './confirm-send.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -72,6 +73,9 @@ const actions = {
   submitAddParticipant,
   sendCourseConfirmation,
   sendStudentSchedule,
+  // Confirm-send modal
+  closeConfirmSendModal: closeConfirmSend,
+  submitConfirmSend,
   // Students
   filterStudents,
   selectStudent,
