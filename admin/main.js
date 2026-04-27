@@ -21,6 +21,8 @@ import {
   sendCourseConfirmation,
   sendStudentSchedule,
   openCertificateModal,
+  toggleCourseAddressEditor,
+  saveCourseAddress,
 } from './courses.js';
 import { closeCertificateModal, submitCertificates } from './certificates.js';
 import {
@@ -78,6 +80,8 @@ const actions = {
   openCertificateModal,
   closeCertificateModal,
   submitCertificates,
+  toggleCourseAddressEditor,
+  saveCourseAddress,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,
   submitConfirmSend,

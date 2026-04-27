@@ -146,6 +146,10 @@ async function handleSubmit(e) {
   const sessionLength = document.getElementById('nc-session-length').value;
   const price = document.getElementById('nc-price').value;
   const location = document.getElementById('nc-location').value;
+  const locationStreet = document.getElementById('nc-loc-street').value.trim();
+  const locationNumber = document.getElementById('nc-loc-number').value.trim();
+  const locationPostal = document.getElementById('nc-loc-postal').value.trim();
+  const locationCity = document.getElementById('nc-loc-city').value.trim();
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
 
   const participants = [];
@@ -182,6 +186,10 @@ async function handleSubmit(e) {
         session_length_minutes: durationMinutes,
         price_per_session: price ? parseFloat(price) : null,
         location: location || null,
+        location_street: locationStreet || null,
+        location_street_number: locationNumber || null,
+        location_postal_code: locationPostal || null,
+        location_city: locationCity || null,
         single_session: singleSession,
         booking_data: { service, level, group: groupType },
         contact_data: { participants },
@@ -257,6 +265,15 @@ async function handleSubmit(e) {
 
   // Add participant button
   document.getElementById('nc-add-participant').addEventListener('click', addParticipantBlock);
+
+  // Toggle course-location address fields
+  const addressToggle = document.getElementById('nc-toggle-address');
+  const addressFields = document.getElementById('nc-address-fields');
+  addressToggle.addEventListener('click', () => {
+    const open = addressFields.style.display !== 'none';
+    addressFields.style.display = open ? 'none' : 'block';
+    addressToggle.textContent = open ? '+ add address' : '− hide address';
+  });
 
   // Remove participant delegation
   document.getElementById('nc-participants').addEventListener('click', (e) => {

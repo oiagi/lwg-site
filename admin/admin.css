@@ -694,6 +694,52 @@ button.submit:hover {
   color: #1a1a1a;
 }
 
+/* ── Inline course-location address editor (overview) ─────────── */
+.loc-address-btn {
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.4rem;
+}
+.loc-address-btn:hover {
+  color: var(--text);
+}
+.loc-address-editor {
+  margin-top: 0.6rem;
+}
+.loc-address-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.4rem 0.6rem;
+}
+.loc-address-grid input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #b8c7d4;
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: var(--text);
+  outline: none;
+  padding: 0.25rem 0;
+}
+.loc-address-grid input:focus {
+  border-bottom-color: var(--text);
+}
+.loc-address-grid input::placeholder {
+  color: #aaa;
+}
+.loc-address-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 /* ── Enquiry table ────────────────────────────────────────────── */
 .enquiry-list {
   display: flex;

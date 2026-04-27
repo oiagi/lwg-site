@@ -85,6 +85,30 @@
           <input type="datetime-local" id="nc-datetime">
         </div>
         <div class="modal-field full">
+          <button type="button" class="add-participant-btn" id="nc-toggle-address">+ add address</button>
+        </div>
+        <div class="modal-field full" id="nc-address-fields" style="display:none;">
+          <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
+          <div class="modal-grid">
+            <div class="modal-field">
+              <label>Street</label>
+              <input type="text" id="nc-loc-street" placeholder="e.g. Bahnhofstrasse" maxlength="100">
+            </div>
+            <div class="modal-field">
+              <label>Street number</label>
+              <input type="text" id="nc-loc-number" placeholder="e.g. 12a" maxlength="20">
+            </div>
+            <div class="modal-field">
+              <label>Postal code</label>
+              <input type="text" id="nc-loc-postal" placeholder="e.g. 8001" maxlength="20">
+            </div>
+            <div class="modal-field">
+              <label>City</label>
+              <input type="text" id="nc-loc-city" placeholder="e.g. Zürich" maxlength="80">
+            </div>
+          </div>
+        </div>
+        <div class="modal-field full">
           <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
             <input type="checkbox" id="nc-single-session" style="width:auto;margin:0;">
             <span>Only create the first session — I'll plan the rest manually in Google Calendar</span>

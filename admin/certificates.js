@@ -2,6 +2,7 @@
 import { apiFetch } from './api.js';
 import { esc, showMessage } from './helpers.js';
 import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { formatCourseAddress } from './courses.js';
 
 const LOGO_URL = '/lwg_logo.svg';
 const SIGNATURE_URL = '/admin/assets/signature.png';
@@ -174,12 +175,15 @@ function buildCertificateData(recipient, course, opts) {
       : String(sessions.length)
     : '';
 
+  const address = formatCourseAddress(course);
+  const locationDisplay = address || course.location || '';
+
   return {
     fullName,
     courseCode: course.course_code || '',
     subject: course.service || '',
     level: course.level || '',
-    location: course.location || '',
+    location: locationDisplay,
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
     sessionCount: sessions.length,
     sessionsDisplay,

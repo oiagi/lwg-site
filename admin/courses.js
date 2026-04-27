@@ -19,6 +19,101 @@ export function getCurrentCourseFilter() {
   return currentCourseFilter;
 }
 
+/* ── Location address helpers ───────────────────────────────────── */
+export function formatCourseAddress(course) {
+  const street = (course.location_street || '').trim();
+  const num = (course.location_street_number || '').trim();
+  const postal = (course.location_postal_code || '').trim();
+  const city = (course.location_city || '').trim();
+  if (!street && !num && !postal && !city) return '';
+  const line1 = [street, num].filter(Boolean).join(' ');
+  const line2 = [postal, city].filter(Boolean).join(' ');
+  return [line1, line2].filter(Boolean).join(', ');
+}
+
+function locationSummaryHtml(course) {
+  const type = course.location || '';
+  const address = formatCourseAddress(course);
+  const btnLabel = address ? 'edit' : '+ add address';
+  return `<span id="loc-line-${course.id}">${esc(type) || '—'}${
+    address ? `<br><span class="detail-muted">${esc(address)}</span>` : ''
+  }<button type="button" class="loc-address-btn" data-action="toggleCourseAddressEditor" data-args="${course.id}">${btnLabel}</button></span>`;
+}
+
+function locationEditorHtml(course) {
+  return `
+    <div class="loc-address-editor" id="loc-editor-${course.id}" style="display:none;">
+      <div class="loc-address-grid">
+        <input type="text" id="loc-street-${course.id}" placeholder="Street"
+          maxlength="100" value="${esc(course.location_street || '')}">
+        <input type="text" id="loc-number-${course.id}" placeholder="No."
+          maxlength="20" value="${esc(course.location_street_number || '')}">
+        <input type="text" id="loc-postal-${course.id}" placeholder="Postal code"
+          maxlength="20" value="${esc(course.location_postal_code || '')}">
+        <input type="text" id="loc-city-${course.id}" placeholder="City"
+          maxlength="80" value="${esc(course.location_city || '')}">
+      </div>
+      <div class="loc-address-actions">
+        <button type="button" class="save-btn"
+          data-action="saveCourseAddress" data-args="${course.id}">save</button>
+        <button type="button" class="loc-address-btn"
+          data-action="toggleCourseAddressEditor" data-args="${course.id}">cancel</button>
+        <span class="saved-msg" id="loc-msg-${course.id}">saved</span>
+      </div>
+    </div>`;
+}
+
+export function toggleCourseAddressEditor(courseId) {
+  const editor = document.getElementById('loc-editor-' + courseId);
+  const line = document.getElementById('loc-line-' + courseId);
+  if (!editor || !line) return;
+  const open = editor.style.display !== 'none';
+  editor.style.display = open ? 'none' : 'block';
+  line.style.display = open ? '' : 'none';
+}
+
+export async function saveCourseAddress(courseId) {
+  const street = document.getElementById('loc-street-' + courseId).value.trim();
+  const number = document.getElementById('loc-number-' + courseId).value.trim();
+  const postal = document.getElementById('loc-postal-' + courseId).value.trim();
+  const city = document.getElementById('loc-city-' + courseId).value.trim();
+  const msg = document.getElementById('loc-msg-' + courseId);
+
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: {
+        course_id: courseId,
+        location_street: street || null,
+        location_street_number: number || null,
+        location_postal_code: postal || null,
+        location_city: city || null,
+      },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Save failed');
+    }
+    const updated = await res.json();
+    const cached = coursesCache.find((c) => String(c.id) === String(courseId));
+    if (cached) {
+      cached.location_street = updated.location_street;
+      cached.location_street_number = updated.location_street_number;
+      cached.location_postal_code = updated.location_postal_code;
+      cached.location_city = updated.location_city;
+    }
+    showMessage(msg, 'saved');
+    renderCourses(coursesCache);
+    document.getElementById('course-detail-' + courseId)?.classList.add('open');
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.style.color = '#c33';
+      msg.style.display = 'inline';
+    }
+  }
+}
+
 export function filterCourses(status) {
   currentCourseFilter = status;
   document.querySelectorAll('[data-course-status]').forEach((b) => {
@@ -176,8 +271,9 @@ function renderCourses(courses) {
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
                 Price/session: ${c.price_per_session !== null && c.price_per_session !== undefined ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
-                Location: ${esc(c.location) || '—'}
+                Location: ${locationSummaryHtml(c)}
               </p>
+              ${locationEditorHtml(c)}
             </div>
             <div>
               <p class="detail-meta">contact</p>
