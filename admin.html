@@ -17,6 +17,7 @@
        + user-agent so CSS can adapt per device class.                  -->
   <script src="device-detect.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -190,6 +191,54 @@
           <button class="modal-submit" id="cs-submit" data-action="submitConfirmSend">send</button>
         </div>
         <p class="modal-msg" id="cs-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Certificates modal ────────────────────────────────────────── -->
+    <div class="modal-overlay" id="certificates-modal">
+      <div class="modal modal-wide">
+        <h2 id="cert-title">send certificates of attendance</h2>
+        <input type="hidden" id="cert-course-id" value="">
+
+        <div class="modal-field">
+          <label>Recipients <span class="cs-meta" id="cert-count"></span></label>
+          <div id="cert-students" class="cert-students"></div>
+        </div>
+
+        <div class="modal-field cert-options">
+          <div>
+            <label>Language</label>
+            <div class="cert-radio-row">
+              <label class="cert-radio">
+                <input type="radio" name="cert-language" value="de" checked> Deutsch
+              </label>
+              <label class="cert-radio">
+                <input type="radio" name="cert-language" value="en"> English
+              </label>
+            </div>
+          </div>
+          <div>
+            <label>Attendance details</label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="cert-include-attendance">
+              Include "X of Y sessions attended"
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-field">
+          <label>Preview</label>
+          <div id="cert-preview" class="cert-preview"></div>
+          <p class="label-hint" style="margin-top:0.4rem;">
+            Each certificate has a unique ID and will be sent as a PDF attachment.
+          </p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeCertificateModal">cancel</button>
+          <button class="modal-submit" id="cert-submit" data-action="submitCertificates">send certificates</button>
+        </div>
+        <p class="modal-msg" id="cert-msg"></p>
       </div>
     </div>
 
