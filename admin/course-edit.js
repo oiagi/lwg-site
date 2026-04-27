@@ -7,13 +7,36 @@ function setVal(id, v) {
   if (el) el.value = v ?? '';
 }
 
+const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+
+function splitLevel(raw) {
+  const v = (raw || '').trim();
+  if (v.endsWith('+')) {
+    const base = v.slice(0, -1);
+    if (PLUSABLE_LEVELS.has(base)) return { base, plus: '+' };
+  }
+  return { base: v, plus: '' };
+}
+
+function syncPlusEnabled(baseId, plusId) {
+  const baseEl = document.getElementById(baseId);
+  const plusEl = document.getElementById(plusId);
+  if (!baseEl || !plusEl) return;
+  const enabled = PLUSABLE_LEVELS.has(baseEl.value);
+  plusEl.disabled = !enabled;
+  if (!enabled) plusEl.value = '';
+}
+
 function populate(course) {
   document.getElementById('ec-id').value = course.id;
   document.getElementById('ec-code-label').textContent = course.course_code
     ? 'Course code: ' + course.course_code
     : '';
   setVal('ec-service', course.service || 'language course');
-  setVal('ec-level', course.level || '');
+  const { base, plus } = splitLevel(course.level);
+  setVal('ec-level', base);
+  setVal('ec-level-plus', plus);
+  syncPlusEnabled('ec-level', 'ec-level-plus');
   setVal('ec-group', course.group_type || 'private');
   setVal('ec-status', course.status || 'active');
   setVal(
@@ -53,7 +76,9 @@ async function handleSubmit(e) {
   const body = {
     course_id: courseId,
     service: document.getElementById('ec-service').value,
-    level: document.getElementById('ec-level').value || null,
+    level:
+      document.getElementById('ec-level').value +
+        (document.getElementById('ec-level-plus').value || '') || null,
     group_type: document.getElementById('ec-group').value,
     status: document.getElementById('ec-status').value,
     sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
@@ -126,6 +151,9 @@ async function handleSubmit(e) {
   }
 
   document.getElementById('course-edit-form').addEventListener('submit', handleSubmit);
+  document
+    .getElementById('ec-level')
+    .addEventListener('change', () => syncPlusEnabled('ec-level', 'ec-level-plus'));
 
   document.getElementById('page-loading').style.display = 'none';
   document.getElementById('page-content').style.display = '';
