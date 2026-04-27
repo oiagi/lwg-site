@@ -297,6 +297,8 @@ function generateCertificateId() {
 }
 
 /* ── Asset loading (logo + signature) ──────────────────────────── */
+let signatureLoadError = null;
+
 async function loadAssets() {
   if (!logoDataUrl) {
     try {
@@ -309,37 +311,63 @@ async function loadAssets() {
   if (!signatureDataUrl) {
     try {
       signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL);
-    } catch {
+      signatureLoadError = null;
+    } catch (err) {
+      signatureLoadError = err?.message || String(err);
       console.warn(
-        'Signature image not found at',
-        SIGNATURE_URL,
-        '— certificates will be issued without a signature image until the file is added.'
+        `Signature image could not be loaded from ${SIGNATURE_URL}: ${signatureLoadError}. ` +
+          'Certificates will be issued without a signature image until the file is reachable.'
       );
       signatureDataUrl = null;
     }
   }
 }
 
-function loadImageAsDataUrl(url) {
+async function loadImageAsDataUrl(url) {
+  // Use fetch + FileReader: gives real HTTP error messages, avoids
+  // CORS quirks of <img crossorigin>, and bypasses image-cache lag.
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
+  const blob = await res.blob();
+
+  // SVG: rasterise via canvas so jsPDF can embed it as PNG.
+  if (blob.type === 'image/svg+xml' || /\.svg(\?|$)/i.test(url)) {
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      return await rasteriseToPngDataUrl(objectUrl);
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  return await blobToDataUrl(blob);
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('FileReader failed'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function rasteriseToPngDataUrl(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas');
-        const w = img.naturalWidth || 800;
-        const h = img.naturalHeight || 600;
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+        canvas.width = img.naturalWidth || 800;
+        canvas.height = img.naturalHeight || 600;
+        canvas.getContext('2d').drawImage(img, 0, 0);
         resolve(canvas.toDataURL('image/png'));
       } catch (err) {
         reject(err);
       }
     };
-    img.onerror = () => reject(new Error('Failed to load image: ' + url));
-    img.src = url;
+    img.onerror = () => reject(new Error('Image decode failed: ' + src));
+    img.src = src;
   });
 }
 
@@ -488,9 +516,10 @@ export async function submitCertificates() {
   if (!selected.length) return;
 
   if (!signatureDataUrl) {
+    const reason = signatureLoadError ? `\n\nReason: ${signatureLoadError}` : '';
     if (
       !confirm(
-        'Signature image not found at admin/assets/signature.png — certificates will be sent without a handwritten signature. Proceed?'
+        `Signature image could not be loaded from ${SIGNATURE_URL}. Certificates will be sent without a handwritten signature. Proceed?${reason}`
       )
     ) {
       return;
