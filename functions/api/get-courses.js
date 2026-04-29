@@ -37,24 +37,18 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const courseIds = courses.map((c) => c.id);
     const courseFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
 
-    const [sessRes, enrolRes, certRes] = await Promise.all([
+    const [sessRes, enrolRes] = await Promise.all([
       fetch(
         `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
         { headers: H }
       ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=student_id,course_id,schedule_sent_at`,
-        { headers: H }
-      ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/certificates?or=(${courseFilter})&select=student_id,course_id,sent_at&order=sent_at.desc`,
-        { headers: H }
-      ),
+      fetch(`${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=student_id,course_id`, {
+        headers: H,
+      }),
     ]);
 
     const allSessions = sessRes.ok ? await sessRes.json() : [];
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
-    const allCertificates = certRes.ok ? await certRes.json() : [];
 
     // ── Batch fetch all unique students ────────────────────────────────
     const studentIds = [...new Set(allEnrolments.map((e) => e.student_id))];
@@ -89,19 +83,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     }
 
     const studentIdsByCourse = {};
-    const scheduleSentByCourseStudent = {};
     for (const e of allEnrolments) {
       (studentIdsByCourse[e.course_id] ||= new Set()).add(e.student_id);
-      if (e.schedule_sent_at) {
-        (scheduleSentByCourseStudent[e.course_id] ||= {})[e.student_id] = e.schedule_sent_at;
-      }
-    }
-
-    // certificates ordered desc above; first occurrence per (course, student) wins
-    const certificateSentByCourseStudent = {};
-    for (const c of allCertificates) {
-      const byStudent = (certificateSentByCourseStudent[c.course_id] ||= {});
-      if (!byStudent[c.student_id]) byStudent[c.student_id] = c.sent_at;
     }
 
     const studentsById = {};
@@ -119,8 +102,6 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     // ── Enrich courses ────────────────────────────────────────────────
     const enriched = courses.map((course) => {
       const invByStudent = invoicesByCourseStudent[course.id] || {};
-      const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
-      const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
       return {
         ...course,
         sessions: sessionsByCourse[course.id] || [],
@@ -128,12 +109,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           .map((id) => {
             const s = studentsById[id];
             if (!s) return null;
-            return {
-              ...s,
-              open_invoices: invByStudent[id] || [],
-              schedule_sent_at: schedSentByStudent[id] || null,
-              certificate_sent_at: certSentByStudent[id] || null,
-            };
+            return { ...s, open_invoices: invByStudent[id] || [] };
           })
           .filter(Boolean),
       };
