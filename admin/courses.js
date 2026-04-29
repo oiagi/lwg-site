@@ -114,6 +114,49 @@ export async function saveCourseAddress(courseId) {
   }
 }
 
+function sentCommunicationsBlock(course) {
+  const students = course.students || [];
+  const total = students.length;
+
+  const confirmedAt = course.course_confirmation_sent_at;
+  const scheduleSent = students.filter((s) => s.schedule_sent_at);
+  const certSent = students.filter((s) => s.certificate_sent_at);
+
+  if (!confirmedAt && !scheduleSent.length && !certSent.length) return '';
+
+  const latest = (rows, key) =>
+    rows
+      .map((s) => s[key])
+      .filter(Boolean)
+      .sort()
+      .pop();
+
+  const items = [];
+  if (confirmedAt) {
+    items.push(
+      `<li>✓ confirmation sent · <span class="detail-muted">${esc(fmtDate(confirmedAt))}</span></li>`
+    );
+  }
+  if (scheduleSent.length) {
+    const last = latest(scheduleSent, 'schedule_sent_at');
+    items.push(
+      `<li>✓ schedule sent to ${scheduleSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+    );
+  }
+  if (certSent.length) {
+    const last = latest(certSent, 'certificate_sent_at');
+    items.push(
+      `<li>✓ certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+    );
+  }
+
+  return `
+    <div class="sent-status">
+      <p class="detail-meta">communications</p>
+      <ul class="sent-status-list">${items.join('')}</ul>
+    </div>`;
+}
+
 export function filterCourses(status) {
   currentCourseFilter = status;
   document.querySelectorAll('[data-course-status]').forEach((b) => {
@@ -217,6 +260,16 @@ function renderCourses(courses) {
               ? `<button class="action-btn" data-action="sendStudentSchedule" data-args="${s.id},${c.id}">✉ send schedule</button>
                  <span class="saved-msg" id="schedule-msg-${s.id}">sent</span>`
               : '';
+            const sentTags = [
+              s.schedule_sent_at
+                ? `<span class="sent-tag">schedule sent · ${esc(fmtDate(s.schedule_sent_at))}</span>`
+                : '',
+              s.certificate_sent_at
+                ? `<span class="sent-tag">certificate sent · ${esc(fmtDate(s.certificate_sent_at))}</span>`
+                : '',
+            ]
+              .filter(Boolean)
+              .join('');
             return `
       <div class="progress-block">
         <p class="progress-name">
@@ -233,6 +286,7 @@ function renderCourses(courses) {
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
           ${scheduleBtn}
         </div>
+        ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
         ${invoiceBlock}
       </div>
     `;
@@ -294,6 +348,7 @@ function renderCourses(courses) {
           </div>
           <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
           ${studentBlocks}
+          ${sentCommunicationsBlock(c)}
           <div class="course-actions-row" style="margin-top:0.4rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
             <button class="save-btn"
               data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>

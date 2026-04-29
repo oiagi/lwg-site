@@ -212,15 +212,31 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         if (!res.ok) {
           console.error(`Schedule email failed for ${student.email}:`, await res.text());
         }
-        return { email: student.email, ok: res.ok };
+        return { email: student.email, student_id: student.id, ok: res.ok };
       } catch (err) {
         console.error(`Schedule email error for ${student.email}:`, err?.message || err);
-        return { email: student.email, ok: false };
+        return { email: student.email, student_id: student.id, ok: false };
       }
     })
   );
 
   const sent = results.filter((r) => r.ok).length;
   const failed = results.length - sent;
+
+  const sentStudentIds = results.filter((r) => r.ok).map((r) => r.student_id);
+  if (sentStudentIds.length) {
+    const sentAt = new Date().toISOString();
+    const idFilter = sentStudentIds.map((id) => `student_id.eq.${id}`).join(',');
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${course_id}&or=(${idFilter})`, {
+        method: 'PATCH',
+        headers: { ...H, Prefer: 'return=minimal' },
+        body: JSON.stringify({ schedule_sent_at: sentAt }),
+      });
+    } catch (err) {
+      console.error('Failed to record schedule_sent_at:', err?.message || err);
+    }
+  }
+
   return jsonResponse({ success: failed === 0, sent, failed, recipients: results });
 }, 'send-session-schedule');
