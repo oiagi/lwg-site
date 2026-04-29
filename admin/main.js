@@ -144,24 +144,11 @@ document.addEventListener('change', (e) => {
 });
 
 /* ── Tab switching ───────────────────────────────────────────────── */
-function tabFromPath(pathname) {
-  const m = pathname.match(/^\/admin\/([^/]+)\/?$/);
-  return m && TABS.includes(m[1]) ? m[1] : null;
-}
-
 function switchTab(tab, options = {}) {
   const tabs = TABS;
   for (const t of tabs) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
-  }
-  if (!options.skipHistory) {
-    const newPath = '/admin/' + tab;
-    if (window.location.pathname !== newPath) {
-      const url = newPath + window.location.search;
-      if (options.replace) history.replaceState({ tab }, '', url);
-      else history.pushState({ tab }, '', url);
-    }
   }
   if (tab === 'courses') {
     loadCourses(getCurrentCourseFilter()).then(() => {
@@ -184,18 +171,14 @@ document.addEventListener('admin:switchTab', (e) => {
   if (tab) switchTab(tab, rest);
 });
 
-window.addEventListener('popstate', () => {
-  if (document.getElementById('dashboard').style.display === 'none') return;
-  const tab = tabFromPath(window.location.pathname);
-  if (tab) switchTab(tab, { skipHistory: true });
-});
-
 /* ── Show dashboard ──────────────────────────────────────────────── */
 function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  const tab = tabFromPath(window.location.pathname) || 'students';
-  switchTab(tab, { replace: true });
+  const hash = window.location.hash.replace('#', '');
+  const tab = TABS.includes(hash) ? hash : 'students';
+  if (hash && TABS.includes(hash)) history.replaceState({}, '', '/admin.html');
+  switchTab(tab);
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */
@@ -246,7 +229,7 @@ initAddParticipantSearch();
 (function () {
   const p = new URLSearchParams(window.location.search);
   if (p.get('auth') === 'success') {
-    history.replaceState({}, '', window.location.pathname);
+    history.replaceState({}, '', '/admin.html');
   }
 })();
 
