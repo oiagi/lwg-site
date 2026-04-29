@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gioia — admin · students</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/device-detect.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+  <div id="dashboard">
+    <div class="main-tabs">
+      <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
+      <a class="main-tab active" href="/admin/students">students</a>
+      <a class="main-tab" href="/admin/courses">courses</a>
+      <a class="main-tab" href="/admin/teachers">teachers</a>
+    </div>
+
+    <div id="panel-students">
+      <div class="dashboard-header students-header">
+        <div class="course-filter-row">
+          <button class="filter-btn active" data-student-status="active" data-action="filterStudents" data-args="active">active</button>
+          <button class="filter-btn" data-student-status="all" data-action="filterStudents" data-args="all">all</button>
+          <button class="filter-btn" data-student-status="inactive" data-action="filterStudents" data-args="inactive">inactive</button>
+        </div>
+        <div class="students-header-actions">
+          <button class="secondary-btn" id="students-export-btn" data-action="exportStudents">export xlsx</button>
+          <button class="secondary-btn" data-action="openImportModal">import xlsx</button>
+          <a class="new-course-btn" href="/admin/student-form.html">+ new student</a>
+        </div>
+      </div>
+      <div class="students-layout">
+        <div class="students-sidebar">
+          <div id="student-list" role="listbox" aria-label="Students">
+            <div class="loading-state">loading…</div>
+          </div>
+        </div>
+        <div class="student-detail-pane">
+          <div id="student-detail-panel" class="student-detail-empty">
+            <p>select a student to view their details</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Import students modal ─────────────────────────────────────── -->
+    <div class="modal-overlay" id="import-modal">
+      <div class="modal">
+        <h2>import students</h2>
+        <p class="label-hint" style="margin-bottom:0.8rem;">
+          Upload an .xlsx file with column headers matching student fields
+          (first_name, last_name, email, phone, status, …). Rows with a
+          matching email are updated; the rest are created as new students.
+        </p>
+        <div class="modal-field">
+          <label>Excel file</label>
+          <input type="file" id="import-file" accept=".xlsx,.xls,.csv" data-action-change="handleImportFile">
+        </div>
+        <div id="import-preview" style="margin-top:0.8rem;"></div>
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeImportModal">cancel</button>
+          <button class="modal-submit" id="import-submit" data-action="submitImport" disabled>import</button>
+        </div>
+        <p class="modal-msg" id="import-msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Enroll student in course modal ────────────────────────────── -->
+    <div class="modal-overlay" id="enroll-student-modal">
+      <div class="modal">
+        <h2>enroll in course</h2>
+        <div class="modal-field">
+          <label>Course</label>
+          <select id="es-course">
+            <option value="">loading courses…</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-cancel" data-action="closeEnrollStudentModal">cancel</button>
+          <button class="modal-submit" id="es-submit" data-action="submitEnrollStudent" disabled>enroll</button>
+        </div>
+        <p class="modal-msg" id="es-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/students-page.js"></script>
+</body>
+</html>
