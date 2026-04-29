@@ -272,5 +272,21 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const sent = results.filter((r) => r.ok).length;
   const failed = results.length - sent;
+
+  if (sent > 0) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
+        method: 'PATCH',
+        headers: {
+          ...supabaseHeaders(SUPABASE_SERVICE_KEY),
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ course_confirmation_sent_at: new Date().toISOString() }),
+      });
+    } catch (err) {
+      console.error('Failed to record confirmation_sent_at:', err?.message || err);
+    }
+  }
+
   return jsonResponse({ success: failed === 0, sent, failed, recipients: results });
 }, 'send-course-confirmation');
