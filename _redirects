@@ -6,3 +6,9 @@
 
 # contact.html removed — redirect to enquiry
 /contact.html  /enquiry.html  301
+
+# Admin dashboard tabs as URLs (rewrite to single-page admin.html)
+/admin           /admin/students  301
+/admin/students  /admin.html      200
+/admin/courses   /admin.html      200
+/admin/teachers  /admin.html      200
