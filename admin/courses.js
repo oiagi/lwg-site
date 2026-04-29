@@ -146,7 +146,7 @@ export async function loadCourses(status = 'active') {
       const detail = document.getElementById('course-detail-' + id);
       if (detail) detail.classList.add('open');
     });
-  } catch (err) {
+  } catch {
     list.innerHTML = '<div class="loading-state">Could not load courses.</div>';
   }
 }
@@ -795,7 +795,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
       </div>`;
       })
       .join('');
-  } catch (err) {
+  } catch {
     container.innerHTML =
       '<p style="font-size:0.78rem;color:#c0392b;">Could not load students.</p>';
   }
