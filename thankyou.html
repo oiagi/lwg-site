@@ -40,8 +40,8 @@
 
     <!-- ── Success state (default) ───────────────────────────────────────
          Shown when the user arrives here after a successful submission.
-         The submission itself is handled by contact-details.html —
-         this page just confirms and clears session data.              -->
+         The submission itself is handled by enquiry.html — this page
+         just confirms and clears session data.                        -->
     <div id="success-state">
       <h1>thank you.</h1>
       <p>We've received your enquiry and will be in touch within 48 hours.</p>
@@ -69,14 +69,7 @@
 
   <script src="nav.js"></script>
   <script>
-    /* ── Thank you page logic ────────────────────────────────────────────
-       Submission is handled by contact-details.html. This page simply:
-       1. Clears session storage so a refresh does not re-trigger anything
-       2. Checks whether we arrived here legitimately (via a submission)
-          and shows the success state — if navigated to directly without
-          a prior submission it still sh
-          a prior submission it still shows success silently (acceptable).
-    ──────────────────────────────────────────────────────────────────── */
+    /* Clear session storage so a refresh does not re-trigger anything. */
     sessionStorage.removeItem('booking');
     sessionStorage.removeItem('contact');
   </script>
