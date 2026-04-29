@@ -178,12 +178,22 @@ function buildCertificateData(recipient, course, opts) {
   const address = formatCourseAddress(course);
   const locationDisplay = address || course.location || '';
 
+  const isGroup = isGroupClass(course);
+  const classTypeDisplay = isGroup
+    ? isEN
+      ? 'Group class'
+      : 'Gruppenunterricht'
+    : isEN
+      ? 'Individual class'
+      : 'Einzelunterricht';
+
   return {
     fullName,
     courseCode: course.course_code || '',
     subject: course.service || '',
     level: course.level || '',
     location: locationDisplay,
+    classType: classTypeDisplay,
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
     sessionCount: sessions.length,
     sessionsDisplay,
@@ -200,6 +210,13 @@ function buildCertificateData(recipient, course, opts) {
   };
 }
 
+function isGroupClass(course) {
+  const gt = course.group_type;
+  if (gt === 'private') return false;
+  if (gt === 'duo' || gt === 'group') return true;
+  return (course.students || []).length >= 2;
+}
+
 function strings(isEN) {
   return isEN
     ? {
@@ -212,6 +229,7 @@ function strings(isEN) {
         periodLabel: 'Period',
         sessionsLabel: 'Lessons',
         locationLabel: 'Location',
+        classTypeLabel: 'Class type',
         attendance: (att, tot) => `Attended ${att} of ${tot} sessions.`,
         certId: 'Certificate ID',
         signatureTitle: SIGNATURE_TITLE_EN,
@@ -226,6 +244,7 @@ function strings(isEN) {
         periodLabel: 'Zeitraum',
         sessionsLabel: 'Lektionen',
         locationLabel: 'Ort',
+        classTypeLabel: 'Unterrichtsart',
         attendance: (att, tot) => `Anwesend in ${att} von ${tot} Lektionen.`,
         certId: 'Bestätigungsnummer',
         signatureTitle: SIGNATURE_TITLE_DE,
@@ -251,6 +270,7 @@ function buildPreviewHtml(data) {
       <div class="cert-prev-details">
         ${detailRow(t.subjectLabel, data.subject)}
         ${detailRow(t.levelLabel, data.level)}
+        ${detailRow(t.classTypeLabel, data.classType)}
         ${detailRow(t.codeLabel, data.courseCode)}
         ${detailRow(t.periodLabel, data.dateRange)}
         ${detailRow(t.sessionsLabel, data.sessionsDisplay)}
@@ -432,6 +452,7 @@ function buildCertificatePdf(data) {
   const rows = [
     [t.subjectLabel, data.subject],
     [t.levelLabel, data.level],
+    [t.classTypeLabel, data.classType],
     [t.codeLabel, data.courseCode],
     [t.periodLabel, data.dateRange],
     [t.sessionsLabel, data.sessionsDisplay],
