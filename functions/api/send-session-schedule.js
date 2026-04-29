@@ -2,11 +2,11 @@
 // POST /api/send-session-schedule
 // Body: { course_id, student_id? }
 //
-// Sends a plain schedule update to each enrolled student with an email
-// address — just the list of upcoming (non-cancelled) sessions, no course
-// confirmation boilerplate or AGB. Use this when sessions have been
-// rescheduled mid-course. If `student_id` is provided, only that student
-// is emailed.
+// Sends a schedule update to each enrolled student with an email
+// address — the list of upcoming (non-cancelled) sessions plus the
+// 24-hour cancellation policy reminder, without course confirmation
+// boilerplate or AGB. Use this when sessions have been rescheduled
+// mid-course. If `student_id` is provided, only that student is emailed.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
@@ -18,6 +18,7 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+import { CANCELLATION_POLICY } from './_agb.js';
 
 const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -91,6 +92,16 @@ function buildScheduleEmail({ course, sessions, studentFirstName }) {
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
               ${sessionRows(sessions)}
             </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">Absage und Verschiebung</p>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
+                ${esc(CANCELLATION_POLICY)}
+              </p>
+            </div>
           </td>
         </tr>
         <tr>
