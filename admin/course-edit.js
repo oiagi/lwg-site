@@ -106,7 +106,7 @@ async function handleSubmit(e) {
     btn.textContent = 'saved ✓';
 
     setTimeout(() => {
-      window.location.href = '/admin/courses';
+      window.location.href = '/admin.html#courses';
     }, 1500);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
@@ -121,19 +121,19 @@ async function handleSubmit(e) {
   try {
     await initAuth();
   } catch {
-    window.location.href = '/admin/students';
+    window.location.href = '/admin.html';
     return;
   }
   const session = await getSession();
   if (!session) {
-    window.location.href = '/admin/students';
+    window.location.href = '/admin.html';
     return;
   }
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (!id) {
-    window.location.href = '/admin/courses';
+    window.location.href = '/admin.html#courses';
     return;
   }
 
