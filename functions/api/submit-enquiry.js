@@ -161,7 +161,7 @@ function buildNotificationEmail(booking, contact, enquiryId) {
         </tr>
         <tr>
           <td style="padding:16px 40px 28px;border-top:1px solid #eee;">
-            <a href="https://learningwithgioia.ch/admin/students" style="font-size:12px;color:#888;">View in admin dashboard →</a>
+            <a href="https://learningwithgioia.ch/admin.html" style="font-size:12px;color:#888;">View in admin dashboard →</a>
           </td>
         </tr>
       </table>

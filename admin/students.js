@@ -116,26 +116,6 @@ export async function selectStudent(id) {
   await fetchAndRenderStudent(id);
 }
 
-/* ── Page bootstrap: read URL params and select student if specified ── */
-export async function initStudentsPage() {
-  const params = new URLSearchParams(window.location.search);
-  const studentId = params.get('id');
-  const fromCourseId = params.get('fromCourseId');
-  const fromCourseCode = params.get('fromCourseCode');
-
-  if (fromCourseId) {
-    fromCourseContext = { courseId: fromCourseId, courseCode: fromCourseCode || '' };
-  }
-
-  if (studentId) {
-    selectedStudentId = studentId;
-    await loadStudentsKeepingContext(currentStudentFilter, studentId);
-    await fetchAndRenderStudent(studentId);
-  } else {
-    await loadStudents(currentStudentFilter);
-  }
-}
-
 async function fetchAndRenderStudent(id) {
   document.querySelectorAll('.student-row').forEach((row) => {
     const isSelected = row.id === 'student-' + id;
@@ -157,13 +137,16 @@ async function fetchAndRenderStudent(id) {
   }
 }
 
-export function selectStudentFromCourse(studentId, courseId, courseCode) {
-  const params = new URLSearchParams({
-    id: studentId,
-    fromCourseId: courseId,
-    fromCourseCode: courseCode || '',
+export async function selectStudentFromCourse(studentId, courseId, courseCode) {
+  fromCourseContext = { courseId, courseCode };
+  // Skip the default loadStudents so loadStudentsKeepingContext can scroll-to-row instead.
+  const ev = new CustomEvent('admin:switchTab', {
+    detail: { tab: 'students', skipReload: true },
   });
-  window.location.href = '/admin/students?' + params.toString();
+  document.dispatchEvent(ev);
+  selectedStudentId = studentId;
+  await loadStudentsKeepingContext(currentStudentFilter, studentId);
+  await fetchAndRenderStudent(studentId);
 }
 
 async function loadStudentsKeepingContext(status, keepSelectedId) {
@@ -405,7 +388,11 @@ function renderAdminSection(s) {
 }
 
 export function backToCourse(courseId) {
-  window.location.href = '/admin/courses?openCourseId=' + encodeURIComponent(courseId);
+  fromCourseContext = null;
+  const ev = new CustomEvent('admin:switchTab', {
+    detail: { tab: 'courses', openCourseId: courseId },
+  });
+  document.dispatchEvent(ev);
 }
 
 /* ── Student modal ───────────────────────────────────────────────── */

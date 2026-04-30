@@ -1,5 +1,8 @@
 /* ── Shared constants for the admin dashboard ─────────────────────── */
 
+/* Admin dashboard tabs */
+export const TABS = ['students', 'courses', 'teachers'];
+
 /* UI timing */
 export const MESSAGE_TIMEOUT_MS = 1500;
 
