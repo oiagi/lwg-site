@@ -27,11 +27,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   // ── Handle user denying consent ──────────────────────────────────────
   if (error) {
-    return Response.redirect(`${siteUrl}/admin.html?auth=denied`, 302);
+    return Response.redirect(`${siteUrl}/admin/teachers?auth=denied`, 302);
   }
 
   if (!code || !teacher_id) {
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin/teachers?auth=error`, 302);
   }
 
   // ── Exchange authorisation code for tokens ───────────────────────────
@@ -51,13 +51,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     if (!tokenRes.ok) {
       console.error('Token exchange failed:', await tokenRes.text());
-      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+      return Response.redirect(`${siteUrl}/admin/teachers?auth=error`, 302);
     }
 
     tokens = await tokenRes.json();
   } catch (err) {
     console.error('Token exchange error:', err);
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin/teachers?auth=error`, 302);
   }
 
   // ── Store tokens in Supabase against the teacher record ─────────────
@@ -86,13 +86,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     if (!res.ok) {
       console.error('Supabase token store failed:', await res.text());
-      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+      return Response.redirect(`${siteUrl}/admin/teachers?auth=error`, 302);
     }
   } catch (err) {
     console.error('Supabase error:', err);
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin/teachers?auth=error`, 302);
   }
 
   // ── Success — redirect back to admin dashboard ───────────────────────
-  return Response.redirect(`${siteUrl}/admin.html?auth=success`, 302);
+  return Response.redirect(`${siteUrl}/admin/teachers?auth=success`, 302);
 }, 'auth-callback');
