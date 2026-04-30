@@ -20,11 +20,8 @@ Language courses, exam preparation and tutoring in Zurich.
 ├── shared.css          # Global styles, navigation, animations
 ├── nav.js              # Injected navigation component
 ├── device-detect.js    # Responsive device detection (mobile/tablet/desktop)
-├── admin/              # Admin dashboard (per-tab pages + JS modules)
-│   ├── index.html      # Login page
-│   ├── students.html / courses.html / teachers.html  # Dashboard tabs
-│   ├── dashboard-shell.js  # Shared auth, action delegation, modal handling
-│   ├── *-page.js       # Per-tab entry points
+├── admin/              # Admin dashboard modules (13 JS files + CSS)
+│   ├── main.js         # Entry point, event delegation, tab switching
 │   ├── auth.js         # Supabase authentication
 │   ├── api.js          # API fetch wrapper
 │   └── ...             # Feature modules (courses, students, billing, etc.)

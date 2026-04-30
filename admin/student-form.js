@@ -157,7 +157,7 @@ async function handleSubmit(e) {
     const res = await apiFetch('/api/save-student', { method: 'POST', body });
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
-    window.location.href = '/admin/students';
+    window.location.href = '/admin.html#students';
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
@@ -171,12 +171,12 @@ async function handleSubmit(e) {
   try {
     await initAuth();
   } catch {
-    window.location.href = '/admin';
+    window.location.href = '/admin.html';
     return;
   }
   const session = await getSession();
   if (!session) {
-    window.location.href = '/admin';
+    window.location.href = '/admin.html';
     return;
   }
 
