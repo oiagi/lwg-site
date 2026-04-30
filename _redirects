@@ -7,7 +7,8 @@
 # contact.html removed — redirect to enquiry
 /contact.html  /enquiry.html  301
 
-# Admin dashboard tabs are now separate pages. /admin/{students,courses,teachers}
-# resolve directly to their .html files via Pages' default extensionless serving.
-# Legacy /admin.html redirects to the default students page.
+# Admin dashboard: each tab is its own page (admin/{students,courses,teachers}.html).
+# /admin and /admin.html land on the students page.
 /admin.html  /admin/students  301
+/admin/      /admin/students  301
+/admin       /admin/students  301
