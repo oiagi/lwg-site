@@ -11,7 +11,7 @@ npm run dev                # wrangler dev server on localhost:8788
 ## Project layout
 
 - Static HTML pages at repo root (no build step, no framework)
-- `admin/` — single-page admin dashboard (vanilla JS modules)
+- `admin/` — admin dashboard: login at `index.html`, one page per tab (`students.html`, `courses.html`, `teachers.html`)
 - `functions/api/` — Cloudflare Pages Functions (serverless API)
 - `shared.css` — global styles; page-specific CSS files alongside HTML
 
@@ -21,7 +21,7 @@ npm run dev                # wrangler dev server on localhost:8788
 
 - Always wrap user data with `esc()` from `helpers.js` when inserting into innerHTML
 - Use `apiFetch()` from `api.js` for all API calls (handles Bearer token)
-- Use `data-action` attributes + event delegation in `main.js` for click handlers
+- Use `data-action` attributes + event delegation (registered via `dashboard-shell.js`) for click handlers in dashboard pages
 - Use `dl()` helper for key/value display rows (auto-escapes)
 
 ### Backend (functions/api/)

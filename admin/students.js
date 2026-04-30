@@ -137,13 +137,17 @@ async function fetchAndRenderStudent(id) {
   }
 }
 
-export async function selectStudentFromCourse(studentId, courseId, courseCode) {
+/* ── Cross-page nav: courses → students with a pre-selected student ── */
+export function selectStudentFromCourse(studentId, courseId, courseCode) {
+  sessionStorage.setItem('admin:openStudent', JSON.stringify({ studentId, courseId, courseCode }));
+  window.location.href = '/admin/students';
+}
+
+/* Bootstrap helper: students-page.js calls this on load when sessionStorage
+   has an admin:openStudent payload, to restore the from-course breadcrumb
+   and pre-select the student. */
+export async function applyFromCourseContext(studentId, courseId, courseCode) {
   fromCourseContext = { courseId, courseCode };
-  // Skip the default loadStudents so loadStudentsKeepingContext can scroll-to-row instead.
-  const ev = new CustomEvent('admin:switchTab', {
-    detail: { tab: 'students', skipReload: true },
-  });
-  document.dispatchEvent(ev);
   selectedStudentId = studentId;
   await loadStudentsKeepingContext(currentStudentFilter, studentId);
   await fetchAndRenderStudent(studentId);
@@ -387,12 +391,10 @@ function renderAdminSection(s) {
   return `${metaBlock}${courseTable}${notesBlock}`;
 }
 
+/* ── Cross-page nav: students → courses with a course pre-opened ──── */
 export function backToCourse(courseId) {
-  fromCourseContext = null;
-  const ev = new CustomEvent('admin:switchTab', {
-    detail: { tab: 'courses', openCourseId: courseId },
-  });
-  document.dispatchEvent(ev);
+  sessionStorage.setItem('admin:openCourse', courseId);
+  window.location.href = '/admin/courses';
 }
 
 /* ── Student modal ───────────────────────────────────────────────── */

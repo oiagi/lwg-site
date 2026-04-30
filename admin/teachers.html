@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gioia — admin · teachers</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/device-detect.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+  <div id="dashboard">
+    <div class="main-tabs">
+      <button class="logout-btn" id="logout-btn" title="Sign out">logout</button>
+      <a class="main-tab" href="/admin/students">students</a>
+      <a class="main-tab" href="/admin/courses">courses</a>
+      <a class="main-tab active" href="/admin/teachers">teachers</a>
+    </div>
+
+    <div id="panel-teachers">
+      <div class="dashboard-header students-header">
+        <div class="modal-field modal-field--compact">
+          <select id="avail-teacher" data-action-change="onTeacherSelect">
+            <option value="">select teacher…</option>
+          </select>
+        </div>
+      </div>
+      <div id="availability-content">
+        <div class="empty-state">select a teacher to view their schedule</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/admin/teachers-page.js"></script>
+</body>
+</html>
