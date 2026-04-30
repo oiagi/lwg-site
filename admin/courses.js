@@ -165,6 +165,23 @@ export function filterCourses(status) {
   loadCourses(status);
 }
 
+/* ── Page bootstrap: load courses, optionally open one from URL param ── */
+export async function initCoursesPage() {
+  const params = new URLSearchParams(window.location.search);
+  const openCourseId = params.get('openCourseId');
+
+  await loadCourses(currentCourseFilter);
+
+  if (openCourseId) {
+    const detail = document.getElementById('course-detail-' + openCourseId);
+    if (detail) {
+      detail.classList.add('open');
+      const row = document.getElementById('course-' + openCourseId);
+      if (row) row.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }
+}
+
 export async function loadCourses(status = 'active') {
   const list = document.getElementById('course-list');
 
