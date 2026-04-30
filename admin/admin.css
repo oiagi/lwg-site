@@ -177,8 +177,6 @@ button.submit:hover {
   background: transparent;
   cursor: pointer;
   color: var(--text-muted);
-  text-decoration: none;
-  display: inline-block;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition:
