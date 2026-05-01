@@ -369,7 +369,9 @@ function renderCourses(courses) {
 }
 
 export function toggleCourse(id) {
-  document.getElementById('course-detail-' + id).classList.toggle('open');
+  const isNowOpen = document.getElementById('course-detail-' + id).classList.toggle('open');
+  if (isNowOpen) history.pushState({}, '', '#courses/' + id);
+  else history.replaceState({}, '', '#courses');
 }
 
 export async function syncCalendar(courseId) {
