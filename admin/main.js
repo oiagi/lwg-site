@@ -176,6 +176,10 @@ async function loadPanel(tab) {
 
 /* ── Tab switching ───────────────────────────────────────────────── */
 async function switchTab(tab, options = {}) {
+  if (!options.skipHistoryUpdate) {
+    const method = options.replaceHistory ? 'replaceState' : 'pushState';
+    history[method]({}, '', '#' + tab);
+  }
   await loadPanel(tab);
   const tabs = TABS;
   for (const t of tabs) {
@@ -203,14 +207,19 @@ document.addEventListener('admin:switchTab', (e) => {
   if (tab) switchTab(tab, rest);
 });
 
+window.addEventListener('popstate', () => {
+  const hash = window.location.hash.replace('#', '');
+  const tab = TABS.includes(hash) ? hash : 'students';
+  switchTab(tab, { skipHistoryUpdate: true });
+});
+
 /* ── Show dashboard ──────────────────────────────────────────────── */
 async function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   const hash = window.location.hash.replace('#', '');
   const tab = TABS.includes(hash) ? hash : 'students';
-  if (hash && TABS.includes(hash)) history.replaceState({}, '', '/admin.html');
-  await switchTab(tab);
+  await switchTab(tab, { replaceHistory: true });
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */
