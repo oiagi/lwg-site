@@ -174,11 +174,20 @@ async function loadPanel(tab) {
   if (tab === 'courses') initAddParticipantSearch();
 }
 
+/* ── Hash parsing ────────────────────────────────────────────────── */
+function parseHash() {
+  const [tab, id] = window.location.hash.replace('#', '').split('/');
+  return { tab: TABS.includes(tab) ? tab : null, id: id || null };
+}
+
 /* ── Tab switching ───────────────────────────────────────────────── */
 async function switchTab(tab, options = {}) {
   if (!options.skipHistoryUpdate) {
     const method = options.replaceHistory ? 'replaceState' : 'pushState';
-    history[method]({}, '', '#' + tab);
+    let hash = '#' + tab;
+    if (tab === 'students' && options.studentId) hash += '/' + options.studentId;
+    else if (tab === 'courses' && options.openCourseId) hash += '/' + options.openCourseId;
+    history[method]({}, '', hash);
   }
   await loadPanel(tab);
   const tabs = TABS;
@@ -198,7 +207,14 @@ async function switchTab(tab, options = {}) {
       }
     });
   }
-  if (tab === 'students' && !options.skipReload) loadStudents(getCurrentStudentFilter());
+  if (tab === 'students') {
+    if (options.studentId) {
+      await loadStudents(getCurrentStudentFilter());
+      selectStudent(options.studentId, { updateUrl: false });
+    } else if (!options.skipReload) {
+      loadStudents(getCurrentStudentFilter());
+    }
+  }
   if (tab === 'teachers') loadAvailability();
 }
 
@@ -208,18 +224,28 @@ document.addEventListener('admin:switchTab', (e) => {
 });
 
 window.addEventListener('popstate', () => {
-  const hash = window.location.hash.replace('#', '');
-  const tab = TABS.includes(hash) ? hash : 'students';
-  switchTab(tab, { skipHistoryUpdate: true });
+  const { tab, id } = parseHash();
+  const activeTab = tab || 'students';
+  const options = { skipHistoryUpdate: true };
+  if (id) {
+    if (activeTab === 'students') options.studentId = id;
+    if (activeTab === 'courses') options.openCourseId = id;
+  }
+  switchTab(activeTab, options);
 });
 
 /* ── Show dashboard ──────────────────────────────────────────────── */
 async function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  const hash = window.location.hash.replace('#', '');
-  const tab = TABS.includes(hash) ? hash : 'students';
-  await switchTab(tab, { replaceHistory: true });
+  const { tab, id } = parseHash();
+  const activeTab = tab || 'students';
+  const options = { replaceHistory: true };
+  if (id) {
+    if (activeTab === 'students') options.studentId = id;
+    if (activeTab === 'courses') options.openCourseId = id;
+  }
+  await switchTab(activeTab, options);
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */
