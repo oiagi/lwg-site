@@ -108,11 +108,11 @@ function renderStudents(students) {
   list.innerHTML = header + rows;
 }
 
-export async function selectStudent(id) {
+export async function selectStudent(id, { updateUrl = true } = {}) {
   if (selectedStudentId === id) return;
   selectedStudentId = id;
-  // Selections triggered from within the students tab clear any course breadcrumb.
   fromCourseContext = null;
+  if (updateUrl) history.pushState({}, '', '#students/' + id);
   await fetchAndRenderStudent(id);
 }
 
@@ -147,6 +147,7 @@ export async function selectStudentFromCourse(studentId, courseId, courseCode) {
   selectedStudentId = studentId;
   await loadStudentsKeepingContext(currentStudentFilter, studentId);
   await fetchAndRenderStudent(studentId);
+  history.replaceState({}, '', '#students/' + studentId);
 }
 
 async function loadStudentsKeepingContext(status, keepSelectedId) {
