@@ -143,8 +143,40 @@ document.addEventListener('change', (e) => {
   fn(...args);
 });
 
+/* ── Modal observer (defined early so loadPanel can use it) ──────── */
+const modalObserver = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
+    const el = m.target;
+    if (!el.classList.contains('modal-overlay')) continue;
+    if (el.classList.contains('open')) {
+      const modal = el.querySelector('.modal');
+      if (modal) trapFocus(modal);
+    } else {
+      releaseFocus();
+    }
+  }
+});
+
+/* ── Panel lazy-loader ───────────────────────────────────────────── */
+const loadedPanels = new Set();
+
+async function loadPanel(tab) {
+  if (loadedPanels.has(tab)) return;
+  const res = await fetch(`/admin/panels/${tab}.html`);
+  const html = await res.text();
+  const container = document.getElementById('panel-' + tab);
+  container.innerHTML = html;
+  loadedPanels.add(tab);
+  for (const overlay of container.querySelectorAll('.modal-overlay')) {
+    modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+  }
+  if (tab === 'courses') initAddParticipantSearch();
+}
+
 /* ── Tab switching ───────────────────────────────────────────────── */
-function switchTab(tab, options = {}) {
+async function switchTab(tab, options = {}) {
+  await loadPanel(tab);
   const tabs = TABS;
   for (const t of tabs) {
     document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
@@ -172,13 +204,13 @@ document.addEventListener('admin:switchTab', (e) => {
 });
 
 /* ── Show dashboard ──────────────────────────────────────────────── */
-function showDashboard() {
+async function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   const hash = window.location.hash.replace('#', '');
   const tab = TABS.includes(hash) ? hash : 'students';
   if (hash && TABS.includes(hash)) history.replaceState({}, '', '/admin.html');
-  switchTab(tab);
+  await switchTab(tab);
 }
 
 /* ── Login ───────────────────────────────────────────────────────── */
@@ -208,9 +240,6 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   document.getElementById('admin-email').value = '';
   document.getElementById('admin-pwd').value = '';
 });
-
-/* ── Init ────────────────────────────────────────────────────────── */
-initAddParticipantSearch();
 
 /* ── Bootstrap: init Supabase, check existing session ────────────── */
 (async function () {
@@ -242,21 +271,3 @@ document.addEventListener('keydown', (e) => {
   topModal.classList.remove('open');
   releaseFocus();
 });
-
-// Observe modal-overlay elements for open/close class changes
-const modalObserver = new MutationObserver((mutations) => {
-  for (const m of mutations) {
-    if (m.type !== 'attributes' || m.attributeName !== 'class') continue;
-    const el = m.target;
-    if (!el.classList.contains('modal-overlay')) continue;
-    if (el.classList.contains('open')) {
-      const modal = el.querySelector('.modal');
-      if (modal) trapFocus(modal);
-    } else {
-      releaseFocus();
-    }
-  }
-});
-for (const overlay of document.querySelectorAll('.modal-overlay')) {
-  modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
-}
