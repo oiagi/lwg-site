@@ -33,6 +33,7 @@ function esc(str) {
 
 function fmtDateDE(iso) {
   return new Date(iso).toLocaleString('de-CH', {
+    timeZone: 'Europe/Zurich',
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
