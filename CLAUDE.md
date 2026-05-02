@@ -10,14 +10,17 @@ npm run dev                # wrangler dev server on localhost:8788
 
 ## Project layout
 
-- Static HTML pages at repo root (no build step, no framework)
-- `admin/` — single-page admin dashboard (vanilla JS modules)
-- `functions/api/` — Cloudflare Pages Functions (serverless API)
-- `shared.css` — global styles; page-specific CSS files alongside HTML
+- `public/` — all static frontend files (served as site root by Cloudflare Pages)
+  - `public/images/` — all images and icons (favicons, logos, cloud cursor)
+  - `public/js/` — shared scripts used across pages (`nav.js`, `device-detect.js`)
+  - `public/admin/` — single-page admin dashboard (vanilla JS modules)
+  - `public/shared.css` — global styles; page-specific CSS files alongside HTML
+- `functions/api/` — Cloudflare Pages Functions (serverless API, must stay at repo root)
+- `supabase/migrations/` — database migration scripts
 
 ## Code conventions
 
-### Frontend (admin/)
+### Frontend (public/admin/)
 
 - Always wrap user data with `esc()` from `helpers.js` when inserting into innerHTML
 - Use `apiFetch()` from `api.js` for all API calls (handles Bearer token)
