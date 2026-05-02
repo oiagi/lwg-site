@@ -4,7 +4,7 @@ Language courses, exam preparation and tutoring in Zurich.
 
 ## Architecture
 
-- **Frontend:** Static HTML, CSS, vanilla JavaScript (no framework, no build step)
+- **Frontend:** Static HTML, CSS, vanilla JavaScript in `public/` (no framework, no build step)
 - **Backend:** Cloudflare Pages Functions (serverless API, 36 endpoints in `functions/api/`)
 - **Database:** Supabase (PostgreSQL + authentication)
 - **Email:** Resend (transactional email)
@@ -14,21 +14,19 @@ Language courses, exam preparation and tutoring in Zurich.
 
 ```
 .
-├── *.html              # Static pages (index, info, enquiry, etc.)
-├── *.css               # Page-specific stylesheets
-├── shared.css          # Global styles, navigation, animations
-├── nav.js              # Injected navigation component
-├── device-detect.js    # Responsive device detection (mobile/tablet/desktop)
-├── admin/              # Admin dashboard modules (13 JS files + CSS)
-│   ├── main.js         # Entry point, event delegation, tab switching
-│   ├── auth.js         # Supabase authentication
-│   ├── api.js          # API fetch wrapper
-│   └── ...             # Feature modules (courses, students, teachers, etc.)
-└── functions/api/      # Cloudflare Pages Functions (serverless API)
-    ├── _utils.js       # Shared utilities (auth, rate limiting, CORS)
-    ├── _validate.js    # Input validation schemas
-    ├── _calendar.js    # Google Calendar helpers
-    └── *.js            # API endpoints
+├── public/             # Static deploy output served by Cloudflare Pages
+│   ├── *.html          # Static pages (index, info, enquiry, etc.)
+│   ├── *.css           # Page-specific stylesheets
+│   ├── shared.css      # Global styles, navigation, animations
+│   ├── nav.js          # Injected navigation component
+│   ├── device-detect.js # Responsive device detection (mobile/tablet/desktop)
+│   └── admin/          # Admin dashboard modules (JS, CSS, panels, assets)
+├── functions/api/       # Cloudflare Pages Functions (serverless API)
+│   ├── _utils.js        # Shared utilities (auth, rate limiting, CORS)
+│   ├── _validate.js     # Input validation schemas
+│   ├── _calendar.js     # Google Calendar helpers
+│   └── *.js             # API endpoints
+└── supabase/migrations/ # Database migrations
 ```
 
 ## Local development
@@ -37,7 +35,7 @@ Language courses, exam preparation and tutoring in Zurich.
 2. Install dev dependencies: `npm install`
 3. Start the dev server: `npm run dev`
 
-This runs `wrangler pages dev .` which serves static files and executes the API functions locally.
+This runs `wrangler pages dev public` which serves static files from `public/` and executes the API functions locally.
 
 ## Environment variables
 
@@ -57,7 +55,7 @@ managed as Supabase Auth users, not environment variables.
 
 ## Deployment
 
-The site is deployed on Cloudflare Pages. Pushes to `main` trigger automatic deployment. No build step is needed — files are served directly.
+The site is deployed on Cloudflare Pages. Pushes to `main` trigger automatic deployment. No build step is needed; Cloudflare serves `public/` directly and loads Pages Functions from `functions/`.
 
 ## Code quality
 
