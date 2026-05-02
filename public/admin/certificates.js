@@ -4,7 +4,7 @@ import { esc, showMessage } from './helpers.js';
 import { MESSAGE_TIMEOUT_MS } from './constants.js';
 import { formatCourseAddress } from './courses.js';
 
-const LOGO_URL = '/lwg_logo.svg';
+const LOGO_URL = '/images/lwg_logo.svg';
 const SIGNATURE_URL = '/admin/assets/signature.png';
 const SIGNATURE_NAME = 'Gioia Birukoff';
 const SIGNATURE_TITLE_DE = 'Schulleitung · learning with gioia';
