@@ -7,7 +7,7 @@
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "dev": "npx wrangler pages dev public"
+    "dev": "npx wrangler pages dev ."
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
