@@ -1,6 +1,6 @@
 /* ── Edit course page ─────────────────────────────────────────────── */
-import { initAuth, getSession } from './auth.js';
-import { apiFetch } from './api.js';
+import { initAuth, getSession } from '../core/auth.js';
+import { apiFetch } from '../core/api.js';
 
 function setVal(id, v) {
   const el = document.getElementById(id);

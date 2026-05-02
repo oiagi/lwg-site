@@ -1,7 +1,7 @@
 /* ── New course page ──────────────────────────────────────────────── */
-import { initAuth, getSession } from './auth.js';
-import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
+import { initAuth, getSession } from '../core/auth.js';
+import { apiFetch } from '../core/api.js';
+import { esc } from '../core/helpers.js';
 
 let studentCache = [];
 let participantCount = 1;

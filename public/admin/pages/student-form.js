@@ -1,6 +1,6 @@
 /* ── Student add/edit form page ───────────────────────────────────── */
-import { initAuth, getSession } from './auth.js';
-import { apiFetch } from './api.js';
+import { initAuth, getSession } from '../core/auth.js';
+import { apiFetch } from '../core/api.js';
 
 const BILLING_FIELDS = [
   'sm-billing-name',

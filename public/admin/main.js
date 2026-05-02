@@ -1,6 +1,6 @@
 /* ── Admin entry point ────────────────────────────────────────────── */
-import { TABS } from './constants.js';
-import { initAuth, signIn, signOut, getSession } from './auth.js';
+import { TABS } from './core/constants.js';
+import { initAuth, signIn, signOut, getSession } from './core/auth.js';
 import {
   loadCourses,
   getCurrentCourseFilter,
@@ -23,8 +23,8 @@ import {
   openCertificateModal,
   toggleCourseAddressEditor,
   saveCourseAddress,
-} from './courses.js';
-import { closeCertificateModal, submitCertificates } from './certificates.js';
+} from './features/courses.js';
+import { closeCertificateModal, submitCertificates } from './features/certificates.js';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -38,18 +38,18 @@ import {
   openEnrollStudentModal,
   closeEnrollStudentModal,
   submitEnrollStudent,
-} from './students.js';
+} from './features/students.js';
 import {
   exportStudents,
   openImportModal,
   closeImportModal,
   handleImportFile,
   submitImport,
-} from './excel.js';
-import { authoriseTeacher, setOnAuthoriseComplete } from './teachers.js';
-import { loadAvailability, onTeacherSelect } from './availability.js';
-import { trapFocus, releaseFocus } from './helpers.js';
-import { closeConfirmSend, submitConfirmSend } from './confirm-send.js';
+} from './features/excel.js';
+import { authoriseTeacher, setOnAuthoriseComplete } from './features/teachers.js';
+import { loadAvailability, onTeacherSelect } from './features/availability.js';
+import { trapFocus, releaseFocus } from './core/helpers.js';
+import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
