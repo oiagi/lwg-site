@@ -9,7 +9,6 @@ Language courses, exam preparation and tutoring in Zurich.
 - **Database:** Supabase (PostgreSQL + authentication)
 - **Email:** Resend (transactional email)
 - **Calendar:** Google Calendar integration via OAuth
-- **Invoicing:** Swiss QR bill PDF generation (pure JS, no dependencies)
 
 ## Project structure
 
@@ -24,13 +23,10 @@ Language courses, exam preparation and tutoring in Zurich.
 │   ├── main.js         # Entry point, event delegation, tab switching
 │   ├── auth.js         # Supabase authentication
 │   ├── api.js          # API fetch wrapper
-│   └── ...             # Feature modules (courses, students, billing, etc.)
+│   └── ...             # Feature modules (courses, students, teachers, etc.)
 └── functions/api/      # Cloudflare Pages Functions (serverless API)
     ├── _utils.js       # Shared utilities (auth, rate limiting, CORS)
     ├── _validate.js    # Input validation schemas
-    ├── _logger.js      # Structured logging
-    ├── _pdf-builder.js # Minimal PDF generator
-    ├── _qr-utils.js    # Swiss QR bill utilities
     ├── _calendar.js    # Google Calendar helpers
     └── *.js            # API endpoints
 ```
@@ -45,7 +41,8 @@ This runs `wrangler pages dev .` which serves static files and executes the API 
 
 ## Environment variables
 
-See `.dev.vars.example` for the full list. Key variables:
+See `.dev.vars.example` for the full list. Admin dashboard email/passwords are
+managed as Supabase Auth users, not environment variables.
 
 | Variable               | Purpose                                   |
 | ---------------------- | ----------------------------------------- |
@@ -55,7 +52,8 @@ See `.dev.vars.example` for the full list. Key variables:
 | `RESEND_API_KEY`       | Resend email service key                  |
 | `GOOGLE_CLIENT_ID`     | Google OAuth client ID (calendar)         |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                |
-| `QR_IBAN`              | Swiss QR-IBAN for invoice payment slips   |
+| `SITE_URL`             | Optional canonical site URL for redirects |
+| `ALLOWED_ORIGINS`      | Optional comma-separated CORS origins     |
 
 ## Deployment
 

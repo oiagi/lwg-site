@@ -3,6 +3,9 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-role-key
 
+# Admin dashboard login uses Supabase Auth users, not env vars.
+# Create the admin email/password in Supabase Authentication.
+
 # ── Email (Resend) ────────────────────────────────────────────────
 RESEND_API_KEY=re_your-resend-key
 
@@ -19,12 +22,3 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 # Comma-separated list of allowed origins
 # (defaults to https://learningwithgioia.ch,https://oiagi.org,http://localhost)
 # ALLOWED_ORIGINS=https://learningwithgioia.ch,http://localhost:8788
-
-# ── Invoicing / QR-bill ─────────────────────────────────────────
-QR_IBAN=CH00 0000 0000 0000 0000 0
-CREDITOR_NAME=Learning with Gioia
-CREDITOR_STREET=Street Name
-CREDITOR_HOUSE_NUMBER=1
-CREDITOR_POSTAL_CODE=8000
-CREDITOR_CITY=Zürich
-CREDITOR_COUNTRY=CH

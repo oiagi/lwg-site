@@ -9,7 +9,7 @@
 //   4. Adjusting sessions_completed count if the session was already logged
 //
 // Environment variables:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 import {

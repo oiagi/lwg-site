@@ -13,7 +13,7 @@
 // update existing records on re-submission (e.g. correcting a mistake).
 //
 // Environment variables:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY
 
 import {
   supabaseHeaders,
