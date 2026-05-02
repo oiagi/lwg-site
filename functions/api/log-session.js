@@ -6,7 +6,7 @@
 // Also increments the sessions_completed count on the parent course.
 //
 // Environment variables:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY
 
 import {
   supabaseHeaders,

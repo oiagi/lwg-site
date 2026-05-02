@@ -10,7 +10,7 @@
 //   5. Unlinks the course from any enquiry (sets course_id to null)
 //
 // Environment variables:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD,
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY,
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 import {
