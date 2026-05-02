@@ -34,7 +34,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   else if (status === 'inactive' || active === 'false') filter = '&active=eq.false';
   else if (status === 'prospect') filter = '&status=eq.prospect';
 
-  const supabaseUrl = `${SUPABASE_URL}/rest/v1/students?order=last_name.asc,first_name.asc&select=id,first_name,last_name,email,phone,current_level,active,status,company_id,source,created_at${filter}`;
+  const supabaseUrl = `${SUPABASE_URL}/rest/v1/students?order=last_name.asc,first_name.asc&select=id,first_name,last_name,email,phone,current_level,active,status,company_id,source,created_at,customer_reference${filter}`;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
