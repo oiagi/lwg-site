@@ -7,6 +7,9 @@
 # contact.html removed — redirect to enquiry
 /contact.html  /enquiry.html  301
 
+# redepartikeln.html renamed to modalpartikeln.html
+/redepartikeln.html  /modalpartikeln.html  301
+
 # Admin dashboard tabs as URLs (rewrite to single-page admin/index.html)
 # Target is /admin (served by admin/index.html) — never /admin.html, since
 # Pages auto-strips .html and the redirect target would loop. /admin itself
