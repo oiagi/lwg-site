@@ -18,6 +18,8 @@
     '<a href="index.html">Home</a>' +
     '<a href="info.html">info</a>' +
     '<a href="enquiry.html">enquiry</a>' +
+    '<a href="impressum.html">impressum</a>' +
+    '<a href="datenschutzerklaerung.html">datenschutz</a>' +
     '</div>' +
     '</nav>';
 

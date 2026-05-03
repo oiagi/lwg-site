@@ -25,7 +25,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
-const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
+const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {

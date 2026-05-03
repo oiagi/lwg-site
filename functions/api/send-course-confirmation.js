@@ -18,7 +18,7 @@ import {
 } from './_utils.js';
 import { AGB_HTML, CANCELLATION_POLICY } from './_agb.js';
 
-const NOTIFY_EMAILS = ['info@oiagi.org', 'info@learningwithgioia.ch'];
+const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
@@ -153,7 +153,7 @@ function buildConfirmationEmail({ course, sessions, studentFirstName }) {
           <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
             <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
               Bei Fragen erreichen Sie uns unter
-              <a href="mailto:info@oiagi.org" style="color:#1a1a1a;">info@oiagi.org</a>.
+              <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
               <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
