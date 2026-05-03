@@ -40,6 +40,7 @@
     materials: { en: 'materials', de: 'materialien' },
     modalpartikeln: { en: 'modal particles', de: 'modalpartikeln' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
+    impressum: { en: 'Legal Information', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
     terms: { en: 'Terms & Conditions', de: 'AGB' },
     language: { en: 'Language', de: 'Sprache' },
