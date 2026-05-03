@@ -199,6 +199,36 @@ button[data-loading]::after {
 .nav-menu a:hover {
   opacity: 0.4;
 }
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  opacity: 0.7;
+}
+.site-language {
+  position: fixed;
+  top: clamp(0.8rem, 3.5vw, 1.8rem);
+  right: clamp(0.8rem, 4.5vw, 2.2rem);
+  z-index: 101;
+  text-transform: uppercase;
+  transition: opacity 0.2s ease;
+}
+.language-option {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+  opacity: 0.45;
+}
+.language-option.active,
+.language-option:hover {
+  opacity: 1;
+}
 
 /* ── Site footer ───────────────────────────────────────────────── */
 .site-footer {
@@ -283,6 +313,13 @@ html[data-device='mobile'] .nav-menu {
 html[data-device='mobile'] .nav-menu a {
   font-size: 0.82rem;
   padding: 0.2rem 0;
+}
+html[data-device='mobile'] .language-switcher {
+  font-size: 0.78rem;
+}
+html[data-device='mobile'] .site-language {
+  top: 0.9rem;
+  right: 1rem;
 }
 html[data-device='mobile'] .site-footer {
   margin-top: 2.4rem;

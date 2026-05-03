@@ -26,6 +26,7 @@
     <div class="error-state">loading…</div>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="nav.js"></script>
   <script>
     /* ── Student sessions page ───────────────────────────────────────────
@@ -41,12 +42,18 @@
       });
     }
 
+    function rt(key, ...args) {
+      return window.LWG_I18N
+        ? window.LWG_I18N.translateRuntime(key, ...args)
+        : key;
+    }
+
     async function load() {
       const token   = new URLSearchParams(window.location.search).get('token');
       const content = document.getElementById('main');
 
       if (!token) {
-        content.innerHTML = '<div class="error-state">No session link provided.<br>Please use the link sent to you by your teacher.</div>';
+        content.innerHTML = `<div class="error-state">${rt('noSessionLink')}</div>`;
         return;
       }
 
@@ -56,10 +63,10 @@
         const data = await res.json();
 
         if (!data.courses || !data.courses.length) {
-          content.innerHTML = `<h1>your sessions</h1>
+          content.innerHTML = `<h1>${rt('sessionsHeading')}</h1>
   <div class="empty-state">
-    <p>No sessions scheduled yet.</p>
-    <a class="book-link" href="/enquiry.html">make an enquiry →</a>
+    <p>${rt('noSessions')}</p>
+    <a class="book-link" href="/enquiry.html">${rt('makeEnquiry')}</a>
   </div>`;
           return;
         }
@@ -67,7 +74,7 @@
         const name = [data.student.firstName, data.student.lastName].filter(Boolean).join(' ');
         const level = data.student.level ? ` · ${data.student.level}` : '';
 
-        let html = `<h1>your sessions</h1><p class="subtitle">${name}${level}</p>`;
+        let html = `<h1>${rt('sessionsHeading')}</h1><p class="subtitle">${name}${level}</p>`;
 
         data.courses.forEach(course => {
           const total     = course.sessions_total;
@@ -76,13 +83,13 @@
           const pct       = total ? Math.min(100, Math.round(completed / total * 100)) : 0;
 
           const countLine = total
-            ? `${completed} of ${total} sessions completed · ${remaining} remaining`
-            : `${completed} sessions completed`;
+            ? `${completed} of ${total} ${rt('completedOf')} · ${remaining} ${rt('remaining')}`
+            : `${completed} ${rt('completedOf')}`;
 
           const rebookNote = total && remaining <= 3 && remaining > 0
-            ? `<p class="rebook-note">You have ${remaining} session${remaining === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry →</a></p>`
+            ? `<p class="rebook-note">${rt('rebookSome', remaining)}</p>`
             : total && remaining === 0
-            ? `<p class="rebook-note">Your current block is complete. <a href="/enquiry.html">Book your next block →</a></p>`
+            ? `<p class="rebook-note">${rt('rebookDone')}</p>`
             : '';
 
           const sessionRows = course.sessions.map(s => `
@@ -98,17 +105,18 @@
               <p class="course-code">${course.course_code} · ${course.service || ''} ${course.level ? '· ' + course.level : ''}</p>
               <p class="session-count">${countLine}</p>
               ${total ? `<div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>` : ''}
-              ${sessionRows || '<p style="font-size:0.82rem;color:#aaa;">No sessions scheduled yet.</p>'}
+              ${sessionRows || `<p style="font-size:0.82rem;color:#aaa;">${rt('noSessions')}</p>`}
               ${rebookNote}
             </div>`;
         });
 
         content.innerHTML = html;
       } catch {
-        content.innerHTML = '<div class="error-state">Could not load your sessions.<br>Please check your link or contact your teacher.</div>';
+        content.innerHTML = `<div class="error-state">${rt('couldNotLoad')}</div>`;
       }
     }
 
+    document.addEventListener('lwg:language-applied', load);
     load();
   </script>
 
