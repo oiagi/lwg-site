@@ -253,7 +253,7 @@
       text: {
         h1: { en: 'group courses starting soon', de: 'gruppenkurse mit baldigem start' },
         '.courses-intro': {
-          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served and confirmed personally in the backend before payment.',
+          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. Your booking will be confirmed within two hours.',
           de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Eingang bearbeitet und vor der Zahlung persoenlich im Backend bestaetigt.',
         },
         '#courses-status': { en: 'loading courses...', de: 'kurse werden geladen...' },
