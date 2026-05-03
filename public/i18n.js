@@ -37,6 +37,8 @@
     home: { en: 'Home', de: 'Start' },
     info: { en: 'info', de: 'info' },
     enquiry: { en: 'enquiry', de: 'anfrage' },
+    materials: { en: 'materials', de: 'materialien' },
+    modalpartikeln: { en: 'modal particles', de: 'modalpartikeln' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
     terms: { en: 'Terms & Conditions', de: 'AGB' },

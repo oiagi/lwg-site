@@ -40,6 +40,16 @@
     '<a href="enquiry.html" data-nav-key="enquiry">' +
     tr('enquiry') +
     '</a>' +
+    '<div class="nav-section" aria-labelledby="nav-materials-label">' +
+    '<span class="nav-section-label" id="nav-materials-label" data-nav-key="materials">' +
+    tr('materials') +
+    '</span>' +
+    '<div class="nav-submenu">' +
+    '<a href="modalpartikeln.html" data-nav-key="modalpartikeln">' +
+    tr('modalpartikeln') +
+    '</a>' +
+    '</div>' +
+    '</div>' +
     '</div>' +
     '</nav>';
   const footerHTML =

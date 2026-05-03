@@ -199,6 +199,27 @@ button[data-loading]::after {
 .nav-menu a:hover {
   opacity: 0.4;
 }
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+.nav-section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.5;
+}
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding-left: 0.85rem;
+  border-left: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+}
 .language-switcher {
   display: flex;
   align-items: center;
@@ -314,6 +335,9 @@ html[data-device='mobile'] .nav-menu a {
   font-size: 0.82rem;
   padding: 0.2rem 0;
 }
+html[data-device='mobile'] .nav-section-label {
+  font-size: 0.74rem;
+}
 html[data-device='mobile'] .language-switcher {
   font-size: 0.78rem;
 }
@@ -342,6 +366,9 @@ html[data-device='tablet'] .nav-menu {
 html[data-device='tablet'] .nav-menu a {
   font-size: 0.78rem;
   padding: 0.15rem 0;
+}
+html[data-device='tablet'] .nav-section-label {
+  font-size: 0.72rem;
 }
 html[data-device='tablet'] .site-footer {
   width: min(80vw, 760px);
