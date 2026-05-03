@@ -7,6 +7,22 @@
   </div>
   <a class="new-course-btn" href="/admin/pages/course-new.html">+ new course</a>
 </div>
+<div class="list-toolbar" aria-label="Course list tools">
+  <input type="search" id="course-search" class="list-search" placeholder="Search courses…" autocomplete="off">
+  <div class="list-sort-controls">
+    <label for="course-sort">Sort</label>
+    <select id="course-sort" class="list-sort">
+      <option value="created_at">Created date</option>
+      <option value="course_code">Course code</option>
+      <option value="service">Subject</option>
+      <option value="level">Level</option>
+      <option value="status">Status</option>
+      <option value="student_count">Students</option>
+      <option value="sessions_remaining">Sessions left</option>
+    </select>
+    <button type="button" id="course-sort-dir" class="sort-dir-btn" aria-label="Sort descending" data-dir="desc">↓</button>
+  </div>
+</div>
 <div id="course-list">
   <div class="loading-state">loading…</div>
 </div>

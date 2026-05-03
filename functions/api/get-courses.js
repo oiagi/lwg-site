@@ -1,5 +1,5 @@
 // functions/api/get-courses.js
-// GET /api/get-courses?status=active
+// GET /api/get-courses?status=active&q=<term>&sort=created_at|course_code|service|level|status|student_count|sessions_remaining&dir=asc|desc
 //
 // Returns courses with sessions and enrolled students.
 // Uses batch queries instead of per-course fetching to avoid N+1.
@@ -12,6 +12,69 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
+const DB_SORTS = {
+  created_at: {
+    asc: 'created_at.asc',
+    desc: 'created_at.desc',
+  },
+  course_code: {
+    asc: 'course_code.asc',
+    desc: 'course_code.desc',
+  },
+  service: {
+    asc: 'service.asc,course_code.asc',
+    desc: 'service.desc,course_code.asc',
+  },
+  level: {
+    asc: 'level.asc,course_code.asc',
+    desc: 'level.desc,course_code.asc',
+  },
+  status: {
+    asc: 'status.asc,course_code.asc',
+    desc: 'status.desc,course_code.asc',
+  },
+};
+
+const DERIVED_SORTS = new Set(['student_count', 'sessions_remaining']);
+
+function cleanSearchTerm(value) {
+  return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
+}
+
+function getSort(searchParams) {
+  const sort = searchParams.get('sort') || 'created_at';
+  const defaultDir = sort === 'created_at' ? 'desc' : 'asc';
+  const requestedDir = searchParams.get('dir');
+  const dir = requestedDir === 'asc' || requestedDir === 'desc' ? requestedDir : defaultDir;
+  if (DB_SORTS[sort] || DERIVED_SORTS.has(sort)) return { sort, dir };
+  return { sort: 'created_at', dir: 'desc' };
+}
+
+function compareText(a, b, dir) {
+  return (
+    String(a || '').localeCompare(String(b || ''), undefined, {
+      sensitivity: 'base',
+      numeric: true,
+    }) * (dir === 'desc' ? -1 : 1)
+  );
+}
+
+function sessionsRemaining(course) {
+  if (!course.sessions_total) return Number.POSITIVE_INFINITY;
+  return course.sessions_total - (course.sessions_completed || 0);
+}
+
+function sortEnrichedCourses(courses, sort, dir) {
+  if (!DERIVED_SORTS.has(sort)) return courses;
+  return [...courses].sort((a, b) => {
+    const left = sort === 'student_count' ? a.students?.length || 0 : sessionsRemaining(a);
+    const right = sort === 'student_count' ? b.students?.length || 0 : sessionsRemaining(b);
+    const delta = left - right;
+    if (delta) return dir === 'desc' ? -delta : delta;
+    return compareText(a.course_code, b.course_code, 'asc');
+  });
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -20,8 +83,14 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const url = new URL(request.url);
   const status = url.searchParams.get('status') || 'all';
+  const q = cleanSearchTerm(url.searchParams.get('q'));
+  const { sort, dir } = getSort(url.searchParams);
 
-  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=created_at.desc&select=*`;
+  const order = DB_SORTS[sort]?.[dir] || DB_SORTS.created_at.desc;
+  const search = q
+    ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},service.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
+    : '';
+  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=${order}&select=*${search}`;
   if (status !== 'all') coursesUrl += `&status=eq.${status}`;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -139,7 +208,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       };
     });
 
-    return jsonResponse(enriched);
+    return jsonResponse(sortEnrichedCourses(enriched, sort, dir));
   } catch (err) {
     console.error('get-courses error:', err);
     return errorResponse('Connection error');

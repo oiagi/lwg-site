@@ -10,6 +10,20 @@
     <a class="new-course-btn" href="/admin/pages/student-form.html">+ new student</a>
   </div>
 </div>
+<div class="list-toolbar" aria-label="Student list tools">
+  <input type="search" id="student-search" class="list-search" placeholder="Search students…" autocomplete="off">
+  <div class="list-sort-controls">
+    <label for="student-sort">Sort</label>
+    <select id="student-sort" class="list-sort">
+      <option value="name">Name</option>
+      <option value="created_at">Created date</option>
+      <option value="status">Status</option>
+      <option value="customer_reference">Reference</option>
+      <option value="course_count">Courses</option>
+    </select>
+    <button type="button" id="student-sort-dir" class="sort-dir-btn" aria-label="Sort ascending" data-dir="asc">↑</button>
+  </div>
+</div>
 <div class="students-layout">
   <div class="students-sidebar">
     <div id="student-list" role="listbox" aria-label="Students">
