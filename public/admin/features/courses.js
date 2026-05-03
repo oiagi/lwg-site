@@ -1,8 +1,8 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
-import { apiFetch } from './api.js';
-import { fmtDate, esc, showMessage } from './helpers.js';
+import { apiFetch } from '../core/api.js';
+import { fmtDate, esc, showMessage } from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
-import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
 
@@ -311,7 +311,7 @@ function renderCourses(courses) {
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
           <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
-          <a class="edit-course-btn" href="/admin/course-edit.html?id=${c.id}">edit</a>
+          <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
           <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">

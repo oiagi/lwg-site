@@ -1,7 +1,7 @@
 /* ── Certificates of attendance ───────────────────────────────────── */
-import { apiFetch } from './api.js';
-import { esc, showMessage } from './helpers.js';
-import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { apiFetch } from '../core/api.js';
+import { esc, showMessage } from '../core/helpers.js';
+import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { formatCourseAddress } from './courses.js';
 
 const LOGO_URL = '/lwg_logo.svg';

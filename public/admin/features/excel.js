@@ -1,8 +1,8 @@
 /* ── Excel import/export for students ─────────────────────────────── */
-import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
+import { apiFetch } from '../core/api.js';
+import { esc } from '../core/helpers.js';
 import { loadStudents, getCurrentStudentFilter } from './students.js';
-import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 
 const SHEETJS_SRC = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
 

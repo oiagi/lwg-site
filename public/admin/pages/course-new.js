@@ -1,7 +1,7 @@
 /* ── New course page ──────────────────────────────────────────────── */
-import { initAuth, getSession } from './auth.js';
-import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
+import { initAuth, getSession } from '../core/auth.js';
+import { apiFetch } from '../core/api.js';
+import { esc } from '../core/helpers.js';
 
 let studentCache = [];
 let participantCount = 1;
@@ -218,7 +218,7 @@ async function handleSubmit(e) {
     btn.textContent = 'created ✓';
 
     setTimeout(() => {
-      window.location.href = '/admin.html#courses';
+      window.location.href = '/admin#courses';
     }, 1500);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
@@ -234,12 +234,12 @@ async function handleSubmit(e) {
   try {
     await initAuth();
   } catch {
-    window.location.href = '/admin.html';
+    window.location.href = '/admin';
     return;
   }
   const session = await getSession();
   if (!session) {
-    window.location.href = '/admin.html';
+    window.location.href = '/admin';
     return;
   }
 

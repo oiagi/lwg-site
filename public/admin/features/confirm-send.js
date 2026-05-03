@@ -1,5 +1,5 @@
 /* ── Confirm-send modal: preview recipients + content before sending ── */
-import { esc } from './helpers.js';
+import { esc } from '../core/helpers.js';
 
 let pendingHandler = null;
 

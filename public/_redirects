@@ -15,3 +15,8 @@
 /admin/students  /admin           200
 /admin/courses   /admin           200
 /admin/teachers  /admin           200
+
+# Legacy standalone admin pages moved under admin/pages/
+/admin/course-new.html     /admin/pages/course-new.html     301
+/admin/course-edit.html    /admin/pages/course-edit.html    301
+/admin/student-form.html   /admin/pages/student-form.html   301
