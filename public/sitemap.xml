@@ -19,4 +19,16 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://learningwithgioia.ch/impressum.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/datenschutzerklaerung.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>
