@@ -1,15 +1,13 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { fmtDate, esc, showMessage } from '../core/helpers.js';
+import { fmtDate, esc, showMessage, queryString, attachListControls } from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
 
 let currentCourseFilter = 'active';
-let currentCourseSearch = '';
-let currentCourseSort = 'created_at';
-let currentCourseSortDir = 'desc';
+const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
 let participantCount = 1;
 let attendanceStudents = [];
 let studentCache = [];
@@ -18,7 +16,6 @@ let addParticipantCourseId = null;
 let apSearchListenersAttached = false;
 let coursesCache = [];
 let courseControlsAttached = false;
-let courseSearchTimer = null;
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -171,13 +168,12 @@ export function filterCourses(status) {
 }
 
 function buildCourseQuery(status) {
-  const params = new URLSearchParams();
-  params.set('status', status);
-  if (currentCourseSearch) params.set('q', currentCourseSearch);
-  if (currentCourseSort !== 'created_at') params.set('sort', currentCourseSort);
-  if (currentCourseSortDir !== 'desc') params.set('dir', currentCourseSortDir);
-  const qs = params.toString();
-  return qs ? '?' + qs : '';
+  return queryString({
+    status,
+    ...(courseListState.search && { q: courseListState.search }),
+    ...(courseListState.sort !== 'created_at' && { sort: courseListState.sort }),
+    ...(courseListState.direction !== 'desc' && { dir: courseListState.direction }),
+  });
 }
 
 function attachCourseListControls() {
@@ -188,40 +184,14 @@ function attachCourseListControls() {
   if (!searchEl || !sortEl || !dirEl) return;
 
   courseControlsAttached = true;
-  searchEl.value = currentCourseSearch;
-  sortEl.value = currentCourseSort;
-  dirEl.dataset.dir = currentCourseSortDir;
-  dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
-  dirEl.setAttribute(
-    'aria-label',
-    currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-  );
-
-  searchEl.addEventListener('input', () => {
-    currentCourseSearch = searchEl.value.trim();
-    clearTimeout(courseSearchTimer);
-    courseSearchTimer = setTimeout(() => loadCourses(currentCourseFilter), 250);
-  });
-  sortEl.addEventListener('change', () => {
-    currentCourseSort = sortEl.value || 'created_at';
-    currentCourseSortDir = currentCourseSort === 'created_at' ? 'desc' : 'asc';
-    dirEl.dataset.dir = currentCourseSortDir;
-    dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
-    dirEl.setAttribute(
-      'aria-label',
-      currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-    );
-    loadCourses(currentCourseFilter);
-  });
-  dirEl.addEventListener('click', () => {
-    currentCourseSortDir = currentCourseSortDir === 'desc' ? 'asc' : 'desc';
-    dirEl.dataset.dir = currentCourseSortDir;
-    dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
-    dirEl.setAttribute(
-      'aria-label',
-      currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-    );
-    loadCourses(currentCourseFilter);
+  attachListControls({
+    searchEl,
+    sortEl,
+    directionEl: dirEl,
+    state: courseListState,
+    defaults: { sort: 'created_at', descendingSort: 'created_at' },
+    onSearch: () => loadCourses(currentCourseFilter),
+    onChange: () => loadCourses(currentCourseFilter),
   });
 }
 

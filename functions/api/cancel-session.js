@@ -19,6 +19,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
@@ -27,14 +28,10 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let session_id;
-  try {
-    ({ session_id } = await request.json());
-  } catch (err) {
-    console.error('Failed to parse cancel-session request body:', err);
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { session_id } = body;
   if (!session_id) return errorResponse('Missing session_id', 400);
 
   // ── Load session ──────────────────────────────────────────────────────

@@ -15,7 +15,69 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
+  pickDefined,
 } from './_utils.js';
+
+const STUDENT_FIELDS = [
+  'first_name',
+  'last_name',
+  'email',
+  'phone',
+  'postcode',
+  'street',
+  'street_number',
+  'city',
+  'current_level',
+  'progress_notes',
+  'company_id',
+  'status',
+  'source',
+  'billing_name',
+  'billing_address',
+  'billing_street',
+  'billing_street_number',
+  'billing_postcode',
+  'billing_city',
+  'billing_email',
+  'rate_per_session',
+  'currency',
+  'vat_number',
+  'nationality',
+  'native_language',
+  'target_language',
+  'learning_goals',
+  'emergency_contact',
+  'ec_phone',
+  'ec_email',
+  'ec_relationship',
+  'desired_start_date',
+  'referral_source',
+  'payment_method',
+  'course_type',
+  'course_format',
+  'location',
+  'service',
+  'grade',
+  'subjects',
+  'consent_given',
+  'consent_date',
+  'token_created_at',
+  'access_token',
+];
+
+const BILLING_ADDRESS_FIELDS = [
+  'billing_street',
+  'billing_street_number',
+  'billing_postcode',
+  'billing_city',
+];
+
+function buildBillingAddress(data) {
+  const streetLine = [data.billing_street, data.billing_street_number].filter(Boolean).join(' ');
+  const cityLine = [data.billing_postcode, data.billing_city].filter(Boolean).join(' ');
+  return [streetLine, cityLine].filter(Boolean).join(', ');
+}
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -23,12 +85,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
   if (!body.id && (!body.first_name || !body.last_name)) {
     return errorResponse('First name and last name are required', 400);
@@ -43,69 +101,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };
 
-  // Fields allowed in the payload (active is excluded — derived from status below)
-  const fields = [
-    'first_name',
-    'last_name',
-    'email',
-    'phone',
-    'postcode',
-    'street',
-    'street_number',
-    'city',
-    'current_level',
-    'progress_notes',
-    'company_id',
-    'status',
-    'source',
-    'billing_name',
-    'billing_address',
-    'billing_street',
-    'billing_street_number',
-    'billing_postcode',
-    'billing_city',
-    'billing_email',
-    'rate_per_session',
-    'currency',
-    'vat_number',
-    'nationality',
-    'native_language',
-    'target_language',
-    'learning_goals',
-    'emergency_contact',
-    'ec_phone',
-    'ec_email',
-    'ec_relationship',
-    'desired_start_date',
-    'referral_source',
-    'payment_method',
-    'course_type',
-    'course_format',
-    'location',
-    'service',
-    'grade',
-    'subjects',
-    'consent_given',
-    'consent_date',
-    'token_created_at',
-    'access_token',
-  ];
-  const data = {};
-  for (const f of fields) {
-    if (body[f] !== undefined) data[f] = body[f];
-  }
+  // active is excluded from allowed fields because it is derived from status below.
+  const data = pickDefined(body, STUDENT_FIELDS);
 
   // Derive billing_address for PDF/invoice compat whenever split billing fields are updated
-  const billingComponents = [
-    'billing_street',
-    'billing_street_number',
-    'billing_postcode',
-    'billing_city',
-  ];
-  if (billingComponents.some((k) => k in data)) {
-    const streetLine = [data.billing_street, data.billing_street_number].filter(Boolean).join(' ');
-    const cityLine = [data.billing_postcode, data.billing_city].filter(Boolean).join(' ');
-    const derived = [streetLine, cityLine].filter(Boolean).join(', ');
+  if (BILLING_ADDRESS_FIELDS.some((k) => k in data)) {
+    const derived = buildBillingAddress(data);
     if (derived) data.billing_address = derived;
   }
 

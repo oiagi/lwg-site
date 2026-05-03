@@ -20,6 +20,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
@@ -28,14 +29,10 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let course_id;
-  try {
-    ({ course_id } = await request.json());
-  } catch (err) {
-    console.error('Failed to parse delete-course request body:', err);
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { course_id } = body;
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ───────────────────────────────────────────────────────

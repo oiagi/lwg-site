@@ -10,6 +10,17 @@
 # redepartikeln.html renamed to modalpartikeln.html
 /redepartikeln.html  /modalpartikeln.html  301
 
+# Language-prefixed public pages. These serve the same static HTML files;
+# i18n.js reads /en or /de from the URL and applies the matching language.
+/en   /  200
+/en/  /  200
+/de   /  200
+/de/  /  200
+/en/:page   /:page  200
+/de/:page   /:page  200
+/en/:page/  /:page  200
+/de/:page/  /:page  200
+
 # Admin dashboard tabs as URLs (rewrite to single-page admin/index.html)
 # Target is /admin (served by admin/index.html) — never /admin.html, since
 # Pages auto-strips .html and the redirect target would loop. /admin itself

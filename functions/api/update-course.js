@@ -13,6 +13,9 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
+  pickDefined,
+  hasFields,
 } from './_utils.js';
 
 const ALLOWED_FIELDS = [
@@ -38,21 +41,14 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
   const courseId = body.course_id;
   if (!courseId) return errorResponse('Missing course_id', 400);
 
-  const patch = {};
-  for (const key of ALLOWED_FIELDS) {
-    if (body[key] !== undefined) patch[key] = body[key];
-  }
-  if (!Object.keys(patch).length) return errorResponse('Nothing to update', 400);
+  const patch = pickDefined(body, ALLOWED_FIELDS);
+  if (!hasFields(patch)) return errorResponse('Nothing to update', 400);
 
   try {
     const res = await fetch(

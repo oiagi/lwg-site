@@ -12,6 +12,28 @@ export function errorResponse(message, status = 500) {
   return new Response(JSON.stringify({ error: message }), { status, headers: JSON_HEADERS });
 }
 
+export async function parseJsonBody(request) {
+  try {
+    const body = await request.json();
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return { body: null, error: errorResponse('Invalid JSON', 400) };
+    }
+    return { body, error: null };
+  } catch {
+    return { body: null, error: errorResponse('Invalid JSON', 400) };
+  }
+}
+
+export function pickDefined(source, fields) {
+  return Object.fromEntries(
+    fields.filter((field) => source[field] !== undefined).map((field) => [field, source[field]])
+  );
+}
+
+export function hasFields(obj) {
+  return Object.keys(obj).length > 0;
+}
+
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {

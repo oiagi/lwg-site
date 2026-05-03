@@ -21,6 +21,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
@@ -29,14 +30,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let session_id, records;
-  try {
-    ({ session_id, records } = await request.json());
-  } catch (err) {
-    console.error('Failed to parse save-attendance request body:', err);
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { session_id, records } = body;
   if (!session_id || !Array.isArray(records) || records.length === 0) {
     return errorResponse('Missing session_id or records array', 400);
   }

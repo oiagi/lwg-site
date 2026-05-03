@@ -14,7 +14,12 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
+  pickDefined,
+  hasFields,
 } from './_utils.js';
+
+const ALLOWED_FIELDS = ['progress_notes', 'current_level'];
 
 export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -22,20 +27,14 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let student_id, progress_notes, current_level;
-  try {
-    ({ student_id, progress_notes, current_level } = await request.json());
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { student_id } = body;
   if (!student_id) return errorResponse('Missing student_id', 400);
 
-  const patch = {};
-  if (progress_notes !== undefined) patch.progress_notes = progress_notes;
-  if (current_level !== undefined) patch.current_level = current_level;
-
-  if (!Object.keys(patch).length) return errorResponse('Nothing to update', 400);
+  const patch = pickDefined(body, ALLOWED_FIELDS);
+  if (!hasFields(patch)) return errorResponse('Nothing to update', 400);
 
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}`, {

@@ -14,6 +14,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
@@ -22,15 +23,10 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  // ── Parse body ───────────────────────────────────────────────────────
-  let session_id, notes;
-  try {
-    ({ session_id, notes } = await request.json());
-  } catch (err) {
-    console.error('Failed to parse log-session request body:', err);
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { session_id, notes } = body;
   if (!session_id) return errorResponse('Missing session_id', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);

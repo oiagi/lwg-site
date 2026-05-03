@@ -10,6 +10,10 @@
     return i18n ? i18n.t(key) : key;
   }
 
+  function href(page) {
+    return i18n ? i18n.href(page, i18n.getLang()) : page;
+  }
+
   // ── Inject shared HTML ──────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
   const navHTML =
@@ -31,13 +35,19 @@
     '</span>' +
     '</button>' +
     '<div class="nav-menu" id="nav-menu">' +
-    '<a href="index.html" data-nav-key="home">' +
+    '<a href="' +
+    href('/index.html') +
+    '" data-page="/index.html" data-nav-key="home">' +
     tr('home') +
     '</a>' +
-    '<a href="info.html" data-nav-key="info">' +
+    '<a href="' +
+    href('/info.html') +
+    '" data-page="/info.html" data-nav-key="info">' +
     tr('info') +
     '</a>' +
-    '<a href="enquiry.html" data-nav-key="enquiry">' +
+    '<a href="' +
+    href('/enquiry.html') +
+    '" data-page="/enquiry.html" data-nav-key="enquiry">' +
     tr('enquiry') +
     '</a>' +
     '<div class="nav-section" aria-labelledby="nav-materials-label">' +
@@ -45,7 +55,9 @@
     tr('materials') +
     '</span>' +
     '<div class="nav-submenu">' +
-    '<a href="modalpartikeln.html" data-nav-key="modalpartikeln">' +
+    '<a href="' +
+    href('/modalpartikeln.html') +
+    '" data-page="/modalpartikeln.html" data-nav-key="modalpartikeln">' +
     tr('modalpartikeln') +
     '</a>' +
     '</div>' +
@@ -56,13 +68,19 @@
     '<footer class="site-footer" aria-label="' +
     tr('legalLabel') +
     '">' +
-    '<a href="impressum.html" data-nav-key="impressum">' +
+    '<a href="' +
+    href('/impressum.html') +
+    '" data-page="/impressum.html" data-nav-key="impressum">' +
     tr('impressum') +
     '</a>' +
-    '<a href="datenschutzerklaerung.html" data-nav-key="privacy">' +
+    '<a href="' +
+    href('/datenschutzerklaerung.html') +
+    '" data-page="/datenschutzerklaerung.html" data-nav-key="privacy">' +
     tr('privacy') +
     '</a>' +
-    '<a href="agb.html" data-nav-key="terms">' +
+    '<a href="' +
+    href('/agb.html') +
+    '" data-page="/agb.html" data-nav-key="terms">' +
     tr('terms') +
     '</a>' +
     '</footer>';
@@ -87,6 +105,9 @@
     document.querySelectorAll('[data-nav-key]').forEach(function (el) {
       el.textContent = tr(el.dataset.navKey);
     });
+    document.querySelectorAll('[data-page]').forEach(function (el) {
+      el.href = href(el.dataset.page);
+    });
     document.querySelectorAll('.skip-link').forEach(function (el) {
       el.textContent = tr('skip');
     });
@@ -102,6 +123,7 @@
 
   // ── Mark active nav link ────────────────────────────────────────
   function normalisePath(path) {
+    if (i18n) return i18n.normalisePageKey(path);
     const trimmed = path.replace(/\/$/, '') || '/index.html';
     if (trimmed === '' || trimmed === '/') return '/index.html';
     return trimmed.includes('.') ? trimmed : trimmed + '.html';
