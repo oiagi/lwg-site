@@ -22,7 +22,7 @@ export const AGB_HTML = `
 <h3 style="${S.heading}">Allgemeine Geschäftsbedingungen</h3>
 
 <p style="${S.section}">Geltungsbereich</p>
-<p style="${S.p}">Diese Allgemeinen Geschäftsbedingungen (AGB) regeln das Vertragsverhältnis zwischen Learning with Gioia (nachfolgend „Schule") und den Teilnehmenden (nachfolgend „KundInnen" oder „Teilnehmende") für alle Sprachkurse, Beratungen und weiteren Dienstleistungen der Schule.</p>
+<p style="${S.p}">Diese Allgemeinen Geschäftsbedingungen (AGB) regeln das Vertragsverhältnis zwischen Birukoff World, auch Learning with Gioia genannt (nachfolgend „Schule“) und den Teilnehmenden (nachfolgend „KundInnen“ oder „Teilnehmende“) für alle Sprachkurse, Beratungen und weiteren Dienstleistungen der Schule.</p>
 <p style="${S.p}">Mit der Anmeldung oder Buchung eines Angebots anerkennen die Teilnehmenden diese Bedingungen als verbindlich.</p>
 
 <p style="${S.section}">Anmeldung und Vertragsabschluss</p>
@@ -39,7 +39,7 @@ export const AGB_HTML = `
   <li style="${S.li}">Die Zahlung ist vor Kursbeginn fällig.</li>
   <li style="${S.li}">Bei Ratenzahlung gelten die individuell vereinbarten Fristen.</li>
   <li style="${S.li}">Nicht bezahlte Kursgebühren können zum Ausschluss vom Unterricht führen.</li>
-  <li style="${S.li}">Mahngebühren und Inkassokosten gehen zulasten der Teilnehmenden. Eine erste Mahnung ist gratis, eine zweite Mahnung wird mit CHF 20.– verrechnet, eine Dritte Mahnung wird mit CHF 50.– verrechnet.</li>
+  <li style="${S.li}">Mahngebühren und Inkassokosten gehen zulasten der Teilnehmenden. Eine erste Mahnung ist gratis, eine zweite Mahnung wird mit CHF 20.- verrechnet, eine dritte Mahnung wird mit CHF 50.- verrechnet.</li>
 </ul>
 
 <p style="${S.section}">Rücktritt, Abmeldung und Stornierung</p>
@@ -73,7 +73,7 @@ export const AGB_HTML = `
 <p style="${S.section}">Besonderheit Privatunterricht</p>
 <ul style="${S.ul}">
   <li style="${S.li}">Ferien und andere Abwesenheiten besprechen Sie direkt mit der Lehrperson.</li>
-  <li style="${S.li}">Es gilt die 24-Stunden-Regel: Bis 24 Stunden vor dem vereinbarten Termin kann eine Lektion ohne Kostenfolge verschoben werden.</li>
+  <li style="${S.li}">Es gilt die 24 Stunden Regel: Bis 24 Stunden vor dem vereinbarten Termin kann eine Lektion ohne Kostenfolge verschoben werden.</li>
   <li style="${S.li}">Ausgefallene Lektionen werden bei einem Abbruch vor Abo-Ende nicht zurückerstattet.</li>
   <li style="${S.li}">Bei einem Kursunterbruch oder -abbruch wird das Kursgeld nicht zurückerstattet (auch nicht teilweise) und wird auch nicht für einen anderen Kurs angerechnet.</li>
 </ul>
