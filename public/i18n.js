@@ -84,7 +84,7 @@
         de: 'Deutsch-, Schweizerdeutsch- und Englischkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Alle Niveaus willkommen.',
       },
       text: {
-        'h1': { en: 'what we offer', de: 'was wir anbieten' },
+        h1: { en: 'what we offer', de: 'was wir anbieten' },
         '.section:nth-of-type(1) h2': { en: 'Language courses', de: 'Sprachkurse' },
         '.section:nth-of-type(1) p': {
           en: 'We offer courses in <strong>German</strong>, <strong>Swiss German</strong>, and <strong>English</strong>, taught exclusively by <strong>native speakers</strong>. All levels are welcome, from complete beginners to advanced learners looking to refine their skills. If you are interested in a language not listed here, please get in touch. We may be able to help.',
@@ -121,41 +121,71 @@
           de: 'Wie viele Lektionen mit Learning with Gioia sinnvoll sind, hängt von deinen Zielen und deinem Zeitplan ab. Wir besprechen das im Rahmen deiner Anfrage.',
         },
         '.section:nth-of-type(7) h2': { en: 'Pricing', de: 'Preise' },
-        '.pricing-card:nth-child(1) .pricing-card__label': { en: 'Individual', de: 'Einzelunterricht' },
+        '.pricing-card:nth-child(1) .pricing-card__label': {
+          en: 'Individual',
+          de: 'Einzelunterricht',
+        },
         '.pricing-card:nth-child(1) .pricing-card__unit': { en: 'per 60 min', de: 'pro 60 Min.' },
         '.pricing-card:nth-child(2) .pricing-card__label': { en: '2 people', de: '2 Personen' },
-        '.pricing-card:nth-child(2) .pricing-card__unit': { en: 'per person / 60 min', de: 'pro Person / 60 Min.' },
+        '.pricing-card:nth-child(2) .pricing-card__unit': {
+          en: 'per person / 60 min',
+          de: 'pro Person / 60 Min.',
+        },
         '.pricing-card:nth-child(3) .pricing-card__label': { en: '3-5 people', de: '3-5 Personen' },
-        '.pricing-card:nth-child(3) .pricing-card__unit': { en: 'per person / 60 min', de: 'pro Person / 60 Min.' },
+        '.pricing-card:nth-child(3) .pricing-card__unit': {
+          en: 'per person / 60 min',
+          de: 'pro Person / 60 Min.',
+        },
         '.book-cta': { en: 'make an enquiry ->', de: 'anfrage senden ->' },
       },
     },
     '/enquiry.html': {
-      title: { en: 'Make an Enquiry - Learning with Gioia', de: 'Anfrage senden - Learning with Gioia' },
+      title: {
+        en: 'Make an Enquiry - Learning with Gioia',
+        de: 'Anfrage senden - Learning with Gioia',
+      },
       description: {
         en: 'Make a quick enquiry with Learning with Gioia - language courses, exam prep and tutoring in Zurich.',
         de: 'Sende eine kurze Anfrage an Learning with Gioia - für Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich.',
       },
       text: {
-        'h1': { en: 'make an enquiry', de: 'anfrage senden' },
+        h1: { en: 'make an enquiry', de: 'anfrage senden' },
         'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'wonach suchst du?' },
         '#lesson-type': {
           en: 'e.g. German A2 course, IELTS exam prep, Maths tutoring - Gymnasium year 9, Gymivorbereitung grade 6...',
           de: 'z. B. Deutschkurs A2, IELTS-Vorbereitung, Mathe-Nachhilfe - Gymnasium 2. Klasse, Gymivorbereitung 6. Klasse...',
           attr: 'placeholder',
         },
-        '#err-lesson-type': { en: 'Please describe what you are looking for.', de: 'Bitte beschreibe, wonach du suchst.' },
+        '#err-lesson-type': {
+          en: 'Please describe what you are looking for.',
+          de: 'Bitte beschreibe, wonach du suchst.',
+        },
         '.section-label': { en: 'your details', de: 'deine angaben' },
         'label[for="lead-first"]': { en: 'first name', de: 'vorname' },
         'label[for="lead-last"]': { en: 'last name', de: 'nachname' },
         'label[for="lead-email"]': { en: 'email', de: 'e-mail' },
         '#label-lead-phone': { en: 'phone', de: 'telefon' },
-        'label[for="preferred-contact"]': { en: 'preferred contact method', de: 'bevorzugte kontaktart' },
-        '#err-lead-first': { en: 'Please enter a first name.', de: 'Bitte gib einen Vornamen ein.' },
+        'label[for="preferred-contact"]': {
+          en: 'preferred contact method',
+          de: 'bevorzugte kontaktart',
+        },
+        '#err-lead-first': {
+          en: 'Please enter a first name.',
+          de: 'Bitte gib einen Vornamen ein.',
+        },
         '#err-lead-last': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
-        '#err-lead-email': { en: 'Please enter an email address.', de: 'Bitte gib eine E-Mail-Adresse ein.' },
-        '#err-lead-phone': { en: 'Please enter a phone number.', de: 'Bitte gib eine Telefonnummer ein.' },
-        '#err-preferred-contact': { en: 'Please select a preferred contact method.', de: 'Bitte wähle eine bevorzugte Kontaktart.' },
+        '#err-lead-email': {
+          en: 'Please enter an email address.',
+          de: 'Bitte gib eine E-Mail-Adresse ein.',
+        },
+        '#err-lead-phone': {
+          en: 'Please enter a phone number.',
+          de: 'Bitte gib eine Telefonnummer ein.',
+        },
+        '#err-preferred-contact': {
+          en: 'Please select a preferred contact method.',
+          de: 'Bitte wähle eine bevorzugte Kontaktart.',
+        },
         '#preferred-contact option[value="Phone"]': { en: 'Phone', de: 'Telefon' },
         '#preferred-contact option[value="Either"]': { en: 'Either', de: 'Beides' },
         '#submit-btn': { en: 'send enquiry ->', de: 'anfrage senden ->' },
@@ -195,13 +225,16 @@
       },
     },
     '/impressum.html': {
-      title: { en: 'Legal Information - Learning with Gioia', de: 'Impressum - Learning with Gioia' },
+      title: {
+        en: 'Legal Information - Learning with Gioia',
+        de: 'Impressum - Learning with Gioia',
+      },
       description: {
         en: 'Legal information for Learning with Gioia / Birukoff World, sole proprietorship in Zurich.',
         de: 'Impressum von Learning with Gioia / Birukoff World, Einzelfirma in Zürich.',
       },
       text: {
-        'h1': { en: 'Legal Information', de: 'Impressum' },
+        h1: { en: 'Legal Information', de: 'Impressum' },
         '.legal-meta': common.updated,
         '.legal-section:nth-of-type(1) h2': { en: 'Provider', de: 'Anbieterin' },
         '.legal-section:nth-of-type(1) address': {
@@ -222,13 +255,16 @@
       },
     },
     '/datenschutzerklaerung.html': {
-      title: { en: 'Privacy Policy - Learning with Gioia', de: 'Datenschutzerklärung - Learning with Gioia' },
+      title: {
+        en: 'Privacy Policy - Learning with Gioia',
+        de: 'Datenschutzerklärung - Learning with Gioia',
+      },
       description: {
         en: 'Privacy policy for Learning with Gioia / Birukoff World.',
         de: 'Datenschutzerklärung von Learning with Gioia / Birukoff World.',
       },
       text: {
-        'h1': { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
+        h1: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
         '.legal-meta': common.updated,
         '.legal-section:nth-of-type(1) h2': { en: 'Controller', de: 'Verantwortliche Stelle' },
         '.legal-section:nth-of-type(1) address': {
@@ -291,24 +327,33 @@
       de: 'Allgemeine Geschäftsbedingungen von Learning with Gioia / Birukoff World.',
     },
     text: {
-      'h1': { en: 'Terms & Conditions', de: 'Allgemeine Geschäftsbedingungen' },
+      h1: { en: 'Terms & Conditions', de: 'Allgemeine Geschäftsbedingungen' },
       '.legal-meta': common.updated,
       '.legal-section:nth-of-type(1) h2': { en: 'Scope', de: 'Geltungsbereich' },
       '.legal-section:nth-of-type(1) div': {
         en: '<p>These Terms and Conditions govern the contractual relationship between Birukoff World, also called Learning with Gioia (hereinafter "school"), and participants (hereinafter "clients" or "participants") for all language courses, consultations and other services of the school.</p><p>By registering for or booking an offer, participants accept these terms as binding.</p>',
         de: '<p>Diese Allgemeinen Geschäftsbedingungen (AGB) regeln das Vertragsverhältnis zwischen Birukoff World, auch Learning with Gioia genannt (nachfolgend "Schule") und den Teilnehmenden (nachfolgend "KundInnen" oder "Teilnehmende") für alle Sprachkurse, Beratungen und weiteren Dienstleistungen der Schule.</p><p>Mit der Anmeldung oder Buchung eines Angebots anerkennen die Teilnehmenden diese Bedingungen als verbindlich.</p>',
       },
-      '.legal-section:nth-of-type(2) h2': { en: 'Registration and conclusion of contract', de: 'Anmeldung und Vertragsabschluss' },
+      '.legal-section:nth-of-type(2) h2': {
+        en: 'Registration and conclusion of contract',
+        de: 'Anmeldung und Vertragsabschluss',
+      },
       '.legal-section:nth-of-type(2) ul': {
         en: '<li>Registration may take place online, by telephone, in writing or in person.</li><li>Registrations are considered in the order in which they are received.</li><li>A binding contract is formed upon confirmation by the school (by email or in writing).</li><li>A registration is valid without a signature if it has been confirmed electronically or verbally.</li>',
         de: '<li>Die Anmeldung kann online, telefonisch, schriftlich oder persönlich erfolgen.</li><li>Die Anmeldungen werden in der Reihenfolge ihres Eingangs berücksichtigt.</li><li>Mit der Bestätigung durch die Schule (E-Mail oder schriftlich) entsteht ein verbindlicher Vertrag.</li><li>Eine Anmeldung ist auch ohne Unterschrift gültig, sofern sie elektronisch oder mündlich bestätigt wurde.</li>',
       },
-      '.legal-section:nth-of-type(3) h2': { en: 'Course fees and payment', de: 'Kursgebühren und Zahlung' },
+      '.legal-section:nth-of-type(3) h2': {
+        en: 'Course fees and payment',
+        de: 'Kursgebühren und Zahlung',
+      },
       '.legal-section:nth-of-type(3) ul': {
         en: '<li>Course fees are stated in Swiss francs (CHF) and, unless otherwise noted, exclude VAT and teaching materials.</li><li>Payment is due before the course begins.</li><li>For instalment payments, the individually agreed deadlines apply.</li><li>Unpaid course fees may lead to exclusion from lessons.</li><li>Reminder fees and collection costs are borne by participants. The first reminder is free, the second reminder is charged at CHF 20.- and the third reminder at CHF 50.-.</li>',
         de: '<li>Die Kursgebühren sind in Schweizer Franken (CHF) angegeben und verstehen sich - sofern nicht anders vermerkt - exklusive Mehrwertsteuer und Lehrmittel.</li><li>Die Zahlung ist vor Kursbeginn fällig.</li><li>Bei Ratenzahlung gelten die individuell vereinbarten Fristen.</li><li>Nicht bezahlte Kursgebühren können zum Ausschluss vom Unterricht führen.</li><li>Mahngebühren und Inkassokosten gehen zulasten der Teilnehmenden. Eine erste Mahnung ist gratis, eine zweite Mahnung wird mit CHF 20.- verrechnet, eine dritte Mahnung wird mit CHF 50.- verrechnet.</li>',
       },
-      '.legal-section:nth-of-type(4) h2': { en: 'Withdrawal and cancellation', de: 'Rücktritt und Stornierung' },
+      '.legal-section:nth-of-type(4) h2': {
+        en: 'Withdrawal and cancellation',
+        de: 'Rücktritt und Stornierung',
+      },
       '.legal-section:nth-of-type(4) div': {
         en: '<p class="legal-subheading">Before the course begins (group courses and private lessons)</p><p>Cancellations must be made in writing. The following cancellation conditions apply:</p><ul class="legal-list"><li>up to 30 days before course start: free of charge</li><li>29-15 days before course start: 50% of the course fee</li><li>14-7 days before course start: 75% of the course fee</li><li>from 6 days before course start or no-show: 100% of the course fee</li></ul><p class="legal-subheading">After the course begins</p><ul class="legal-list"><li>Withdrawal after the course begins is no longer possible.</li><li>Missed lessons or exams are not refunded and are not credited toward another course. Conversion from a group course to a private course is not generally possible.</li></ul><p class="legal-subheading">Withdrawal due to illness or accident</p><p>In case of illness or accident, credit for a later course may be granted upon presentation of a medical certificate (no cash payout).</p>',
         de: '<p class="legal-subheading">Vor Kursbeginn (Gruppenkurse und Privatunterricht)</p><p>Abmeldungen müssen schriftlich erfolgen. Es gelten folgende Stornobedingungen:</p><ul class="legal-list"><li>bis 30 Tage vor Kursbeginn: kostenlos</li><li>29-15 Tage vor Kursbeginn: 50 % der Kursgebühr</li><li>14-7 Tage vor Kursbeginn: 75 % der Kursgebühr</li><li>ab 6 Tage vor Kursbeginn oder Nichterscheinen: 100 % der Kursgebühr</li></ul><p class="legal-subheading">Nach Kursbeginn</p><ul class="legal-list"><li>Ein Rücktritt nach Kursbeginn ist nicht mehr möglich.</li><li>Nicht besuchte Lektionen oder Prüfungen werden nicht rückerstattet und werden auch nicht für einen anderen Kurs angerechnet. Eine Umwandlung von Gruppenkurs in Privatkurs ist nicht generell möglich.</li></ul><p class="legal-subheading">Rücktritt wegen Krankheit oder Unfall</p><p>Bei Krankheit oder Unfall kann gegen Vorlage eines Arztzeugnisses eine Gutschrift für einen späteren Kurs gewährt werden (keine Barauszahlung).</p>',
@@ -348,7 +393,10 @@
         en: '<li>Participants undertake to behave respectfully toward teachers, staff and fellow learners.</li><li>The school reserves the right to exclude participants from lessons in cases of serious misconduct or repeated disruption, without refunding course fees.</li>',
         de: '<li>Teilnehmende verpflichten sich zu respektvollem Verhalten gegenüber Lehrpersonen, Mitarbeitenden und Mitlernenden.</li><li>Die Schule behält sich vor, Teilnehmende bei grobem Fehlverhalten oder wiederholter Störung vom Unterricht auszuschliessen - ohne Rückerstattung der Kursgebühren.</li>',
       },
-      '.legal-section:nth-of-type(12) h2': { en: 'Holidays and public holidays', de: 'Ferien und Feiertage' },
+      '.legal-section:nth-of-type(12) h2': {
+        en: 'Holidays and public holidays',
+        de: 'Ferien und Feiertage',
+      },
       '.legal-section:nth-of-type(12) ul': {
         en: '<li>The public holidays of the City of Zurich apply.</li><li>No courses or lessons take place from 24 December through 31 December or from 1 January through 7 January.</li><li>Where applicable, teacher holiday periods are planned into the respective course cycles in advance and communicated to participants in good time.</li><li>If lessons are cancelled by the school, replacement lessons are offered or partial refunds are granted.</li><li>Lesson absences caused by participants (e.g. holidays, illness) are not compensated.</li>',
         de: '<li>Es gelten die Feiertage der Stadt Zürich.</li><li>Vom 24. Dezember bis einschliesslich 31. Dezember sowie vom 1. Januar bis einschliesslich 7. Januar finden keine Kurse oder Lektionen statt.</li><li>Sofern zutreffend, werden Ferienzeiten der Lehrpersonen im Voraus in die jeweiligen Kurszyklen eingeplant und den Teilnehmerinnen und Teilnehmern rechtzeitig kommuniziert.</li><li>Bei Unterrichtsausfall durch die Schule werden Ersatzlektionen angeboten oder anteilige Rückerstattungen gewährt.</li><li>Unterrichtsausfall durch Teilnehmende (z. B. Ferien, Krankheit) wird nicht vergütet.</li>',
@@ -358,7 +406,10 @@
         en: '<li>Changes to the Terms and Conditions take effect when published on the website or communicated to participants.</li><li>The terms valid at the time of registration apply.</li>',
         de: '<li>Änderungen der AGB treten mit Veröffentlichung auf der Website oder Mitteilung an die Teilnehmenden in Kraft.</li><li>Es gelten die zum Zeitpunkt der Anmeldung gültigen Bedingungen.</li>',
       },
-      '.legal-section:nth-of-type(14) h2': { en: 'Place of jurisdiction and law', de: 'Gerichtsstand und Recht' },
+      '.legal-section:nth-of-type(14) h2': {
+        en: 'Place of jurisdiction and law',
+        de: 'Gerichtsstand und Recht',
+      },
       '.legal-section:nth-of-type(14) ul': {
         en: '<li>Swiss law applies.</li><li>The place of jurisdiction is Zurich, Switzerland.</li>',
         de: '<li>Es gilt Schweizer Recht.</li><li>Gerichtsstand ist Zürich, Schweiz.</li>',
@@ -373,7 +424,10 @@
 
   Object.assign(pages, {
     '/intake.html': {
-      title: { en: 'Student Intake - Learning with Gioia', de: 'Schülerangaben - Learning with Gioia' },
+      title: {
+        en: 'Student Intake - Learning with Gioia',
+        de: 'Schülerangaben - Learning with Gioia',
+      },
       text: {
         '#intake-loading': { en: 'loading...', de: 'wird geladen...' },
         '#intake-content h1': { en: 'your details', de: 'deine angaben' },
@@ -381,7 +435,10 @@
           en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
           de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
         },
-        '#intake-content > .section-label:nth-of-type(2)': { en: 'personal information', de: 'persönliche angaben' },
+        '#intake-content > .section-label:nth-of-type(2)': {
+          en: 'personal information',
+          de: 'persönliche angaben',
+        },
         'label[for="if-first-name"]': { en: 'first name *', de: 'vorname *' },
         'label[for="if-last-name"]': { en: 'last name *', de: 'nachname *' },
         'label[for="if-email"]': { en: 'email', de: 'e-mail' },
@@ -390,14 +447,24 @@
         'label[for="if-street-number"]': { en: 'number', de: 'nummer' },
         'label[for="if-postcode"]': { en: 'postcode', de: 'postleitzahl' },
         'label[for="if-city"]': { en: 'city', de: 'ort' },
-        '#intake-content > .section-label:nth-of-type(3)': { en: 'emergency contact', de: 'notfallkontakt' },
+        '#intake-content > .section-label:nth-of-type(3)': {
+          en: 'emergency contact',
+          de: 'notfallkontakt',
+        },
         'label[for="if-ec-name"]': { en: 'name', de: 'name' },
         'label[for="if-ec-relationship"]': { en: 'relationship', de: 'beziehung' },
-        '#if-ec-relationship': { en: 'e.g. partner, parent', de: 'z. B. Partner/in, Elternteil', attr: 'placeholder' },
+        '#if-ec-relationship': {
+          en: 'e.g. partner, parent',
+          de: 'z. B. Partner/in, Elternteil',
+          attr: 'placeholder',
+        },
         'label[for="if-ec-phone"]': { en: 'phone', de: 'telefon' },
         'label[for="if-ec-email"]': { en: 'email', de: 'e-mail' },
         '#intake-content > .section-label:nth-of-type(4)': { en: 'billing', de: 'rechnung' },
-        '.intake-checkbox span': { en: 'billing address differs from personal address', de: 'rechnungsadresse weicht von persönlicher adresse ab' },
+        '.intake-checkbox span': {
+          en: 'billing address differs from personal address',
+          de: 'rechnungsadresse weicht von persönlicher adresse ab',
+        },
         'label[for="if-billing-name"]': { en: 'billing name', de: 'rechnungsname' },
         'label[for="if-billing-email"]': { en: 'billing email', de: 'rechnungs-e-mail' },
         'label[for="if-billing-phone"]': { en: 'billing phone', de: 'rechnungstelefon' },
@@ -405,7 +472,10 @@
         'label[for="if-billing-street-number"]': { en: 'number', de: 'nummer' },
         'label[for="if-billing-postcode"]': { en: 'postcode', de: 'postleitzahl' },
         'label[for="if-billing-city"]': { en: 'city', de: 'ort' },
-        '#err-first-name': { en: 'Please enter a first name.', de: 'Bitte gib einen Vornamen ein.' },
+        '#err-first-name': {
+          en: 'Please enter a first name.',
+          de: 'Bitte gib einen Vornamen ein.',
+        },
         '#err-last-name': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
         '#intake-submit-btn': { en: 'save details ->', de: 'angaben speichern ->' },
         '#submit-error': {
@@ -413,8 +483,14 @@
           de: 'Etwas ist schiefgelaufen - bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         },
         '#intake-thanks h1': { en: 'thank you.', de: 'danke.' },
-        '#intake-thanks p': { en: "Your details have been saved. We'll be in touch shortly.", de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.' },
-        '#intake-error h1': { en: 'link expired or invalid.', de: 'link abgelaufen oder ungültig.' },
+        '#intake-thanks p': {
+          en: "Your details have been saved. We'll be in touch shortly.",
+          de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
+        },
+        '#intake-error h1': {
+          en: 'link expired or invalid.',
+          de: 'link abgelaufen oder ungültig.',
+        },
         '#intake-error p': {
           en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
           de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
@@ -422,14 +498,20 @@
       },
     },
     '/sessions.html': {
-      title: { en: 'My Sessions - learning with gioia', de: 'Meine Lektionen - learning with gioia' },
+      title: {
+        en: 'My Sessions - learning with gioia',
+        de: 'Meine Lektionen - learning with gioia',
+      },
       text: { '.error-state': { en: 'loading...', de: 'wird geladen...' } },
     },
     '/redepartikeln.html': {
       title: { en: 'Modal particles', de: 'Modalpartikeln' },
       text: {
         '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },
-        '.page-header p': { en: 'The little words that make German come alive.', de: 'Die kleinen Wörter, die Deutsch lebendig machen.' },
+        '.page-header p': {
+          en: 'The little words that make German come alive.',
+          de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
+        },
         '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
         '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
         '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
@@ -453,8 +535,10 @@
     completedOf: { en: 'sessions completed', de: 'Lektionen abgeschlossen' },
     remaining: { en: 'remaining', de: 'verbleibend' },
     rebookSome: {
-      en: (n) => `You have ${n} session${n === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry -></a>`,
-      de: (n) => `Du hast noch ${n} Lektion${n === 1 ? '' : 'en'} übrig. Bereit weiterzumachen? <a href="/enquiry.html">Neue Anfrage senden -></a>`,
+      en: (n) =>
+        `You have ${n} session${n === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry -></a>`,
+      de: (n) =>
+        `Du hast noch ${n} Lektion${n === 1 ? '' : 'en'} übrig. Bereit weiterzumachen? <a href="/enquiry.html">Neue Anfrage senden -></a>`,
     },
     rebookDone: {
       en: 'Your current block is complete. <a href="/enquiry.html">Book your next block -></a>',
@@ -505,7 +589,9 @@
   function apply() {
     document.documentElement.lang = currentLang;
     applyEntry(pages[pageKey()]);
-    document.dispatchEvent(new CustomEvent('lwg:language-applied', { detail: { lang: currentLang } }));
+    document.dispatchEvent(
+      new CustomEvent('lwg:language-applied', { detail: { lang: currentLang } })
+    );
   }
 
   function setLang(lang) {

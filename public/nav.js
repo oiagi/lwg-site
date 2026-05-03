@@ -13,8 +13,12 @@
   // ── Inject shared HTML ──────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
   const navHTML =
-    '<a href="#content" class="skip-link">' + tr('skip') + '</a>' +
-    '<div class="language-switcher site-language" aria-label="' + tr('language') + '">' +
+    '<a href="#content" class="skip-link">' +
+    tr('skip') +
+    '</a>' +
+    '<div class="language-switcher site-language" aria-label="' +
+    tr('language') +
+    '">' +
     '<button type="button" class="language-option" data-lang="en">EN</button>' +
     '<span aria-hidden="true">/</span>' +
     '<button type="button" class="language-option" data-lang="de">DE</button>' +
@@ -22,19 +26,33 @@
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
     '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
-    '<span class="nav-toggle-label" id="nav-toggle-label">' + tr('menu') + '</span>' +
+    '<span class="nav-toggle-label" id="nav-toggle-label">' +
+    tr('menu') +
+    '</span>' +
     '</button>' +
     '<div class="nav-menu" id="nav-menu">' +
-    '<a href="index.html" data-nav-key="home">' + tr('home') + '</a>' +
-    '<a href="info.html" data-nav-key="info">' + tr('info') + '</a>' +
-    '<a href="enquiry.html" data-nav-key="enquiry">' + tr('enquiry') + '</a>' +
+    '<a href="index.html" data-nav-key="home">' +
+    tr('home') +
+    '</a>' +
+    '<a href="info.html" data-nav-key="info">' +
+    tr('info') +
+    '</a>' +
+    '<a href="enquiry.html" data-nav-key="enquiry">' +
+    tr('enquiry') +
+    '</a>' +
     '</div>' +
     '</nav>';
   const footerHTML =
-    '<footer class="site-footer" aria-label="' + tr('legalLabel') + '">' +
+    '<footer class="site-footer" aria-label="' +
+    tr('legalLabel') +
+    '">' +
     '<a href="impressum.html">Impressum</a>' +
-    '<a href="datenschutzerklaerung.html" data-nav-key="privacy">' + tr('privacy') + '</a>' +
-    '<a href="agb.html" data-nav-key="terms">' + tr('terms') + '</a>' +
+    '<a href="datenschutzerklaerung.html" data-nav-key="privacy">' +
+    tr('privacy') +
+    '</a>' +
+    '<a href="agb.html" data-nav-key="terms">' +
+    tr('terms') +
+    '</a>' +
     '</footer>';
 
   // Insert at the very beginning of <body>
