@@ -65,6 +65,9 @@ a:hover {
   content-visibility: auto;
   contain-intrinsic-size: auto 220px;
 }
+.legal-section p + p {
+  margin-top: 0.85rem;
+}
 .divider {
   border: none;
   border-top: 1px solid var(--rule);
@@ -77,22 +80,18 @@ a:hover {
 .legal-list li + li {
   margin-top: 0.45rem;
 }
+.legal-subheading {
+  margin: 1.1rem 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
 .legal-meta {
   color: var(--ink-mute);
   font-size: 0.82rem;
   text-align: center;
   margin-top: -1.4rem;
   margin-bottom: 2.4rem;
-}
-.legal-links {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  flex-wrap: wrap;
-  margin-top: 3rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
 }
 
 html[data-device='mobile'] h1 {

@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  // ── Inject nav HTML ─────────────────────────────────────────────
+  // ── Inject shared HTML ──────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
   const navHTML =
     '<a href="#content" class="skip-link">Skip to content</a>' +
@@ -18,18 +18,24 @@
     '<a href="index.html">Home</a>' +
     '<a href="info.html">info</a>' +
     '<a href="enquiry.html">enquiry</a>' +
-    '<a href="impressum.html">impressum</a>' +
-    '<a href="datenschutzerklaerung.html">datenschutz</a>' +
     '</div>' +
     '</nav>';
+  const footerHTML =
+    '<footer class="site-footer" aria-label="Rechtliche Seiten">' +
+    '<a href="impressum.html">Impressum</a>' +
+    '<a href="datenschutzerklaerung.html">Datenschutzerklärung</a>' +
+    '<a href="agb.html">AGB</a>' +
+    '</footer>';
 
   // Insert at the very beginning of <body>
   document.body.insertAdjacentHTML('afterbegin', navHTML);
+  document.body.insertAdjacentHTML('beforeend', footerHTML);
 
   // ── References ──────────────────────────────────────────────────
   const navToggle = document.getElementById('nav-toggle');
   const navLabel = document.getElementById('nav-toggle-label');
   const navMenu = document.getElementById('nav-menu');
+  const siteFooter = document.querySelector('.site-footer');
   const nav = document.getElementById('nav');
   const overlay = document.getElementById('nav-overlay');
   let menuOpen = false;
@@ -43,6 +49,12 @@
       (currentPath === '' && linkPath === '/index.html') ||
       (currentPath.endsWith('/') && linkPath === currentPath.slice(0, -1))
     ) {
+      link.setAttribute('aria-current', 'page');
+    }
+  });
+  siteFooter.querySelectorAll('a').forEach(function (link) {
+    const linkPath = new URL(link.href, window.location.href).pathname.replace(/\/$/, '');
+    if (linkPath === currentPath) {
       link.setAttribute('aria-current', 'page');
     }
   });
