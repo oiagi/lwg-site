@@ -7,6 +7,11 @@ function setVal(id, v) {
   if (el) el.value = v ?? '';
 }
 
+function setChecked(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.checked = !!v;
+}
+
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
 
 function splitLevel(raw) {
@@ -54,6 +59,7 @@ function populate(course) {
   );
   setVal('ec-currency', course.currency || 'CHF');
   setVal('ec-location', course.location || '');
+  setChecked('ec-public-booking', course.public_booking_enabled);
   setVal('ec-loc-street', course.location_street || '');
   setVal('ec-loc-number', course.location_street_number || '');
   setVal('ec-loc-postal', course.location_postal_code || '');
@@ -90,6 +96,7 @@ async function handleSubmit(e) {
     location_street_number: document.getElementById('ec-loc-number').value.trim() || null,
     location_postal_code: document.getElementById('ec-loc-postal').value.trim() || null,
     location_city: document.getElementById('ec-loc-city').value.trim() || null,
+    public_booking_enabled: document.getElementById('ec-public-booking').checked,
   };
 
   btn.textContent = 'saving…';

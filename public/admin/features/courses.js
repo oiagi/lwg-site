@@ -386,6 +386,7 @@ function renderCourses(courses) {
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
                 Price/session: ${c.price_per_session !== null && c.price_per_session !== undefined ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
+                Public booking: ${c.public_booking_enabled ? 'enabled' : 'disabled'}<br>
                 Location: ${locationSummaryHtml(c)}
               </p>
               ${locationEditorHtml(c)}
