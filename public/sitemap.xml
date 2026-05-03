@@ -31,4 +31,10 @@
     <priority>0.5</priority>
   </url>
 
+  <url>
+    <loc>https://learningwithgioia.ch/agb.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>
