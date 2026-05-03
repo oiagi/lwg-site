@@ -7,6 +7,9 @@ import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
 
 let currentCourseFilter = 'active';
+let currentCourseSearch = '';
+let currentCourseSort = 'created_at';
+let currentCourseSortDir = 'desc';
 let participantCount = 1;
 let attendanceStudents = [];
 let studentCache = [];
@@ -14,6 +17,8 @@ let clickAwayHandler = null;
 let addParticipantCourseId = null;
 let apSearchListenersAttached = false;
 let coursesCache = [];
+let courseControlsAttached = false;
+let courseSearchTimer = null;
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -165,7 +170,63 @@ export function filterCourses(status) {
   loadCourses(status);
 }
 
+function buildCourseQuery(status) {
+  const params = new URLSearchParams();
+  params.set('status', status);
+  if (currentCourseSearch) params.set('q', currentCourseSearch);
+  if (currentCourseSort !== 'created_at') params.set('sort', currentCourseSort);
+  if (currentCourseSortDir !== 'desc') params.set('dir', currentCourseSortDir);
+  const qs = params.toString();
+  return qs ? '?' + qs : '';
+}
+
+function attachCourseListControls() {
+  if (courseControlsAttached) return;
+  const searchEl = document.getElementById('course-search');
+  const sortEl = document.getElementById('course-sort');
+  const dirEl = document.getElementById('course-sort-dir');
+  if (!searchEl || !sortEl || !dirEl) return;
+
+  courseControlsAttached = true;
+  searchEl.value = currentCourseSearch;
+  sortEl.value = currentCourseSort;
+  dirEl.dataset.dir = currentCourseSortDir;
+  dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
+  dirEl.setAttribute(
+    'aria-label',
+    currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+  );
+
+  searchEl.addEventListener('input', () => {
+    currentCourseSearch = searchEl.value.trim();
+    clearTimeout(courseSearchTimer);
+    courseSearchTimer = setTimeout(() => loadCourses(currentCourseFilter), 250);
+  });
+  sortEl.addEventListener('change', () => {
+    currentCourseSort = sortEl.value || 'created_at';
+    currentCourseSortDir = currentCourseSort === 'created_at' ? 'desc' : 'asc';
+    dirEl.dataset.dir = currentCourseSortDir;
+    dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
+    dirEl.setAttribute(
+      'aria-label',
+      currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+    );
+    loadCourses(currentCourseFilter);
+  });
+  dirEl.addEventListener('click', () => {
+    currentCourseSortDir = currentCourseSortDir === 'desc' ? 'asc' : 'desc';
+    dirEl.dataset.dir = currentCourseSortDir;
+    dirEl.textContent = currentCourseSortDir === 'desc' ? '↓' : '↑';
+    dirEl.setAttribute(
+      'aria-label',
+      currentCourseSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+    );
+    loadCourses(currentCourseFilter);
+  });
+}
+
 export async function loadCourses(status = 'active') {
+  attachCourseListControls();
   const list = document.getElementById('course-list');
 
   const openIds = new Set(
@@ -179,7 +240,7 @@ export async function loadCourses(status = 'active') {
   }
 
   try {
-    const res = await apiFetch('/api/get-courses?status=' + status);
+    const res = await apiFetch('/api/get-courses' + buildCourseQuery(status));
     if (!res.ok) throw new Error('Failed to load courses');
     const courses = await res.json();
     coursesCache = courses;

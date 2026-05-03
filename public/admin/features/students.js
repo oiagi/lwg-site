@@ -4,8 +4,13 @@ import { esc } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 
 let currentStudentFilter = 'active';
+let currentStudentSearch = '';
+let currentStudentSort = 'name';
+let currentStudentSortDir = 'asc';
 let selectedStudentId = null;
 let fromCourseContext = null;
+let studentControlsAttached = false;
+let studentSearchTimer = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -19,7 +24,63 @@ export function filterStudents(active) {
   loadStudents(active);
 }
 
+function buildStudentQuery(status) {
+  const params = new URLSearchParams();
+  if (status !== 'all') params.set('status', status);
+  if (currentStudentSearch) params.set('q', currentStudentSearch);
+  if (currentStudentSort !== 'name') params.set('sort', currentStudentSort);
+  if (currentStudentSortDir !== 'asc') params.set('dir', currentStudentSortDir);
+  const qs = params.toString();
+  return qs ? '?' + qs : '';
+}
+
+function attachStudentListControls() {
+  if (studentControlsAttached) return;
+  const searchEl = document.getElementById('student-search');
+  const sortEl = document.getElementById('student-sort');
+  const dirEl = document.getElementById('student-sort-dir');
+  if (!searchEl || !sortEl || !dirEl) return;
+
+  studentControlsAttached = true;
+  searchEl.value = currentStudentSearch;
+  sortEl.value = currentStudentSort;
+  dirEl.dataset.dir = currentStudentSortDir;
+  dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
+  dirEl.setAttribute(
+    'aria-label',
+    currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+  );
+
+  searchEl.addEventListener('input', () => {
+    currentStudentSearch = searchEl.value.trim();
+    clearTimeout(studentSearchTimer);
+    studentSearchTimer = setTimeout(() => loadStudents(currentStudentFilter), 250);
+  });
+  sortEl.addEventListener('change', () => {
+    currentStudentSort = sortEl.value || 'name';
+    currentStudentSortDir = currentStudentSort === 'created_at' ? 'desc' : 'asc';
+    dirEl.dataset.dir = currentStudentSortDir;
+    dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
+    dirEl.setAttribute(
+      'aria-label',
+      currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+    );
+    loadStudents(currentStudentFilter);
+  });
+  dirEl.addEventListener('click', () => {
+    currentStudentSortDir = currentStudentSortDir === 'desc' ? 'asc' : 'desc';
+    dirEl.dataset.dir = currentStudentSortDir;
+    dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
+    dirEl.setAttribute(
+      'aria-label',
+      currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
+    );
+    loadStudents(currentStudentFilter);
+  });
+}
+
 export async function loadStudents(status = 'active') {
+  attachStudentListControls();
   const list = document.getElementById('student-list');
   // Reset selection and right pane on every reload attempt
   selectedStudentId = null;
@@ -32,7 +93,7 @@ export async function loadStudents(status = 'active') {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
   try {
-    const qs = status !== 'all' ? `?status=${status}` : '';
+    const qs = buildStudentQuery(status);
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
@@ -151,12 +212,13 @@ export async function selectStudentFromCourse(studentId, courseId, courseCode) {
 }
 
 async function loadStudentsKeepingContext(status, keepSelectedId) {
+  attachStudentListControls();
   const list = document.getElementById('student-list');
   if (!list.querySelector('.student-row')) {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
   try {
-    const qs = status !== 'all' ? `?status=${status}` : '';
+    const qs = buildStudentQuery(status);
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
