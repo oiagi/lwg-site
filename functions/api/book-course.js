@@ -1,0 +1,300 @@
+// functions/api/book-course.js
+// POST /api/book-course
+// Body: { course_id, student: { first_name, last_name, email, ...intake fields } }
+//
+// Creates a pending direct-booking enquiry for an existing public group course.
+// It does not create an enrolment and does not trigger payment.
+
+import {
+  supabaseHeaders,
+  jsonResponse,
+  errorResponse,
+  validateOrigin,
+  checkRateLimit,
+  withErrorHandling,
+  parseJsonBody,
+  pickDefined,
+} from './_utils.js';
+import { validate } from './_validate.js';
+import { findOrCreateStudent } from './_student-utils.js';
+import {
+  isPublicCourseEligible,
+  loadPublicCourseCandidates,
+  publicCourseDto,
+  PUBLIC_BOOKING_STATUS,
+} from './_public-course-booking.js';
+
+const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
+
+const STUDENT_FIELDS = [
+  'first_name',
+  'last_name',
+  'email',
+  'phone',
+  'street',
+  'street_number',
+  'postcode',
+  'city',
+  'emergency_contact',
+  'ec_relationship',
+  'ec_phone',
+  'ec_email',
+  'billing_name',
+  'billing_email',
+  'billing_phone',
+  'billing_street',
+  'billing_street_number',
+  'billing_postcode',
+  'billing_city',
+  'consent_given',
+  'consent_date',
+];
+
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function cleanString(value, max = 320) {
+  if (value === null || value === undefined) return null;
+  const cleaned = String(value).replace(/\s+/g, ' ').trim();
+  return cleaned ? cleaned.slice(0, max) : null;
+}
+
+function normalizeStudent(input) {
+  const raw = pickDefined(input || {}, STUDENT_FIELDS);
+  const out = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'boolean') out[key] = value;
+    else out[key] = cleanString(value, key === 'email' || key === 'billing_email' ? 320 : 200);
+  }
+  out.consent_given = input?.consent_given === true;
+  out.consent_date = out.consent_given ? new Date().toISOString() : null;
+  return out;
+}
+
+function buildBillingAddress(student) {
+  const streetLine = [student.billing_street, student.billing_street_number]
+    .filter(Boolean)
+    .join(' ');
+  const cityLine = [student.billing_postcode, student.billing_city].filter(Boolean).join(' ');
+  return [streetLine, cityLine].filter(Boolean).join(', ') || null;
+}
+
+function buildCustomerEmail(course, student) {
+  return {
+    subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#1a1a1a;padding:32px 40px;">
+          <p style="margin:0;color:#d6eaf8;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <p style="margin:0 0 24px;font-size:22px;color:#1a1a1a;">Thank you, ${esc(student.first_name || 'there')}.</p>
+          <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#333;">
+            We've received your booking request. Your place is not final until we confirm it in the backend.
+            Payment is only due after that confirmation has been issued.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Course</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Starts</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(new Date(course.first_session_at).toLocaleString('de-CH', { timeZone: 'Europe/Zurich' }))}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Place</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  };
+}
+
+function buildNotificationEmail(course, student, enquiryId) {
+  return {
+    subject: `Direct course booking request — ${student.first_name || ''} ${student.last_name || ''}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#1a1a1a;padding:24px 40px;">
+          <p style="margin:0;color:#d6eaf8;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">direct booking request</p>
+        </td></tr>
+        <tr><td style="padding:32px 40px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Enquiry ID</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(enquiryId)}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Course</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.course_code || '—')} · ${esc(course.level || '—')}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Student</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc([student.first_name, student.last_name].filter(Boolean).join(' '))}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Email</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.email)}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Phone</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.phone || '—')}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  };
+}
+
+async function sendEmail(env, to, email) {
+  if (!env.RESEND_API_KEY) return false;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: Array.isArray(to) ? to : [to],
+      reply_to: NOTIFY_EMAILS,
+      subject: email.subject,
+      html: email.html,
+    }),
+  });
+  if (!res.ok) console.error('book-course email error:', await res.text());
+  return res.ok;
+}
+
+export const onRequestPost = withErrorHandling(async ({ request, env }) => {
+  const originErr = validateOrigin(request, env);
+  if (originErr) return originErr;
+
+  const rateLimitErr = await checkRateLimit(request, { maxRequests: 5, windowSeconds: 60 });
+  if (rateLimitErr) return rateLimitErr;
+
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+
+  const courseId = cleanString(body.course_id, 80);
+  if (!courseId) return errorResponse('course_id is required', 400);
+
+  const student = normalizeStudent(body.student || {});
+  const studentErr = validate(student, {
+    first_name: { required: true, type: 'string', maxLength: 200 },
+    last_name: { required: true, type: 'string', maxLength: 200 },
+    email: { required: true, type: 'string', email: true, maxLength: 320 },
+    consent_given: { required: true, type: 'boolean', oneOf: [true] },
+  });
+  if (studentErr) return errorResponse(studentErr, 400);
+
+  const candidates = await loadPublicCourseCandidates(env, courseId);
+  const course = candidates[0];
+  if (!course || !isPublicCourseEligible(course, course.pending_booking_count)) {
+    return errorResponse('This course is no longer available for direct booking.', 409);
+  }
+
+  const publicCourse = publicCourseDto(course, course.pending_booking_count);
+  const booking = {
+    type: 'direct_course_booking',
+    lessonType: `${course.service || 'Group course'} ${course.level || ''}`.trim(),
+    course_id: course.id,
+    course_code: course.course_code || null,
+    service: course.service || null,
+    level: course.level || null,
+    first_session_at: publicCourse.first_session_at,
+    location_text: publicCourse.location_text,
+    spots_remaining_at_booking: publicCourse.spots_remaining,
+    payment_note: 'Payment only after backend confirmation.',
+  };
+  const contact = {
+    lead: {
+      firstName: student.first_name,
+      lastName: student.last_name,
+      email: student.email,
+      phone: student.phone || null,
+    },
+    participants: [
+      {
+        firstName: student.first_name,
+        lastName: student.last_name,
+        email: student.email,
+        phone: student.phone || null,
+      },
+    ],
+    intake: student,
+  };
+
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+
+  let enquiryId;
+  let studentId = null;
+  try {
+    const enquiryRes = await fetch(`${SUPABASE_URL}/rest/v1/enquiries`, {
+      method: 'POST',
+      headers: { ...H, Prefer: 'return=representation' },
+      body: JSON.stringify({
+        service: course.service || null,
+        lead_first: student.first_name,
+        lead_last: student.last_name,
+        lead_email: student.email,
+        lead_phone: student.phone || null,
+        booking_data: booking,
+        contact_data: contact,
+        course_id: course.id,
+        status: PUBLIC_BOOKING_STATUS,
+      }),
+    });
+    if (!enquiryRes.ok) {
+      console.error('book-course enquiry error:', await enquiryRes.text());
+      return errorResponse('Could not save booking request');
+    }
+
+    const rows = await enquiryRes.json();
+    enquiryId = rows[0]?.id;
+
+    try {
+      studentId = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        first_name: student.first_name,
+        last_name: student.last_name,
+        email: student.email,
+        phone: student.phone,
+        postcode: student.postcode,
+        source: 'website',
+      });
+      await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${studentId}`, {
+        method: 'PATCH',
+        headers: H,
+        body: JSON.stringify({
+          ...student,
+          billing_address: buildBillingAddress(student),
+          source: 'website',
+          status: 'prospect',
+          active: false,
+        }),
+      });
+      await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiryId}`, {
+        method: 'PATCH',
+        headers: H,
+        body: JSON.stringify({ student_id: studentId }),
+      });
+    } catch (err) {
+      console.error('book-course student link error (non-fatal):', err);
+    }
+  } catch (err) {
+    console.error('book-course error:', err);
+    return errorResponse('Could not save booking request');
+  }
+
+  await Promise.allSettled([
+    sendEmail(env, student.email, buildCustomerEmail(publicCourse, student)),
+    sendEmail(env, NOTIFY_EMAILS, buildNotificationEmail(publicCourse, student, enquiryId)),
+  ]);
+
+  return jsonResponse({ success: true, id: enquiryId, student_id: studentId });
+}, 'book-course');
