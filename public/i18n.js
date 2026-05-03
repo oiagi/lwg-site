@@ -2,6 +2,25 @@
   'use strict';
 
   const SUPPORTED = ['en', 'de'];
+  const ROUTES = {
+    '/index.html': '',
+    '/info.html': 'info',
+    '/enquiry.html': 'enquiry',
+    '/thankyou.html': 'thankyou',
+    '/impressum.html': 'impressum',
+    '/datenschutzerklaerung.html': 'datenschutzerklaerung',
+    '/agb.html': 'agb',
+    '/modalpartikeln.html': 'modalpartikeln',
+    '/sessions.html': 'sessions',
+    '/intake.html': 'intake',
+  };
+  const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
+    acc[slug] = page;
+    return acc;
+  }, {});
+  function hasRoute(page) {
+    return Object.prototype.hasOwnProperty.call(ROUTES, page);
+  }
   const DEFAULT_BY_PAGE = {
     '/impressum.html': 'de',
     '/datenschutzerklaerung.html': 'de',
@@ -9,15 +28,37 @@
     '/modalpartikeln.html': 'de',
   };
 
+  function splitPath(pathname) {
+    const parts = pathname.split('/').filter(Boolean);
+    const lang = SUPPORTED.includes(parts[0]) ? parts[0] : null;
+    const routeParts = lang ? parts.slice(1) : parts;
+    return { lang, route: routeParts.join('/') };
+  }
+
+  function normalisePageKey(pathname) {
+    const { route } = splitPath(pathname);
+    const cleanRoute = route.replace(/\/$/, '');
+    if (!cleanRoute) return '/index.html';
+    if (PAGE_BY_ROUTE[cleanRoute]) return PAGE_BY_ROUTE[cleanRoute];
+    if (cleanRoute.endsWith('.html')) return '/' + cleanRoute;
+    return '/' + cleanRoute + '.html';
+  }
+
   function pageKey() {
-    const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
-    if (path === '' || path === '/') return '/index.html';
-    return path.includes('.') ? path : path + '.html';
+    return normalisePageKey(window.location.pathname);
+  }
+
+  function pagePath(page, lang) {
+    const safeLang = SUPPORTED.includes(lang) ? lang : currentLang;
+    const slug = hasRoute(page) ? ROUTES[page] : page.replace(/^\//, '').replace(/\.html$/, '');
+    return '/' + safeLang + (slug ? '/' + slug : '/');
   }
 
   function getUrlLang() {
-    const value = new URLSearchParams(window.location.search).get('lang');
-    return SUPPORTED.includes(value) ? value : null;
+    const pathLang = splitPath(window.location.pathname).lang;
+    if (pathLang) return pathLang;
+    const queryLang = new URLSearchParams(window.location.search).get('lang');
+    return SUPPORTED.includes(queryLang) ? queryLang : null;
   }
 
   function getInitialLang() {
@@ -563,6 +604,68 @@
     if (meta) meta.setAttribute('content', value);
   }
 
+  function currentCleanSearch() {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('lang');
+    const value = params.toString();
+    return value ? '?' + value : '';
+  }
+
+  function localizedUrl(page, lang) {
+    return pagePath(page, lang) + currentCleanSearch() + window.location.hash;
+  }
+
+  function syncBrowserUrl(mode) {
+    const page = pageKey();
+    if (!hasRoute(page) || !window.history || !window.history[mode]) return;
+    const nextUrl = localizedUrl(page, currentLang);
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    if (nextUrl !== currentUrl) {
+      window.history[mode](null, '', nextUrl);
+    }
+  }
+
+  function setLink(rel, href, hreflang) {
+    const selector = hreflang ? `link[rel="${rel}"][hreflang="${hreflang}"]` : `link[rel="${rel}"]`;
+    let link = document.querySelector(selector);
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = rel;
+      if (hreflang) link.hreflang = hreflang;
+      document.head.appendChild(link);
+    }
+    link.href = href;
+  }
+
+  function absolutePageUrl(page, lang) {
+    return window.location.origin + pagePath(page, lang);
+  }
+
+  function syncSeoLinks() {
+    const page = pageKey();
+    if (!hasRoute(page)) return;
+    const canonical = absolutePageUrl(page, currentLang);
+    setLink('canonical', canonical);
+    setLink('alternate', absolutePageUrl(page, 'en'), 'en');
+    setLink('alternate', absolutePageUrl(page, 'de'), 'de');
+    setLink('alternate', absolutePageUrl(page, 'en'), 'x-default');
+    setProperty('og:url', canonical);
+  }
+
+  function localizeInternalLinks(root) {
+    const scope = root || document;
+    scope.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:'))
+        return;
+      const url = new URL(href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      const page = normalisePageKey(url.pathname);
+      if (!hasRoute(page)) return;
+      link.href = pagePath(page, currentLang) + url.search + url.hash;
+    });
+  }
+
   function applyEntry(entry) {
     if (!entry) return;
     if (entry.title) {
@@ -592,6 +695,8 @@
   function apply() {
     document.documentElement.lang = currentLang;
     applyEntry(pages[pageKey()]);
+    syncSeoLinks();
+    localizeInternalLinks(document);
     document.dispatchEvent(
       new CustomEvent('lwg:language-applied', { detail: { lang: currentLang } })
     );
@@ -601,6 +706,7 @@
     if (!SUPPORTED.includes(lang)) return;
     currentLang = lang;
     localStorage.setItem('lwg-lang', lang);
+    syncBrowserUrl('pushState');
     apply();
   }
 
@@ -612,6 +718,10 @@
   window.LWG_I18N = {
     apply,
     getLang: () => currentLang,
+    getPageKey: pageKey,
+    href: pagePath,
+    localizeInternalLinks,
+    normalisePageKey,
     setLang,
     nav,
     runtime,
@@ -622,9 +732,24 @@
     },
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply);
-  } else {
+  function boot() {
+    localStorage.setItem('lwg-lang', currentLang);
+    syncBrowserUrl('replaceState');
     apply();
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  window.addEventListener('popstate', () => {
+    const lang = getUrlLang();
+    if (lang && lang !== currentLang) {
+      currentLang = lang;
+      localStorage.setItem('lwg-lang', lang);
+      apply();
+    }
+  });
 })();
