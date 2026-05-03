@@ -1,7 +1,7 @@
 /* ── Teachers cache ────────────────────────────────────────────────── */
-import { apiFetch } from './api.js';
-import { getAccessToken } from './auth.js';
-import { esc } from './helpers.js';
+import { apiFetch } from '../core/api.js';
+import { getAccessToken } from '../core/auth.js';
+import { esc } from '../core/helpers.js';
 
 let teachersCache = null;
 

@@ -1,6 +1,6 @@
 /* ── Student add/edit form page ───────────────────────────────────── */
-import { initAuth, getSession } from './auth.js';
-import { apiFetch } from './api.js';
+import { initAuth, getSession } from '../core/auth.js';
+import { apiFetch } from '../core/api.js';
 
 const BILLING_FIELDS = [
   'sm-billing-name',
@@ -157,7 +157,7 @@ async function handleSubmit(e) {
     const res = await apiFetch('/api/save-student', { method: 'POST', body });
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
-    window.location.href = '/admin.html#students';
+    window.location.href = '/admin#students';
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
@@ -171,12 +171,12 @@ async function handleSubmit(e) {
   try {
     await initAuth();
   } catch {
-    window.location.href = '/admin.html';
+    window.location.href = '/admin';
     return;
   }
   const session = await getSession();
   if (!session) {
-    window.location.href = '/admin.html';
+    window.location.href = '/admin';
     return;
   }
 

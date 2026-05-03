@@ -1,6 +1,6 @@
 /* ── Teacher availability tab ─────────────────────────────────────── */
-import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
+import { apiFetch } from '../core/api.js';
+import { esc } from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
 
 let availabilityTeachers = null;

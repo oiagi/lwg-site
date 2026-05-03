@@ -1,7 +1,7 @@
 /* ── Students tab ─────────────────────────────────────────────────── */
-import { apiFetch } from './api.js';
-import { esc } from './helpers.js';
-import { MESSAGE_TIMEOUT_MS } from './constants.js';
+import { apiFetch } from '../core/api.js';
+import { esc } from '../core/helpers.js';
+import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 
 let currentStudentFilter = 'active';
 let selectedStudentId = null;
@@ -399,7 +399,7 @@ export function backToCourse(courseId) {
 /* ── Student modal ───────────────────────────────────────────────── */
 
 export function editStudent(studentId) {
-  window.location.href = '/admin/student-form.html?id=' + encodeURIComponent(studentId);
+  window.location.href = '/admin/pages/student-form.html?id=' + encodeURIComponent(studentId);
 }
 
 /* ── Enroll-in-course modal ──────────────────────────────────────── */

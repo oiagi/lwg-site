@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gioia — edit course</title>
+  <title>gioia — new course</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,17 +21,18 @@
   </div>
 
   <main id="page-content" class="page-form-shell" style="display:none;">
-    <a href="/admin.html#courses" class="page-form-back">← back to courses</a>
-    <h1>edit course</h1>
-    <p class="label-hint" id="ec-code-label" style="margin-bottom:1rem;"></p>
+    <a href="/admin#courses" class="page-form-back">← back to courses</a>
+    <h1>new course</h1>
 
-    <form id="course-edit-form" novalidate>
-      <input type="hidden" id="ec-id" value="">
-
+    <form id="course-new-form" novalidate>
       <div class="modal-grid">
         <div class="modal-field">
+          <label>Teacher</label>
+          <select id="nc-teacher"><option value="">loading…</option></select>
+        </div>
+        <div class="modal-field">
           <label>Subject</label>
-          <select id="ec-service">
+          <select id="nc-service">
             <option value="language course">Language course</option>
             <option value="exam preparation">Exam preparation</option>
             <option value="tutoring">Tutoring</option>
@@ -39,16 +40,16 @@
           </select>
         </div>
         <div class="modal-field">
-          <label>Course level</label>
+          <label>Course level <span class="label-hint">(leave blank for tutoring)</span></label>
           <div class="level-row">
-            <select id="ec-level">
+            <select id="nc-level">
               <option value="">—</option>
               <option>A1</option><option>A2</option><option>B1</option>
               <option>B2</option><option>C1</option><option>C2</option>
               <option value="CH">CH (Swiss German)</option>
               <option value="SUB">SUB (Tutoring)</option>
             </select>
-            <select id="ec-level-plus" aria-label="Plus modifier" title="Plus modifier (A1+, B2+, …)">
+            <select id="nc-level-plus" aria-label="Plus modifier" title="Plus modifier (A1+, B2+, …)">
               <option value="">—</option>
               <option value="+">+</option>
             </select>
@@ -56,44 +57,27 @@
         </div>
         <div class="modal-field">
           <label>Group size</label>
-          <select id="ec-group">
+          <select id="nc-group">
             <option value="private">Private (1)</option>
             <option value="duo">Duo (2)</option>
             <option value="group">Group (3+)</option>
           </select>
         </div>
         <div class="modal-field">
-          <label>Status</label>
-          <select id="ec-status">
-            <option value="active">active</option>
-            <option value="paused">paused</option>
-            <option value="completed">completed</option>
-            <option value="cancelled">cancelled</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Number of sessions <span class="label-hint">(blank = open-ended)</span></label>
-          <input type="number" id="ec-sessions" min="1" placeholder="e.g. 30">
+          <label>Number of sessions <span class="label-hint">(leave blank for open-ended)</span></label>
+          <input type="number" id="nc-sessions" min="1" placeholder="e.g. 30">
         </div>
         <div class="modal-field">
           <label>Session length (min)</label>
-          <input type="number" id="ec-session-length" min="15" step="5" placeholder="50">
+          <input type="number" id="nc-session-length" min="15" step="5" value="50" placeholder="50">
         </div>
         <div class="modal-field">
-          <label>Price per session</label>
-          <input type="number" id="ec-price" min="0" step="0.01" placeholder="e.g. 80">
-        </div>
-        <div class="modal-field">
-          <label>Currency</label>
-          <select id="ec-currency">
-            <option value="CHF">CHF</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-          </select>
+          <label>Price per session <span class="label-hint">(CHF)</span></label>
+          <input type="number" id="nc-price" min="0" step="0.01" placeholder="e.g. 80">
         </div>
         <div class="modal-field">
           <label>Location</label>
-          <select id="ec-location">
+          <select id="nc-location">
             <option value="">—</option>
             <option value="online">Online</option>
             <option value="teacher's home">Teacher's home</option>
@@ -102,37 +86,54 @@
             <option value="classroom">Classroom</option>
           </select>
         </div>
+        <div class="modal-field">
+          <label>First session date &amp; time</label>
+          <input type="datetime-local" id="nc-datetime">
+        </div>
         <div class="modal-field full">
+          <button type="button" class="add-participant-btn" id="nc-toggle-address">+ add address</button>
+        </div>
+        <div class="modal-field full" id="nc-address-fields" style="display:none;">
           <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
           <div class="modal-grid">
             <div class="modal-field">
               <label>Street</label>
-              <input type="text" id="ec-loc-street" placeholder="e.g. Bahnhofstrasse" maxlength="100">
+              <input type="text" id="nc-loc-street" placeholder="e.g. Bahnhofstrasse" maxlength="100">
             </div>
             <div class="modal-field">
               <label>Street number</label>
-              <input type="text" id="ec-loc-number" placeholder="e.g. 12a" maxlength="20">
+              <input type="text" id="nc-loc-number" placeholder="e.g. 12a" maxlength="20">
             </div>
             <div class="modal-field">
               <label>Postal code</label>
-              <input type="text" id="ec-loc-postal" placeholder="e.g. 8001" maxlength="20">
+              <input type="text" id="nc-loc-postal" placeholder="e.g. 8001" maxlength="20">
             </div>
             <div class="modal-field">
               <label>City</label>
-              <input type="text" id="ec-loc-city" placeholder="e.g. Zürich" maxlength="80">
+              <input type="text" id="nc-loc-city" placeholder="e.g. Zürich" maxlength="80">
             </div>
           </div>
         </div>
+        <div class="modal-field full">
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="nc-single-session" style="width:auto;margin:0;">
+            <span>Only create the first session — I'll plan the rest manually in Google Calendar</span>
+          </label>
+        </div>
       </div>
 
+      <p class="modal-section-label" style="margin: 1.4rem 0 0.8rem; border-top: 1px solid var(--border-soft); padding-top: 1.2rem;">Participants</p>
+      <div id="nc-participants"></div>
+      <button type="button" class="add-participant-btn" id="nc-add-participant">+ add participant</button>
+
       <div class="page-form-actions">
-        <a href="/admin.html#courses" class="modal-cancel">cancel</a>
-        <button type="submit" class="modal-submit" id="ec-submit">save changes</button>
+        <a href="/admin#courses" class="modal-cancel">cancel</a>
+        <button type="submit" class="modal-submit" id="nc-submit">create course &amp; calendar event</button>
       </div>
-      <p class="modal-msg" id="ec-msg"></p>
+      <p class="modal-msg" id="nc-msg"></p>
     </form>
   </main>
 
-  <script type="module" src="/admin/course-edit.js"></script>
+  <script type="module" src="/admin/pages/course-new.js"></script>
 </body>
 </html>
