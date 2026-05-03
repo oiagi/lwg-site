@@ -56,7 +56,9 @@
     '<footer class="site-footer" aria-label="' +
     tr('legalLabel') +
     '">' +
-    '<a href="impressum.html">Impressum</a>' +
+    '<a href="impressum.html" data-nav-key="impressum">' +
+    tr('impressum') +
+    '</a>' +
     '<a href="datenschutzerklaerung.html" data-nav-key="privacy">' +
     tr('privacy') +
     '</a>' +
