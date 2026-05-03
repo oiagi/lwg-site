@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Group Courses Starting Soon - Learning with Gioia</title>
+  <meta name="description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://learningwithgioia.ch/group-courses.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="learning with gioia">
+  <meta property="og:title" content="Group Courses Starting Soon - Learning with Gioia">
+  <meta property="og:description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <meta property="og:url" content="https://learningwithgioia.ch/group-courses.html">
+  <meta property="og:image" content="https://learningwithgioia.ch/gioia_logo.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Group Courses Starting Soon - Learning with Gioia">
+  <meta name="twitter:description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <meta name="twitter:image" content="https://learningwithgioia.ch/gioia_logo.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/group-courses.css">
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">skip to content</a>
+
+  <main class="courses-shell" id="main">
+    <header class="courses-header">
+      <h1>group courses starting soon</h1>
+      <p class="courses-intro">
+        Small group courses with a maximum of 5 people. Booking requests are handled first come, first served and confirmed personally in the backend before payment.
+      </p>
+    </header>
+
+    <div class="courses-status" id="courses-status">loading courses...</div>
+    <div class="courses-list" id="courses-list" aria-live="polite"></div>
+
+    <section class="empty-state" id="empty-state" hidden>
+      <p>currently there are no spots available in group courses starting soon :(</p>
+      <a class="enquiry-link" href="/enquiry">make an enquiry -></a>
+    </section>
+
+    <section class="booking-panel" id="booking-panel" hidden>
+      <div class="booking-panel__header">
+        <div>
+          <p class="section-label" id="label-booking-request">booking request</p>
+          <h2 id="booking-title">your details</h2>
+        </div>
+        <button type="button" class="plain-button" id="booking-cancel">cancel</button>
+      </div>
+
+      <p class="booking-note" id="booking-note">
+        Your spot is only final after backend confirmation. Payment happens after confirmation.
+      </p>
+
+      <form id="booking-form" novalidate>
+        <input type="hidden" id="booking-course-id">
+
+        <p class="section-label" id="label-personal">personal information</p>
+        <div class="field-row">
+          <div class="field">
+            <label for="bf-first-name">first name *</label>
+            <input type="text" id="bf-first-name" autocomplete="given-name">
+            <div class="error" id="err-first-name">Please enter a first name.</div>
+          </div>
+          <div class="field">
+            <label for="bf-last-name">last name *</label>
+            <input type="text" id="bf-last-name" autocomplete="family-name">
+            <div class="error" id="err-last-name">Please enter a last name.</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="bf-email">email *</label>
+            <input type="email" id="bf-email" autocomplete="email">
+            <div class="error" id="err-email">Please enter a valid email address.</div>
+          </div>
+          <div class="field">
+            <label for="bf-phone">phone</label>
+            <input type="tel" id="bf-phone" autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field" style="flex:2;">
+            <label for="bf-street">street</label>
+            <input type="text" id="bf-street" autocomplete="address-line1">
+          </div>
+          <div class="field" style="flex:1;">
+            <label for="bf-street-number">number</label>
+            <input type="text" id="bf-street-number">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field" style="flex:1;">
+            <label for="bf-postcode">postcode</label>
+            <input type="text" id="bf-postcode" autocomplete="postal-code">
+          </div>
+          <div class="field" style="flex:2;">
+            <label for="bf-city">city</label>
+            <input type="text" id="bf-city" autocomplete="address-level2">
+          </div>
+        </div>
+
+        <p class="section-label" id="label-emergency">emergency contact</p>
+        <div class="field-row">
+          <div class="field">
+            <label for="bf-ec-name">name</label>
+            <input type="text" id="bf-ec-name">
+          </div>
+          <div class="field">
+            <label for="bf-ec-relationship">relationship</label>
+            <input type="text" id="bf-ec-relationship" placeholder="e.g. partner, parent">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="bf-ec-phone">phone</label>
+            <input type="tel" id="bf-ec-phone">
+          </div>
+          <div class="field">
+            <label for="bf-ec-email">email</label>
+            <input type="email" id="bf-ec-email">
+          </div>
+        </div>
+
+        <p class="section-label" id="label-billing">billing</p>
+        <label class="booking-checkbox">
+          <input type="checkbox" id="bf-billing-separate">
+          <span>billing address differs from personal address</span>
+        </label>
+
+        <div id="billing-fields" hidden>
+          <div class="field-row">
+            <div class="field">
+              <label for="bf-billing-name">billing name</label>
+              <input type="text" id="bf-billing-name">
+            </div>
+            <div class="field">
+              <label for="bf-billing-email">billing email</label>
+              <input type="email" id="bf-billing-email">
+            </div>
+          </div>
+          <div class="field">
+            <label for="bf-billing-phone">billing phone</label>
+            <input type="tel" id="bf-billing-phone">
+          </div>
+          <div class="field-row">
+            <div class="field" style="flex:2;">
+              <label for="bf-billing-street">street</label>
+              <input type="text" id="bf-billing-street">
+            </div>
+            <div class="field" style="flex:1;">
+              <label for="bf-billing-street-number">number</label>
+              <input type="text" id="bf-billing-street-number">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field" style="flex:1;">
+              <label for="bf-billing-postcode">postcode</label>
+              <input type="text" id="bf-billing-postcode">
+            </div>
+            <div class="field" style="flex:2;">
+              <label for="bf-billing-city">city</label>
+              <input type="text" id="bf-billing-city">
+            </div>
+          </div>
+        </div>
+
+        <label class="booking-checkbox consent-row">
+          <input type="checkbox" id="bf-consent">
+          <span>I agree to the processing of my data for this booking request and accept the <a href="/agb">terms and conditions</a>. *</span>
+        </label>
+        <div class="error" id="err-consent">Please accept the terms to continue.</div>
+
+        <button class="submit" id="booking-submit" type="submit">request spot -></button>
+        <div class="error submit-error" id="booking-error"></div>
+      </form>
+    </section>
+
+    <section class="success-state" id="success-state" hidden>
+      <h2>thank you.</h2>
+      <p>Your booking request has been received. We will confirm your spot personally before payment is due.</p>
+    </section>
+  </main>
+
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
+  <script>
+    (function () {
+      const copy = {
+        en: {
+          loading: 'loading courses...',
+          loadError: 'Could not load group courses right now.',
+          noSpots: 'currently there are no spots available in group courses starting soon :(',
+          enquiry: 'make an enquiry ->',
+          level: 'level',
+          starts: 'starts',
+          place: 'place',
+          spots: 'spots',
+          spot: 'spot',
+          available: 'available',
+          maxPeople: 'max. 5 people',
+          payment: 'payment after backend confirmation',
+          book: 'request spot ->',
+          selected: 'selected course',
+          submitting: 'sending...',
+          serverError: 'Something went wrong. Please try again or email info@learningwithgioia.ch.',
+          unavailable: 'This course is no longer available for direct booking.',
+          successTitle: 'thank you.',
+          successBody: 'Your booking request has been received. We will confirm your spot personally before payment is due.',
+        },
+        de: {
+          loading: 'kurse werden geladen...',
+          loadError: 'Gruppenkurse konnten gerade nicht geladen werden.',
+          noSpots: 'aktuell sind leider keine plaetze in bald startenden gruppenkursen frei :(',
+          enquiry: 'anfrage senden ->',
+          level: 'niveau',
+          starts: 'start',
+          place: 'ort',
+          spots: 'plaetze',
+          spot: 'platz',
+          available: 'frei',
+          maxPeople: 'max. 5 personen',
+          payment: 'zahlung erst nach bestaetigung im backend',
+          book: 'platz anfragen ->',
+          selected: 'ausgewaehlter kurs',
+          submitting: 'wird gesendet...',
+          serverError: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe an info@learningwithgioia.ch.',
+          unavailable: 'Dieser Kurs ist nicht mehr direkt buchbar.',
+          successTitle: 'danke.',
+          successBody: 'Deine Buchungsanfrage ist eingegangen. Wir bestaetigen deinen Platz persoenlich, bevor eine Zahlung faellig wird.',
+        },
+      };
+
+      const coursesList = document.getElementById('courses-list');
+      const statusEl = document.getElementById('courses-status');
+      const emptyState = document.getElementById('empty-state');
+      const bookingPanel = document.getElementById('booking-panel');
+      const bookingForm = document.getElementById('booking-form');
+      const successState = document.getElementById('success-state');
+      const billingCheckbox = document.getElementById('bf-billing-separate');
+      const billingFields = document.getElementById('billing-fields');
+      let courses = [];
+      let selectedCourse = null;
+
+      function lang() {
+        return window.LWG_I18N?.getLang() || 'en';
+      }
+
+      function t(key) {
+        return copy[lang()]?.[key] || copy.en[key] || key;
+      }
+
+      function esc(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function fmtDate(iso) {
+        return new Date(iso).toLocaleString(lang() === 'de' ? 'de-CH' : 'en-GB', {
+          timeZone: 'Europe/Zurich',
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
+
+      function fmtPrice(course) {
+        if (course.price_per_session === null || course.price_per_session === undefined) return '';
+        return `${Number(course.price_per_session).toFixed(2)} ${course.currency || 'CHF'}`;
+      }
+
+      function renderCourses() {
+        statusEl.textContent = '';
+        statusEl.hidden = true;
+        emptyState.hidden = courses.length > 0;
+        coursesList.innerHTML = courses
+          .map((course) => {
+            const spotsLabel = course.spots_remaining === 1 ? t('spot') : t('spots');
+            const price = fmtPrice(course);
+            return `<article class="course-item">
+              <div class="course-item__main">
+                <p class="course-meta">${esc(course.service || 'group course')}</p>
+                <h2>${esc(course.level || '-')}</h2>
+                <dl class="course-facts">
+                  <div><dt>${t('starts')}</dt><dd>${esc(fmtDate(course.first_session_at))}</dd></div>
+                  <div><dt>${t('place')}</dt><dd>${esc(course.location_text || '-')}</dd></div>
+                  <div><dt>${t('spots')}</dt><dd>${course.spots_remaining} ${spotsLabel} ${t('available')}</dd></div>
+                </dl>
+              </div>
+              <div class="course-item__side">
+                ${price ? `<p class="course-price">${esc(price)}</p>` : ''}
+                <p class="course-note">${t('maxPeople')}</p>
+                <p class="course-note">${t('payment')}</p>
+                <button type="button" class="course-book-btn" data-course-id="${esc(course.id)}">${t('book')}</button>
+              </div>
+            </article>`;
+          })
+          .join('');
+      }
+
+      async function loadCourses() {
+        statusEl.hidden = false;
+        statusEl.textContent = t('loading');
+        try {
+          const res = await fetch('/api/public-courses');
+          if (!res.ok) throw new Error('load failed');
+          courses = await res.json();
+          renderCourses();
+        } catch {
+          courses = [];
+          emptyState.hidden = true;
+          statusEl.hidden = false;
+          statusEl.textContent = t('loadError');
+        }
+      }
+
+      function setSelectedCourse(course) {
+        selectedCourse = course;
+        document.getElementById('booking-course-id').value = course.id;
+        document.getElementById('booking-title').textContent = `${t('selected')}: ${course.level || ''}`;
+        document.getElementById('booking-note').textContent =
+          `${course.service || 'Group course'} - ${fmtDate(course.first_session_at)} - ${course.location_text}. ${t('payment')}.`;
+        bookingPanel.hidden = false;
+        successState.hidden = true;
+        bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function val(id) {
+        return document.getElementById(id).value.trim();
+      }
+
+      function showErr(id, show) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = show ? 'block' : 'none';
+      }
+
+      function emailValid(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+
+      function buildStudentPayload() {
+        const student = {
+          first_name: val('bf-first-name'),
+          last_name: val('bf-last-name'),
+          email: val('bf-email'),
+          phone: val('bf-phone') || null,
+          street: val('bf-street') || null,
+          street_number: val('bf-street-number') || null,
+          postcode: val('bf-postcode') || null,
+          city: val('bf-city') || null,
+          emergency_contact: val('bf-ec-name') || null,
+          ec_relationship: val('bf-ec-relationship') || null,
+          ec_phone: val('bf-ec-phone') || null,
+          ec_email: val('bf-ec-email') || null,
+          consent_given: document.getElementById('bf-consent').checked,
+        };
+        if (billingCheckbox.checked) {
+          student.billing_name = val('bf-billing-name') || null;
+          student.billing_email = val('bf-billing-email') || null;
+          student.billing_phone = val('bf-billing-phone') || null;
+          student.billing_street = val('bf-billing-street') || null;
+          student.billing_street_number = val('bf-billing-street-number') || null;
+          student.billing_postcode = val('bf-billing-postcode') || null;
+          student.billing_city = val('bf-billing-city') || null;
+        }
+        return student;
+      }
+
+      bookingForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!selectedCourse) return;
+
+        const firstName = val('bf-first-name');
+        const lastName = val('bf-last-name');
+        const email = val('bf-email');
+        const consent = document.getElementById('bf-consent').checked;
+
+        let valid = true;
+        showErr('err-first-name', !firstName);
+        if (!firstName) valid = false;
+        showErr('err-last-name', !lastName);
+        if (!lastName) valid = false;
+        showErr('err-email', !emailValid(email));
+        if (!emailValid(email)) valid = false;
+        showErr('err-consent', !consent);
+        if (!consent) valid = false;
+
+        if (!valid) {
+          const first = [...document.querySelectorAll('.error')].find(
+            (el) => el.style.display === 'block'
+          );
+          first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+
+        const btn = document.getElementById('booking-submit');
+        const errorEl = document.getElementById('booking-error');
+        errorEl.style.display = 'none';
+        btn.disabled = true;
+        btn.dataset.loading = '';
+        btn.textContent = t('submitting');
+
+        try {
+          const res = await fetch('/api/book-course', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              course_id: selectedCourse.id,
+              student: buildStudentPayload(),
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(res.status === 409 ? t('unavailable') : body.error || t('serverError'));
+          }
+          bookingPanel.hidden = true;
+          successState.hidden = false;
+          successState.querySelector('h2').textContent = t('successTitle');
+          successState.querySelector('p').textContent = t('successBody');
+          successState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          await loadCourses();
+        } catch (err) {
+          errorEl.textContent = err.message || t('serverError');
+          errorEl.style.display = 'block';
+        } finally {
+          delete btn.dataset.loading;
+          btn.disabled = false;
+          btn.textContent = t('book');
+        }
+      });
+
+      coursesList.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-course-id]');
+        if (!btn) return;
+        const course = courses.find((item) => item.id === btn.dataset.courseId);
+        if (course) setSelectedCourse(course);
+      });
+
+      billingCheckbox.addEventListener('change', () => {
+        billingFields.hidden = !billingCheckbox.checked;
+      });
+
+      document.getElementById('booking-cancel').addEventListener('click', () => {
+        bookingPanel.hidden = true;
+        selectedCourse = null;
+      });
+
+      document.addEventListener('lwg:language-applied', () => {
+        if (!statusEl.hidden) statusEl.textContent = courses.length ? '' : t('loading');
+        emptyState.querySelector('p').textContent = t('noSpots');
+        emptyState.querySelector('a').textContent = t('enquiry');
+        document.getElementById('booking-submit').textContent = t('book');
+        if (selectedCourse) setSelectedCourse(selectedCourse);
+        if (courses.length) renderCourses();
+      });
+
+      loadCourses();
+    })();
+  </script>
+</body>
+</html>

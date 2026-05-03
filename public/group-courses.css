@@ -1,0 +1,332 @@
+body {
+  --page-bg: var(--paper);
+  background-color: var(--paper);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1rem 5rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  transition: background-color 0.6s ease;
+}
+body.nav-active {
+  --page-bg: var(--paper-deep);
+  background-color: var(--paper-deep);
+}
+
+.courses-shell {
+  width: min(92vw, 760px);
+  margin-top: 1rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.courses-header {
+  text-align: center;
+  margin-bottom: 2.8rem;
+}
+h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+.courses-intro,
+.booking-note,
+.success-state p,
+.empty-state p {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.courses-intro {
+  width: min(100%, 620px);
+  margin: 0 auto;
+}
+
+.courses-status,
+.empty-state {
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  padding: 1.8rem 0;
+}
+
+.courses-list {
+  display: grid;
+  gap: 1rem;
+}
+.course-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.4rem;
+  border-top: 1px solid var(--rule);
+  padding: 1.4rem 0;
+}
+.course-meta,
+.section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.course-meta {
+  margin: 0 0 0.45rem;
+}
+.course-item h2,
+.booking-panel h2,
+.success-state h2 {
+  font-size: 1.45rem;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  margin: 0 0 1rem;
+  color: var(--ink);
+}
+.course-facts {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+.course-facts div {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 1rem;
+}
+.course-facts dt {
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.course-facts dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.course-item__side {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+.course-price {
+  margin: 0 0 0.2rem;
+  font-size: 1.1rem;
+  text-align: right;
+}
+.course-note {
+  margin: 0;
+  color: var(--ink-mute);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: right;
+}
+.course-book-btn,
+.submit,
+.enquiry-link {
+  display: block;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  text-decoration: none;
+  text-align: center;
+  padding: 0.82rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.course-book-btn {
+  margin-top: 0.5rem;
+}
+.course-book-btn:hover,
+.submit:hover,
+.enquiry-link:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+.enquiry-link {
+  width: min(100%, 320px);
+  margin: 1.6rem auto 0;
+}
+
+.booking-panel,
+.success-state {
+  border-top: 1px solid var(--rule);
+  margin-top: 2.8rem;
+  padding-top: 2rem;
+}
+.booking-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.plain-button {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+.plain-button:hover {
+  color: var(--ink);
+}
+.booking-note {
+  margin: 0 0 2rem;
+  color: var(--ink-mute);
+}
+.section-label {
+  margin: 2rem 0 1.2rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+}
+.booking-panel__header .section-label {
+  margin-top: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+.field-row {
+  display: flex;
+  gap: 1rem;
+}
+.field-row .field {
+  flex: 1;
+}
+label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+input[type='text'],
+input[type='email'],
+input[type='tel'] {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.4rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus {
+  border-bottom-color: var(--ink-soft);
+}
+input::placeholder {
+  color: rgba(26, 22, 20, 0.3);
+}
+.booking-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.4rem 0 1.2rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.booking-checkbox input {
+  width: auto;
+  margin-top: 0.18rem;
+}
+.booking-checkbox a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.consent-row {
+  margin-top: 2rem;
+}
+.error {
+  display: none;
+  font-size: 0.72rem;
+  color: #b8492e;
+  margin-top: 0.3rem;
+  letter-spacing: 0.04em;
+}
+.submit-error {
+  text-align: center;
+  margin-top: 1rem;
+}
+.submit {
+  width: min(100%, 340px);
+  margin: 2rem auto 0;
+}
+.success-state {
+  text-align: center;
+}
+
+html[data-touch='true'] .course-book-btn:hover,
+html[data-touch='true'] .submit:hover,
+html[data-touch='true'] .enquiry-link:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+html[data-device='mobile'] .courses-shell {
+  width: 94vw;
+}
+html[data-device='mobile'] h1 {
+  font-size: 1.55rem;
+}
+html[data-device='mobile'] .course-item,
+html[data-device='mobile'] .field-row {
+  grid-template-columns: 1fr;
+  flex-direction: column;
+}
+html[data-device='mobile'] .course-item__side {
+  width: 100%;
+}
+html[data-device='mobile'] .course-price,
+html[data-device='mobile'] .course-note {
+  text-align: left;
+}
+html[data-device='mobile'] .course-book-btn,
+html[data-device='mobile'] .submit,
+html[data-device='mobile'] .enquiry-link {
+  min-height: 48px;
+}
+html[data-device='mobile'] .course-facts div {
+  grid-template-columns: 1fr;
+  gap: 0.2rem;
+}
+
+html[data-device='desktop'] body {
+  padding: 5rem 2rem 6rem;
+}
+html[data-device='desktop'] .courses-shell {
+  width: min(86vw, 860px);
+  margin-top: 1.4rem;
+}
+html[data-device='desktop'] h1 {
+  font-size: 2.4rem;
+}
+html[data-device='desktop'] .booking-panel {
+  width: min(100%, 720px);
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -46,6 +46,11 @@
     tr('info') +
     '</a>' +
     '<a href="' +
+    href('/group-courses.html') +
+    '" data-page="/group-courses.html" data-nav-key="groupCourses">' +
+    tr('groupCourses') +
+    '</a>' +
+    '<a href="' +
     href('/enquiry.html') +
     '" data-page="/enquiry.html" data-nav-key="enquiry">' +
     tr('enquiry') +

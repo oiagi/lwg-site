@@ -273,9 +273,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         body: JSON.stringify({
           ...student,
           billing_address: buildBillingAddress(student),
-          source: 'website',
-          status: 'prospect',
-          active: false,
         }),
       });
       await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiryId}`, {
