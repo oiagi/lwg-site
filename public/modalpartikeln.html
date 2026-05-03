@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="redepartikeln.css" />
+  <link rel="stylesheet" href="modalpartikeln.css" />
   <script src="device-detect.js"></script>
 </head>
 <body>
@@ -310,6 +310,13 @@ const uiCopy = {
   expandHint: { en: '▸ Show tip', de: '▸ Tipp anzeigen' },
   question: { en: 'Question', de: 'Frage' },
   of: { en: 'of', de: 'von' },
+  chooseParticles: { en: 'Choose modal particles to practise', de: 'Modalpartikeln zum Üben auswählen' },
+  allParticles: { en: 'All', de: 'Alle' },
+  clearParticles: { en: 'Clear', de: 'Auswahl leeren' },
+  selectedCount: { en: 'selected', de: 'ausgewählt' },
+  noQuestions: { en: 'Select at least one particle to start the quiz.', de: 'Wähle mindestens eine Partikel aus, um das Quiz zu starten.' },
+  noMatchingQuestions: { en: 'No quiz questions match this selection yet.', de: 'Zu dieser Auswahl gibt es noch keine Quizfragen.' },
+  acceptedAnswers: { en: 'Accepted answers', de: 'Mögliche Lösungen' },
   answers: { en: 'Answer options', de: 'Antwortoptionen' },
   next: { en: 'Next ->', de: 'Weiter ->' },
   results: {
@@ -342,26 +349,26 @@ function ui(key) {
 
 // ========== QUIZ DATA ==========
 const quizQuestions = [
-  { sentence: "Kannst du mir ___ helfen?", translation: "Can you help me for a sec?", answer: "mal", options: ["mal", "doch", "ja", "eben"], context: "Polite, casual request to a friend.", explanation: "'Mal' softens the request, making it more casual and friendly — like adding 'just' or 'for a sec'." },
-  { sentence: "Das ist ___ Unsinn!", translation: "That's nonsense! (come on!)", answer: "doch", options: ["aber", "doch", "halt", "wohl"], context: "Contradicting someone who made a wrong claim.", explanation: "'Doch' expresses contradiction — the speaker is pushing back: 'No, that IS nonsense, and you should know that!'" },
-  { sentence: "Was machst du ___ hier?", translation: "What are you doing here? (I'm curious)", answer: "denn", options: ["denn", "eigentlich", "bloß", "etwa"], context: "You meet a friend somewhere unexpected.", explanation: "'Denn' adds friendly curiosity to a question. Without it, the question could sound accusatory." },
-  { sentence: "Du weißt ___, wie er ist.", translation: "You know how he is. (as we both know)", answer: "ja", options: ["ja", "doch", "schon", "halt"], context: "Reminding someone of common knowledge.", explanation: "'Ja' signals shared knowledge — 'you know this already, we both know this.' It's a reminder, not a 'yes'." },
-  { sentence: "Das ist ___ nett von dir!", translation: "That's really nice of you! (more than expected)", answer: "aber", options: ["mal", "aber", "ja", "doch"], context: "Someone does something unexpectedly kind.", explanation: "'Aber' as a particle expresses surprised intensity — 'wow, that's REALLY nice!' Something exceeded expectations." },
-  { sentence: "Mach das ___ nicht!", translation: "Don't you dare do that!", answer: "bloß", options: ["ruhig", "bloß", "mal", "halt"], context: "Strong warning to someone about to do something dangerous.", explanation: "'Bloß' in commands is an urgent warning: 'Whatever you do, DON'T!' Much stronger than a simple 'nicht machen'." },
-  { sentence: "Du kannst ___ fragen.", translation: "Go ahead and ask. (don't be shy)", answer: "ruhig", options: ["ruhig", "mal", "schon", "doch"], context: "Encouraging someone who is hesitant.", explanation: "'Ruhig' gives permission and encouragement — 'feel free, I don't mind, go for it!'" },
-  { sentence: "Das ist ___ so.", translation: "That's just the way it is.", answer: "halt", options: ["eben", "halt", "wohl", "doch"], context: "Accepting an unchangeable situation. (Southern German)", explanation: "'Halt' signals resigned acceptance — there's no alternative. 'Eben' would also work here." },
-  { sentence: "Er ist ___ krank.", translation: "He's probably sick.", answer: "wohl", options: ["wohl", "ja", "eigentlich", "schon"], context: "Guessing why someone didn't come to work.", explanation: "'Wohl' expresses probability — 'I think so, but I'm not certain.' It's an educated guess." },
-  { sentence: "Das wird ___ klappen.", translation: "It'll work out. (don't worry)", answer: "schon", options: ["schon", "wohl", "mal", "doch"], context: "Reassuring a worried friend.", explanation: "'Schon' here is reassuring — 'trust me, it'll be fine.' It expresses confidence and calms the listener." },
-  { sentence: "Wer ist das ___?", translation: "Who is that, anyway?", answer: "eigentlich", options: ["denn", "eigentlich", "etwa", "bloß"], context: "Changing topic; you've been wondering.", explanation: "'Eigentlich' signals 'I've been meaning to ask...' or 'by the way...'. It's a topic shifter showing deeper curiosity." },
-  { sentence: "Bist du ___ krank?", translation: "Don't tell me you're sick?!", answer: "etwa", options: ["etwa", "denn", "vielleicht", "wohl"], context: "Shocked reaction — hoping the answer is 'no'.", explanation: "'Etwa' expresses disbelief in questions — the speaker really hopes the answer is 'no'. It's 'surely not?!'" },
-  { sentence: "Das ist ___ ein Chaos!", translation: "What a mess! (wow)", answer: "vielleicht", options: ["aber", "vielleicht", "ja", "doch"], context: "Exclaiming about how extreme a situation is.", explanation: "'Vielleicht' as a particle ≠ 'maybe'. In exclamations it means 'what a...!' expressing surprise at intensity." },
-  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answer: "nur", options: ["nur", "bloß", "mal", "doch"], context: "Expressing a wish — longing for someone's presence.", explanation: "'Nur' (or 'bloß') in wishes with 'wenn' means 'if only'. Both particles work identically here." },
-  { sentence: "Dann bleiben wir ___ hier.", translation: "Then we'll just stay here.", answer: "eben", options: ["eben", "halt", "schon", "ruhig"], context: "Accepting a situation — the restaurant is full, so...", explanation: "'Eben' signals resigned acceptance — 'there's no alternative, so we'll just do this.' 'Halt' or 'nun mal' would also work." },
-  { sentence: "Hast du ___ abgeschlossen?", translation: "Did you really lock up? (I want to be sure)", answer: "auch", options: ["auch", "denn", "etwa", "eigentlich"], context: "Leaving the house and double-checking with your partner.", explanation: "'Auch' in Ja-Nein-Fragen seeks reassurance — 'are you really sure?'. It's about confirming, not adding information." },
-  { sentence: "Warum ist er ___ so stur?", translation: "Why does he have to be so stubborn?!", answer: "auch", options: ["auch", "bloß", "denn", "schon"], context: "Frustrated about a stubborn friend.", explanation: "'Auch' in W-Fragen expresses frustration or reproach — 'why does it have to be like this?!' It's a particle of exasperation here." },
-  { sentence: "Er ist ___ der Chef.", translation: "He's the boss, and that's that.", answer: "nun mal", options: ["nun mal", "ja", "wohl", "schon"], context: "Resigned acceptance of a hierarchy.", explanation: "'Nun mal' (or 'nun einmal') signals 'that's just the way it is' — interchangeable with 'eben' and 'halt'." },
-  { sentence: "Sei ___ vorsichtig!", translation: "Be careful — I really mean it!", answer: "ja", options: ["ja", "mal", "ruhig", "doch"], context: "Urgent warning to someone heading into a risky situation.", explanation: "'Ja' in Aufforderungen is an urgent warning — 'make sure you…!'. Stronger and more insistent than a plain imperative." },
-  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answer: "doch", options: ["doch", "ja", "eben", "schon"], context: "Wishing for someone's presence at an important moment.", explanation: "'Doch' in Wunschsätzen expresses longing — often combined with 'nur' or 'bloß' for extra emphasis." }
+  { sentence: "Kannst du mir ___ helfen?", translation: "Can you help me for a sec?", answers: [{ value: "mal", explanation: "'Mal' softens the request, making it more casual and friendly, like adding 'just' or 'for a sec'." }], options: ["mal", "doch", "ja", "eben"], context: "Polite, casual request to a friend." },
+  { sentence: "Das ist ___ Unsinn!", translation: "That's nonsense! (come on!)", answers: [{ value: "doch", explanation: "'Doch' expresses contradiction. The speaker is pushing back: no, that really is nonsense, and you should know that." }], options: ["aber", "doch", "halt", "wohl"], context: "Contradicting someone who made a wrong claim." },
+  { sentence: "Was machst du ___ hier?", translation: "What are you doing here? (I'm curious)", answers: [{ value: "denn", explanation: "'Denn' adds friendly curiosity to a question. Without it, the question can sound more direct or accusatory." }], options: ["denn", "eigentlich", "bloß", "etwa"], context: "You meet a friend somewhere unexpected." },
+  { sentence: "Du weißt ___, wie er ist.", translation: "You know how he is. (as we both know)", answers: [{ value: "ja", explanation: "'Ja' signals shared knowledge: you know this already, and we both know it." }, { value: "doch", explanation: "'Doch' can also work when the reminder pushes a little harder: you do know how he is, after all." }], options: ["ja", "doch", "schon", "halt"], context: "Reminding someone of common knowledge." },
+  { sentence: "Das ist ___ nett von dir!", translation: "That's really nice of you! (more than expected)", answers: [{ value: "aber", explanation: "'Aber' expresses surprised intensity: wow, that is really nice." }, { value: "ja", explanation: "'Ja' can also express surprise in exclamations, as if the speaker has just noticed how nice it is." }], options: ["mal", "aber", "ja", "doch"], context: "Someone does something unexpectedly kind." },
+  { sentence: "Mach das ___ nicht!", translation: "Don't you dare do that!", answers: [{ value: "bloß", explanation: "'Bloß' in commands is an urgent warning: whatever you do, do not do that." }, { value: "ja", explanation: "'Ja' in a negative command also gives a strong warning: make absolutely sure you do not do that." }], options: ["ruhig", "bloß", "mal", "ja"], context: "Strong warning to someone about to do something dangerous." },
+  { sentence: "Du kannst ___ fragen.", translation: "Go ahead and ask. (don't be shy)", answers: [{ value: "ruhig", explanation: "'Ruhig' gives permission and encouragement: feel free, I do not mind, go for it." }], options: ["ruhig", "mal", "schon", "doch"], context: "Encouraging someone who is hesitant." },
+  { sentence: "Das ist ___ so.", translation: "That's just the way it is.", answers: [{ value: "halt", explanation: "'Halt' signals resigned acceptance, especially colloquially: there is no alternative." }, { value: "eben", explanation: "'Eben' also signals inevitability or acceptance: that is simply how it is." }, { value: "nun mal", explanation: "'Nun mal' is another natural version of the same idea: that is just the way things are." }], options: ["eben", "halt", "nun mal", "wohl"], context: "Accepting an unchangeable situation." },
+  { sentence: "Er ist ___ krank.", translation: "He's probably sick.", answers: [{ value: "wohl", explanation: "'Wohl' expresses probability: I think so, but I am not completely certain." }], options: ["wohl", "ja", "eigentlich", "schon"], context: "Guessing why someone did not come to work." },
+  { sentence: "Das wird ___ klappen.", translation: "It'll work out. (don't worry)", answers: [{ value: "schon", explanation: "'Schon' is reassuring here: trust me, it will be fine." }], options: ["schon", "wohl", "mal", "doch"], context: "Reassuring a worried friend." },
+  { sentence: "Wer ist das ___?", translation: "Who is that, anyway?", answers: [{ value: "eigentlich", explanation: "'Eigentlich' signals 'I have been meaning to ask' or 'by the way'. It shifts the topic gently." }, { value: "denn", explanation: "'Denn' also works in a friendly question, adding curiosity and conversational warmth." }], options: ["denn", "eigentlich", "etwa", "bloß"], context: "Changing topic; you have been wondering." },
+  { sentence: "Bist du ___ krank?", translation: "Don't tell me you're sick?!", answers: [{ value: "etwa", explanation: "'Etwa' expresses disbelief in yes/no questions. The speaker hopes the answer is no." }], options: ["etwa", "denn", "vielleicht", "wohl"], context: "Shocked reaction, hoping the answer is no." },
+  { sentence: "Das ist ___ ein Chaos!", translation: "What a mess! (wow)", answers: [{ value: "vielleicht", explanation: "'Vielleicht' as a particle does not mean 'maybe'. In exclamations it expresses amazement at how extreme something is." }, { value: "aber", explanation: "'Aber' can also intensify an exclamation: that is really quite a mess." }], options: ["aber", "vielleicht", "ja", "doch"], context: "Exclaiming about how extreme a situation is." },
+  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answers: [{ value: "nur", explanation: "'Nur' in wishes with 'wenn' means 'if only'." }, { value: "bloß", explanation: "'Bloß' works like 'nur' in this wish and makes the longing sound stronger." }, { value: "doch", explanation: "'Doch' also expresses longing in wishes, especially when the speaker is emotionally invested." }], options: ["nur", "bloß", "mal", "doch"], context: "Expressing a wish, longing for someone's presence." },
+  { sentence: "Dann bleiben wir ___ hier.", translation: "Then we'll just stay here.", answers: [{ value: "eben", explanation: "'Eben' signals resigned acceptance: there is no alternative, so this is what we will do." }, { value: "halt", explanation: "'Halt' gives the same acceptance in a more colloquial tone." }], options: ["eben", "halt", "schon", "ruhig"], context: "Accepting a situation, for example because the restaurant is full." },
+  { sentence: "Hast du ___ abgeschlossen?", translation: "Did you really lock up? (I want to be sure)", answers: [{ value: "auch", explanation: "'Auch' in yes/no questions seeks reassurance: are you really sure?" }], options: ["auch", "denn", "etwa", "eigentlich"], context: "Leaving the house and double-checking with your partner." },
+  { sentence: "Warum ist er ___ so stur?", translation: "Why does he have to be so stubborn?!", answers: [{ value: "auch", explanation: "'Auch' in W-questions can express frustration or reproach: why does it have to be like this?" }, { value: "bloß", explanation: "'Bloß' also works here, but sounds more helpless or bewildered: why on earth is he so stubborn?" }], options: ["auch", "bloß", "denn", "schon"], context: "Frustrated about a stubborn friend." },
+  { sentence: "Er ist ___ der Chef.", translation: "He's the boss, and that's that.", answers: [{ value: "nun mal", explanation: "'Nun mal' signals resigned acceptance: that is simply how things are." }, { value: "eben", explanation: "'Eben' can express the same inevitability: he is the boss, so that settles it." }, { value: "halt", explanation: "'Halt' is another colloquial alternative with the same accepting tone." }], options: ["nun mal", "eben", "halt", "wohl"], context: "Resigned acceptance of a hierarchy." },
+  { sentence: "Sei ___ vorsichtig!", translation: "Be careful. I really mean it!", answers: [{ value: "ja", explanation: "'Ja' in commands is an urgent warning: make sure you are careful." }, { value: "bloß", explanation: "'Bloß' can also make the warning strong and protective: be careful, whatever you do." }], options: ["ja", "mal", "ruhig", "bloß"], context: "Urgent warning to someone heading into a risky situation." },
+  { sentence: "Wenn er ___ hier wäre!", translation: "If only he were here!", answers: [{ value: "doch", explanation: "'Doch' in wishes expresses longing, often with emotional emphasis." }, { value: "nur", explanation: "'Nur' is the classic 'if only' particle in a wish like this." }, { value: "bloß", explanation: "'Bloß' works like 'nur' here and can make the wish sound especially intense." }], options: ["doch", "nur", "bloß", "schon"], context: "Wishing for someone's presence at an important moment." }
 ];
 
 
@@ -457,6 +464,73 @@ let quizState = {
   answers: [],
   shuffled: []
 };
+let selectedQuizParticles = new Set(particles.map((p) => p.name));
+
+function getQuizParticles() {
+  const names = new Set();
+  quizQuestions.forEach((q) => {
+    q.answers.forEach((answer) => names.add(answer.value));
+  });
+  return particles
+    .map((p) => p.name)
+    .filter((name) => names.has(name));
+}
+
+function getFilteredQuizQuestions() {
+  return quizQuestions.filter((q) =>
+    q.answers.some((answer) => selectedQuizParticles.has(answer.value))
+  );
+}
+
+function renderParticleSelector() {
+  const quizParticles = getQuizParticles();
+  const selectedCount = quizParticles.filter((name) => selectedQuizParticles.has(name)).length;
+  const buttons = quizParticles.map((name) => {
+    const isSelected = selectedQuizParticles.has(name);
+    return `<button class="particle-filter${isSelected ? ' active' : ''}" type="button" data-particle="${name}" aria-pressed="${isSelected}">${name}</button>`;
+  }).join('');
+
+  return `
+    <div class="quiz-filter" aria-label="${ui('chooseParticles')}">
+      <div class="quiz-filter-header">
+        <div>
+          <div class="filter-title">${ui('chooseParticles')}</div>
+          <div class="filter-count">${selectedCount} ${ui('selectedCount')}</div>
+        </div>
+        <div class="filter-actions">
+          <button class="filter-action" type="button" data-filter-action="all">${ui('allParticles')}</button>
+          <button class="filter-action" type="button" data-filter-action="clear">${ui('clearParticles')}</button>
+        </div>
+      </div>
+      <div class="particle-filter-list">${buttons}</div>
+    </div>
+  `;
+}
+
+function attachParticleSelectorListeners(area) {
+  area.querySelectorAll('.particle-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.particle;
+      if (selectedQuizParticles.has(name)) {
+        selectedQuizParticles.delete(name);
+      } else {
+        selectedQuizParticles.add(name);
+      }
+      initQuiz();
+    });
+  });
+
+  area.querySelectorAll('[data-filter-action]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.filterAction === 'all') {
+        selectedQuizParticles = new Set(getQuizParticles());
+      } else {
+        selectedQuizParticles.clear();
+      }
+      initQuiz();
+    });
+  });
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -476,12 +550,13 @@ function openQuizTab() {
 }
 
 function initQuiz() {
+  const filteredQuestions = getFilteredQuizQuestions();
   quizState = {
     status: 'in_progress',
     current: 0,
     score: 0,
     answers: [],
-    shuffled: shuffle(quizQuestions).slice(0, 10)
+    shuffled: shuffle(filteredQuestions).slice(0, 10)
   };
   renderQuizQuestion();
 }
@@ -489,6 +564,19 @@ function initQuiz() {
 function renderQuizQuestion() {
   const area = document.getElementById('quizArea');
   const { current, shuffled } = quizState;
+  const selectorHtml = renderParticleSelector();
+
+  if (selectedQuizParticles.size === 0) {
+    area.innerHTML = `${selectorHtml}<div class="quiz-empty">${ui('noQuestions')}</div>`;
+    attachParticleSelectorListeners(area);
+    return;
+  }
+
+  if (!shuffled.length) {
+    area.innerHTML = `${selectorHtml}<div class="quiz-empty">${ui('noMatchingQuestions')}</div>`;
+    attachParticleSelectorListeners(area);
+    return;
+  }
 
   if (current >= shuffled.length) {
     finishQuiz();
@@ -509,6 +597,7 @@ function renderQuizQuestion() {
   ).join('');
 
   area.innerHTML = `
+    ${selectorHtml}
     <div class="quiz-progress" aria-hidden="true">${dots}</div>
     <div class="quiz-card">
       <div class="q-number">${ui('question')} ${current + 1} ${ui('of')} ${shuffled.length}</div>
@@ -521,39 +610,43 @@ function renderQuizQuestion() {
     </div>
   `;
 
+  attachParticleSelectorListeners(area);
+
   // Attach listeners to option buttons
   area.querySelectorAll('.option-btn').forEach((btn) => {
-    btn.addEventListener('click', () => selectAnswer(btn, btn.dataset.value, q.answer));
+    btn.addEventListener('click', () => selectAnswer(btn, btn.dataset.value, q));
   });
 
   document.getElementById('nextBtn').addEventListener('click', nextQuestion);
 }
 
-function selectAnswer(btn, selected, correct) {
+function selectAnswer(btn, selected, q) {
+  const correctValues = q.answers.map((answer) => answer.value);
   const btns = document.querySelectorAll('.option-btn');
   btns.forEach((b) => {
     b.classList.add('disabled');
-    if (b.dataset.value === correct) b.classList.add('correct');
-    if (b.dataset.value === selected && selected !== correct) b.classList.add('wrong');
+    if (correctValues.includes(b.dataset.value)) b.classList.add('correct');
+    if (b.dataset.value === selected && !correctValues.includes(selected)) b.classList.add('wrong');
   });
   btn.classList.add('selected');
 
-  const isCorrect = selected === correct;
+  const isCorrect = correctValues.includes(selected);
   quizState.answers.push(isCorrect);
   if (isCorrect) quizState.score++;
 
   // Fill blank with answer
   const blank = document.querySelector('.blank');
   if (blank) {
-    blank.textContent = correct;
+    blank.textContent = isCorrect ? selected : correctValues[0];
     blank.style.borderBottom = 'none';
     blank.style.fontStyle = 'normal';
     blank.style.color = isCorrect ? '#27ae60' : '#c0392b';
   }
 
-  const q = quizState.shuffled[quizState.current];
   const expl = document.getElementById('explanation');
-  expl.textContent = q.explanation;
+  expl.innerHTML = `<strong>${ui('acceptedAnswers')}:</strong><ul>${q.answers.map((answer) =>
+    `<li><span class="answer-name">${answer.value}</span> ${answer.explanation}</li>`
+  ).join('')}</ul>`;
   expl.classList.add('visible');
 
   document.getElementById('nextBtn').classList.add('visible');
@@ -573,8 +666,10 @@ function finishQuiz() {
   const messageSet = uiCopy.messages[currentLang()] || uiCopy.messages.de;
   const heading = score >= 8 ? resultSet[0] : score >= 5 ? resultSet[1] : resultSet[2];
   const msg = score >= 8 ? messageSet[0] : score >= 5 ? messageSet[1] : messageSet[2];
+  const selectorHtml = renderParticleSelector();
 
   area.innerHTML = `
+    ${selectorHtml}
     <div class="results-card">
       <h2>${heading}</h2>
       <div class="score">${score} / ${total}</div>
@@ -582,6 +677,7 @@ function finishQuiz() {
       <button class="action-btn visible" id="restartBtn">${ui('restart')}</button>
     </div>
   `;
+  attachParticleSelectorListeners(area);
   document.getElementById('restartBtn').addEventListener('click', initQuiz);
 }
 

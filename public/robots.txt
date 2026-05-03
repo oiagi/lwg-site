@@ -6,6 +6,6 @@ Disallow: /contact-details.html
 Disallow: /thankyou.html
 Disallow: /admin.html
 Disallow: /sessions.html
-Disallow: /redepartikeln.html
+Disallow: /modalpartikeln.html
 
 Sitemap: https://learningwithgioia.ch/sitemap.xml

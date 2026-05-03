@@ -6,7 +6,7 @@
     '/impressum.html': 'de',
     '/datenschutzerklaerung.html': 'de',
     '/agb.html': 'de',
-    '/redepartikeln.html': 'de',
+    '/modalpartikeln.html': 'de',
   };
 
   function pageKey() {
@@ -504,7 +504,7 @@
       },
       text: { '.error-state': { en: 'loading...', de: 'wird geladen...' } },
     },
-    '/redepartikeln.html': {
+    '/modalpartikeln.html': {
       title: { en: 'Modal particles', de: 'Modalpartikeln' },
       text: {
         '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },

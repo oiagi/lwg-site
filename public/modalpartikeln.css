@@ -265,9 +265,98 @@ body.nav-active {
 
 /* ── Quiz ───────────────────────────────────────────────────────── */
 .quiz-area {
-  max-width: 580px;
+  max-width: 700px;
   margin: 0 auto;
   animation: fadeUp 0.5s ease both;
+}
+
+.quiz-filter {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.4rem;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.quiz-filter-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.filter-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.filter-count {
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 300;
+  color: var(--ink-mute);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.filter-action,
+.particle-filter {
+  border: 1px solid rgba(26, 22, 20, 0.24);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.filter-action {
+  padding: 0.32rem 0.65rem;
+  font-size: 0.86rem;
+}
+
+.particle-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.particle-filter {
+  padding: 0.46rem 0.78rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.filter-action:hover,
+.particle-filter:hover {
+  border-color: var(--ink);
+  background: rgba(26, 22, 20, 0.05);
+}
+
+.particle-filter.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.quiz-empty {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--ink-mute);
+  font-weight: 300;
 }
 
 .quiz-progress {
@@ -422,6 +511,20 @@ body.nav-active {
   animation: fadeUp 0.25s ease both;
 }
 
+.explanation-box ul {
+  margin: 0.55rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.explanation-box li + li {
+  margin-top: 0.45rem;
+}
+
+.answer-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .action-btn {
   margin-top: 1.4rem;
   padding: 0.75rem 2.2rem;
@@ -540,6 +643,14 @@ body.nav-active {
 
   .options {
     grid-template-columns: 1fr;
+  }
+
+  .quiz-filter-header {
+    display: block;
+  }
+
+  .filter-actions {
+    margin-top: 0.75rem;
   }
 
   .cs-row {
