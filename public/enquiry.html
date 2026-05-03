@@ -91,6 +91,7 @@
 
   </div><!-- /.form-container -->
 
+  <script src="i18n.js"></script>
   <script src="nav.js"></script>
   <script>
     /* ══════════════════════════════════════════════════════════════════
@@ -106,9 +107,15 @@
     /* ── Toggle phone optional when Email-only preferred ────────────── */
     function updatePhoneLabel() {
       const emailOnly = preferredContact.value === 'Email';
-      phoneLabel.textContent = emailOnly ? 'phone (optional)' : 'phone';
+      const lang = window.LWG_I18N?.getLang() || 'en';
+      if (lang === 'de') {
+        phoneLabel.textContent = emailOnly ? 'telefon (optional)' : 'telefon';
+      } else {
+        phoneLabel.textContent = emailOnly ? 'phone (optional)' : 'phone';
+      }
     }
     preferredContact.addEventListener('change', updatePhoneLabel);
+    document.addEventListener('lwg:language-applied', updatePhoneLabel);
 
     /* ── Submit ─────────────────────────────────────────────────────── */
     document.getElementById('submit-btn').addEventListener('click', async () => {

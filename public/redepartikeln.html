@@ -299,6 +299,46 @@ const categories = {
   urgency:   { label: "Dringlichkeit", blue: false },
   hedging:   { label: "Absicherung",   blue: true  }
 };
+const categoriesEn = {
+  softening: "Softening",
+  emphasis: "Emphasis",
+  questions: "Questions",
+  urgency: "Urgency",
+  hedging: "Hedging"
+};
+const uiCopy = {
+  expandHint: { en: '▸ Show tip', de: '▸ Tipp anzeigen' },
+  question: { en: 'Question', de: 'Frage' },
+  of: { en: 'of', de: 'von' },
+  answers: { en: 'Answer options', de: 'Antwortoptionen' },
+  next: { en: 'Next ->', de: 'Weiter ->' },
+  results: {
+    en: ['Fantastic!', 'Well done!', 'Keep practising!'],
+    de: ['Fantastisch!', 'Gut gemacht!', 'Weiter üben!']
+  },
+  messages: {
+    en: [
+      'You really understand these particles well!',
+      'Solid foundations - have another look at the reference.',
+      'No problem - read the reference and try again!'
+    ],
+    de: [
+      'Du beherrschst die Partikeln wirklich gut!',
+      'Solide Grundlagen - schau dir die Übersicht nochmal an.',
+      'Kein Problem - lies die Übersicht und versuche es nochmal!'
+    ]
+  },
+  restart: { en: 'Play again', de: 'Nochmal spielen' }
+};
+
+function currentLang() {
+  return window.LWG_I18N?.getLang() || document.documentElement.lang || 'de';
+}
+
+function ui(key) {
+  const value = uiCopy[key];
+  return value ? value[currentLang()] || value.de : key;
+}
 
 // ========== QUIZ DATA ==========
 const quizQuestions = [
@@ -393,7 +433,7 @@ function renderReference() {
       ${contextsHtml}
       <div class="particle-meaning">${p.meaning}</div>
       ${exHtml}
-      <div class="expand-hint">▸ Tipp anzeigen</div>
+      <div class="expand-hint">${ui('expandHint')}</div>
       <div class="tip">${p.tip}</div>
     </div>`;
   }).join('');
@@ -473,13 +513,13 @@ function renderQuizQuestion() {
   area.innerHTML = `
     <div class="quiz-progress" aria-hidden="true">${dots}</div>
     <div class="quiz-card">
-      <div class="q-number">Frage ${current + 1} von ${shuffled.length}</div>
+      <div class="q-number">${ui('question')} ${current + 1} ${ui('of')} ${shuffled.length}</div>
       <div class="q-sentence">${sentenceHtml}</div>
       <div class="q-translation">${q.translation}</div>
       <div class="q-context">${q.context}</div>
-      <div class="options" role="group" aria-label="Antwortoptionen">${optionsHtml}</div>
+      <div class="options" role="group" aria-label="${ui('answers')}">${optionsHtml}</div>
       <div class="explanation-box" id="explanation" role="status" aria-live="polite"></div>
-      <button class="action-btn" id="nextBtn">Weiter →</button>
+      <button class="action-btn" id="nextBtn">${ui('next')}</button>
     </div>
   `;
 
@@ -531,19 +571,17 @@ function finishQuiz() {
   const area = document.getElementById('quizArea');
   const { score, shuffled } = quizState;
   const total = shuffled.length;
-  const heading = score >= 8 ? 'Fantastisch!' : score >= 5 ? 'Gut gemacht!' : 'Weiter üben!';
-  const msg = score >= 8
-    ? 'Du beherrschst die Partikeln wirklich gut!'
-    : score >= 5
-    ? 'Solide Grundlagen — schau dir die Übersicht nochmal an.'
-    : 'Kein Problem — lies die Übersicht und versuche es nochmal!';
+  const resultSet = uiCopy.results[currentLang()] || uiCopy.results.de;
+  const messageSet = uiCopy.messages[currentLang()] || uiCopy.messages.de;
+  const heading = score >= 8 ? resultSet[0] : score >= 5 ? resultSet[1] : resultSet[2];
+  const msg = score >= 8 ? messageSet[0] : score >= 5 ? messageSet[1] : messageSet[2];
 
   area.innerHTML = `
     <div class="results-card">
       <h2>${heading}</h2>
       <div class="score">${score} / ${total}</div>
       <p class="score-label">${msg}</p>
-      <button class="action-btn visible" id="restartBtn">Nochmal spielen</button>
+      <button class="action-btn visible" id="restartBtn">${ui('restart')}</button>
     </div>
   `;
   document.getElementById('restartBtn').addEventListener('click', initQuiz);
@@ -564,7 +602,8 @@ function renderCheatSheet() {
   for (const [cat, items] of Object.entries(groups)) {
     const catInfo = categories[cat];
     const cls = catInfo.blue ? 'cat-' + cat : '';
-    html += `<div class="cs-group"><h3 class="${cls}">${catInfo.label}</h3>`;
+    const label = currentLang() === 'en' ? categoriesEn[cat] : catInfo.label;
+    html += `<div class="cs-group"><h3 class="${cls}">${label}</h3>`;
     items.forEach((p) => {
       const ex = p.examples[0];
       const exText = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '$1');
@@ -581,8 +620,15 @@ function renderCheatSheet() {
 
 // ========== INIT ==========
 renderReference();
+document.addEventListener('lwg:language-applied', () => {
+  renderReference();
+  document.getElementById('cheatSheet').innerHTML = '';
+  if (!document.getElementById('tab-cheatsheet').hidden) renderCheatSheet();
+  if (!document.getElementById('tab-quiz').hidden) renderQuizQuestion();
+});
   </script>
 
+  <script src="i18n.js"></script>
   <script src="nav.js"></script>
 </body>
 </html>

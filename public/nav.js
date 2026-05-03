@@ -5,26 +5,36 @@
 (function () {
   'use strict';
 
+  const i18n = window.LWG_I18N;
+  function tr(key) {
+    return i18n ? i18n.t(key) : key;
+  }
+
   // ── Inject shared HTML ──────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
   const navHTML =
-    '<a href="#content" class="skip-link">Skip to content</a>' +
+    '<a href="#content" class="skip-link">' + tr('skip') + '</a>' +
+    '<div class="language-switcher site-language" aria-label="' + tr('language') + '">' +
+    '<button type="button" class="language-option" data-lang="en">EN</button>' +
+    '<span aria-hidden="true">/</span>' +
+    '<button type="button" class="language-option" data-lang="de">DE</button>' +
+    '</div>' +
     '<div class="nav-overlay" id="nav-overlay"></div>' +
     '<nav class="nav" id="nav">' +
     '<button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation">' +
-    '<span class="nav-toggle-label" id="nav-toggle-label">menu</span>' +
+    '<span class="nav-toggle-label" id="nav-toggle-label">' + tr('menu') + '</span>' +
     '</button>' +
     '<div class="nav-menu" id="nav-menu">' +
-    '<a href="index.html">Home</a>' +
-    '<a href="info.html">info</a>' +
-    '<a href="enquiry.html">enquiry</a>' +
+    '<a href="index.html" data-nav-key="home">' + tr('home') + '</a>' +
+    '<a href="info.html" data-nav-key="info">' + tr('info') + '</a>' +
+    '<a href="enquiry.html" data-nav-key="enquiry">' + tr('enquiry') + '</a>' +
     '</div>' +
     '</nav>';
   const footerHTML =
-    '<footer class="site-footer" aria-label="Rechtliche Seiten">' +
+    '<footer class="site-footer" aria-label="' + tr('legalLabel') + '">' +
     '<a href="impressum.html">Impressum</a>' +
-    '<a href="datenschutzerklaerung.html">Datenschutzerklärung</a>' +
-    '<a href="agb.html">AGB</a>' +
+    '<a href="datenschutzerklaerung.html" data-nav-key="privacy">' + tr('privacy') + '</a>' +
+    '<a href="agb.html" data-nav-key="terms">' + tr('terms') + '</a>' +
     '</footer>';
 
   // Insert at the very beginning of <body>
@@ -38,22 +48,46 @@
   const siteFooter = document.querySelector('.site-footer');
   const nav = document.getElementById('nav');
   const overlay = document.getElementById('nav-overlay');
+  const siteLanguage = document.querySelector('.site-language');
+  const languageOptions = document.querySelectorAll('.language-option');
   let menuOpen = false;
 
+  function syncNavLanguage() {
+    const lang = i18n ? i18n.getLang() : document.documentElement.lang || 'en';
+    document.querySelectorAll('[data-nav-key]').forEach(function (el) {
+      el.textContent = tr(el.dataset.navKey);
+    });
+    document.querySelectorAll('.skip-link').forEach(function (el) {
+      el.textContent = tr('skip');
+    });
+    if (siteFooter) siteFooter.setAttribute('aria-label', tr('legalLabel'));
+    if (siteLanguage) siteLanguage.setAttribute('aria-label', tr('language'));
+    navLabel.textContent = menuOpen ? tr('close') : tr('menu');
+    languageOptions.forEach(function (button) {
+      const active = button.dataset.lang === lang;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
   // ── Mark active nav link ────────────────────────────────────────
-  const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
+  function normalisePath(path) {
+    const trimmed = path.replace(/\/$/, '') || '/index.html';
+    if (trimmed === '' || trimmed === '/') return '/index.html';
+    return trimmed.includes('.') ? trimmed : trimmed + '.html';
+  }
+  const currentPath = normalisePath(window.location.pathname);
   navMenu.querySelectorAll('a').forEach(function (link) {
-    const linkPath = new URL(link.href, window.location.href).pathname.replace(/\/$/, '');
+    const linkPath = normalisePath(new URL(link.href, window.location.href).pathname);
     if (
       linkPath === currentPath ||
-      (currentPath === '' && linkPath === '/index.html') ||
       (currentPath.endsWith('/') && linkPath === currentPath.slice(0, -1))
     ) {
       link.setAttribute('aria-current', 'page');
     }
   });
   siteFooter.querySelectorAll('a').forEach(function (link) {
-    const linkPath = new URL(link.href, window.location.href).pathname.replace(/\/$/, '');
+    const linkPath = normalisePath(new URL(link.href, window.location.href).pathname);
     if (linkPath === currentPath) {
       link.setAttribute('aria-current', 'page');
     }
@@ -76,7 +110,7 @@
   // ── Toggle helper ───────────────────────────────────────────────
   function toggleMenu(open, x, y) {
     menuOpen = open;
-    navLabel.textContent = menuOpen ? 'close' : 'menu';
+    navLabel.textContent = menuOpen ? tr('close') : tr('menu');
     navMenu.classList.toggle('open', menuOpen);
     document.body.classList.toggle('nav-active', menuOpen);
     if (overlay) overlay.classList.toggle('visible', menuOpen);
@@ -104,6 +138,14 @@
     toggleMenu(!menuOpen, e.clientX, e.clientY);
   });
 
+  languageOptions.forEach(function (button) {
+    button.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (i18n) i18n.setLang(button.dataset.lang);
+      syncNavLanguage();
+    });
+  });
+
   // ── Click anywhere to close ─────────────────────────────────────
   document.addEventListener('click', function () {
     if (menuOpen) toggleMenu(false);
@@ -116,6 +158,9 @@
       toggleMenu(!menuOpen, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     });
   }
+
+  document.addEventListener('lwg:language-applied', syncNavLanguage);
+  syncNavLanguage();
 
   // ── Skip link: ensure target exists ──────────────────────────────
   if (!document.getElementById('content')) {
