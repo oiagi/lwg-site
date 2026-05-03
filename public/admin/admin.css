@@ -798,6 +798,32 @@ button.submit:hover {
   margin-top: 0.5rem;
 }
 
+/* ── Pending direct course bookings ───────────────────────────── */
+.pending-bookings {
+  margin: 0.4rem 0 1.2rem;
+  border-top: 1px solid #d8e0e6;
+}
+.pending-booking-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e7edf2;
+}
+.pending-booking-name {
+  margin: 0 0 0.15rem;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.pending-booking-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 /* ── Enquiry table ────────────────────────────────────────────── */
 .enquiry-list {
   display: flex;

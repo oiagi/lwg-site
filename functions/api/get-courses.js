@@ -106,7 +106,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const courseIds = courses.map((c) => c.id);
     const courseFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
 
-    const [sessRes, enrolRes, certRes] = await Promise.all([
+    const [sessRes, enrolRes, certRes, pendingRes] = await Promise.all([
       fetch(
         `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
         { headers: H }
@@ -119,11 +119,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         `${SUPABASE_URL}/rest/v1/certificates?or=(${courseFilter})&select=student_id,course_id,sent_at&order=sent_at.desc`,
         { headers: H }
       ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/enquiries?or=(${courseFilter})&status=eq.pending_course_booking&order=created_at.asc&select=id,created_at,course_id,student_id,lead_first,lead_last,lead_email,lead_phone,booking_data,contact_data`,
+        { headers: H }
+      ),
     ]);
 
     const allSessions = sessRes.ok ? await sessRes.json() : [];
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
     const allCertificates = certRes.ok ? await certRes.json() : [];
+    const pendingBookings = pendingRes.ok ? await pendingRes.json() : [];
 
     // ── Batch fetch all unique students ────────────────────────────────
     const studentIds = [...new Set(allEnrolments.map((e) => e.student_id))];
@@ -185,6 +190,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       (byStudent[inv.student_id] ||= []).push(inv);
     }
 
+    const pendingBookingsByCourse = {};
+    for (const booking of pendingBookings) {
+      (pendingBookingsByCourse[booking.course_id] ||= []).push(booking);
+    }
+
     // ── Enrich courses ────────────────────────────────────────────────
     const enriched = courses.map((course) => {
       const invByStudent = invoicesByCourseStudent[course.id] || {};
@@ -193,6 +203,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       return {
         ...course,
         sessions: sessionsByCourse[course.id] || [],
+        pending_bookings: pendingBookingsByCourse[course.id] || [],
         students: [...(studentIdsByCourse[course.id] || [])]
           .map((id) => {
             const s = studentsById[id];

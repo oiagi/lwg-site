@@ -23,6 +23,7 @@ import {
   openCertificateModal,
   toggleCourseAddressEditor,
   saveCourseAddress,
+  handleCourseBooking,
 } from './features/courses.js';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
 import {
@@ -82,6 +83,7 @@ const actions = {
   submitCertificates,
   toggleCourseAddressEditor,
   saveCourseAddress,
+  handleCourseBooking,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,
   submitConfirmSend,
