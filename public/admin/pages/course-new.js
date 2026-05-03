@@ -163,8 +163,7 @@ async function handleSubmit(e) {
   const locationNumber = document.getElementById('nc-loc-number').value.trim();
   const locationPostal = document.getElementById('nc-loc-postal').value.trim();
   const locationCity = document.getElementById('nc-loc-city').value.trim();
-  const publicBookingEnabled =
-    document.getElementById('nc-public-booking')?.checked || false;
+  const publicBookingEnabled = document.getElementById('nc-public-booking')?.checked || false;
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
 
   const participants = [];
