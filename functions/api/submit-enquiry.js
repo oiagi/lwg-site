@@ -14,6 +14,7 @@ import {
   validateOrigin,
   checkRateLimit,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 import { validate } from './_validate.js';
 import { findOrCreateStudent } from './_student-utils.js';
@@ -182,14 +183,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
 
-  // Parse request body
-  let booking, contact;
-  try {
-    ({ booking, contact } = await request.json());
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  let { booking } = body;
+  const { contact } = body;
   if (!booking || !contact) {
     return errorResponse('Missing booking or contact data', 400);
   }

@@ -16,6 +16,7 @@ import {
   errorResponse,
   withErrorHandling,
   checkRateLimit,
+  parseJsonBody,
 } from './_utils.js';
 
 const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
@@ -85,12 +86,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const rateLimitErr = await checkRateLimit(request);
   if (rateLimitErr) return rateLimitErr;
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error: parseError } = await parseJsonBody(request);
+  if (parseError) return parseError;
 
   const token = body.token;
   if (!token) return errorResponse('Missing token', 400);

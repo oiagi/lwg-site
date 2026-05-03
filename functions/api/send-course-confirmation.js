@@ -15,6 +15,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 import { AGB_HTML, CANCELLATION_POLICY } from './_agb.js';
 
@@ -213,13 +214,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Email service not configured', 500);
   }
 
-  let course_id, student_id;
-  try {
-    ({ course_id, student_id } = await request.json());
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { course_id, student_id } = body;
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   const bundle = await loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, course_id);

@@ -1,16 +1,13 @@
 /* ── Students tab ─────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { esc } from '../core/helpers.js';
+import { esc, queryString, attachListControls } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 
 let currentStudentFilter = 'active';
-let currentStudentSearch = '';
-let currentStudentSort = 'name';
-let currentStudentSortDir = 'asc';
+const studentListState = { search: '', sort: 'name', direction: 'asc' };
 let selectedStudentId = null;
 let fromCourseContext = null;
 let studentControlsAttached = false;
-let studentSearchTimer = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -25,13 +22,12 @@ export function filterStudents(active) {
 }
 
 function buildStudentQuery(status) {
-  const params = new URLSearchParams();
-  if (status !== 'all') params.set('status', status);
-  if (currentStudentSearch) params.set('q', currentStudentSearch);
-  if (currentStudentSort !== 'name') params.set('sort', currentStudentSort);
-  if (currentStudentSortDir !== 'asc') params.set('dir', currentStudentSortDir);
-  const qs = params.toString();
-  return qs ? '?' + qs : '';
+  return queryString({
+    ...(status !== 'all' && { status }),
+    ...(studentListState.search && { q: studentListState.search }),
+    ...(studentListState.sort !== 'name' && { sort: studentListState.sort }),
+    ...(studentListState.direction !== 'asc' && { dir: studentListState.direction }),
+  });
 }
 
 function attachStudentListControls() {
@@ -42,40 +38,14 @@ function attachStudentListControls() {
   if (!searchEl || !sortEl || !dirEl) return;
 
   studentControlsAttached = true;
-  searchEl.value = currentStudentSearch;
-  sortEl.value = currentStudentSort;
-  dirEl.dataset.dir = currentStudentSortDir;
-  dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
-  dirEl.setAttribute(
-    'aria-label',
-    currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-  );
-
-  searchEl.addEventListener('input', () => {
-    currentStudentSearch = searchEl.value.trim();
-    clearTimeout(studentSearchTimer);
-    studentSearchTimer = setTimeout(() => loadStudents(currentStudentFilter), 250);
-  });
-  sortEl.addEventListener('change', () => {
-    currentStudentSort = sortEl.value || 'name';
-    currentStudentSortDir = currentStudentSort === 'created_at' ? 'desc' : 'asc';
-    dirEl.dataset.dir = currentStudentSortDir;
-    dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
-    dirEl.setAttribute(
-      'aria-label',
-      currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-    );
-    loadStudents(currentStudentFilter);
-  });
-  dirEl.addEventListener('click', () => {
-    currentStudentSortDir = currentStudentSortDir === 'desc' ? 'asc' : 'desc';
-    dirEl.dataset.dir = currentStudentSortDir;
-    dirEl.textContent = currentStudentSortDir === 'desc' ? '↓' : '↑';
-    dirEl.setAttribute(
-      'aria-label',
-      currentStudentSortDir === 'desc' ? 'Sort descending' : 'Sort ascending'
-    );
-    loadStudents(currentStudentFilter);
+  attachListControls({
+    searchEl,
+    sortEl,
+    directionEl: dirEl,
+    state: studentListState,
+    defaults: { sort: 'name', descendingSort: 'created_at' },
+    onSearch: () => loadStudents(currentStudentFilter),
+    onChange: () => loadStudents(currentStudentFilter),
   });
 }
 
