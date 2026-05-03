@@ -23,6 +23,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
@@ -151,12 +152,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Email service not configured', 500);
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
   const { course_id, language, recipients } = body || {};
   if (!course_id) return errorResponse('Missing course_id', 400);

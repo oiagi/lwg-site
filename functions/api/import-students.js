@@ -15,6 +15,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 
 const ALLOWED_FIELDS = [
@@ -63,12 +64,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let rows;
-  try {
-    ({ rows } = await request.json());
-  } catch {
-    return errorResponse('Invalid JSON', 400);
-  }
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+
+  const { rows } = body;
   if (!Array.isArray(rows) || !rows.length) {
     return errorResponse('rows must be a non-empty array', 400);
   }

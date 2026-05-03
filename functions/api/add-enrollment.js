@@ -2,15 +2,24 @@
 // Add an existing or new student to an existing course.
 // Creates a student record (as prospect) if no student_id is provided.
 
-import { withErrorHandling, requireAdminAuth, supabaseHeaders, errorResponse } from './_utils.js';
+import {
+  withErrorHandling,
+  requireAdminAuth,
+  supabaseHeaders,
+  jsonResponse,
+  errorResponse,
+  parseJsonBody,
+} from './_utils.js';
 import { findOrCreateStudent } from './_student-utils.js';
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authError = await requireAdminAuth(request, env);
   if (authError) return authError;
 
-  const { course_id, student_id, first_name, last_name, email, phone } = await request.json();
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
 
+  const { course_id, student_id, first_name, last_name, email, phone } = body;
   if (!course_id) return errorResponse('course_id required', 400);
   if (!student_id && !email && !first_name) {
     return errorResponse('Provide student_id, or email, or first name', 400);
@@ -50,8 +59,5 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     throw new Error(`Enrolment failed: ${txt}`);
   }
 
-  return new Response(JSON.stringify({ student_id: sid, enrolled: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonResponse({ student_id: sid, enrolled: true });
 });

@@ -30,6 +30,7 @@ import {
   jsonResponse,
   errorResponse,
   withErrorHandling,
+  parseJsonBody,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
 import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
@@ -63,11 +64,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  let enquiry_id,
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+
+  const {
+    enquiry_id,
     teacher_id,
     sessions_total,
     first_session_at,
-    duration_minutes,
+    duration_minutes = 50,
     session_length_minutes,
     price_per_session,
     location,
@@ -76,32 +81,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     location_postal_code,
     location_city,
     course_code_override,
-    single_session,
+    single_session = false,
     booking_data,
-    contact_data;
-  try {
-    ({
-      enquiry_id,
-      teacher_id,
-      sessions_total,
-      first_session_at,
-      duration_minutes = 50,
-      session_length_minutes,
-      price_per_session,
-      location,
-      location_street,
-      location_street_number,
-      location_postal_code,
-      location_city,
-      course_code_override,
-      single_session = false,
-      booking_data,
-      contact_data,
-    } = await request.json());
-  } catch (err) {
-    console.error('Failed to parse confirm-booking request body:', err);
-    return errorResponse('Invalid JSON', 400);
-  }
+    contact_data,
+  } = body;
 
   if (!teacher_id || !first_session_at) {
     return errorResponse('Missing teacher_id or first_session_at', 400);
