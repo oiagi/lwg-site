@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Sessions — learning with gioia</title>
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="shared.css">
-  <link rel="stylesheet" href="sessions.css">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/sessions.css">
   <!-- ── Device detection ─────────────────────────────────────────────
        Runs synchronously before first paint to set data-device on <html>.
        Detects phone / tablet / desktop using screen size + pointer type
        + user-agent so CSS can adapt per device class.                  -->
-  <script src="device-detect.js"></script>
+  <script src="/device-detect.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">skip to content</a>
@@ -26,8 +26,8 @@
     <div class="error-state">loading…</div>
   </div>
 
-  <script src="i18n.js"></script>
-  <script src="nav.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
   <script>
     /* ── Student sessions page ───────────────────────────────────────────
        Reads the access token from the URL (?token=...) and fetches
@@ -54,6 +54,7 @@
 
       if (!token) {
         content.innerHTML = `<div class="error-state">${rt('noSessionLink')}</div>`;
+        window.LWG_I18N?.localizeInternalLinks(content);
         return;
       }
 
@@ -68,6 +69,7 @@
     <p>${rt('noSessions')}</p>
     <a class="book-link" href="/enquiry.html">${rt('makeEnquiry')}</a>
   </div>`;
+          window.LWG_I18N?.localizeInternalLinks(content);
           return;
         }
 
@@ -111,8 +113,10 @@
         });
 
         content.innerHTML = html;
+        window.LWG_I18N?.localizeInternalLinks(content);
       } catch {
         content.innerHTML = `<div class="error-state">${rt('couldNotLoad')}</div>`;
+        window.LWG_I18N?.localizeInternalLinks(content);
       }
     }
 

@@ -4,8 +4,14 @@ Allow: /
 # Flow and admin pages — not useful for search
 Disallow: /contact-details.html
 Disallow: /thankyou.html
+Disallow: /en/thankyou
+Disallow: /de/thankyou
 Disallow: /admin.html
 Disallow: /sessions.html
+Disallow: /en/sessions
+Disallow: /de/sessions
 Disallow: /modalpartikeln.html
+Disallow: /en/modalpartikeln
+Disallow: /de/modalpartikeln
 
 Sitemap: https://learningwithgioia.ch/sitemap.xml

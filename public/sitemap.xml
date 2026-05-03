@@ -1,38 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>https://learningwithgioia.ch/</loc>
+    <loc>https://learningwithgioia.ch/en/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/" />
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/info.html</loc>
+    <loc>https://learningwithgioia.ch/de/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/" />
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/info</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/info" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/info" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/info" />
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/enquiry.html</loc>
+    <loc>https://learningwithgioia.ch/de/info</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/info" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/info" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/info" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/enquiry</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/enquiry" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/enquiry" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/enquiry" />
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/impressum.html</loc>
+    <loc>https://learningwithgioia.ch/de/enquiry</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/enquiry" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/enquiry" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/enquiry" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/impressum</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/impressum" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/impressum" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/impressum" />
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/datenschutzerklaerung.html</loc>
+    <loc>https://learningwithgioia.ch/de/datenschutzerklaerung</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/datenschutzerklaerung" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/datenschutzerklaerung" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/datenschutzerklaerung" />
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/agb.html</loc>
+    <loc>https://learningwithgioia.ch/de/agb</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/agb" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/agb" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/agb" />
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
