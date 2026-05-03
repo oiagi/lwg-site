@@ -69,7 +69,7 @@
         },
         '.lede p:nth-of-type(2)': {
           en: 'We give you the tools to use your knowledge beyond the classroom - and the motivation to actually want to.',
-          de: 'Wir helfen dir, dein Wissen auch ausserhalb des Unterrichts anzuwenden - und trainieren deine Motivation dazu.',
+          de: 'Wir trainieren deine Motivation, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
         },
         '.home-cta': { en: 'Find out more ->', de: 'Mehr erfahren ->' },
       },
