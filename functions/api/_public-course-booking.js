@@ -53,9 +53,19 @@ export function isPublicCourseEligible(course, pendingCount = 0, now = new Date(
 
 export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
   const firstSession = firstUpcomingSession(course, now);
+  const upcomingSessionCount = (course.sessions || []).length;
   const enrolledCount = course.enrolled_count || 0;
   const reservedCount = enrolledCount + pendingCount;
   const spotsRemaining = Math.max(0, PUBLIC_COURSE_CAPACITY - reservedCount);
+  const sessionsCompleted = Math.max(0, Number(course.sessions_completed || 0));
+  const sessionsTotal =
+    course.sessions_total === null || course.sessions_total === undefined
+      ? null
+      : Math.max(0, Number(course.sessions_total));
+  const sessionsRemaining =
+    sessionsTotal === null
+      ? upcomingSessionCount
+      : Math.max(upcomingSessionCount, sessionsTotal - sessionsCompleted);
 
   return {
     id: course.id,
@@ -70,6 +80,9 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
     location: course.location,
     location_text: formatPublicLocation(course),
     first_session_at: firstSession?.scheduled_at || null,
+    sessions_completed: sessionsCompleted,
+    sessions_remaining: sessionsRemaining,
+    sessions_total: sessionsTotal,
     spots_remaining: spotsRemaining,
     capacity: PUBLIC_COURSE_CAPACITY,
   };
@@ -82,7 +95,7 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
   const idFilter = courseId ? `&id=eq.${encodeURIComponent(courseId)}` : '';
 
   const coursesRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,service,level,group_type,status,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
+    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,service,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
     { headers: H }
   );
   if (!coursesRes.ok) {

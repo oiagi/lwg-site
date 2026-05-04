@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Group Courses Starting Soon - Learning with Gioia</title>
-  <meta name="description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <title>Open Group Courses - Learning with Gioia</title>
+  <meta name="description" content="Book open spots in small group language courses in Zurich.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://learningwithgioia.ch/group-courses.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="learning with gioia">
-  <meta property="og:title" content="Group Courses Starting Soon - Learning with Gioia">
-  <meta property="og:description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <meta property="og:title" content="Open Group Courses - Learning with Gioia">
+  <meta property="og:description" content="Book open spots in small group language courses in Zurich.">
   <meta property="og:url" content="https://learningwithgioia.ch/group-courses.html">
   <meta property="og:image" content="https://learningwithgioia.ch/gioia_logo.png">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Group Courses Starting Soon - Learning with Gioia">
-  <meta name="twitter:description" content="Book open spots in small group language courses starting soon in Zurich.">
+  <meta name="twitter:title" content="Open Group Courses - Learning with Gioia">
+  <meta name="twitter:description" content="Book open spots in small group language courses in Zurich.">
   <meta name="twitter:image" content="https://learningwithgioia.ch/gioia_logo.png">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/png" href="/favicon.png">
@@ -32,7 +32,7 @@
 
   <main class="courses-shell" id="main">
     <header class="courses-header">
-      <h1>group courses starting soon</h1>
+      <h1>open group courses</h1>
       <p class="courses-intro">
         Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. Your booking will be confirmed within two hours.
       </p>
@@ -42,7 +42,7 @@
     <div class="courses-list" id="courses-list" aria-live="polite"></div>
 
     <section class="empty-state" id="empty-state" hidden>
-      <p>currently there are no spots available in group courses starting soon :(</p>
+      <p>currently there are no spots available in open group courses :(</p>
       <a class="enquiry-link" href="/enquiry">make an enquiry -></a>
     </section>
 
@@ -248,6 +248,24 @@
         return `${Number(course.price_per_person_per_60min).toFixed(2)} ${course.currency || 'CHF'} ${t('perPerson')}`;
       }
 
+      function lessonSummary(course) {
+        const completed = Math.max(0, Number(course.sessions_completed || 0));
+        const total =
+          course.sessions_total === null || course.sessions_total === undefined
+            ? null
+            : Math.max(0, Number(course.sessions_total));
+        const remaining =
+          course.sessions_remaining === null || course.sessions_remaining === undefined
+            ? total === null
+              ? null
+              : Math.max(0, total - completed)
+            : Math.max(0, Number(course.sessions_remaining));
+        const completedText = `${completed} ${t('completed')}`;
+        const remainingText =
+          remaining === null ? t('openEnded') : `${remaining} ${t('remaining')}`;
+        return `${completedText} · ${remainingText}`;
+      }
+
       function renderCourses() {
         statusEl.textContent = '';
         statusEl.hidden = true;
@@ -261,7 +279,8 @@
                 <p class="course-meta">${esc(course.service || 'group course')}</p>
                 <h2>${esc(course.level || '-')}</h2>
                 <dl class="course-facts">
-                  <div><dt>${t('starts')}</dt><dd>${esc(fmtDate(course.first_session_at))}</dd></div>
+                  <div><dt>${t('nextLesson')}</dt><dd>${esc(fmtDate(course.first_session_at))}</dd></div>
+                  <div><dt>${t('lessons')}</dt><dd>${esc(lessonSummary(course))}</dd></div>
                   <div><dt>${t('place')}</dt><dd>${esc(course.location_text || '-')}</dd></div>
                   <div><dt>${t('spots')}</dt><dd>${course.spots_remaining} ${spotsLabel} ${t('available')}</dd></div>
                 </dl>

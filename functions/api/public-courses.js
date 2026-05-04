@@ -2,7 +2,7 @@
 // GET /api/public-courses
 //
 // Returns only public-safe information for active group courses that have
-// direct public booking explicitly enabled and at least one upcoming session.
+// direct public booking explicitly enabled and at least one future lesson.
 
 import { jsonResponse, errorResponse, withErrorHandling, checkRateLimit } from './_utils.js';
 import {
