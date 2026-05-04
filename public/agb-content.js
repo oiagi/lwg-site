@@ -154,7 +154,10 @@ const EMAIL_STYLES = {
 
 function legalToEmailHtml(html) {
   return html
-    .replace(/<p class="legal-subheading">/g, `<p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#444;">`)
+    .replace(
+      /<p class="legal-subheading">/g,
+      `<p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#444;">`
+    )
     .replace(/<p>/g, `<p style="margin:0 0 12px;${EMAIL_STYLES.body}">`)
     .replace(/<ul class="legal-list">/g, '<ul style="margin:4px 0 12px;padding-left:18px;">')
     .replace(/<li>/g, `<li style="${EMAIL_STYLES.body}margin-bottom:2px;">`);
@@ -162,7 +165,8 @@ function legalToEmailHtml(html) {
 
 export function renderAgbEmailHtml(language = 'de', options = {}) {
   const lang = language === 'en' ? 'en' : 'de';
-  const languages = lang === 'en' && options.includeGermanForEnglish !== false ? ['en', 'de'] : [lang];
+  const languages =
+    lang === 'en' && options.includeGermanForEnglish !== false ? ['en', 'de'] : [lang];
 
   return languages
     .map((code, index) => {
