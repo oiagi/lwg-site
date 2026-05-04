@@ -121,7 +121,7 @@ function buildCustomerEmail(course, student, language = 'en') {
         greeting: `Danke, ${esc(student.first_name || 'du')} :)`,
         intro: 'Wir haben deine Buchungsanfrage erhalten. So geht es weiter:',
         steps: [
-          'Wir bestätigen deine Anfrage persönlich.',
+          'Wir bestätigen deine Anfrage so schnell wie möglich.',
           'Du erhältst die Zahlungsinformationen für deinen Kurs.',
           'Du bezahlst die Rechnung.',
           'Fertig! Dein Platz im Kurs ist reserviert.',
@@ -137,7 +137,7 @@ function buildCustomerEmail(course, student, language = 'en') {
         greeting: `Thank you, ${esc(student.first_name || 'there')} :)`,
         intro: "We've received your booking request. What happens next:",
         steps: [
-          'We will confirm your request.',
+          'We will confirm your request shortly.',
           'You will receive the payment request for your course.',
           'You pay the bill.',
           "Done! You're all set for your course.",

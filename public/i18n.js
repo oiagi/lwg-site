@@ -319,8 +319,8 @@
         '#booking-submit': { en: 'request spot ->', de: 'Platz anfragen ->' },
         '#success-state h2': { en: 'thank you.', de: 'Danke.' },
         '#success-state p': {
-          en: 'Your booking request has been received. We will soon confirm your spot personally.',
-          de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz bald persönlich.',
+          en: 'Your booking request has been received. We will confirm your request shortly.',
+          de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deine Anfrage so schnell wie möglich.',
         },
       },
     },
@@ -595,8 +595,8 @@
     },
     groupCoursesSuccessTitle: { en: 'thank you.', de: 'Danke.' },
     groupCoursesSuccessBody: {
-      en: 'Your booking request has been received. We will confirm your spot personally.',
-      de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz persönlich.',
+      en: 'Your booking request has been received. We will confirm your request shortly.',
+      de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deine Anfrage so schnell wie möglich.',
     },
     enquiryPhone: { en: 'phone', de: 'Telefon' },
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },
