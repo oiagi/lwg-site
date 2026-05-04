@@ -74,14 +74,14 @@
 
   const nav = {
     skip: { en: 'Skip to content', de: 'Zum Inhalt springen' },
-    menu: { en: 'menu', de: 'menu' },
-    close: { en: 'close', de: 'schliessen' },
+    menu: { en: 'menu', de: 'Menü' },
+    close: { en: 'close', de: 'Schliessen' },
     home: { en: 'Home', de: 'Start' },
-    info: { en: 'info', de: 'info' },
-    groupCourses: { en: 'group courses', de: 'gruppenkurse' },
-    enquiry: { en: 'enquiry', de: 'anfrage' },
-    materials: { en: 'materials', de: 'materialien' },
-    modalpartikeln: { en: 'modal particles', de: 'modalpartikeln' },
+    info: { en: 'info', de: 'Info' },
+    groupCourses: { en: 'group courses', de: 'Gruppenkurse' },
+    enquiry: { en: 'enquiry', de: 'Anfrage' },
+    materials: { en: 'materials', de: 'Materialien' },
+    modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
     impressum: { en: 'Legal Information', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -130,7 +130,7 @@
         de: 'Deutsch-, Schweizerdeutsch- und Englischkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Alle Niveaus willkommen.',
       },
       text: {
-        h1: { en: 'what we offer', de: 'was wir anbieten' },
+        h1: { en: 'what we offer', de: 'Was wir anbieten' },
         '.section:nth-of-type(1) h2': { en: 'Language courses', de: 'Sprachkurse' },
         '.section:nth-of-type(1) p': {
           en: 'We offer courses in <strong>German</strong>, <strong>Swiss German</strong>, and <strong>English</strong>, taught exclusively by <strong>native speakers</strong>. All levels are welcome, from complete beginners to advanced learners looking to refine their skills. If you are interested in a language not listed here, please get in touch. We may be able to help.',
@@ -160,7 +160,7 @@
         '.section:nth-of-type(6) h2': { en: 'Course structure', de: 'Kursstruktur' },
         '.section:nth-of-type(6) p:nth-of-type(1)': {
           en: 'As a general guide, progressing through a full level, for example from A0 to A1, typically takes around 100-150 hours* of guided learning alongside a similar amount of independent study. Note that at higher levels, regular exposure and contact with native speakers becomes increasingly important alongside formal instruction.',
-          de: 'Um ein vollständiges Sprachniveau abzudecken, zum Beispiel von A0 zu A1, benötigt man durchscnittlich etwa 100-150 Stunden* angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen. Auf höheren Niveaus ist regelmässiger Kontakt mit der Sprache und Austausch mit Muttersprachlerinnen und Muttersprachlern neben formalem Unterricht unabdingbar.',
+          de: 'Um ein vollständiges Sprachniveau abzudecken, zum Beispiel von A0 zu A1, benötigt man durchschnittlich etwa 100-150 Stunden* angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen. Auf höheren Niveaus ist regelmässiger Kontakt mit der Sprache und Austausch mit Muttersprachlerinnen und Muttersprachlern neben formalem Unterricht unabdingbar.',
         },
         '.section:nth-of-type(6) p:nth-of-type(2)': {
           en: 'The amount of lessons with Learning with Gioia depends on your goals and schedule. We will discuss this as part of your enquiry.',
@@ -182,7 +182,7 @@
           en: 'per person / 60 min',
           de: 'pro Person / 60 Min.',
         },
-        '.book-cta': { en: 'make an enquiry ->', de: 'anfrage senden ->' },
+        '.book-cta': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
       },
     },
     '/enquiry.html': {
@@ -195,8 +195,8 @@
         de: 'Sende eine kurze Anfrage an Learning with Gioia - für Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich.',
       },
       text: {
-        h1: { en: 'make an enquiry', de: 'anfrage senden' },
-        'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'wonach suchst du?' },
+        h1: { en: 'make an enquiry', de: 'Anfrage senden' },
+        'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'Wonach suchst du?' },
         '#lesson-type': {
           en: 'e.g. German A2 course, IELTS exam prep, Maths tutoring - Gymnasium year 9, Gymivorbereitung grade 6...',
           de: 'z. B. Deutschkurs A2, IELTS-Vorbereitung, Mathe-Nachhilfe - Gymnasium 2. Klasse, Gymivorbereitung 6. Klasse...',
@@ -206,14 +206,14 @@
           en: 'Please describe what you are looking for.',
           de: 'Bitte beschreibe, wonach du suchst.',
         },
-        '.section-label': { en: 'your details', de: 'deine angaben' },
-        'label[for="lead-first"]': { en: 'first name', de: 'vorname' },
-        'label[for="lead-last"]': { en: 'last name', de: 'nachname' },
-        'label[for="lead-email"]': { en: 'email', de: 'e-mail' },
-        '#label-lead-phone': { en: 'phone', de: 'telefon' },
+        '.section-label': { en: 'your details', de: 'Deine Angaben' },
+        'label[for="lead-first"]': { en: 'first name', de: 'Vorname' },
+        'label[for="lead-last"]': { en: 'last name', de: 'Nachname' },
+        'label[for="lead-email"]': { en: 'email', de: 'E-Mail' },
+        '#label-lead-phone': { en: 'phone', de: 'Telefon' },
         'label[for="preferred-contact"]': {
           en: 'preferred contact method',
-          de: 'bevorzugte kontaktart',
+          de: 'Bevorzugte Kontaktart',
         },
         '#err-lead-first': {
           en: 'Please enter a first name.',
@@ -234,7 +234,7 @@
         },
         '#preferred-contact option[value="Phone"]': { en: 'Phone', de: 'Telefon' },
         '#preferred-contact option[value="Either"]': { en: 'Either', de: 'Beides' },
-        '#submit-btn': { en: 'send enquiry ->', de: 'anfrage senden ->' },
+        '#submit-btn': { en: 'send enquiry ->', de: 'Anfrage senden ->' },
         '#submit-error': {
           en: 'Something went wrong - please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
           de: 'Etwas ist schiefgelaufen - bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
@@ -335,7 +335,7 @@
         de: 'Deine Anfrage ist bei uns eingetroffen. Wir melden uns innerhalb von 48 Stunden.',
       },
       text: {
-        '#success-state h1': { en: 'thank you.', de: 'danke.' },
+        '#success-state h1': { en: 'thank you.', de: 'Danke.' },
         '#success-state p:nth-of-type(1)': {
           en: "We've received your enquiry and will be in touch within 48 hours.",
           de: 'Wir haben deine Anfrage erhalten und melden uns innerhalb von 48 Stunden.',
@@ -348,13 +348,13 @@
           en: 'If you have any questions in the meantime, write to us at <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
           de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
         },
-        '#success-state .home-link': { en: 'back to home', de: 'zurück zur startseite' },
-        '#error-state h1': { en: 'something went wrong.', de: 'etwas ist schiefgelaufen.' },
+        '#success-state .home-link': { en: 'back to home', de: 'Zurück zur Startseite' },
+        '#error-state h1': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
         '#error-state p': {
           en: 'Your enquiry may not have been received. Please try again or email us directly at <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
           de: 'Deine Anfrage wurde möglicherweise nicht gesendet. Bitte versuche es erneut oder schreibe uns direkt an <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
         },
-        '#error-state .home-link': { en: 'try again', de: 'erneut versuchen' },
+        '#error-state .home-link': { en: 'try again', de: 'Erneut versuchen' },
       },
     },
     '/impressum.html': {
@@ -499,7 +499,7 @@
       '.legal-section:nth-of-type(6) h2': { en: 'Private lessons', de: 'Privatunterricht' },
       '.legal-section:nth-of-type(6) ul': {
         en: '<li>Holidays and other absences are arranged directly with the teacher.</li><li>The 24-hour rule applies: up to 24 hours before the agreed appointment, a lesson can be postponed without cost.</li><li>Missed lessons are not refunded if a subscription is terminated before its end.</li><li>If a course is interrupted or terminated, the course fee is not refunded (including partially) and is not credited toward another course.</li>',
-        de: '<li>Ferien und andere Abwesenheiten besprechen Sie direkt mit der Lehrperson.</li><li>Es gilt die 24 Stunden Regel: Bis 24 Stunden vor dem vereinbarten Termin kann eine Lektion ohne Kostenfolge verschoben werden.</li><li>Ausgefallene Lektionen werden bei einem Abbruch vor Abo-Ende nicht rückerstattet.</li><li>Bei einem Kursunterbruch oder -abbruch wird das Kursgeld nicht rückerstattet (auch nicht teilweise) und wird auch nicht für einen anderen Kurs angerechnet.</li>',
+        de: '<li>Ferien und andere Abwesenheiten besprechen Sie direkt mit der Lehrperson.</li><li>Es gilt die 24-Stunden-Regel: Bis 24 Stunden vor dem vereinbarten Termin kann eine Lektion ohne Kostenfolge verschoben werden.</li><li>Ausgefallene Lektionen werden bei einem Abbruch vor Abo-Ende nicht rückerstattet.</li><li>Bei einem Kursunterbruch oder -abbruch wird das Kursgeld nicht rückerstattet (auch nicht teilweise) und wird auch nicht für einen anderen Kurs angerechnet.</li>',
       },
       '.legal-section:nth-of-type(7) h2': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
       '.legal-section:nth-of-type(7) p': {
@@ -562,67 +562,67 @@
         de: 'Schülerangaben - Learning with Gioia',
       },
       text: {
-        '#intake-loading': { en: 'loading...', de: 'wird geladen...' },
-        '#intake-content h1': { en: 'your details', de: 'deine angaben' },
+        '#intake-loading': { en: 'loading...', de: 'Wird geladen...' },
+        '#intake-content h1': { en: 'your details', de: 'Deine Angaben' },
         '.intake-intro': {
           en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
           de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
         },
         '#intake-content > .section-label:nth-of-type(2)': {
           en: 'personal information',
-          de: 'persönliche angaben',
+          de: 'Persönliche Angaben',
         },
-        'label[for="if-first-name"]': { en: 'first name *', de: 'vorname *' },
-        'label[for="if-last-name"]': { en: 'last name *', de: 'nachname *' },
-        'label[for="if-email"]': { en: 'email', de: 'e-mail' },
-        'label[for="if-phone"]': { en: 'phone', de: 'telefon' },
-        'label[for="if-street"]': { en: 'street', de: 'strasse' },
-        'label[for="if-street-number"]': { en: 'number', de: 'nummer' },
-        'label[for="if-postcode"]': { en: 'postcode', de: 'postleitzahl' },
-        'label[for="if-city"]': { en: 'city', de: 'ort' },
+        'label[for="if-first-name"]': { en: 'first name *', de: 'Vorname *' },
+        'label[for="if-last-name"]': { en: 'last name *', de: 'Nachname *' },
+        'label[for="if-email"]': { en: 'email', de: 'E-Mail' },
+        'label[for="if-phone"]': { en: 'phone', de: 'Telefon' },
+        'label[for="if-street"]': { en: 'street', de: 'Strasse' },
+        'label[for="if-street-number"]': { en: 'number', de: 'Nummer' },
+        'label[for="if-postcode"]': { en: 'postcode', de: 'Postleitzahl' },
+        'label[for="if-city"]': { en: 'city', de: 'Ort' },
         '#intake-content > .section-label:nth-of-type(3)': {
           en: 'emergency contact',
-          de: 'notfallkontakt',
+          de: 'Notfallkontakt',
         },
-        'label[for="if-ec-name"]': { en: 'name', de: 'name' },
-        'label[for="if-ec-relationship"]': { en: 'relationship', de: 'beziehung' },
+        'label[for="if-ec-name"]': { en: 'name', de: 'Name' },
+        'label[for="if-ec-relationship"]': { en: 'relationship', de: 'Beziehung' },
         '#if-ec-relationship': {
           en: 'e.g. partner, parent',
           de: 'z. B. Partner/in, Elternteil',
           attr: 'placeholder',
         },
-        'label[for="if-ec-phone"]': { en: 'phone', de: 'telefon' },
-        'label[for="if-ec-email"]': { en: 'email', de: 'e-mail' },
-        '#intake-content > .section-label:nth-of-type(4)': { en: 'billing', de: 'rechnung' },
+        'label[for="if-ec-phone"]': { en: 'phone', de: 'Telefon' },
+        'label[for="if-ec-email"]': { en: 'email', de: 'E-Mail' },
+        '#intake-content > .section-label:nth-of-type(4)': { en: 'billing', de: 'Rechnung' },
         '.intake-checkbox span': {
           en: 'billing address differs from personal address',
-          de: 'rechnungsadresse weicht von persönlicher adresse ab',
+          de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
         },
-        'label[for="if-billing-name"]': { en: 'billing name', de: 'rechnungsname' },
-        'label[for="if-billing-email"]': { en: 'billing email', de: 'rechnungs-e-mail' },
-        'label[for="if-billing-phone"]': { en: 'billing phone', de: 'rechnungstelefon' },
-        'label[for="if-billing-street"]': { en: 'street', de: 'strasse' },
-        'label[for="if-billing-street-number"]': { en: 'number', de: 'nummer' },
-        'label[for="if-billing-postcode"]': { en: 'postcode', de: 'postleitzahl' },
-        'label[for="if-billing-city"]': { en: 'city', de: 'ort' },
+        'label[for="if-billing-name"]': { en: 'billing name', de: 'Rechnungsname' },
+        'label[for="if-billing-email"]': { en: 'billing email', de: 'Rechnungs-E-Mail' },
+        'label[for="if-billing-phone"]': { en: 'billing phone', de: 'Rechnungstelefon' },
+        'label[for="if-billing-street"]': { en: 'street', de: 'Strasse' },
+        'label[for="if-billing-street-number"]': { en: 'number', de: 'Nummer' },
+        'label[for="if-billing-postcode"]': { en: 'postcode', de: 'Postleitzahl' },
+        'label[for="if-billing-city"]': { en: 'city', de: 'Ort' },
         '#err-first-name': {
           en: 'Please enter a first name.',
           de: 'Bitte gib einen Vornamen ein.',
         },
         '#err-last-name': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
-        '#intake-submit-btn': { en: 'save details ->', de: 'angaben speichern ->' },
+        '#intake-submit-btn': { en: 'save details ->', de: 'Angaben speichern ->' },
         '#submit-error': {
           en: 'Something went wrong - please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
           de: 'Etwas ist schiefgelaufen - bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         },
-        '#intake-thanks h1': { en: 'thank you.', de: 'danke.' },
+        '#intake-thanks h1': { en: 'thank you.', de: 'Danke.' },
         '#intake-thanks p': {
           en: "Your details have been saved. We'll be in touch shortly.",
           de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
         },
         '#intake-error h1': {
           en: 'link expired or invalid.',
-          de: 'link abgelaufen oder ungültig.',
+          de: 'Link abgelaufen oder ungültig.',
         },
         '#intake-error p': {
           en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
@@ -633,9 +633,9 @@
     '/sessions.html': {
       title: {
         en: 'My Sessions - learning with gioia',
-        de: 'Meine Lektionen - learning with gioia',
+        de: 'Meine Lektionen - Learning with Gioia',
       },
-      text: { '.error-state': { en: 'loading...', de: 'wird geladen...' } },
+      text: { '.error-state': { en: 'loading...', de: 'Wird geladen...' } },
     },
     '/modalpartikeln.html': {
       title: { en: 'Modal particles', de: 'Modalpartikeln' },
@@ -658,15 +658,15 @@
   });
 
   const runtime = {
-    sessionsHeading: { en: 'your sessions', de: 'deine lektionen' },
+    sessionsHeading: { en: 'your sessions', de: 'Deine Lektionen' },
     noSessionLink: {
       en: 'No session link provided.<br>Please use the link sent to you by your teacher.',
       de: 'Kein Lektionslink angegeben.<br>Bitte verwende den Link, den dir deine Lehrperson gesendet hat.',
     },
     noSessions: { en: 'No sessions scheduled yet.', de: 'Noch keine Lektionen geplant.' },
-    makeEnquiry: { en: 'make an enquiry ->', de: 'anfrage senden ->' },
+    makeEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
     completedOf: { en: 'sessions completed', de: 'Lektionen abgeschlossen' },
-    remaining: { en: 'remaining', de: 'verbleibend' },
+    remaining: { en: 'remaining', de: 'Verbleibend' },
     rebookSome: {
       en: (n) =>
         `You have ${n} session${n === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry -></a>`,
