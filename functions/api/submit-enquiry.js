@@ -75,11 +75,10 @@ function buildCustomerEmail(booking, contact) {
         <tr>
           <td style="padding:40px 40px 32px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              Thank you, ${name}.
+              Thank you, ${name} :)
             </p>
             <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#333;">
-              We've received your enquiry and will be in touch within 48 hours to confirm your booking.
-              We personally review every enquiry to make sure we match you with the right teacher.
+              We've received your message and will contact you shortly to discuss your enquiry.
             </p>
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Your enquiry</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">

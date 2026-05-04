@@ -269,8 +269,8 @@
         '#label-emergency': { en: 'emergency contact', de: 'Notfallkontakt' },
         '#label-billing': { en: 'billing', de: 'Rechnung' },
         '#booking-note': {
-          en: 'Your spot is only final after backend confirmation. Payment happens after confirmation.',
-          de: 'Dein Platz ist erst nach Bestätigung definitiv. Nach der Bestätigung schicken wir dir die Rechnung für deinne Kurs.',
+          en: 'Your spot is final once we confirm your booking. After that, we will send the payment request for your course.',
+          de: 'Dein Platz ist nach unserer Bestätigung definitiv. Danach schicken wir dir die Rechnung für deinen Kurs.',
         },
         'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -337,14 +337,10 @@
       text: {
         '#success-state h1': { en: 'thank you.', de: 'Danke.' },
         '#success-state p:nth-of-type(1)': {
-          en: "We've received your enquiry and will be in touch shortly.",
-          de: 'Wir haben deine Anfrage erhalten und melden uns bald.',
+          en: "We've received your message and will contact you shortly to discuss your enquiry.",
+          de: 'Wir haben deine Nachricht erhalten und melden uns bald, um deine Anfrage zu besprechen.',
         },
         '#success-state p:nth-of-type(2)': {
-          en: 'We personally review every enquiry to make sure we match you with the right teacher.',
-          de: 'Wir prüfen jede Anfrage persönlich, damit wir für dich die passende Lehrperson finden können.',
-        },
-        '#success-state p:nth-of-type(3)': {
           en: 'If you have any questions in the meantime, write to us at <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
           de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
         },
