@@ -1334,13 +1334,18 @@ export async function sendStudentSchedule(studentId, courseId) {
   openConfirmSend({
     title: 'send schedule update',
     recipients: [{ name: studentDisplayName(student), email: student.email }],
-    subject: `Aktualisierter Lektionsplan${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
+    subject: `Aktualisierter Lektionsplan / Updated lesson plan${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
     contentHtml,
-    onConfirm: async () => {
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    onConfirm: async ({ language }) => {
       const msg = document.getElementById('schedule-msg-' + studentId);
       const res = await apiFetch('/api/send-session-schedule', {
         method: 'POST',
-        body: { course_id: courseId, student_id: studentId },
+        body: { course_id: courseId, student_id: studentId, language },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);

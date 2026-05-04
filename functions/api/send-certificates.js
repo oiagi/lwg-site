@@ -48,11 +48,11 @@ function buildEmail({ language, name, courseCode, level }) {
   const greeting = isEN ? `Hello ${name || 'student'},` : `Hallo ${name || 'Kursteilnehmer:in'}`;
   const courseLabel = [level, isEN ? 'course' : 'Kurs', courseCode].filter(Boolean).join(' ');
   const body = isEN
-    ? `Here is your certificate for your ${esc(courseLabel || 'course')}.`
-    : `Hier ist dein Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
+    ? `Below you will find the certificate for your ${esc(courseLabel || 'course')}.`
+    : `Anbei findest du das Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
   const closing = isEN
-    ? 'It was a pleasure learning with you. Thank you for being part of the course. All the best, and maybe see you next time.'
-    : 'Es hat uns Spass gemacht, mit dir zu lernen. Danke, dass du dabei warst. Alles Gute und vielleicht bis zum nächsten Mal.';
+    ? 'It was a pleasure learning with you! Thank you for being part of the course, and maybe see you again soon.'
+    : 'Es hat uns Spass gemacht, mit dir zu lernen! Danke, dass du dabei warst und vielleicht bis bald.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
   const teamLine = 'Gioia';
 
