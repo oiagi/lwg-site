@@ -172,7 +172,11 @@
         const res = await fetch('/api/submit-enquiry', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ booking, contact }),
+          body:    JSON.stringify({
+            booking,
+            contact,
+            language: window.LWG_I18N?.getLang() || document.documentElement.lang || 'en',
+          }),
         });
         if (!res.ok) throw new Error('Server error');
         window.location.href = window.LWG_I18N

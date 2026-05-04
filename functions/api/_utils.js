@@ -34,6 +34,10 @@ export function hasFields(obj) {
   return Object.keys(obj).length > 0;
 }
 
+export function normalizePageLanguage(value, fallback = 'en') {
+  return ['en', 'de'].includes(value) ? value : fallback;
+}
+
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {

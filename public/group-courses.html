@@ -406,6 +406,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               course_id: selectedCourse.id,
+              language: lang(),
               student: buildStudentPayload(),
             }),
           });
