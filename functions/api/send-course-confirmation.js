@@ -1,6 +1,6 @@
 // functions/api/send-course-confirmation.js
 // POST /api/send-course-confirmation
-// Body: { course_id, student_id? }
+// Body: { course_id, student_id?, language? }
 //
 // Sends a course confirmation email (course overview, scheduled sessions,
 // 24-hour cancellation notice, AGB) to each enrolled student with an email
@@ -16,8 +16,9 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
+  normalizePageLanguage,
 } from './_utils.js';
-import { AGB_HTML, CANCELLATION_POLICY } from './_agb.js';
+import { getCancellationPolicy, renderAgbEmailHtml } from './_agb.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -32,8 +33,8 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function fmtDateDE(iso) {
-  return new Date(iso).toLocaleString('de-CH', {
+function fmtDate(iso, language = 'de') {
+  return new Date(iso).toLocaleString(language === 'en' ? 'en-GB' : 'de-CH', {
     timeZone: 'Europe/Zurich',
     weekday: 'long',
     day: '2-digit',
@@ -75,19 +76,45 @@ function formatLocation(course) {
   return address || course.location || '—';
 }
 
-function courseDetailRows(course, sessions) {
+function courseDetailRows(course, sessions, language = 'de') {
   const lessons = bookingLessonCount(course, sessions);
   const total = studentBookingTotal(course, sessions);
+  const label = {
+    de: {
+      code: 'Kurscode',
+      subject: 'Fach',
+      level: 'Niveau',
+      format: 'Format',
+      lessons: 'Anzahl Lektionen',
+      duration: 'Lektionsdauer',
+      price: 'Preis pro Person / 60 Min.',
+      total: 'Ihr Preis für die gesamte Buchung',
+      location: 'Ort',
+      open: 'offen',
+    },
+    en: {
+      code: 'Course code',
+      subject: 'Subject',
+      level: 'Level',
+      format: 'Format',
+      lessons: 'Number of lessons',
+      duration: 'Lesson duration',
+      price: 'Price per person / 60 min',
+      total: 'Your price for the full booking',
+      location: 'Location',
+      open: 'open',
+    },
+  }[language === 'en' ? 'en' : 'de'];
   const rows = [
-    ['Kurscode', course.course_code || '—'],
-    ['Fach', course.service || '—'],
-    ['Niveau', course.level || '—'],
-    ['Format', course.group_type || '—'],
-    ['Anzahl Lektionen', lessons !== null ? String(lessons) : 'offen'],
-    ['Lektionsdauer', course.session_length_minutes ? `${course.session_length_minutes} min` : '—'],
-    ['Preis pro Person / 60 Min.', formatPrice(course.price_per_person_per_60min, course.currency)],
-    ['Ihr Preis für die gesamte Buchung', formatPrice(total, course.currency)],
-    ['Ort', formatLocation(course)],
+    [label.code, course.course_code || '-'],
+    [label.subject, course.service || '-'],
+    [label.level, course.level || '-'],
+    [label.format, course.group_type || '-'],
+    [label.lessons, lessons !== null ? String(lessons) : label.open],
+    [label.duration, course.session_length_minutes ? `${course.session_length_minutes} min` : '-'],
+    [label.price, formatPrice(course.price_per_person_per_60min, course.currency)],
+    [label.total, formatPrice(total, course.currency)],
+    [label.location, formatLocation(course)],
   ];
   return rows
     .map(
@@ -100,27 +127,53 @@ function courseDetailRows(course, sessions) {
     .join('');
 }
 
-function sessionListRows(sessions) {
+function sessionListRows(sessions, language = 'de') {
   if (!sessions.length) {
-    return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">Noch keine Lektionen geplant.</td></tr>`;
+    const empty =
+      language === 'en' ? 'No lessons have been scheduled yet.' : 'Noch keine Lektionen geplant.';
+    return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">${empty}</td></tr>`;
   }
   return sessions
     .map(
       (s, i) => `
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDateDE(s.scheduled_at))}</td>
+        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language))}</td>
       </tr>`
     )
     .join('');
 }
 
-function buildConfirmationEmail({ course, sessions, studentFirstName }) {
-  const greetingName = studentFirstName || 'Kursteilnehmer:in';
+function buildConfirmationEmail({ course, sessions, studentFirstName, language }) {
+  const isEnglish = language === 'en';
+  const greetingName = studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
+  const copy = isEnglish
+    ? {
+        subject: `Course confirmation - ${course.course_code || 'your course'} · learning with gioia`,
+        htmlLang: 'en',
+        title: `Course confirmation for ${greetingName}`,
+        intro:
+          'Thank you for your registration. Below you will find confirmation of your course and an overview of your scheduled lessons.',
+        details: 'Course details',
+        sessions: 'Scheduled lessons',
+        cancellation: 'Cancellation and postponement',
+        questions: 'If you have any questions, you can reach us at',
+      }
+    : {
+        subject: `Kursbestätigung - ${course.course_code || 'Ihr Kurs'} · learning with gioia`,
+        htmlLang: 'de',
+        title: `Kursbestätigung für ${greetingName}`,
+        intro:
+          'Vielen Dank für Ihre Anmeldung. Anbei finden Sie die Bestätigung Ihres Kurses sowie eine Übersicht Ihrer geplanten Lektionen.',
+        details: 'Kursdetails',
+        sessions: 'Geplante Lektionen',
+        cancellation: 'Absage und Verschiebung',
+        questions: 'Bei Fragen erreichen Sie uns unter',
+      };
   return {
-    subject: `Kursbestätigung — ${course.course_code || 'Ihr Kurs'} · learning with gioia`,
+    subject: copy.subject,
     html: `<!DOCTYPE html>
-<html lang="de">
+<html lang="${copy.htmlLang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
@@ -134,48 +187,48 @@ function buildConfirmationEmail({ course, sessions, studentFirstName }) {
         <tr>
           <td style="padding:40px 40px 16px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              Kursbestätigung für ${esc(greetingName)}
+              ${esc(copy.title)}
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
-              Vielen Dank für Ihre Anmeldung. Anbei finden Sie die Bestätigung Ihres Kurses sowie eine Übersicht Ihrer geplanten Lektionen.
+              ${esc(copy.intro)}
             </p>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Kursdetails</p>
+            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.details)}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${courseDetailRows(course, sessions)}
+              ${courseDetailRows(course, sessions, language)}
             </table>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Geplante Lektionen</p>
+            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionListRows(sessions)}
+              ${sessionListRows(sessions, language)}
             </table>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 24px;">
             <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
-              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">Absage und Verschiebung</p>
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
               <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(CANCELLATION_POLICY)}
+                ${esc(getCancellationPolicy(language))}
               </p>
             </div>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 32px;border-top:1px solid #eee;padding-top:24px;">
-            ${AGB_HTML}
+            ${renderAgbEmailHtml(language)}
           </td>
         </tr>
         <tr>
           <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
             <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-              Bei Fragen erreichen Sie uns unter
+              ${esc(copy.questions)}
               <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
@@ -240,6 +293,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const { course_id, student_id } = body;
+  const language = normalizePageLanguage(body.language, 'de');
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   const bundle = await loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, course_id);
@@ -264,6 +318,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         course,
         sessions,
         studentFirstName: student.first_name || '',
+        language,
       });
       try {
         const res = await fetch('https://api.resend.com/emails', {
