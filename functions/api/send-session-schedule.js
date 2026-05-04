@@ -50,7 +50,9 @@ function fmtDate(iso, language = 'de') {
 function sessionRows(sessions, language = 'de') {
   if (!sessions.length) {
     const empty =
-      language === 'en' ? 'No lessons are currently scheduled.' : 'Derzeit sind keine Lektionen geplant.';
+      language === 'en'
+        ? 'No lessons are currently scheduled.'
+        : 'Derzeit sind keine Lektionen geplant.';
     return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">${empty}</td></tr>`;
   }
   return sessions
