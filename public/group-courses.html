@@ -178,7 +178,7 @@
 
         <label class="booking-checkbox consent-row">
           <input type="checkbox" id="bf-consent">
-          <span>I agree to the processing of my data for this booking request and accept the <a href="/agb">terms and conditions</a>. *</span>
+          <span data-agb-consent></span>
         </label>
         <div class="error" id="err-consent">Please accept the terms to continue.</div>
 
@@ -195,6 +195,20 @@
 
   <script src="/i18n.js"></script>
   <script src="/nav.js"></script>
+  <script type="module">
+    import { AGB_CONSENT_HTML } from '/agb-content.js';
+
+    function renderAgbConsent() {
+      const lang = window.LWG_I18N?.getLang() || document.documentElement.lang || 'en';
+      document.querySelectorAll('[data-agb-consent]').forEach((el) => {
+        el.innerHTML = AGB_CONSENT_HTML[lang] || AGB_CONSENT_HTML.en;
+      });
+      window.LWG_I18N?.localizeInternalLinks?.(document);
+    }
+
+    document.addEventListener('lwg:language-applied', renderAgbConsent);
+    renderAgbConsent();
+  </script>
   <script>
     (function () {
       const coursesList = document.getElementById('courses-list');

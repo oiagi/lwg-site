@@ -300,10 +300,6 @@
           en: 'billing address differs from personal address',
           de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
         },
-        '.consent-row span': {
-          en: 'I agree to the processing of my data for this booking request and accept the <a href="/agb">terms and conditions</a>. *',
-          de: 'Ich bin mit der Verarbeitung meiner Daten für diese Buchungsanfrage einverstanden und akzeptiere die <a href="/agb">AGB</a>. *',
-        },
         '#err-first-name': {
           en: 'Please enter a first name.',
           de: 'Bitte gib einen Vornamen ein.',
@@ -454,100 +450,6 @@
     description: {
       en: 'Terms and conditions of Learning with Gioia / Birukoff World.',
       de: 'Allgemeine Geschäftsbedingungen von Learning with Gioia / Birukoff World.',
-    },
-    text: {
-      h1: { en: 'Terms & Conditions', de: 'Allgemeine Geschäftsbedingungen' },
-      '.legal-meta': common.updated,
-      '.legal-section:nth-of-type(1) h2': { en: 'Scope', de: 'Geltungsbereich' },
-      '.legal-section:nth-of-type(1) div': {
-        en: '<p>These Terms and Conditions govern the contractual relationship between Birukoff World, also called Learning with Gioia (hereinafter "school"), and participants (hereinafter "clients" or "participants") for all language courses, consultations and other services of the school.</p><p>By registering for or booking an offer, participants accept these terms as binding.</p>',
-        de: '<p>Diese Allgemeinen Geschäftsbedingungen (AGB) regeln das Vertragsverhältnis zwischen Birukoff World, auch Learning with Gioia genannt (nachfolgend "Schule") und den Teilnehmenden (nachfolgend "KundInnen" oder "Teilnehmende") für alle Sprachkurse, Beratungen und weiteren Dienstleistungen der Schule.</p><p>Mit der Anmeldung oder Buchung eines Angebots anerkennen die Teilnehmenden diese Bedingungen als verbindlich.</p>',
-      },
-      '.legal-section:nth-of-type(2) h2': {
-        en: 'Registration and conclusion of contract',
-        de: 'Anmeldung und Vertragsabschluss',
-      },
-      '.legal-section:nth-of-type(2) ul': {
-        en: '<li>Registration may take place online, by telephone, in writing or in person.</li><li>Registrations are considered in the order in which they are received.</li><li>A binding contract is formed upon confirmation by the school (by email or in writing).</li><li>A registration is valid without a signature if it has been confirmed electronically or verbally.</li>',
-        de: '<li>Die Anmeldung kann online, telefonisch, schriftlich oder persönlich erfolgen.</li><li>Die Anmeldungen werden in der Reihenfolge ihres Eingangs berücksichtigt.</li><li>Mit der Bestätigung durch die Schule (E-Mail oder schriftlich) entsteht ein verbindlicher Vertrag.</li><li>Eine Anmeldung ist auch ohne Unterschrift gültig, sofern sie elektronisch oder mündlich bestätigt wurde.</li>',
-      },
-      '.legal-section:nth-of-type(3) h2': {
-        en: 'Course fees and payment',
-        de: 'Kursgebühren und Zahlung',
-      },
-      '.legal-section:nth-of-type(3) ul': {
-        en: '<li>Course fees are stated in Swiss francs (CHF) and, unless otherwise noted, exclude VAT and teaching materials.</li><li>Payment is due before the course begins.</li><li>For instalment payments, the individually agreed deadlines apply.</li><li>Unpaid course fees may lead to exclusion from lessons.</li><li>Reminder fees and collection costs are borne by participants. The first reminder is free, the second reminder is charged at CHF 20.- and the third reminder at CHF 50.-.</li>',
-        de: '<li>Die Kursgebühren sind in Schweizer Franken (CHF) angegeben und verstehen sich - sofern nicht anders vermerkt - exklusive Mehrwertsteuer und Lehrmittel.</li><li>Die Zahlung ist vor Kursbeginn fällig.</li><li>Bei Ratenzahlung gelten die individuell vereinbarten Fristen.</li><li>Nicht bezahlte Kursgebühren können zum Ausschluss vom Unterricht führen.</li><li>Mahngebühren und Inkassokosten gehen zulasten der Teilnehmenden. Eine erste Mahnung ist gratis, eine zweite Mahnung wird mit CHF 20.- verrechnet, eine dritte Mahnung wird mit CHF 50.- verrechnet.</li>',
-      },
-      '.legal-section:nth-of-type(4) h2': {
-        en: 'Withdrawal and cancellation',
-        de: 'Rücktritt und Stornierung',
-      },
-      '.legal-section:nth-of-type(4) div': {
-        en: '<p class="legal-subheading">Before the course begins (group courses and private lessons)</p><p>Cancellations must be made in writing. The following cancellation conditions apply:</p><ul class="legal-list"><li>up to 30 days before course start: free of charge</li><li>29-15 days before course start: 50% of the course fee</li><li>14-7 days before course start: 75% of the course fee</li><li>from 6 days before course start or no-show: 100% of the course fee</li></ul><p class="legal-subheading">After the course begins</p><ul class="legal-list"><li>Withdrawal after the course begins is no longer possible.</li><li>Missed lessons or exams are not refunded and are not credited toward another course. Conversion from a group course to a private course is not generally possible.</li></ul><p class="legal-subheading">Withdrawal due to illness or accident</p><p>In case of illness or accident, credit for a later course may be granted upon presentation of a medical certificate (no cash payout).</p>',
-        de: '<p class="legal-subheading">Vor Kursbeginn (Gruppenkurse und Privatunterricht)</p><p>Abmeldungen müssen schriftlich erfolgen. Es gelten folgende Stornobedingungen:</p><ul class="legal-list"><li>bis 30 Tage vor Kursbeginn: kostenlos</li><li>29-15 Tage vor Kursbeginn: 50 % der Kursgebühr</li><li>14-7 Tage vor Kursbeginn: 75 % der Kursgebühr</li><li>ab 6 Tage vor Kursbeginn oder Nichterscheinen: 100 % der Kursgebühr</li></ul><p class="legal-subheading">Nach Kursbeginn</p><ul class="legal-list"><li>Ein Rücktritt nach Kursbeginn ist nicht mehr möglich.</li><li>Nicht besuchte Lektionen oder Prüfungen werden nicht rückerstattet und werden auch nicht für einen anderen Kurs angerechnet. Eine Umwandlung von Gruppenkurs in Privatkurs ist nicht generell möglich.</li></ul><p class="legal-subheading">Rücktritt wegen Krankheit oder Unfall</p><p>Bei Krankheit oder Unfall kann gegen Vorlage eines Arztzeugnisses eine Gutschrift für einen späteren Kurs gewährt werden (keine Barauszahlung).</p>',
-      },
-      '.legal-section:nth-of-type(5) h2': { en: 'Course organisation', de: 'Kursorganisation' },
-      '.legal-section:nth-of-type(5) div': {
-        en: '<p>The school reserves the right to cancel or merge courses if there are too few participants. In principle, a group course takes place from 3 participants.</p><p>The school may change lesson times, classrooms or teachers. If the school cancels a course, the full course amount will be refunded. Changes to the course schedule do not entitle participants to a refund.</p>',
-        de: '<p>Die Schule behält sich das Recht vor, Kurse bei zu geringer Teilnehmerzahl abzusagen oder zusammenzulegen. Grundsätzlich findet ein Gruppenkurs ab 3 Teilnehmenden statt.</p><p>Die Schule kann Unterrichtszeiten, Kursräume oder Lehrpersonen ändern. Bei Absage durch die Schule wird der volle Kursbetrag rückerstattet. Änderungen des Kursplans berechtigen nicht zu einer Rückerstattung.</p>',
-      },
-      '.legal-section:nth-of-type(6) h2': { en: 'Private lessons', de: 'Privatunterricht' },
-      '.legal-section:nth-of-type(6) ul': {
-        en: '<li>Holidays and other absences are arranged directly with the teacher.</li><li>The 24-hour rule applies: up to 24 hours before the agreed appointment, a lesson can be postponed without cost.</li><li>Missed lessons are not refunded if a subscription is terminated before its end.</li><li>If a course is interrupted or terminated, the course fee is not refunded (including partially) and is not credited toward another course.</li>',
-        de: '<li>Ferien und andere Abwesenheiten besprechen Sie direkt mit der Lehrperson.</li><li>Es gilt die 24-Stunden-Regel: Bis 24 Stunden vor dem vereinbarten Termin kann eine Lektion ohne Kostenfolge verschoben werden.</li><li>Ausgefallene Lektionen werden bei einem Abbruch vor Abo-Ende nicht rückerstattet.</li><li>Bei einem Kursunterbruch oder -abbruch wird das Kursgeld nicht rückerstattet (auch nicht teilweise) und wird auch nicht für einen anderen Kurs angerechnet.</li>',
-      },
-      '.legal-section:nth-of-type(7) h2': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-      '.legal-section:nth-of-type(7) p': {
-        en: 'The school is not liable for decisions by external examination institutions regarding admission or results.',
-        de: 'Die Schule haftet nicht für Entscheidungen externer Prüfungsinstitutionen bezüglich Zulassung oder Resultaten.',
-      },
-      '.legal-section:nth-of-type(8) h2': { en: 'Liability', de: 'Haftung' },
-      '.legal-section:nth-of-type(8) ul': {
-        en: '<li>Participation in courses and exams is at participants own responsibility.</li><li>The school accepts no liability for accident, illness, loss or theft of personal belongings.</li><li>Accident and liability insurance is the responsibility of participants.</li>',
-        de: '<li>Die Teilnahme an Kursen und Prüfungen erfolgt auf eigene Verantwortung.</li><li>Die Schule übernimmt keine Haftung für Unfall, Krankheit, Verlust oder Diebstahl persönlicher Gegenstände.</li><li>Eine Unfall- und Haftpflichtversicherung ist Sache der Teilnehmenden.</li>',
-      },
-      '.legal-section:nth-of-type(9) h2': { en: 'Data protection', de: 'Datenschutz' },
-      '.legal-section:nth-of-type(9) ul': {
-        en: '<li>The school undertakes to comply with the Swiss Data Protection Act (revDSG).</li><li>Personal data is used exclusively for course administration, invoicing and internal communication.</li><li>Disclosure to third parties takes place only with consent or on a legal basis.</li><li>By registering, participants agree to the processing of their data in accordance with the school privacy policy.</li>',
-        de: '<li>Die Schule verpflichtet sich zur Einhaltung des Schweizer Datenschutzgesetzes (revDSG).</li><li>Personenbezogene Daten werden ausschliesslich für Kursverwaltung, Rechnungsstellung und interne Kommunikation verwendet.</li><li>Eine Weitergabe an Dritte erfolgt nur mit Einwilligung oder gesetzlicher Grundlage.</li><li>Mit der Anmeldung stimmen die Teilnehmenden der Bearbeitung ihrer Daten gemäss dem Datenschutzreglement der Schule zu.</li>',
-      },
-      '.legal-section:nth-of-type(10) h2': { en: 'Copyright', de: 'Urheberrecht' },
-      '.legal-section:nth-of-type(10) ul': {
-        en: '<li>Course documents, learning platforms and teaching materials are protected by copyright.</li><li>Copying, photographing, distributing or passing them on without the schools consent is not permitted.</li>',
-        de: '<li>Kursunterlagen, Lernplattformen und Unterrichtsmaterialien sind urheberrechtlich geschützt.</li><li>Vervielfältigung, Fotografieren, Verbreitung oder Weitergabe ohne Zustimmung der Schule ist nicht gestattet.</li>',
-      },
-      '.legal-section:nth-of-type(11) h2': { en: 'Conduct and rules', de: 'Verhalten und Ordnung' },
-      '.legal-section:nth-of-type(11) ul': {
-        en: '<li>Participants undertake to behave respectfully toward teachers, staff and fellow learners.</li><li>The school reserves the right to exclude participants from lessons in cases of serious misconduct or repeated disruption, without refunding course fees.</li>',
-        de: '<li>Teilnehmende verpflichten sich zu respektvollem Verhalten gegenüber Lehrpersonen, Mitarbeitenden und Mitlernenden.</li><li>Die Schule behält sich vor, Teilnehmende bei grobem Fehlverhalten oder wiederholter Störung vom Unterricht auszuschliessen - ohne Rückerstattung der Kursgebühren.</li>',
-      },
-      '.legal-section:nth-of-type(12) h2': {
-        en: 'Holidays and public holidays',
-        de: 'Ferien und Feiertage',
-      },
-      '.legal-section:nth-of-type(12) ul': {
-        en: '<li>The public holidays of the City of Zurich apply.</li><li>No courses or lessons take place from 24 December through 31 December or from 1 January through 7 January.</li><li>Where applicable, teacher holiday periods are planned into the respective course cycles in advance and communicated to participants in good time.</li><li>If lessons are cancelled by the school, replacement lessons are offered or partial refunds are granted.</li><li>Lesson absences caused by participants (e.g. holidays, illness) are not compensated.</li>',
-        de: '<li>Es gelten die Feiertage der Stadt Zürich.</li><li>Vom 24. Dezember bis einschliesslich 31. Dezember sowie vom 1. Januar bis einschliesslich 7. Januar finden keine Kurse oder Lektionen statt.</li><li>Sofern zutreffend, werden Ferienzeiten der Lehrpersonen im Voraus in die jeweiligen Kurszyklen eingeplant und den Teilnehmerinnen und Teilnehmern rechtzeitig kommuniziert.</li><li>Bei Unterrichtsausfall durch die Schule werden Ersatzlektionen angeboten oder anteilige Rückerstattungen gewährt.</li><li>Unterrichtsausfall durch Teilnehmende (z. B. Ferien, Krankheit) wird nicht vergütet.</li>',
-      },
-      '.legal-section:nth-of-type(13) h2': { en: 'Contract changes', de: 'Vertragsänderungen' },
-      '.legal-section:nth-of-type(13) ul': {
-        en: '<li>Changes to the Terms and Conditions take effect when published on the website or communicated to participants.</li><li>The terms valid at the time of registration apply.</li>',
-        de: '<li>Änderungen der AGB treten mit Veröffentlichung auf der Website oder Mitteilung an die Teilnehmenden in Kraft.</li><li>Es gelten die zum Zeitpunkt der Anmeldung gültigen Bedingungen.</li>',
-      },
-      '.legal-section:nth-of-type(14) h2': {
-        en: 'Place of jurisdiction and law',
-        de: 'Gerichtsstand und Recht',
-      },
-      '.legal-section:nth-of-type(14) ul': {
-        en: '<li>Swiss law applies.</li><li>The place of jurisdiction is Zurich, Switzerland.</li>',
-        de: '<li>Es gilt Schweizer Recht.</li><li>Gerichtsstand ist Zürich, Schweiz.</li>',
-      },
-      '.legal-section:nth-of-type(15) h2': { en: 'Final provision', de: 'Schlussbestimmung' },
-      '.legal-section:nth-of-type(15) p': {
-        en: 'By registering for a course, exam or offer of the school, these Terms and Conditions are deemed accepted.',
-        de: 'Mit der Anmeldung zu einem Kurs, einer Prüfung oder einem Angebot der Schule gelten diese AGB als anerkannt.',
-      },
     },
   };
 

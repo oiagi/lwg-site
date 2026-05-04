@@ -1274,20 +1274,26 @@ export async function sendCourseConfirmation(courseId) {
     <p class="cs-section-label">also included</p>
     <ul class="cs-detail-list">
       <li>24-hour cancellation policy</li>
-      <li>AGB (terms &amp; conditions)</li>
+      <li>AGB / terms &amp; conditions</li>
+      <li>English confirmations include both English and German AGB</li>
     </ul>
   `;
 
   openConfirmSend({
     title: 'send course confirmation',
     recipients,
-    subject: `Kursbestätigung — ${course.course_code || 'Ihr Kurs'} · learning with gioia`,
+    subject: `Kursbestätigung / Course confirmation - ${course.course_code || 'course'} · learning with gioia`,
     contentHtml,
-    onConfirm: async () => {
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    onConfirm: async ({ language }) => {
       const msg = document.getElementById('confirm-msg-' + courseId);
       const res = await apiFetch('/api/send-course-confirmation', {
         method: 'POST',
-        body: { course_id: courseId },
+        body: { course_id: courseId, language },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);

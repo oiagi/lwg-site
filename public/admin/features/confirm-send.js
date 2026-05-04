@@ -3,13 +3,23 @@ import { esc } from '../core/helpers.js';
 
 let pendingHandler = null;
 
-export function openConfirmSend({ title, recipients, subject, contentHtml, onConfirm }) {
+export function openConfirmSend({
+  title,
+  recipients,
+  subject,
+  contentHtml,
+  languageOptions,
+  defaultLanguage,
+  onConfirm,
+}) {
   const modal = document.getElementById('confirm-send-modal');
   const titleEl = document.getElementById('cs-title');
   const recipientsEl = document.getElementById('cs-recipients');
   const countEl = document.getElementById('cs-recipients-count');
   const subjectEl = document.getElementById('cs-subject');
   const contentEl = document.getElementById('cs-content');
+  const languageField = document.getElementById('cs-language-field');
+  const languageInputs = document.querySelectorAll('input[name="cs-language"]');
   const msg = document.getElementById('cs-msg');
   const btn = document.getElementById('cs-submit');
 
@@ -28,6 +38,15 @@ export function openConfirmSend({ title, recipients, subject, contentHtml, onCon
 
   subjectEl.textContent = subject || '';
   contentEl.innerHTML = contentHtml || '';
+  if (languageField) {
+    const showLanguage = Array.isArray(languageOptions) && languageOptions.length > 0;
+    languageField.hidden = !showLanguage;
+    languageInputs.forEach((input) => {
+      const option = languageOptions?.find((item) => item.value === input.value);
+      input.closest('label').hidden = !option;
+      input.checked = input.value === (defaultLanguage || 'de');
+    });
+  }
 
   msg.textContent = '';
   msg.className = 'modal-msg';
@@ -53,7 +72,8 @@ export async function submitConfirmSend() {
   btn.disabled = true;
   btn.textContent = 'sending…';
   try {
-    await handler();
+    const language = document.querySelector('input[name="cs-language"]:checked')?.value || 'de';
+    await handler({ language });
     closeConfirmSend();
   } catch (err) {
     msg.textContent = 'Error: ' + (err.message || err);
