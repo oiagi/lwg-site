@@ -1,7 +1,8 @@
 // functions/api/update-course.js
 // PATCH /api/update-course
 // Body: { course_id, service?, level?, group_type?, status?, sessions_total?,
-//         session_length_minutes?, price_per_session?, currency?, location?,
+//         session_length_minutes?, price_per_session?,
+//         price_per_person_per_60min?, currency?, location?,
 //         location_street?, location_street_number?, location_postal_code?,
 //         location_city?, public_booking_enabled? }
 //
@@ -26,6 +27,7 @@ const ALLOWED_FIELDS = [
   'sessions_total',
   'session_length_minutes',
   'price_per_session',
+  'price_per_person_per_60min',
   'currency',
   'location',
   'location_street',

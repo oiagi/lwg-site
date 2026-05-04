@@ -376,9 +376,11 @@ function renderAdminSection(s) {
     .map((c) => {
       const currency = esc(c.currency || 'CHF');
       const priceCell =
-        c.price_per_session !== null && c.price_per_session !== undefined
-          ? `${Number(c.price_per_session).toFixed(2)} ${currency}`
-          : '—';
+        c.price_per_person_per_60min !== null && c.price_per_person_per_60min !== undefined
+          ? `${Number(c.price_per_person_per_60min).toFixed(2)} ${currency} / person / 60min`
+          : c.price_per_session !== null && c.price_per_session !== undefined
+            ? `${Number(c.price_per_session).toFixed(2)} ${currency}`
+            : '—';
       const lengthCell = c.session_length_minutes ? `${c.session_length_minutes} min` : '—';
       const openAmount = openByCourse[c.id] || 0;
       const openCell = openAmount
@@ -406,7 +408,7 @@ function renderAdminSection(s) {
             <th>course</th>
             <th>sessions</th>
             <th>length</th>
-            <th>price/session</th>
+            <th>price</th>
             <th>open charges</th>
             <th>level</th>
             <th>subject</th>

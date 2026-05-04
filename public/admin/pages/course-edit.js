@@ -13,6 +13,11 @@ function setChecked(id, v) {
 }
 
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+const DEFAULT_PRICE_PER_PERSON = {
+  private: 120,
+  duo: 70,
+  group: 50,
+};
 
 function splitLevel(raw) {
   const v = (raw || '').trim();
@@ -30,6 +35,13 @@ function syncPlusEnabled(baseId, plusId) {
   const enabled = PLUSABLE_LEVELS.has(baseEl.value);
   plusEl.disabled = !enabled;
   if (!enabled) plusEl.value = '';
+}
+
+function fillDefaultPerPersonPrice() {
+  const groupType = document.getElementById('ec-group')?.value;
+  const priceEl = document.getElementById('ec-price-person');
+  if (!priceEl || priceEl.value) return;
+  priceEl.value = DEFAULT_PRICE_PER_PERSON[groupType] ?? '';
 }
 
 function populate(course) {
@@ -57,6 +69,13 @@ function populate(course) {
       ? course.price_per_session
       : ''
   );
+  setVal(
+    'ec-price-person',
+    course.price_per_person_per_60min !== null &&
+      course.price_per_person_per_60min !== undefined
+      ? course.price_per_person_per_60min
+      : ''
+  );
   setVal('ec-currency', course.currency || 'CHF');
   setVal('ec-location', course.location || '');
   setChecked('ec-public-booking', course.public_booking_enabled);
@@ -78,6 +97,7 @@ async function handleSubmit(e) {
   const sessionsVal = document.getElementById('ec-sessions').value;
   const lengthVal = document.getElementById('ec-session-length').value;
   const priceVal = document.getElementById('ec-price').value;
+  const pricePersonVal = document.getElementById('ec-price-person').value;
 
   const body = {
     course_id: courseId,
@@ -90,6 +110,8 @@ async function handleSubmit(e) {
     sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
     session_length_minutes: lengthVal === '' ? null : parseInt(lengthVal, 10),
     price_per_session: priceVal === '' ? null : parseFloat(priceVal),
+    price_per_person_per_60min:
+      pricePersonVal === '' ? null : parseFloat(pricePersonVal),
     currency: document.getElementById('ec-currency').value || 'CHF',
     location: document.getElementById('ec-location').value || null,
     location_street: document.getElementById('ec-loc-street').value.trim() || null,
@@ -158,6 +180,7 @@ async function handleSubmit(e) {
   }
 
   document.getElementById('course-edit-form').addEventListener('submit', handleSubmit);
+  document.getElementById('ec-group').addEventListener('change', fillDefaultPerPersonPrice);
   document
     .getElementById('ec-level')
     .addEventListener('change', () => syncPlusEnabled('ec-level', 'ec-level-plus'));

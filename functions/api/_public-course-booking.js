@@ -4,6 +4,19 @@ export const PUBLIC_COURSE_CAPACITY = 5;
 export const PUBLIC_BOOKING_STATUS = 'pending_course_booking';
 export const PUBLIC_BOOKING_LOCATIONS = ["teacher's home", 'classroom'];
 
+function publicPricePerPerson(course) {
+  if (
+    course.price_per_person_per_60min !== null &&
+    course.price_per_person_per_60min !== undefined
+  ) {
+    return course.price_per_person_per_60min;
+  }
+  if (course.price_per_session === null || course.price_per_session === undefined) return null;
+  if (course.group_type === 'duo') return Number(course.price_per_session) / 2;
+  if (course.group_type === 'group') return Number(course.price_per_session) / PUBLIC_COURSE_CAPACITY;
+  return course.price_per_session;
+}
+
 export function formatPublicLocation(course) {
   const city = (course.location_city || '').trim();
   if (course.location === "teacher's home") {
@@ -51,6 +64,7 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
     group_type: course.group_type,
     session_length_minutes: course.session_length_minutes,
     price_per_session: course.price_per_session,
+    price_per_person_per_60min: publicPricePerPerson(course),
     currency: course.currency || 'CHF',
     location: course.location,
     location_text: formatPublicLocation(course),
@@ -67,7 +81,7 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
   const idFilter = courseId ? `&id=eq.${encodeURIComponent(courseId)}` : '';
 
   const coursesRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,service,level,group_type,status,session_length_minutes,price_per_session,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
+    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,service,level,group_type,status,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
     { headers: H }
   );
   if (!coursesRes.ok) {

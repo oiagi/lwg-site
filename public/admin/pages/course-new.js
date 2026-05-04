@@ -7,6 +7,11 @@ let studentCache = [];
 let participantCount = 1;
 
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+const DEFAULT_PRICE_PER_PERSON = {
+  private: 120,
+  duo: 70,
+  group: 50,
+};
 
 function syncPlusEnabled(baseId, plusId) {
   const baseEl = document.getElementById(baseId);
@@ -15,6 +20,13 @@ function syncPlusEnabled(baseId, plusId) {
   const enabled = PLUSABLE_LEVELS.has(baseEl.value);
   plusEl.disabled = !enabled;
   if (!enabled) plusEl.value = '';
+}
+
+function fillDefaultPerPersonPrice() {
+  const groupType = document.getElementById('nc-group')?.value;
+  const priceEl = document.getElementById('nc-price-person');
+  if (!priceEl || priceEl.value) return;
+  priceEl.value = DEFAULT_PRICE_PER_PERSON[groupType] ?? '';
 }
 
 /* ── Participant block ───────────────────────────────────────────── */
@@ -158,6 +170,7 @@ async function handleSubmit(e) {
   const sessions = document.getElementById('nc-sessions').value;
   const sessionLength = document.getElementById('nc-session-length').value;
   const price = document.getElementById('nc-price').value;
+  const pricePerson = document.getElementById('nc-price-person').value;
   const location = document.getElementById('nc-location').value;
   const locationStreet = document.getElementById('nc-loc-street').value.trim();
   const locationNumber = document.getElementById('nc-loc-number').value.trim();
@@ -199,6 +212,7 @@ async function handleSubmit(e) {
         duration_minutes: durationMinutes,
         session_length_minutes: durationMinutes,
         price_per_session: price ? parseFloat(price) : null,
+        price_per_person_per_60min: pricePerson ? parseFloat(pricePerson) : null,
         location: location || null,
         location_street: locationStreet || null,
         location_street_number: locationNumber || null,
@@ -306,10 +320,12 @@ async function handleSubmit(e) {
   });
 
   document.getElementById('course-new-form').addEventListener('submit', handleSubmit);
+  document.getElementById('nc-group').addEventListener('change', fillDefaultPerPersonPrice);
   document
     .getElementById('nc-level')
     .addEventListener('change', () => syncPlusEnabled('nc-level', 'nc-level-plus'));
   syncPlusEnabled('nc-level', 'nc-level-plus');
+  fillDefaultPerPersonPrice();
 
   document.getElementById('page-loading').style.display = 'none';
   document.getElementById('page-content').style.display = '';

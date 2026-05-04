@@ -65,6 +65,11 @@ function locationEditorHtml(course) {
     </div>`;
 }
 
+function formatMoney(amount, currency = 'CHF') {
+  if (amount === null || amount === undefined) return '—';
+  return `${Number(amount).toFixed(2)} ${esc(currency || 'CHF')}`;
+}
+
 export function toggleCourseAddressEditor(courseId) {
   const editor = document.getElementById('loc-editor-' + courseId);
   const line = document.getElementById('loc-line-' + courseId);
@@ -401,7 +406,8 @@ function renderCourses(courses) {
                 Group size: ${esc(c.group_type) || '—'}<br>
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
-                Price/session: ${c.price_per_session !== null && c.price_per_session !== undefined ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
+                Price/session: ${formatMoney(c.price_per_session, c.currency)}<br>
+                Price/person/60min: ${formatMoney(c.price_per_person_per_60min, c.currency)}<br>
                 Public booking: ${c.public_booking_enabled ? 'enabled' : 'disabled'}<br>
                 Location: ${locationSummaryHtml(c)}
               </p>
@@ -685,6 +691,7 @@ export function openNewCourseModal() {
     'nc-sessions',
     'nc-session-length',
     'nc-price',
+    'nc-price-person',
     'nc-location',
     'nc-datetime',
   ].forEach((id) => {
@@ -780,6 +787,7 @@ export async function submitNewCourse() {
   const sessions = document.getElementById('nc-sessions').value;
   const sessionLength = document.getElementById('nc-session-length').value;
   const price = document.getElementById('nc-price').value;
+  const pricePerson = document.getElementById('nc-price-person')?.value || '';
   const location = document.getElementById('nc-location').value;
   const datetime = document.getElementById('nc-datetime').value;
 
@@ -824,6 +832,7 @@ export async function submitNewCourse() {
         duration_minutes: durationMinutes,
         session_length_minutes: durationMinutes,
         price_per_session: price ? parseFloat(price) : null,
+        price_per_person_per_60min: pricePerson ? parseFloat(pricePerson) : null,
         location: location || null,
         booking_data: { service, level, group: groupType },
         contact_data: { participants },
@@ -1105,6 +1114,14 @@ export function openEditCourseModal(courseId) {
     course.price_per_session !== null && course.price_per_session !== undefined
       ? course.price_per_session
       : '';
+  const pricePersonEl = document.getElementById('ec-price-person');
+  if (pricePersonEl) {
+    pricePersonEl.value =
+      course.price_per_person_per_60min !== null &&
+      course.price_per_person_per_60min !== undefined
+        ? course.price_per_person_per_60min
+        : '';
+  }
   document.getElementById('ec-currency').value = course.currency || 'CHF';
   document.getElementById('ec-location').value = course.location || '';
 
@@ -1133,6 +1150,7 @@ export async function submitEditCourse() {
   const sessionsVal = document.getElementById('ec-sessions').value;
   const lengthVal = document.getElementById('ec-session-length').value;
   const priceVal = document.getElementById('ec-price').value;
+  const pricePersonVal = document.getElementById('ec-price-person')?.value || '';
 
   const body = {
     course_id: courseId,
@@ -1143,6 +1161,8 @@ export async function submitEditCourse() {
     sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
     session_length_minutes: lengthVal === '' ? null : parseInt(lengthVal, 10),
     price_per_session: priceVal === '' ? null : parseFloat(priceVal),
+    price_per_person_per_60min:
+      pricePersonVal === '' ? null : parseFloat(pricePersonVal),
     currency: document.getElementById('ec-currency').value || 'CHF',
     location: document.getElementById('ec-location').value || null,
   };

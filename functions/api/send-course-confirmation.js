@@ -65,6 +65,7 @@ function courseDetailRows(course) {
     ['Anzahl Lektionen', course.sessions_total ? String(course.sessions_total) : 'offen'],
     ['Lektionsdauer', course.session_length_minutes ? `${course.session_length_minutes} min` : '—'],
     ['Preis pro Lektion', formatPrice(course.price_per_session, course.currency)],
+    ['Preis pro Person / 60 Min.', formatPrice(course.price_per_person_per_60min, course.currency)],
     ['Ort', formatLocation(course)],
   ];
   return rows
