@@ -87,7 +87,28 @@ function buildBillingAddress(student) {
   return [streetLine, cityLine].filter(Boolean).join(', ') || null;
 }
 
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function bookingTotal(course) {
+  const pricePer60 = numberOrNull(course.price_per_person_per_60min);
+  const lessons = numberOrNull(course.sessions_remaining);
+  if (pricePer60 === null || lessons === null) return null;
+
+  const sessionLength = numberOrNull(course.session_length_minutes) || 60;
+  return pricePer60 * lessons * (sessionLength / 60);
+}
+
+function formatPrice(amount, currency) {
+  if (amount === null || amount === undefined) return '—';
+  return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
+}
+
 function buildCustomerEmail(course, student) {
+  const total = bookingTotal(course);
   return {
     subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
     html: `<!DOCTYPE html>
@@ -101,15 +122,21 @@ function buildCustomerEmail(course, student) {
           <p style="margin:0;color:#d6eaf8;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
         </td></tr>
         <tr><td style="padding:40px;">
-          <p style="margin:0 0 24px;font-size:22px;color:#1a1a1a;">Thank you, ${esc(student.first_name || 'there')}.</p>
-          <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#333;">
-            We've received your booking request. Your place is not final until we confirm it in the backend.
-            Payment is only due after that confirmation has been issued.
+          <p style="margin:0 0 24px;font-size:22px;color:#1a1a1a;">Thank you, ${esc(student.first_name || 'there')} :)</p>
+          <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#333;">
+            We've received your booking request. What happens next:
           </p>
+          <ul style="margin:0 0 28px 20px;padding:0;font-size:15px;line-height:1.7;color:#333;">
+            <li>We will confirm your request.</li>
+            <li>You will receive the payment request for your course.</li>
+            <li>You pay the bill.</li>
+            <li>Done! You're all set for your course.</li>
+          </ul>
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Course</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Starts</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(new Date(course.first_session_at).toLocaleString('de-CH', { timeZone: 'Europe/Zurich' }))}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Place</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Total price</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPrice(total, course.currency))}</td></tr>
           </table>
         </td></tr>
       </table>
@@ -199,6 +226,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   const publicCourse = publicCourseDto(course, course.pending_booking_count);
+  const totalPrice = bookingTotal(publicCourse);
   const booking = {
     type: 'direct_course_booking',
     lessonType: `${course.service || 'Group course'} ${course.level || ''}`.trim(),
@@ -209,7 +237,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     first_session_at: publicCourse.first_session_at,
     location_text: publicCourse.location_text,
     spots_remaining_at_booking: publicCourse.spots_remaining,
-    payment_note: 'Payment only after backend confirmation.',
+    total_price: totalPrice,
+    currency: publicCourse.currency,
+    payment_note: 'Payment after personal confirmation.',
   };
   const contact = {
     lead: {
