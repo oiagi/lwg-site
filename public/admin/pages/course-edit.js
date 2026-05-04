@@ -71,8 +71,7 @@ function populate(course) {
   );
   setVal(
     'ec-price-person',
-    course.price_per_person_per_60min !== null &&
-      course.price_per_person_per_60min !== undefined
+    course.price_per_person_per_60min !== null && course.price_per_person_per_60min !== undefined
       ? course.price_per_person_per_60min
       : ''
   );
@@ -110,8 +109,7 @@ async function handleSubmit(e) {
     sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
     session_length_minutes: lengthVal === '' ? null : parseInt(lengthVal, 10),
     price_per_session: priceVal === '' ? null : parseFloat(priceVal),
-    price_per_person_per_60min:
-      pricePersonVal === '' ? null : parseFloat(pricePersonVal),
+    price_per_person_per_60min: pricePersonVal === '' ? null : parseFloat(pricePersonVal),
     currency: document.getElementById('ec-currency').value || 'CHF',
     location: document.getElementById('ec-location').value || null,
     location_street: document.getElementById('ec-loc-street').value.trim() || null,

@@ -13,7 +13,8 @@ function publicPricePerPerson(course) {
   }
   if (course.price_per_session === null || course.price_per_session === undefined) return null;
   if (course.group_type === 'duo') return Number(course.price_per_session) / 2;
-  if (course.group_type === 'group') return Number(course.price_per_session) / PUBLIC_COURSE_CAPACITY;
+  if (course.group_type === 'group')
+    return Number(course.price_per_session) / PUBLIC_COURSE_CAPACITY;
   return course.price_per_session;
 }
 
