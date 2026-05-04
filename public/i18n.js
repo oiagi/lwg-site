@@ -251,15 +251,15 @@
         de: 'Freie Plätze in Kleingruppen-Sprachkursen in Zürich direkt anfragen.',
       },
       text: {
-        h1: { en: 'group courses starting soon', de: 'Gruppenkurse mit baldigem Start' },
+        h1: { en: 'group courses starting soon', de: 'offene Gruppenkurse' },
         '.courses-intro': {
           en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. Your booking will be confirmed within two hours.',
-          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Eingang bearbeitet und vor der Zahlung persönlich bestätigt.',
+          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Eingang innert zwei Stunden bearbeitet und von uns persönlich bestätigt.',
         },
         '#courses-status': { en: 'loading courses...', de: 'Kurse werden geladen...' },
         '#empty-state p': {
           en: 'currently there are no spots available in group courses starting soon :(',
-          de: 'Aktuell sind leider keine Plätze in bald startenden Gruppenkursen frei :(',
+          de: 'Aktuell sind leider keine Plätze frei :(',
         },
         '#empty-state .enquiry-link': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
         '#booking-title': { en: 'your details', de: 'Deine Angaben' },
@@ -270,7 +270,7 @@
         '#label-billing': { en: 'billing', de: 'Rechnung' },
         '#booking-note': {
           en: 'Your spot is only final after backend confirmation. Payment happens after confirmation.',
-          de: 'Dein Platz ist erst nach Bestätigung definitiv. Die Zahlung erfolgt nach der Bestätigung.',
+          de: 'Dein Platz ist erst nach Bestätigung definitiv. Nach der Bestätigung schicken wir dir die Rechnung für deinne Kurs.',
         },
         'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -323,22 +323,22 @@
         '#booking-submit': { en: 'request spot ->', de: 'Platz anfragen ->' },
         '#success-state h2': { en: 'thank you.', de: 'Danke.' },
         '#success-state p': {
-          en: 'Your booking request has been received. We will confirm your spot personally before payment is due.',
-          de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz persönlich, bevor eine Zahlung fällig wird.',
+          en: 'Your booking request has been received. We will soon confirm your spot personally before payment is due.',
+          de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz bald persönlich. Du erhältst dann von uns die Rechnung für deinen Kurs.',
         },
       },
     },
     '/thankyou.html': {
       title: { en: 'Thank You - Learning with Gioia', de: 'Danke - Learning with Gioia' },
       description: {
-        en: 'Your enquiry has been received. We will be in touch within 48 hours.',
-        de: 'Deine Anfrage ist bei uns eingetroffen. Wir melden uns innerhalb von 48 Stunden.',
+        en: 'Your enquiry has been received. We will be in touch shortly.',
+        de: 'Deine Anfrage ist bei uns eingetroffen. Wir melden uns bald.',
       },
       text: {
         '#success-state h1': { en: 'thank you.', de: 'Danke.' },
         '#success-state p:nth-of-type(1)': {
-          en: "We've received your enquiry and will be in touch within 48 hours.",
-          de: 'Wir haben deine Anfrage erhalten und melden uns innerhalb von 48 Stunden.',
+          en: "We've received your enquiry and will be in touch shortly.",
+          de: 'Wir haben deine Anfrage erhalten und melden uns bald.',
         },
         '#success-state p:nth-of-type(2)': {
           en: 'We personally review every enquiry to make sure we match you with the right teacher.',
@@ -352,7 +352,7 @@
         '#error-state h1': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
         '#error-state p': {
           en: 'Your enquiry may not have been received. Please try again or email us directly at <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
-          de: 'Deine Anfrage wurde möglicherweise nicht gesendet. Bitte versuche es erneut oder schreibe uns direkt an <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
+          de: 'Deine Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuche es erneut oder schreibe uns direkt an <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
         },
         '#error-state .home-link': { en: 'try again', de: 'Erneut versuchen' },
       },
