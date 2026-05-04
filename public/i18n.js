@@ -658,6 +658,45 @@
   });
 
   const runtime = {
+    groupCoursesLoading: { en: 'loading courses...', de: 'Kurse werden geladen...' },
+    groupCoursesLoadError: {
+      en: 'Could not load group courses right now.',
+      de: 'Gruppenkurse konnten gerade nicht geladen werden.',
+    },
+    groupCoursesNoSpots: {
+      en: 'currently there are no spots available in group courses starting soon :(',
+      de: 'Aktuell gibt es leider keine offenen Gruppenkurse :(',
+    },
+    groupCoursesEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
+    groupCoursesStarts: { en: 'starts', de: 'Start' },
+    groupCoursesPlace: { en: 'place', de: 'Ort' },
+    groupCoursesSpots: { en: 'spots', de: 'Plätze' },
+    groupCoursesSpot: { en: 'spot', de: 'Platz' },
+    groupCoursesAvailable: { en: 'available', de: 'frei' },
+    groupCoursesMaxPeople: { en: 'max. 5 people', de: 'max. 5 Personen' },
+    groupCoursesPerPerson: { en: 'per person / 60min', de: 'pro Person / 60 Min.' },
+    groupCoursesPayment: {
+      en: 'payment after confirmation',
+      de: 'Zahlung erst nach Bestätigung',
+    },
+    groupCoursesBook: { en: 'request spot ->', de: 'Platz anfragen ->' },
+    groupCoursesSelected: { en: 'selected course', de: 'Ausgewählter Kurs' },
+    groupCoursesSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
+    groupCoursesServerError: {
+      en: 'Something went wrong. Please try again or email info@learningwithgioia.ch.',
+      de: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe an info@learningwithgioia.ch.',
+    },
+    groupCoursesUnavailable: {
+      en: 'This course is no longer available for direct booking.',
+      de: 'Dieser Kurs ist nicht mehr direkt buchbar.',
+    },
+    groupCoursesSuccessTitle: { en: 'thank you.', de: 'Danke.' },
+    groupCoursesSuccessBody: {
+      en: 'Your booking request has been received. We will confirm your spot personally before payment is due.',
+      de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz persönlich. Dann schicken wir dir die Rechnung für deinen Kurs.',
+    },
+    enquiryPhone: { en: 'phone', de: 'Telefon' },
+    enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },
     sessionsHeading: { en: 'your sessions', de: 'Deine Lektionen' },
     noSessionLink: {
       en: 'No session link provided.<br>Please use the link sent to you by your teacher.',
