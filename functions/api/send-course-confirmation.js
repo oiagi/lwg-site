@@ -151,20 +151,20 @@ function buildConfirmationEmail({ course, sessions, studentFirstName, language }
     ? {
         subject: `Course confirmation - ${course.course_code || 'your course'} · learning with gioia`,
         htmlLang: 'en',
-        title: `Course confirmation for ${greetingName}`,
+        title: 'Course confirmation',
         intro:
-          'Thank you for your registration. Below you will find confirmation of your course and an overview of your scheduled lessons.',
+          `Thank you for your registration, ${greetingName}. We look forward to learning with you soon. Below you will find all the important information about your course. Questions? Just write to us at info@learningwithgioia.ch`,
         details: 'Course details',
         sessions: 'Scheduled lessons',
         cancellation: 'Cancellation and postponement',
         questions: 'If you have any questions, you can reach us at',
       }
     : {
-        subject: `Kursbestätigung - ${course.course_code || 'Ihr Kurs'} · learning with gioia`,
+        subject: `Kursbestätigung - ${course.course_code || 'dein Kurs'} · learning with gioia`,
         htmlLang: 'de',
-        title: `Kursbestätigung für ${greetingName}`,
+        title: 'Kursbestätigung',
         intro:
-          'Vielen Dank für Ihre Anmeldung. Anbei finden Sie die Bestätigung Ihres Kurses sowie eine Übersicht Ihrer geplanten Lektionen.',
+          `Vielen Dank für deine Anmeldung, ${greetingName}. Wir freuen uns, bald mit dir zu lernen. Unten findest du alle wichtigen Infos zu deinem Kurs. Noch Fragen? Dann schreib uns einfach auf info@learningwithgioia.ch`,
         details: 'Kursdetails',
         sessions: 'Geplante Lektionen',
         cancellation: 'Absage und Verschiebung',

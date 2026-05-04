@@ -39,21 +39,22 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function buildEmail({ language, name, courseCode }) {
+function buildEmail({ language, name, courseCode, level }) {
   const isEN = language === 'en';
   const subject = isEN
     ? `Certificate of Attendance — ${courseCode || 'your course'} · learning with gioia`
-    : `Teilnahmebestätigung — ${courseCode || 'Ihr Kurs'} · learning with gioia`;
+    : `Teilnahmebestätigung — ${courseCode || 'dein Kurs'} · learning with gioia`;
 
-  const greeting = isEN ? `Dear ${name || 'student'},` : `Liebe:r ${name || 'Kursteilnehmer:in'},`;
+  const greeting = isEN ? `Hello ${name || 'student'},` : `Hallo ${name || 'Kursteilnehmer:in'}`;
+  const courseLabel = [level, isEN ? 'course' : 'Kurs', courseCode].filter(Boolean).join(' ');
   const body = isEN
-    ? `please find attached your certificate of attendance for the course ${esc(courseCode || '')}.`
-    : `anbei finden Sie Ihre Teilnahmebestätigung für den Kurs ${esc(courseCode || '')}.`;
+    ? `Here is your certificate for your ${esc(courseLabel || 'course')}.`
+    : `Hier ist dein Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
   const closing = isEN
-    ? 'We thank you for your participation and wish you all the best for your continued learning journey.'
-    : 'Wir danken Ihnen für Ihre Teilnahme und wünschen Ihnen alles Gute auf Ihrem weiteren Lernweg.';
-  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse,';
-  const teamLine = 'Gioia Birukoff · learning with gioia';
+    ? 'It was a pleasure learning with you. Thank you for being part of the course. All the best, and maybe see you next time.'
+    : 'Es hat uns Spass gemacht, mit dir zu lernen. Danke, dass du dabei warst. Alles Gute und vielleicht bis zum nächsten Mal.';
+  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
+  const teamLine = 'Gioia';
 
   const html = `<!DOCTYPE html>
 <html lang="${isEN ? 'en' : 'de'}">
@@ -69,6 +70,7 @@ function buildEmail({ language, name, courseCode }) {
         </tr>
         <tr>
           <td style="padding:40px 40px 16px;">
+            <p style="margin:0 0 24px;font-size:22px;line-height:1.4;color:#1a1a1a;">${isEN ? 'Done!' : 'Geschafft!'}</p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>
             <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">${body}</p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(closing)}</p>
@@ -95,7 +97,7 @@ function buildEmail({ language, name, courseCode }) {
 async function loadCourse(SUPABASE_URL, SUPABASE_SERVICE_KEY, courseId) {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=id,course_code`,
+    `${SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=id,course_code,level`,
     { headers: H }
   );
   if (!res.ok) return null;
@@ -177,6 +179,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         language,
         name: r.name || '',
         courseCode: course.course_code || '',
+        level: course.level || '',
       });
 
       const filename =
