@@ -243,22 +243,22 @@
     },
     '/group-courses.html': {
       title: {
-        en: 'Group Courses Starting Soon - Learning with Gioia',
-        de: 'Bald startende Gruppenkurse - Learning with Gioia',
+        en: 'Open Group Courses - Learning with Gioia',
+        de: 'Offene Gruppenkurse - Learning with Gioia',
       },
       description: {
-        en: 'Book open spots in small group language courses starting soon in Zurich.',
+        en: 'Book open spots in small group language courses in Zurich.',
         de: 'Freie Plätze in Kleingruppen-Sprachkursen in Zürich direkt anfragen.',
       },
       text: {
-        h1: { en: 'group courses starting soon', de: 'offene Gruppenkurse' },
+        h1: { en: 'open group courses', de: 'offene Gruppenkurse' },
         '.courses-intro': {
           en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. Your booking will be confirmed within two hours.',
           de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Eingang innert zwei Stunden bearbeitet und von uns persönlich bestätigt.',
         },
         '#courses-status': { en: 'loading courses...', de: 'Kurse werden geladen...' },
         '#empty-state p': {
-          en: 'currently there are no spots available in group courses starting soon :(',
+          en: 'currently there are no spots available in open group courses :(',
           de: 'Aktuell sind leider keine Plätze frei :(',
         },
         '#empty-state .enquiry-link': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
@@ -664,11 +664,16 @@
       de: 'Gruppenkurse konnten gerade nicht geladen werden.',
     },
     groupCoursesNoSpots: {
-      en: 'currently there are no spots available in group courses starting soon :(',
+      en: 'currently there are no spots available in open group courses :(',
       de: 'Aktuell gibt es leider keine offenen Gruppenkurse :(',
     },
     groupCoursesEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
     groupCoursesStarts: { en: 'starts', de: 'Start' },
+    groupCoursesNextLesson: { en: 'next', de: 'Nächste' },
+    groupCoursesLessons: { en: 'lessons', de: 'Lektionen' },
+    groupCoursesCompleted: { en: 'completed', de: 'abgeschlossen' },
+    groupCoursesRemaining: { en: 'remaining', de: 'verbleibend' },
+    groupCoursesOpenEnded: { en: 'open-ended', de: 'offen' },
     groupCoursesPlace: { en: 'place', de: 'Ort' },
     groupCoursesSpots: { en: 'spots', de: 'Plätze' },
     groupCoursesSpot: { en: 'spot', de: 'Platz' },
