@@ -1,6 +1,6 @@
 // functions/api/send-session-schedule.js
 // POST /api/send-session-schedule
-// Body: { course_id, student_id? }
+// Body: { course_id, student_id?, language? }
 //
 // Sends a schedule update to each enrolled student with an email
 // address — the list of upcoming (non-cancelled) sessions plus the
@@ -18,8 +18,9 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
+  normalizePageLanguage,
 } from './_utils.js';
-import { CANCELLATION_POLICY } from './_agb.js';
+import { getCancellationPolicy } from './_agb.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -34,8 +35,8 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function fmtDateDE(iso) {
-  return new Date(iso).toLocaleString('de-CH', {
+function fmtDate(iso, language = 'de') {
+  return new Date(iso).toLocaleString(language === 'en' ? 'en-GB' : 'de-CH', {
     timeZone: 'Europe/Zurich',
     weekday: 'long',
     day: '2-digit',
@@ -46,28 +47,58 @@ function fmtDateDE(iso) {
   });
 }
 
-function sessionRows(sessions) {
+function sessionRows(sessions, language = 'de') {
   if (!sessions.length) {
-    return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">Derzeit sind keine Lektionen geplant.</td></tr>`;
+    const empty =
+      language === 'en'
+        ? 'No lessons are currently scheduled.'
+        : 'Derzeit sind keine Lektionen geplant.';
+    return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">${empty}</td></tr>`;
   }
   return sessions
     .map(
       (s, i) => `
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDateDE(s.scheduled_at))}</td>
+        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language))}</td>
       </tr>`
     )
     .join('');
 }
 
-function buildScheduleEmail({ course, sessions, studentFirstName }) {
-  const greetingName = studentFirstName || 'Kursteilnehmer:in';
+function courseLabel(course, language = 'de') {
+  const label = [course.level, language === 'en' ? 'course' : 'Kurs', course.course_code]
+    .filter(Boolean)
+    .join(' ');
+  return label || (language === 'en' ? 'course' : 'Kurs');
+}
+
+function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
+  const isEnglish = language === 'en';
+  const greetingName = studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
   const codeLabel = course.course_code ? ` (${course.course_code})` : '';
+  const label = courseLabel(course, language);
+  const copy = isEnglish
+    ? {
+        subject: `Updated lesson plan${codeLabel} — learning with gioia`,
+        htmlLang: 'en',
+        intro: `Attached is the current lesson plan for your ${label}. We are happy to have you.`,
+        sessions: 'Scheduled lessons',
+        cancellation: 'Cancellation and postponement',
+        questions: 'If you have any questions, you can reach us at',
+      }
+    : {
+        subject: `Aktualisierter Lektionsplan${codeLabel} — learning with gioia`,
+        htmlLang: 'de',
+        intro: `Anbei der aktuelle Lektionsplan für deinen ${label}. Wir freuen uns, dass du dabei bist.`,
+        sessions: 'Geplante Lektionen',
+        cancellation: 'Absage und Verschiebung',
+        questions: 'Bei Fragen erreichen Sie uns unter',
+      };
   return {
-    subject: `Aktualisierter Lektionsplan${codeLabel} — learning with gioia`,
+    subject: copy.subject,
     html: `<!DOCTYPE html>
-<html lang="de">
+<html lang="${copy.htmlLang}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
@@ -81,27 +112,27 @@ function buildScheduleEmail({ course, sessions, studentFirstName }) {
         <tr>
           <td style="padding:40px 40px 16px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              Hallo ${esc(greetingName)},
+              ${isEnglish ? 'Hello' : 'Hallo'} ${esc(greetingName)}
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
-              anbei der aktuelle Lektionsplan für Ihren Kurs${esc(codeLabel)}.
+              ${esc(copy.intro)}
             </p>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Geplante Lektionen</p>
+            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionRows(sessions)}
+              ${sessionRows(sessions, language)}
             </table>
           </td>
         </tr>
         <tr>
           <td style="padding:0 40px 24px;">
             <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
-              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">Absage und Verschiebung</p>
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
               <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(CANCELLATION_POLICY)}
+                ${esc(getCancellationPolicy(language))}
               </p>
             </div>
           </td>
@@ -109,7 +140,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName }) {
         <tr>
           <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
             <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-              Bei Fragen erreichen Sie uns unter
+              ${esc(copy.questions)}
               <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
             </p>
             <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
@@ -140,12 +171,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const { course_id, student_id } = body;
+  const language = normalizePageLanguage(body.language, 'de');
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const [cr, sr, er] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code`, {
+    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level`, {
       headers: H,
     }),
     fetch(
@@ -192,6 +224,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         course,
         sessions,
         studentFirstName: student.first_name || '',
+        language,
       });
       try {
         const res = await fetch('https://api.resend.com/emails', {
