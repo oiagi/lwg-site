@@ -40,6 +40,24 @@
   </url>
 
   <url>
+    <loc>https://learningwithgioia.ch/en/group-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/group-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/group-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/group-courses" />
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/group-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/group-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/group-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/group-courses" />
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
     <loc>https://learningwithgioia.ch/en/enquiry</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/enquiry" />
     <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/enquiry" />

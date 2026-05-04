@@ -159,6 +159,52 @@ function sentCommunicationsBlock(course) {
     </div>`;
 }
 
+function pendingBookingBlocks(course) {
+  const bookings = course.pending_bookings || [];
+  if (!bookings.length) return '';
+
+  const rows = bookings
+    .map((b) => {
+      const contact = b.contact_data || {};
+      const intake = contact.intake || {};
+      const booking = b.booking_data || {};
+      const name =
+        [b.lead_first || intake.first_name, b.lead_last || intake.last_name]
+          .filter(Boolean)
+          .join(' ') || '—';
+      const email = b.lead_email || intake.email || '';
+      const phone = b.lead_phone || intake.phone || '';
+      const requestedAt = b.created_at ? fmtDate(b.created_at) : '—';
+      const spots =
+        booking.spots_remaining_at_booking !== null &&
+        booking.spots_remaining_at_booking !== undefined
+          ? `${booking.spots_remaining_at_booking} spot${Number(booking.spots_remaining_at_booking) === 1 ? '' : 's'} left then`
+          : '';
+      return `
+        <div class="pending-booking-row" id="pending-booking-${esc(b.id)}">
+          <div>
+            <p class="pending-booking-name">${esc(name)}</p>
+            <p class="detail-muted">
+              ${email ? esc(email) : 'no email'}${phone ? ' · ' + esc(phone) : ''}
+            </p>
+            <p class="detail-muted">requested ${esc(requestedAt)}${spots ? ' · ' + esc(spots) : ''}</p>
+          </div>
+          <div class="pending-booking-actions">
+            <button class="save-btn" data-action="handleCourseBooking" data-args="${esc(b.id)},approve,${esc(course.id)}">approve</button>
+            <button class="delete-btn" data-action="handleCourseBooking" data-args="${esc(b.id)},decline,${esc(course.id)}">decline</button>
+            <span class="saved-msg" id="booking-msg-${esc(b.id)}">saved</span>
+          </div>
+        </div>`;
+    })
+    .join('');
+
+  return `
+    <div class="pending-bookings">
+      <p class="detail-meta">pending direct bookings</p>
+      ${rows}
+    </div>`;
+}
+
 export function filterCourses(status) {
   currentCourseFilter = status;
   document.querySelectorAll('[data-course-status]').forEach((b) => {
@@ -356,6 +402,7 @@ function renderCourses(courses) {
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
                 Price/session: ${c.price_per_session !== null && c.price_per_session !== undefined ? Number(c.price_per_session).toFixed(2) + ' ' + esc(c.currency || 'CHF') : '—'}<br>
+                Public booking: ${c.public_booking_enabled ? 'enabled' : 'disabled'}<br>
                 Location: ${locationSummaryHtml(c)}
               </p>
               ${locationEditorHtml(c)}
@@ -378,6 +425,7 @@ function renderCourses(courses) {
             </div>
           </div>
           <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
+          ${pendingBookingBlocks(c)}
           ${studentBlocks}
           ${sentCommunicationsBlock(c)}
           <div class="course-actions-row" style="margin-top:0.4rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
@@ -819,6 +867,45 @@ export async function deleteCourse(courseId, courseCode) {
     if (row) row.remove();
   } catch {
     alert('Could not delete course. Please try again.');
+  }
+}
+
+export async function handleCourseBooking(enquiryId, action, courseId, btn) {
+  const verb = action === 'approve' ? 'approve' : 'decline';
+  if (!confirm(`${verb[0].toUpperCase() + verb.slice(1)} this direct booking request?`)) return;
+
+  const msg = document.getElementById('booking-msg-' + enquiryId);
+  const row = document.getElementById('pending-booking-' + enquiryId);
+  const buttons = row ? [...row.querySelectorAll('button')] : btn ? [btn] : [];
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+  if (btn) btn.textContent = action === 'approve' ? 'approving…' : 'declining…';
+
+  try {
+    const res = await apiFetch('/api/handle-course-booking', {
+      method: 'POST',
+      body: { enquiry_id: enquiryId, action },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+
+    if (msg) showMessage(msg, action === 'approve' ? 'approved' : 'declined');
+    await loadCourses(currentCourseFilter);
+    const detail = document.getElementById('course-detail-' + courseId);
+    if (detail) detail.classList.add('open');
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.style.color = '#c33';
+      msg.style.display = 'inline';
+    } else {
+      alert('Could not update booking request: ' + err.message);
+    }
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+    if (btn) btn.textContent = action === 'approve' ? 'approve' : 'decline';
   }
 }
 

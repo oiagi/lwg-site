@@ -163,6 +163,7 @@ async function handleSubmit(e) {
   const locationNumber = document.getElementById('nc-loc-number').value.trim();
   const locationPostal = document.getElementById('nc-loc-postal').value.trim();
   const locationCity = document.getElementById('nc-loc-city').value.trim();
+  const publicBookingEnabled = document.getElementById('nc-public-booking')?.checked || false;
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
 
   const participants = [];
@@ -203,6 +204,7 @@ async function handleSubmit(e) {
         location_street_number: locationNumber || null,
         location_postal_code: locationPostal || null,
         location_city: locationCity || null,
+        public_booking_enabled: publicBookingEnabled,
         single_session: singleSession,
         booking_data: { service, level, group: groupType },
         contact_data: { participants },
