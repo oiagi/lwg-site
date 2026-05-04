@@ -49,6 +49,25 @@ function formatPrice(amount, currency) {
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
 }
 
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function bookingLessonCount(course, sessions) {
+  return numberOrNull(course.sessions_total) || sessions.length || null;
+}
+
+function studentBookingTotal(course, sessions) {
+  const pricePer60 = numberOrNull(course.price_per_person_per_60min);
+  const lessons = bookingLessonCount(course, sessions);
+  if (pricePer60 === null || lessons === null) return null;
+
+  const sessionLength = numberOrNull(course.session_length_minutes) || 60;
+  return pricePer60 * lessons * (sessionLength / 60);
+}
+
 function formatLocation(course) {
   const line1 = [course.location_street, course.location_street_number].filter(Boolean).join(' ');
   const line2 = [course.location_postal_code, course.location_city].filter(Boolean).join(' ');
@@ -56,16 +75,18 @@ function formatLocation(course) {
   return address || course.location || '—';
 }
 
-function courseDetailRows(course) {
+function courseDetailRows(course, sessions) {
+  const lessons = bookingLessonCount(course, sessions);
+  const total = studentBookingTotal(course, sessions);
   const rows = [
     ['Kurscode', course.course_code || '—'],
     ['Fach', course.service || '—'],
     ['Niveau', course.level || '—'],
     ['Format', course.group_type || '—'],
-    ['Anzahl Lektionen', course.sessions_total ? String(course.sessions_total) : 'offen'],
+    ['Anzahl Lektionen', lessons !== null ? String(lessons) : 'offen'],
     ['Lektionsdauer', course.session_length_minutes ? `${course.session_length_minutes} min` : '—'],
-    ['Preis pro Lektion', formatPrice(course.price_per_session, course.currency)],
     ['Preis pro Person / 60 Min.', formatPrice(course.price_per_person_per_60min, course.currency)],
+    ['Ihr Preis für die gesamte Buchung', formatPrice(total, course.currency)],
     ['Ort', formatLocation(course)],
   ];
   return rows
@@ -124,7 +145,7 @@ function buildConfirmationEmail({ course, sessions, studentFirstName }) {
           <td style="padding:0 40px 24px;">
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">Kursdetails</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${courseDetailRows(course)}
+              ${courseDetailRows(course, sessions)}
             </table>
           </td>
         </tr>
