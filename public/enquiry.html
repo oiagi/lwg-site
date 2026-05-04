@@ -107,12 +107,8 @@
     /* ── Toggle phone optional when Email-only preferred ────────────── */
     function updatePhoneLabel() {
       const emailOnly = preferredContact.value === 'Email';
-      const lang = window.LWG_I18N?.getLang() || 'en';
-      if (lang === 'de') {
-        phoneLabel.textContent = emailOnly ? 'Telefon (optional)' : 'Telefon';
-      } else {
-        phoneLabel.textContent = emailOnly ? 'phone (optional)' : 'phone';
-      }
+      const key = emailOnly ? 'enquiryPhoneOptional' : 'enquiryPhone';
+      phoneLabel.textContent = window.LWG_I18N?.translateRuntime(key) || (emailOnly ? 'phone (optional)' : 'phone');
     }
     preferredContact.addEventListener('change', updatePhoneLabel);
     document.addEventListener('lwg:language-applied', updatePhoneLabel);

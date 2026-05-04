@@ -197,53 +197,6 @@
   <script src="/nav.js"></script>
   <script>
     (function () {
-      const copy = {
-        en: {
-          loading: 'loading courses...',
-          loadError: 'Could not load group courses right now.',
-          noSpots: 'currently there are no spots available in group courses starting soon :(',
-          enquiry: 'make an enquiry ->',
-          level: 'level',
-          starts: 'starts',
-          place: 'place',
-          spots: 'spots',
-          spot: 'spot',
-          available: 'available',
-          maxPeople: 'max. 5 people',
-          perPerson: 'per person / 60min',
-          payment: 'payment after confirmation',
-          book: 'request spot ->',
-          selected: 'selected course',
-          submitting: 'sending...',
-          serverError: 'Something went wrong. Please try again or email info@learningwithgioia.ch.',
-          unavailable: 'This course is no longer available for direct booking.',
-          successTitle: 'thank you.',
-          successBody: 'Your booking request has been received. We will confirm your spot personally before payment is due.',
-        },
-        de: {
-          loading: 'Kurse werden geladen...',
-          loadError: 'Gruppenkurse konnten gerade nicht geladen werden.',
-          noSpots: 'Aktuell gibt es leider keine offenen Gruppenkurse :(',
-          enquiry: 'Anfrage senden ->',
-          level: 'Niveau',
-          starts: 'Start',
-          place: 'Ort',
-          spots: 'Plätze',
-          spot: 'Platz',
-          available: 'frei',
-          maxPeople: 'max. 5 Personen',
-          perPerson: 'pro Person / 60 Min.',
-          payment: 'Zahlung erst nach Bestätigung',
-          book: 'Platz anfragen ->',
-          selected: 'Ausgewählter Kurs',
-          submitting: 'Wird gesendet...',
-          serverError: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe an info@learningwithgioia.ch.',
-          unavailable: 'Dieser Kurs ist nicht mehr direkt buchbar.',
-          successTitle: 'Danke.',
-          successBody: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deinen Platz persönlich. Dann schicken wir dir die Rechnung für deinen Kurs.',
-        },
-      };
-
       const coursesList = document.getElementById('courses-list');
       const statusEl = document.getElementById('courses-status');
       const emptyState = document.getElementById('empty-state');
@@ -254,13 +207,14 @@
       const billingFields = document.getElementById('billing-fields');
       let courses = [];
       let selectedCourse = null;
+      let statusMessageKey = 'loading';
 
       function lang() {
         return window.LWG_I18N?.getLang() || 'en';
       }
 
       function t(key) {
-        return copy[lang()]?.[key] || copy.en[key] || key;
+        return window.LWG_I18N?.translateRuntime('groupCourses' + key[0].toUpperCase() + key.slice(1)) || key;
       }
 
       function esc(value) {
@@ -325,6 +279,7 @@
 
       async function loadCourses() {
         statusEl.hidden = false;
+        statusMessageKey = 'loading';
         statusEl.textContent = t('loading');
         try {
           const res = await fetch('/api/public-courses');
@@ -335,6 +290,7 @@
           courses = [];
           emptyState.hidden = true;
           statusEl.hidden = false;
+          statusMessageKey = 'loadError';
           statusEl.textContent = t('loadError');
         }
       }
@@ -471,7 +427,7 @@
       });
 
       document.addEventListener('lwg:language-applied', () => {
-        if (!statusEl.hidden) statusEl.textContent = courses.length ? '' : t('loading');
+        if (!statusEl.hidden) statusEl.textContent = courses.length ? '' : t(statusMessageKey);
         emptyState.querySelector('p').textContent = t('noSpots');
         emptyState.querySelector('a').textContent = t('enquiry');
         document.getElementById('booking-submit').textContent = t('book');
