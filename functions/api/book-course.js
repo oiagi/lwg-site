@@ -14,6 +14,7 @@ import {
   withErrorHandling,
   parseJsonBody,
   pickDefined,
+  normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
 import { findOrCreateStudent } from './_student-utils.js';
@@ -107,12 +108,50 @@ function formatPrice(amount, currency) {
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
 }
 
-function buildCustomerEmail(course, student) {
+function buildCustomerEmail(course, student, language = 'en') {
   const total = bookingTotal(course);
+  const isGerman = language === 'de';
+  const starts = new Date(course.first_session_at).toLocaleString(isGerman ? 'de-CH' : 'en-GB', {
+    timeZone: 'Europe/Zurich',
+  });
+  const copy = isGerman
+    ? {
+        subject: `Buchungsanfrage erhalten — ${course.level || course.service || 'Gruppenkurs'} · learning with gioia`,
+        htmlLang: 'de',
+        greeting: `Danke, ${esc(student.first_name || 'du')} :)`,
+        intro: 'Wir haben deine Buchungsanfrage erhalten. So geht es weiter:',
+        steps: [
+          'Wir bestätigen deine Anfrage persönlich.',
+          'Du erhältst die Zahlungsinformationen für deinen Kurs.',
+          'Du bezahlst die Rechnung.',
+          'Fertig! Dein Platz im Kurs ist reserviert.',
+        ],
+        course: 'Kurs',
+        starts: 'Start',
+        place: 'Ort',
+        totalPrice: 'Gesamtpreis',
+      }
+    : {
+        subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
+        htmlLang: 'en',
+        greeting: `Thank you, ${esc(student.first_name || 'there')} :)`,
+        intro: "We've received your booking request. What happens next:",
+        steps: [
+          'We will confirm your request.',
+          'You will receive the payment request for your course.',
+          'You pay the bill.',
+          "Done! You're all set for your course.",
+        ],
+        course: 'Course',
+        starts: 'Starts',
+        place: 'Place',
+        totalPrice: 'Total price',
+      };
+  const steps = copy.steps.map((step) => `<li>${esc(step)}</li>`).join('');
   return {
-    subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
+    subject: copy.subject,
     html: `<!DOCTYPE html>
-<html lang="en">
+<html lang="${copy.htmlLang}">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
@@ -122,21 +161,18 @@ function buildCustomerEmail(course, student) {
           <p style="margin:0;color:#d6eaf8;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
         </td></tr>
         <tr><td style="padding:40px;">
-          <p style="margin:0 0 24px;font-size:22px;color:#1a1a1a;">Thank you, ${esc(student.first_name || 'there')} :)</p>
+          <p style="margin:0 0 24px;font-size:22px;color:#1a1a1a;">${copy.greeting}</p>
           <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#333;">
-            We've received your booking request. What happens next:
+            ${esc(copy.intro)}
           </p>
           <ul style="margin:0 0 28px 20px;padding:0;font-size:15px;line-height:1.7;color:#333;">
-            <li>We will confirm your request.</li>
-            <li>You will receive the payment request for your course.</li>
-            <li>You pay the bill.</li>
-            <li>Done! You're all set for your course.</li>
+            ${steps}
           </ul>
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Course</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Starts</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(new Date(course.first_session_at).toLocaleString('de-CH', { timeZone: 'Europe/Zurich' }))}</td></tr>
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Place</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">Total price</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPrice(total, course.currency))}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.course}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.starts}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(starts)}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.place}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.totalPrice}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPrice(total, course.currency))}</td></tr>
           </table>
         </td></tr>
       </table>
@@ -219,6 +255,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   });
   if (studentErr) return errorResponse(studentErr, 400);
 
+  const language = normalizePageLanguage(body.language);
+
   const candidates = await loadPublicCourseCandidates(env, courseId);
   const course = candidates[0];
   if (!course || !isPublicCourseEligible(course, course.pending_booking_count)) {
@@ -240,6 +278,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     total_price: totalPrice,
     currency: publicCourse.currency,
     payment_note: 'Payment after personal confirmation.',
+    language,
   };
   const contact = {
     lead: {
@@ -257,6 +296,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       },
     ],
     intake: student,
+    language,
   };
 
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -319,7 +359,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   await Promise.allSettled([
-    sendEmail(env, student.email, buildCustomerEmail(publicCourse, student)),
+    sendEmail(env, student.email, buildCustomerEmail(publicCourse, student, language)),
     sendEmail(env, NOTIFY_EMAILS, buildNotificationEmail(publicCourse, student, enquiryId)),
   ]);
 
