@@ -1902,12 +1902,30 @@ html[data-device='mobile'] .avail-day {
   margin: 0 0 0.2rem;
 }
 .course-invoice-row {
+  align-items: center;
+  display: flex;
   font-size: 0.8rem;
+  gap: 0.5rem;
+  justify-content: space-between;
   padding: 0.15rem 0;
 }
 .course-invoice-number {
   font-weight: 500;
   letter-spacing: 0.04em;
+}
+.inline-link-btn {
+  background: transparent;
+  border: 0;
+  color: #2980b9;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0;
+  text-transform: uppercase;
+}
+.inline-link-btn:hover {
+  color: #1f5f8f;
 }
 
 /* ── Student progress block (inside course detail) ────────────────── */
@@ -2258,6 +2276,134 @@ html[data-device='mobile'] .avail-day {
   font-size: 0.82rem;
   color: #555;
   margin: 0.6rem 0 0.4rem;
+}
+
+/* ── Invoice modal ──────────────────────────────────────────────── */
+.invoice-preview {
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  padding: 0.8rem;
+  max-height: 32rem;
+  overflow-y: auto;
+}
+.inv-prev-page {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #000;
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  min-height: 34rem;
+  padding: 2rem 2.2rem;
+  position: relative;
+}
+.inv-prev-page p {
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  margin: 0 0 0.22rem;
+}
+.inv-prev-sender {
+  margin-bottom: 1rem;
+}
+.inv-prev-meta {
+  margin: 1rem 0 2rem;
+}
+.inv-prev-date {
+  margin: 0 0 1rem;
+}
+.inv-prev-page h3 {
+  font-family: Arial, sans-serif;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.inv-prev-greeting {
+  margin-bottom: 1.4rem;
+}
+.inv-prev-address {
+  border-top: 1px solid #ddd;
+  font-size: 0.76rem;
+  margin: 1.2rem 0;
+  padding-top: 0.6rem;
+}
+.inv-prev-page table {
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  margin: 1rem 0 1.4rem;
+  width: 100%;
+}
+.inv-prev-page th,
+.inv-prev-page td {
+  border: 1px solid #000;
+  padding: 0.4rem 0.45rem;
+  text-align: left;
+  vertical-align: top;
+}
+.inv-prev-page th:nth-child(n + 2),
+.inv-prev-page td:nth-child(n + 2) {
+  text-align: right;
+}
+.inv-prev-qr {
+  align-items: center;
+  border: 1px dashed #b8c7d4;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 0.68rem;
+  height: 7rem;
+  justify-content: center;
+  margin: 1rem 0 0 auto;
+  width: 11rem;
+}
+.inv-prev-qr img {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+}
+.inv-prev-note {
+  color: #333;
+  font-size: 0.62rem;
+  margin-top: 1rem;
+}
+.inv-prev-pdf-page {
+  background: #fff;
+  border: 1px solid #ddd;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+}
+.inv-prev-pdf-label {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.6rem;
+  text-transform: uppercase;
+}
+.inv-prev-pdf-page iframe {
+  border: 1px solid var(--border-soft);
+  display: block;
+  height: 24rem;
+  width: 100%;
+}
+.invoice-recipient-list {
+  border: 1px solid var(--border-soft);
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  margin-top: 0.35rem;
+  max-height: 8rem;
+  overflow-y: auto;
+  padding: 0.55rem;
+}
+.invoice-recipient-list span {
+  color: var(--text-main);
+  font-size: 0.78rem;
+}
+.invoice-recipient-list small {
+  color: var(--text-muted);
+  display: block;
+  font-size: 0.68rem;
+  margin-top: 0.1rem;
 }
 .cert-prev-footer {
   display: flex;

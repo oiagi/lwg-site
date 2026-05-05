@@ -21,11 +21,15 @@ import {
   sendCourseConfirmation,
   sendStudentSchedule,
   openCertificateModal,
+  openInvoiceModal,
+  openBulkInvoiceModal,
+  markInvoicePaid,
   toggleCourseAddressEditor,
   saveCourseAddress,
   handleCourseBooking,
 } from './features/courses.js';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
+import { closeInvoiceModal, submitInvoice } from './features/invoices.js';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -81,6 +85,11 @@ const actions = {
   openCertificateModal,
   closeCertificateModal,
   submitCertificates,
+  openInvoiceModal,
+  openBulkInvoiceModal,
+  markInvoicePaid,
+  closeInvoiceModal,
+  submitInvoice,
   toggleCourseAddressEditor,
   saveCourseAddress,
   handleCourseBooking,
