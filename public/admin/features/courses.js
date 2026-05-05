@@ -5,6 +5,7 @@ import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
+import { openBulkInvoiceModal as openBulkInvoices, openInvoiceModal as openInvoice } from './invoices.js';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -19,6 +20,14 @@ let courseControlsAttached = false;
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
+}
+
+export function openInvoiceModal(courseId, studentId) {
+  openInvoice(courseId, studentId, coursesCache);
+}
+
+export function openBulkInvoiceModal(courseId) {
+  openBulkInvoices(courseId, coursesCache);
 }
 
 /* ── Location address helpers ───────────────────────────────────── */
@@ -118,6 +127,22 @@ export async function saveCourseAddress(courseId) {
       msg.style.color = '#c33';
       msg.style.display = 'inline';
     }
+  }
+}
+
+export async function markInvoicePaid(invoiceId, courseId) {
+  if (!confirm('Mark this invoice as paid?')) return;
+  try {
+    const res = await apiFetch('/api/mark-invoice-paid', {
+      method: 'POST',
+      body: { invoice_id: invoiceId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'Could not mark invoice paid');
+    await loadCourses(currentCourseFilter);
+    document.getElementById('course-detail-' + courseId)?.classList.add('open');
+  } catch (err) {
+    alert('Error: ' + (err.message || err));
   }
 }
 
@@ -332,7 +357,7 @@ function renderCourses(courses) {
                     : '—';
                 const num = esc(inv.invoice_number || '—');
                 const status = esc(inv.status || 'open');
-                return `<li class="course-invoice-row"><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></li>`;
+                return `<li class="course-invoice-row"><span><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></span><button class="inline-link-btn" data-action="markInvoicePaid" data-args="${inv.id},${c.id}">mark paid</button></li>`;
               })
               .join('');
             const invoiceBlock = openInvoices
@@ -341,6 +366,10 @@ function renderCourses(courses) {
             const scheduleBtn = s.email
               ? `<button class="action-btn" data-action="sendStudentSchedule" data-args="${s.id},${c.id}">✉ send schedule</button>
                  <span class="saved-msg" id="schedule-msg-${s.id}">sent</span>`
+              : '';
+            const invoiceBtn = s.email || s.billing_email
+              ? `<button class="action-btn" data-action="openInvoiceModal" data-args="${c.id},${s.id}">✉ send invoice</button>
+                 <span class="saved-msg" id="invoice-msg-${c.id}-${s.id}">sent</span>`
               : '';
             const sentTags = [
               s.schedule_sent_at
@@ -367,6 +396,7 @@ function renderCourses(courses) {
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
           ${scheduleBtn}
+          ${invoiceBtn}
         </div>
         ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
         ${invoiceBlock}
@@ -443,6 +473,9 @@ function renderCourses(courses) {
             <button class="save-btn"
               data-action="openCertificateModal" data-args="${c.id}">✉ send certificates</button>
             <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
+            <button class="save-btn"
+              data-action="openBulkInvoiceModal" data-args="${c.id}">✉ bulk invoices</button>
+            <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
           </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
