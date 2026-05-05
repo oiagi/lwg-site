@@ -245,10 +245,7 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
     <label>Recipients</label>
     <div class="invoice-recipient-list">
       ${recipients
-        .map(
-          (s) =>
-            `<span>${esc(studentName(s))}<small>${esc(billingEmail(s))}</small></span>`
-        )
+        .map((s) => `<span>${esc(studentName(s))}<small>${esc(billingEmail(s))}</small></span>`)
         .join('')}
     </div>
     ${skippedText}`;
@@ -444,7 +441,9 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     language,
     invoiceNumber,
     customerReference:
-      currentBulkRecipients.length && student ? student.customer_reference || '' : val('inv-customer-reference'),
+      currentBulkRecipients.length && student
+        ? student.customer_reference || ''
+        : val('inv-customer-reference'),
     invoiceDate: val('inv-date'),
     dueDate: val('inv-due-date'),
     subject: val('inv-subject'),
@@ -453,7 +452,9 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     totalAmount,
     currency: currentCourse?.currency || 'CHF',
     recipientName: billingName(student),
-    recipientEmail: currentBulkRecipients.length ? billingEmail(student) : val('inv-recipient-email'),
+    recipientEmail: currentBulkRecipients.length
+      ? billingEmail(student)
+      : val('inv-recipient-email'),
     recipientLines: billingAddressLines(student),
     courseCode: currentCourse?.course_code || '',
   };
@@ -815,27 +816,27 @@ export async function submitInvoice() {
 
 async function sendInvoiceRequest(data, student, pdfBase64) {
   const res = await apiFetch('/api/send-invoice', {
-      method: 'POST',
-      body: {
-        student_id: student.id,
-        course_id: currentCourse.id,
-        email: data.recipientEmail,
-        name: data.recipientName,
-        language: data.language,
-        invoice: {
-          invoice_number: data.invoiceNumber,
-          customer_reference: data.customerReference,
-          subject: data.subject,
-          quantity: data.quantity,
-          unit_price: data.unitPrice,
-          total_amount: data.totalAmount,
-          currency: data.currency,
-          invoice_date: data.invoiceDate,
-          due_date: data.dueDate,
-        },
-        pdf_base64: pdfBase64,
+    method: 'POST',
+    body: {
+      student_id: student.id,
+      course_id: currentCourse.id,
+      email: data.recipientEmail,
+      name: data.recipientName,
+      language: data.language,
+      invoice: {
+        invoice_number: data.invoiceNumber,
+        customer_reference: data.customerReference,
+        subject: data.subject,
+        quantity: data.quantity,
+        unit_price: data.unitPrice,
+        total_amount: data.totalAmount,
+        currency: data.currency,
+        invoice_date: data.invoiceDate,
+        due_date: data.dueDate,
       },
-    });
+      pdf_base64: pdfBase64,
+    },
+  });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
   return body;

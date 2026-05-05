@@ -5,7 +5,10 @@ import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
-import { openBulkInvoiceModal as openBulkInvoices, openInvoiceModal as openInvoice } from './invoices.js';
+import {
+  openBulkInvoiceModal as openBulkInvoices,
+  openInvoiceModal as openInvoice,
+} from './invoices.js';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -367,10 +370,11 @@ function renderCourses(courses) {
               ? `<button class="action-btn" data-action="sendStudentSchedule" data-args="${s.id},${c.id}">✉ send schedule</button>
                  <span class="saved-msg" id="schedule-msg-${s.id}">sent</span>`
               : '';
-            const invoiceBtn = s.email || s.billing_email
-              ? `<button class="action-btn" data-action="openInvoiceModal" data-args="${c.id},${s.id}">✉ send invoice</button>
+            const invoiceBtn =
+              s.email || s.billing_email
+                ? `<button class="action-btn" data-action="openInvoiceModal" data-args="${c.id},${s.id}">✉ send invoice</button>
                  <span class="saved-msg" id="invoice-msg-${c.id}-${s.id}">sent</span>`
-              : '';
+                : '';
             const sentTags = [
               s.schedule_sent_at
                 ? `<span class="sent-tag">schedule sent · ${esc(fmtDate(s.schedule_sent_at))}</span>`
