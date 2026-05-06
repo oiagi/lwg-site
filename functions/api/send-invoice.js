@@ -56,9 +56,10 @@ function buildEmail({ language, name, invoice }) {
   const greeting = isEN ? `Hello ${name || 'there'},` : `Hallo ${name || 'du'},`;
   const courseLabel = invoice.subject || (isEN ? 'your course' : 'deinen Kurs');
   const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN
-    ? `Attached you will find the invoice for ${courseLabel}. Thank you for learning with us.`
-    : `Anbei findest du die Rechnung für ${courseLabel}. Danke, dass du mit uns lernst.`;
+  const intro = isEN ? 'Thank you for learning with us.' : 'danke, dass du mit uns lernst.';
+  const invoiceLine = isEN
+    ? `Attached you will find the invoice for ${courseLabel}.`
+    : `Anbei findest du die Rechnung für ${courseLabel}.`;
   const paymentLine = dueDate
     ? isEN
       ? `You can pay it easily with the QR bill in the PDF. The payment is due by ${dueDate}.`
@@ -91,6 +92,9 @@ function buildEmail({ language, name, invoice }) {
             <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>
             <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
               ${esc(intro)}
+            </p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
+              ${esc(invoiceLine)}
             </p>
             <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
               ${isEN ? 'Amount' : 'Betrag'}: <strong>${esc(amount)}</strong><br>
