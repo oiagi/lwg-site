@@ -139,7 +139,7 @@
         '.section:nth-of-type(2) h2': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
         '.section:nth-of-type(2) p': {
           en: 'We offer targeted preparation for internationally recognised language exams, including <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong>, and <strong>Goethe</strong>. Courses are tailored to the format and requirements of your chosen exam and are taught in the exam language. If you prefer to be taught in another language, please let us know and we will do our best to accommodate you.',
-          de: 'Ob <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong> und <strong>Goethe</strong> - wir bieten gezielte Vorbereitung auf international anerkannte Sprachprüfungen an. Die Kurse werden auf Format und Anforderungen deiner Prüfung abgestimmt und in der Prüfungssprache unterrichtet. Wenn du lieber in einer anderen Sprache unterrichtet werden möchtest, sag uns Bescheid; wir geben unser Bestes, dich mit einer Lehrperson zu verbinden, die deine Sprache spricht.',
+          de: 'Ob <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong> und <strong>Goethe</strong> - wir bieten gezielte Vorbereitung auf international anerkannte Sprachprüfungen an. Die Kurse werden auf Format und Anforderungen deiner Prüfung abgestimmt und in der Prüfungssprache unterrichtet. Wenn du lieber in einer anderen Sprache unterrichtet werden möchtest, sag uns Bescheid. Wir geben unser Bestes, dich mit einer Lehrperson zu verbinden, die deine Sprache spricht.',
         },
         '.section:nth-of-type(3) h2': { en: 'Tutoring', de: 'Nachhilfe' },
         '.section:nth-of-type(3) p': {
