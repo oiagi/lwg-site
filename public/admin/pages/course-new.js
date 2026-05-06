@@ -231,7 +231,7 @@ async function handleSubmit(e) {
     msgEl.textContent = `Created. Course: ${result.course_code}`;
     msgEl.className = 'modal-msg success';
     msgEl.style.display = 'block';
-    btn.textContent = 'created ✓';
+    btn.textContent = 'created';
 
     setTimeout(() => {
       window.location.href = '/admin#courses';

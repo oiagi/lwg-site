@@ -598,7 +598,7 @@ export async function submitCertificates() {
       : `Sent ${sent} certificate(s).`;
     msg.className = 'modal-msg ' + (failed ? 'err' : 'success');
     msg.style.display = 'block';
-    btn.textContent = failed ? 'send certificates' : 'sent ✓';
+    btn.textContent = failed ? 'send certificates' : 'sent';
 
     if (!failed) {
       setTimeout(() => closeCertificateModal(), MESSAGE_TIMEOUT_MS);

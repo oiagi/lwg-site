@@ -56,7 +56,7 @@ async function loadTeacherSchedule(teacherId) {
     const teacher = teachers.find((t) => t.id === teacherId);
     const authorised = teacher ? teacher.authorised : false;
     const bannerHtml = authorised
-      ? '<p style="font-size:0.75rem;color:#27ae60;margin-bottom:0.8rem;">Calendar: authorised ✓</p>'
+      ? '<p style="font-size:0.75rem;color:#27ae60;margin-bottom:0.8rem;">Calendar: authorised</p>'
       : `<p style="font-size:0.75rem;color:#c0392b;margin-bottom:0.8rem;">Calendar: not authorised — <button class="action-btn" data-action="authoriseTeacher" data-args="${esc(teacherId)}">Authorise now</button></p>`;
 
     container.innerHTML = bannerHtml;

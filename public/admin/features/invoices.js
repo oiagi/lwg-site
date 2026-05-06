@@ -105,20 +105,20 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
 
   currentCourse = course;
   currentStudent = recipients[0];
-  currentBulkRecipients = recipients;
+  currentBulkRecipients = recipients.map((s) => ({ ...s, selected: true }));
   qrDataUrl = null;
   qrPdfBytes = null;
   qrFileType = null;
   revokeQrPdfObjectUrl();
 
   const titleEl = document.getElementById('invoice-title');
-  titleEl.textContent = `bulk send invoices — ${course.course_code || 'course'}`;
+  titleEl.textContent = `send invoices — ${course.course_code || 'course'}`;
 
   const msg = document.getElementById('inv-msg');
   msg.style.display = 'none';
   msg.textContent = '';
   const btn = document.getElementById('inv-submit');
-  btn.textContent = `send ${recipients.length} invoices`;
+  btn.textContent = `send ${currentBulkRecipients.length} invoices`;
   btn.disabled = false;
 
   const data = buildDefaultInvoiceData('');
@@ -138,7 +138,7 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
   const fileEl = document.getElementById('inv-qr-file');
   if (fileEl) fileEl.value = '';
 
-  renderBulkInvoiceRecipients(recipients, skippedOpen);
+  renderBulkInvoiceRecipients(currentBulkRecipients, skippedOpen);
   bindInvoiceListeners();
   updateInvoicePreview();
   document.getElementById('invoice-modal').classList.add('open');
@@ -242,13 +242,54 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
     : '';
   wrap.style.display = 'block';
   wrap.innerHTML = `
-    <label>Recipients</label>
+    <label>Recipients <span class="cs-meta" id="inv-bulk-count"></span></label>
     <div class="invoice-recipient-list">
       ${recipients
-        .map((s) => `<span>${esc(studentName(s))}<small>${esc(billingEmail(s))}</small></span>`)
+        .map(
+          (s, i) => `
+            <label class="invoice-recipient-row">
+              <input type="checkbox" data-invoice-recipient="${i}" ${s.selected ? 'checked' : ''}>
+              <span class="invoice-recipient-name">${esc(studentName(s))}</span>
+              <span class="invoice-recipient-email">${esc(billingEmail(s))}</span>
+            </label>`
+        )
         .join('')}
     </div>
     ${skippedText}`;
+
+  updateBulkInvoiceCount();
+
+  wrap.querySelectorAll('input[data-invoice-recipient]').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const idx = parseInt(cb.dataset.invoiceRecipient, 10);
+      if (currentBulkRecipients[idx]) {
+        currentBulkRecipients[idx].selected = cb.checked;
+        syncBulkInvoicePreviewRecipient();
+        updateBulkInvoiceCount();
+        updateInvoicePreview();
+      }
+    });
+  });
+}
+
+function selectedBulkRecipients() {
+  return currentBulkRecipients.filter((s) => s.selected);
+}
+
+function syncBulkInvoicePreviewRecipient() {
+  if (!currentBulkRecipients.length) return;
+  currentStudent = selectedBulkRecipients()[0] || currentBulkRecipients[0];
+  setVal('inv-recipient-email', billingEmail(currentStudent));
+}
+
+function updateBulkInvoiceCount() {
+  const selected = selectedBulkRecipients().length;
+  const countEl = document.getElementById('inv-bulk-count');
+  if (countEl) countEl.textContent = `(${selected} selected)`;
+  const btn = document.getElementById('inv-submit');
+  if (!btn || !currentBulkRecipients.length) return;
+  btn.disabled = selected === 0;
+  btn.textContent = selected === 1 ? 'send 1 invoice' : `send ${selected} invoices`;
 }
 
 function formatDateInput(date) {
@@ -732,6 +773,13 @@ export async function submitInvoice() {
 
   const data = getInvoiceData();
   const isBulk = currentBulkRecipients.length > 0;
+  const bulkRecipients = isBulk ? selectedBulkRecipients() : [];
+  if (isBulk && !bulkRecipients.length) {
+    msg.textContent = 'Select at least one recipient.';
+    msg.className = 'modal-msg err';
+    msg.style.display = 'block';
+    return;
+  }
   if (!data.invoiceNumber || !data.recipientEmail || !data.totalAmount) {
     msg.textContent = 'Please fill invoice number, email, and amount.';
     msg.className = 'modal-msg err';
@@ -762,16 +810,16 @@ export async function submitInvoice() {
     if (isBulk) {
       const invoiceNumberPattern = /^(LWG-\d{4}-)(\d{4})$/;
       if (!invoiceNumberPattern.test(data.invoiceNumber)) {
-        throw new Error('Bulk invoice number must use the format LWG-YYYY-0001.');
+        throw new Error('Invoice number must use the format LWG-YYYY-0001.');
       }
 
       let sent = 0;
       const failed = [];
-      for (let i = 0; i < currentBulkRecipients.length; i += 1) {
-        const student = currentBulkRecipients[i];
+      for (let i = 0; i < bulkRecipients.length; i += 1) {
+        const student = bulkRecipients[i];
         const invoiceNumber = incrementInvoiceNumber(data.invoiceNumber, i);
         const studentData = getInvoiceData(student, invoiceNumber);
-        btn.textContent = `sending ${i + 1}/${currentBulkRecipients.length}…`;
+        btn.textContent = `sending ${i + 1}/${bulkRecipients.length}…`;
         const pdfBase64 = await buildInvoicePdf(studentData);
         try {
           await sendInvoiceRequest(studentData, student, pdfBase64);
@@ -788,8 +836,9 @@ export async function submitInvoice() {
         : `Sent ${sent} invoices.`;
       msg.className = failed.length ? 'modal-msg err' : 'modal-msg success';
       msg.style.display = 'block';
-      btn.textContent = failed.length ? 'send invoices' : 'sent ✓';
+      btn.textContent = failed.length ? 'send invoices' : 'sent';
       btn.disabled = failed.length ? false : true;
+      if (failed.length) updateBulkInvoiceCount();
       if (!failed.length) setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
       return;
     }
@@ -803,7 +852,7 @@ export async function submitInvoice() {
     msg.textContent = 'Invoice sent.';
     msg.className = 'modal-msg success';
     msg.style.display = 'block';
-    btn.textContent = 'sent ✓';
+    btn.textContent = 'sent';
     setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
   } catch (err) {
     msg.textContent = 'Error: ' + (err.message || err);

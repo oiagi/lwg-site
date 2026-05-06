@@ -19,7 +19,7 @@ import {
   submitAddParticipant,
   initAddParticipantSearch,
   sendCourseConfirmation,
-  sendStudentSchedule,
+  openScheduleModal,
   openCertificateModal,
   openInvoiceModal,
   openBulkInvoiceModal,
@@ -81,7 +81,7 @@ const actions = {
   closeAddParticipantModal,
   submitAddParticipant,
   sendCourseConfirmation,
-  sendStudentSchedule,
+  openScheduleModal,
   openCertificateModal,
   closeCertificateModal,
   submitCertificates,
@@ -162,7 +162,11 @@ const modalObserver = new MutationObserver((mutations) => {
     if (!el.classList.contains('modal-overlay')) continue;
     if (el.classList.contains('open')) {
       const modal = el.querySelector('.modal');
-      if (modal) trapFocus(modal);
+      el.scrollTop = 0;
+      if (modal) {
+        modal.scrollTop = 0;
+        trapFocus(modal);
+      }
     } else {
       releaseFocus();
     }
