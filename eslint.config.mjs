@@ -26,4 +26,10 @@ export default [
       globals: { ...globals.node, caches: 'readonly' },
     },
   },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 ];
