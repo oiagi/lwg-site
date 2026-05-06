@@ -253,8 +253,8 @@
       text: {
         h1: { en: 'open group courses', de: 'offene Gruppenkurse' },
         '.courses-intro': {
-          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. We work hard to confirm your booking as soon as possible.',
-          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Reihenfolge behandelt, in der sie bei uns eingehen. Wir bestätigen deine Buchungsanfrage so schnell wie möglich.',
+          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. We work hard to confirm your booking request as soon as possible.',
+          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Wir bearbeiten Buchungsanfragen der Reihe nach und bestätigen deine Buchungsanfrage so schnell wie möglich.',
         },
         '#courses-status': { en: 'loading courses...', de: 'Kurse werden geladen...' },
         '#empty-state p': {
