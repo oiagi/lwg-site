@@ -203,7 +203,7 @@ export async function submitImport() {
     msg.textContent = `Imported: ${result.created} new, ${result.updated} updated, ${result.skipped} skipped.`;
     msg.className = 'modal-msg success';
     msg.style.display = 'block';
-    btn.textContent = 'done ✓';
+    btn.textContent = 'done';
     setTimeout(() => {
       closeImportModal();
       loadStudents(getCurrentStudentFilter());

@@ -130,7 +130,7 @@ async function handleSubmit(e) {
     msgEl.textContent = 'Course updated.';
     msgEl.className = 'modal-msg success';
     msgEl.style.display = 'block';
-    btn.textContent = 'saved ✓';
+    btn.textContent = 'saved';
 
     setTimeout(() => {
       window.location.href = '/admin#courses';

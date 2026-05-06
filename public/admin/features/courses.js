@@ -169,19 +169,19 @@ function sentCommunicationsBlock(course) {
   const items = [];
   if (confirmedAt) {
     items.push(
-      `<li>✓ confirmation sent · <span class="detail-muted">${esc(fmtDate(confirmedAt))}</span></li>`
+      `<li>confirmation sent · <span class="detail-muted">${esc(fmtDate(confirmedAt))}</span></li>`
     );
   }
   if (scheduleSent.length) {
     const last = latest(scheduleSent, 'schedule_sent_at');
     items.push(
-      `<li>✓ schedule sent to ${scheduleSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+      `<li>schedule sent to ${scheduleSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
     );
   }
   if (certSent.length) {
     const last = latest(certSent, 'certificate_sent_at');
     items.push(
-      `<li>✓ certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+      `<li>certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
     );
   }
 
@@ -321,7 +321,7 @@ function renderCourses(courses) {
 
       const rebookFlag =
         total && remaining !== null && remaining <= 3
-          ? `<span class="rebook-flag">⚠ ${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
+          ? `<span class="rebook-flag">${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
           : '';
 
       const sessions = (c.sessions || [])
@@ -366,15 +366,6 @@ function renderCourses(courses) {
             const invoiceBlock = openInvoices
               ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
               : '';
-            const scheduleBtn = s.email
-              ? `<button class="action-btn" data-action="sendStudentSchedule" data-args="${s.id},${c.id}">✉ send schedule</button>
-                 <span class="saved-msg" id="schedule-msg-${s.id}">sent</span>`
-              : '';
-            const invoiceBtn =
-              s.email || s.billing_email
-                ? `<button class="action-btn" data-action="openInvoiceModal" data-args="${c.id},${s.id}">✉ send invoice</button>
-                 <span class="saved-msg" id="invoice-msg-${c.id}-${s.id}">sent</span>`
-                : '';
             const sentTags = [
               s.schedule_sent_at
                 ? `<span class="sent-tag">schedule sent · ${esc(fmtDate(s.schedule_sent_at))}</span>`
@@ -399,8 +390,6 @@ function renderCourses(courses) {
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
-          ${scheduleBtn}
-          ${invoiceBtn}
         </div>
         ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
         ${invoiceBlock}
@@ -416,7 +405,7 @@ function renderCourses(courses) {
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`
         : `<div class="sync-row sync-row--right">
-           <button class="save-btn sync-btn" data-action="syncCalendar" data-args="${c.id}">↻ sync</button>
+           <button class="save-btn sync-btn" data-action="syncCalendar" data-args="${c.id}">sync</button>
            <span class="saved-msg" id="sync-msg-${c.id}">synced</span>
          </div>`;
 
@@ -472,13 +461,16 @@ function renderCourses(courses) {
             <button class="save-btn"
               data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
             <button class="save-btn"
-              data-action="sendCourseConfirmation" data-args="${c.id}">✉ send confirmation</button>
+              data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
             <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
             <button class="save-btn"
-              data-action="openCertificateModal" data-args="${c.id}">✉ send certificates</button>
+              data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
+            <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
+            <button class="save-btn"
+              data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
             <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
             <button class="save-btn"
-              data-action="openBulkInvoiceModal" data-args="${c.id}">✉ bulk invoices</button>
+              data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
             <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
           </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
@@ -881,7 +873,7 @@ export async function submitNewCourse() {
 
     msgEl.textContent = `Created. Course: ${result.course_code}`;
     msgEl.className = 'modal-msg success';
-    btn.textContent = 'created ✓';
+    btn.textContent = 'created';
 
     setTimeout(() => {
       closeNewCourseModal();
@@ -1060,7 +1052,7 @@ export async function submitAttendance() {
 
     msgEl.textContent = `Saved attendance for ${result.saved_count} student(s).`;
     msgEl.className = 'modal-msg success';
-    btn.textContent = 'saved ✓';
+    btn.textContent = 'saved';
 
     setTimeout(() => closeAttendanceModal(), MESSAGE_TIMEOUT_MS);
   } catch (err) {
@@ -1212,7 +1204,7 @@ export async function submitEditCourse() {
 
     msg.textContent = 'Course updated.';
     msg.className = 'modal-msg success';
-    btn.textContent = 'saved ✓';
+    btn.textContent = 'saved';
 
     setTimeout(() => {
       closeEditCourseModal();
@@ -1251,7 +1243,7 @@ export async function submitAddParticipant() {
       const e = await res.json();
       throw new Error(e.error || 'Failed');
     }
-    btn.textContent = 'added ✓';
+    btn.textContent = 'added';
     setTimeout(() => {
       closeAddParticipantModal();
       loadCourses(currentCourseFilter);
@@ -1284,7 +1276,12 @@ export async function sendCourseConfirmation(courseId) {
   }
   const recipients = (course.students || [])
     .filter((s) => s.email)
-    .map((s) => ({ name: studentDisplayName(s), email: s.email }));
+    .map((s) => ({
+      student_id: s.id,
+      name: studentDisplayName(s),
+      email: s.email,
+      selected: true,
+    }));
   if (!recipients.length) {
     alert('No enrolled students with an email address.');
     return;
@@ -1326,11 +1323,17 @@ export async function sendCourseConfirmation(courseId) {
       { value: 'en', label: 'English' },
     ],
     defaultLanguage: 'de',
-    onConfirm: async ({ language }) => {
+    selectableRecipients: true,
+    onConfirm: async ({ language, recipients: selectedRecipients }) => {
+      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
       const msg = document.getElementById('confirm-msg-' + courseId);
       const res = await apiFetch('/api/send-course-confirmation', {
         method: 'POST',
-        body: { course_id: courseId, language },
+        body: {
+          course_id: courseId,
+          student_ids: selectedRecipients.map((r) => r.student_id),
+          language,
+        },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
@@ -1344,15 +1347,22 @@ export function openCertificateModal(courseId) {
   return openCertificates(courseId, coursesCache);
 }
 
-export async function sendStudentSchedule(studentId, courseId) {
+export async function openScheduleModal(courseId) {
   const course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
     alert('Course not found. Please reload and try again.');
     return;
   }
-  const student = (course.students || []).find((s) => String(s.id) === String(studentId));
-  if (!student || !student.email) {
-    alert('Student has no email address on file.');
+  const recipients = (course.students || [])
+    .filter((s) => s.email)
+    .map((s) => ({
+      student_id: s.id,
+      name: studentDisplayName(s),
+      email: s.email,
+      selected: true,
+    }));
+  if (!recipients.length) {
+    alert('No enrolled students with an email address.');
     return;
   }
 
@@ -1370,7 +1380,7 @@ export async function sendStudentSchedule(studentId, courseId) {
 
   openConfirmSend({
     title: 'send schedule update',
-    recipients: [{ name: studentDisplayName(student), email: student.email }],
+    recipients,
     subject: `Aktualisierter Lektionsplan / Updated lesson plan${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
     contentHtml,
     languageOptions: [
@@ -1378,15 +1388,22 @@ export async function sendStudentSchedule(studentId, courseId) {
       { value: 'en', label: 'English' },
     ],
     defaultLanguage: 'de',
-    onConfirm: async ({ language }) => {
-      const msg = document.getElementById('schedule-msg-' + studentId);
+    selectableRecipients: true,
+    onConfirm: async ({ language, recipients: selectedRecipients }) => {
+      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
+      const msg = document.getElementById('schedule-msg-' + courseId);
       const res = await apiFetch('/api/send-session-schedule', {
         method: 'POST',
-        body: { course_id: courseId, student_id: studentId, language },
+        body: {
+          course_id: courseId,
+          student_ids: selectedRecipients.map((r) => r.student_id),
+          language,
+        },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      if (msg) showMessage(msg, 'schedule sent');
+      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
+      if (msg) showMessage(msg, label);
     },
   });
 }

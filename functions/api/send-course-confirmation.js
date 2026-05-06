@@ -1,10 +1,11 @@
 // functions/api/send-course-confirmation.js
 // POST /api/send-course-confirmation
-// Body: { course_id, student_id?, language? }
+// Body: { course_id, student_id?, student_ids?, language? }
 //
 // Sends a course confirmation email (course overview, scheduled sessions,
 // 24-hour cancellation notice, AGB) to each enrolled student with an email
-// address. If `student_id` is provided, only that student is emailed.
+// address. If `student_id` or `student_ids` is provided, only matching
+// students are emailed.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
@@ -291,8 +292,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const { course_id, student_id } = body;
+  const studentIds = Array.isArray(body.student_ids)
+    ? body.student_ids.map((id) => String(id)).filter(Boolean)
+    : [];
   const language = normalizePageLanguage(body.language, 'de');
   if (!course_id) return errorResponse('Missing course_id', 400);
+  if (body.student_ids !== undefined && !studentIds.length) {
+    return errorResponse('No selected students', 400);
+  }
 
   const bundle = await loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, course_id);
   if (bundle.error) return bundle.error;
@@ -300,8 +307,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { course, sessions, students } = bundle;
 
   let recipients = students.filter((s) => s.email);
-  if (student_id) {
-    recipients = recipients.filter((s) => s.id === student_id);
+  if (studentIds.length) {
+    recipients = recipients.filter((s) => studentIds.includes(String(s.id)));
+    if (!recipients.length) {
+      return errorResponse('Selected students are not enrolled or have no email address', 400);
+    }
+  } else if (student_id) {
+    recipients = recipients.filter((s) => String(s.id) === String(student_id));
     if (!recipients.length) {
       return errorResponse('Student not enrolled or has no email address', 400);
     }
