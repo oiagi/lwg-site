@@ -1,12 +1,13 @@
 // functions/api/send-session-schedule.js
 // POST /api/send-session-schedule
-// Body: { course_id, student_id?, language? }
+// Body: { course_id, student_id?, student_ids?, language? }
 //
 // Sends a schedule update to each enrolled student with an email
 // address — the list of upcoming (non-cancelled) sessions plus the
 // 24-hour cancellation policy reminder, without course confirmation
 // boilerplate or AGB. Use this when sessions have been rescheduled
-// mid-course. If `student_id` is provided, only that student is emailed.
+// mid-course. If `student_id` or `student_ids` is provided, only those
+// students are emailed.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
@@ -171,6 +172,18 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const { course_id, student_id } = body;
+  const hasStudentIds = Object.prototype.hasOwnProperty.call(body, 'student_ids');
+  if (hasStudentIds && !Array.isArray(body.student_ids)) {
+    return errorResponse('student_ids must be an array', 400);
+  }
+  if (hasStudentIds && !body.student_ids.length) {
+    return errorResponse('No selected students', 400);
+  }
+  const selectedStudentIds = hasStudentIds
+    ? body.student_ids.map((id) => String(id))
+    : student_id
+      ? [String(student_id)]
+      : [];
   const language = normalizePageLanguage(body.language, 'de');
   if (!course_id) return errorResponse('Missing course_id', 400);
 
@@ -208,10 +221,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   let recipients = students.filter((s) => s.email);
-  if (student_id) {
-    recipients = recipients.filter((s) => s.id === student_id);
+  if (selectedStudentIds.length) {
+    recipients = recipients.filter((s) => selectedStudentIds.includes(String(s.id)));
     if (!recipients.length) {
-      return errorResponse('Student not enrolled or has no email address', 400);
+      return errorResponse('Selected students are not enrolled or have no email address', 400);
     }
   }
   if (!recipients.length) {

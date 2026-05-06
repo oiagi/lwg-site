@@ -519,7 +519,7 @@ export async function submitEnrollStudent() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed');
     }
-    btn.textContent = 'enrolled ✓';
+    btn.textContent = 'enrolled';
     const sid = enrollStudentId;
     setTimeout(async () => {
       closeEnrollStudentModal();
