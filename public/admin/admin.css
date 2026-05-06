@@ -502,30 +502,33 @@ button.submit:hover {
 
 /* ── Modal ─────────────────────────────────────────────────────── */
 .modal-overlay {
+  --modal-viewport-gap: clamp(1.25rem, 5vh, 3rem);
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(214, 234, 248, 0.85);
   backdrop-filter: blur(3px);
   z-index: 200;
-  place-items: center;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: clamp(1.25rem, 5vh, 3rem) 1rem;
+  padding: var(--modal-viewport-gap) 1rem;
 }
 .modal-overlay.open {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .modal {
   background: #fff;
   padding: 0 2rem 0;
   width: min(92vw, 600px);
-  max-height: min(calc(100dvh - clamp(2.5rem, 10vh, 6rem)), 780px);
+  max-height: calc(100dvh - (var(--modal-viewport-gap) * 2));
   overflow-y: auto;
-  margin: 0;
+  margin: 0 auto;
   flex-shrink: 0;
   animation: fadeUp 0.2s ease both;
   border-radius: 2px;
+  scrollbar-gutter: stable;
 }
 .modal.modal-wide {
   width: min(92vw, 900px);
@@ -840,13 +843,19 @@ button.submit:hover {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
   align-items: center;
-  padding: 0.75rem 0;
+  padding: 0.7rem 0;
   border-bottom: 1px solid #e7edf2;
 }
 .pending-booking-name {
   margin: 0 0 0.15rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--text);
+}
+.pending-booking-row .detail-muted {
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 .pending-booking-actions {
   display: flex;
