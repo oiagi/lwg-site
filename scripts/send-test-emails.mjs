@@ -135,10 +135,12 @@ function buildEmails(to) {
       subject: `${TEST_PREFIX} We've received your enquiry - learning with gioia`,
       html: shell(
         'Thank you, Gioia :)',
-        `<p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#333;">We've received your message and will contact you shortly to discuss your enquiry.</p>${rows([
-          ['What they are looking for', 'A German conversation course test request'],
-          ['Preferred contact', 'Email'],
-        ])}`
+        `<p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#333;">We've received your message and will contact you shortly to discuss your enquiry.</p>${rows(
+          [
+            ['What they are looking for', 'A German conversation course test request'],
+            ['Preferred contact', 'Email'],
+          ]
+        )}`
       ),
     },
     {
@@ -228,9 +230,11 @@ function buildEmails(to) {
         <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">Thank you for learning with us.</p>
         <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">Attached you will find the invoice for German A2 group course.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">Amount: <strong>440.00 CHF</strong><br>You can pay it easily with the QR bill in the PDF. The payment is due by 20.05.2026.</p>
-        <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Warm regards,<br>Gioia</p>`,
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Warm regards,<br>Gioia</p>`
       ),
-      attachments: [{ filename: 'invoice-LWG-2026-TEST.pdf', content: smallPdfBase64('Test invoice PDF') }],
+      attachments: [
+        { filename: 'invoice-LWG-2026-TEST.pdf', content: smallPdfBase64('Test invoice PDF') },
+      ],
     },
     {
       key: 'certificate',
@@ -240,10 +244,13 @@ function buildEmails(to) {
         `<p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#1a1a1a;">Hello Gioia Test,</p>
         <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">Below you will find the certificate for your A2 course TEST-DE-A2.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">It was a pleasure learning with you! Thank you for being part of the course, and maybe see you again soon.</p>
-        <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Warm regards,<br>Gioia</p>`,
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Warm regards,<br>Gioia</p>`
       ),
       attachments: [
-        { filename: 'certificate-of-attendance-LWG-TEST-2026.pdf', content: smallPdfBase64('Test certificate PDF') },
+        {
+          filename: 'certificate-of-attendance-LWG-TEST-2026.pdf',
+          content: smallPdfBase64('Test certificate PDF'),
+        },
       ],
     },
   ];
