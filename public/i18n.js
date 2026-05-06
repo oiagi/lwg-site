@@ -83,7 +83,7 @@
     materials: { en: 'materials', de: 'Materialien' },
     modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
-    impressum: { en: 'Legal Information', de: 'Impressum' },
+    impressum: { en: 'Imprint', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
     terms: { en: 'Terms & Conditions', de: 'AGB' },
     language: { en: 'Language', de: 'Sprache' },
@@ -114,8 +114,8 @@
           de: 'Kleine Gruppen. Sorgfältige Vorbereitung, individuell abgestimmter Unterricht.',
         },
         '.lede p:nth-of-type(2)': {
-          en: 'We give you the tools to use your knowledge beyond the classroom - and the motivation to actually want to.',
-          de: 'Wir trainieren deine Motivation, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
+          en: 'We want to give you confidence and motivation to use your knowledge beyond the classroom.',
+          de: 'Wir wollen dich dabei unterstützen, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
         },
         '.home-cta': { en: 'Find out more ->', de: 'Mehr erfahren ->' },
       },
@@ -139,7 +139,7 @@
         '.section:nth-of-type(2) h2': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
         '.section:nth-of-type(2) p': {
           en: 'We offer targeted preparation for internationally recognised language exams, including <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong>, and <strong>Goethe</strong>. Courses are tailored to the format and requirements of your chosen exam and are taught in the exam language. If you prefer to be taught in another language, please let us know and we will do our best to accommodate you.',
-          de: 'Ob <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong> und <strong>Goethe</strong> - wir bieten gezielte Vorbereitung auf international anerkannte Sprachprüfungen an. Die Kurse werden auf Format und Anforderungen deiner Prüfung abgestimmt und in der Prüfungssprache unterrichtet. Wenn du lieber in einer anderen Sprache unterrichtet werden möchtest, sag uns Bescheid; wir geben unser Bestes, zu helfen.',
+          de: 'Ob <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong> und <strong>Goethe</strong> - wir bieten gezielte Vorbereitung auf international anerkannte Sprachprüfungen an. Die Kurse werden auf Format und Anforderungen deiner Prüfung abgestimmt und in der Prüfungssprache unterrichtet. Wenn du lieber in einer anderen Sprache unterrichtet werden möchtest, sag uns Bescheid; wir geben unser Bestes, dich mit einer Lehrperson zu verbinden, die deine Sprache spricht.',
         },
         '.section:nth-of-type(3) h2': { en: 'Tutoring', de: 'Nachhilfe' },
         '.section:nth-of-type(3) p': {
@@ -149,7 +149,7 @@
         '.section:nth-of-type(4) h2': { en: 'Our teachers', de: 'Unsere Lehrpersonen' },
         '.section:nth-of-type(4) p': {
           en: 'All of our teachers hold or are working towards a university degree and a formal teaching qualification (<strong>Lehrdiplom</strong>). Our language teachers specialise in linguistics, bringing an understanding of how language works (not just how to speak it) to every lesson.',
-          de: 'Alle unsere Lehrpersonen haben einen Hochschulabschluss und verfügen über eine formale Lehrqualifikation (<strong>Lehrdiplom</strong>) oder befinden sich in der Ausbildung dahin. Unsere Sprachlehrpersonen spezialisieren sich auf Linguistik und bringen das Verständnis dafür mit, wie Sprache funktioniert - nicht nur, wie man sie spricht.',
+          de: 'Alle unsere Lehrpersonen haben einen Hochschulabschluss und verfügen über eine formale Lehrqualifikation (<strong>Lehrdiplom</strong>) oder befinden sich in der Ausbildung dahin. Unsere Sprachlehrpersonen spezialisieren sich auf Linguistik und verstehen, wie Sprache funktioniert (nicht nur, wie man sie spricht).',
         },
         '.section:nth-of-type(5) h2': { en: 'Location', de: 'Ort' },
         '.section:nth-of-type(5) p': {
@@ -253,13 +253,13 @@
       text: {
         h1: { en: 'open group courses', de: 'offene Gruppenkurse' },
         '.courses-intro': {
-          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. Your booking will be confirmed within two hours.',
-          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Eingang innert zwei Stunden bearbeitet und von uns persönlich bestätigt.',
+          en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. We work hard to confirm your booking as soon as possible.',
+          de: 'Kleine Gruppenkurse mit maximal 5 Personen. Buchungsanfragen werden nach Reihenfolge behandelt, in der sie bei uns eingehen. Wir bestätigen deine Buchungsanfrage so schnell wie möglich.',
         },
         '#courses-status': { en: 'loading courses...', de: 'Kurse werden geladen...' },
         '#empty-state p': {
-          en: 'currently there are no spots available in open group courses :(',
-          de: 'Aktuell sind leider keine Plätze frei :(',
+          en: 'currently there are no spots available in planned or ongoing group courses :(',
+          de: 'Aktuell sind leider keine Plätze in geplanten oder laufenden Gruppenkursen verfügbar :(',
         },
         '#empty-state .enquiry-link': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
         '#booking-title': { en: 'your details', de: 'Deine Angaben' },
@@ -351,7 +351,7 @@
     },
     '/impressum.html': {
       title: {
-        en: 'Legal Information - Learning with Gioia',
+        en: 'Imprint - Learning with Gioia',
         de: 'Impressum - Learning with Gioia',
       },
       description: {
@@ -359,7 +359,7 @@
         de: 'Impressum von Learning with Gioia / Birukoff World, Einzelfirma in Zürich.',
       },
       text: {
-        h1: { en: 'Legal Information', de: 'Impressum' },
+        h1: { en: 'Imprint', de: 'Impressum' },
         '.legal-meta': common.updated,
         '.legal-section:nth-of-type(1) h2': { en: 'Provider', de: 'Anbieterin' },
         '.legal-section:nth-of-type(1) address': {
@@ -562,8 +562,8 @@
       de: 'Gruppenkurse konnten gerade nicht geladen werden.',
     },
     groupCoursesNoSpots: {
-      en: 'currently there are no spots available in open group courses :(',
-      de: 'Aktuell gibt es leider keine offenen Gruppenkurse :(',
+      en: 'currently there are no spots available in planned or ongoing group courses :(',
+      de: 'Aktuell sind leider keine Plätze in geplanten oder laufenden Gruppenkursen verfügbar :(',
     },
     groupCoursesEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
     groupCoursesStarts: { en: 'starts', de: 'Start' },

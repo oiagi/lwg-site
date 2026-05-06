@@ -91,7 +91,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
     : {
         subject: `Aktualisierter Lektionsplan${codeLabel} — learning with gioia`,
         htmlLang: 'de',
-        intro: `Anbei der aktuelle Lektionsplan für deinen ${label}. Wir freuen uns, dass du dabei bist.`,
+        intro: `anbei der aktuelle Lektionsplan für deinen ${label}. Wir freuen uns, dass du dabei bist.`,
         sessions: 'Geplante Lektionen',
         cancellation: 'Absage und Verschiebung',
         questions: 'Bei Fragen erreichen Sie uns unter',
@@ -113,7 +113,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
         <tr>
           <td style="padding:40px 40px 16px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              ${isEnglish ? 'Hello' : 'Hallo'} ${esc(greetingName)}
+              ${isEnglish ? 'Hello' : 'Hallo'} ${esc(greetingName)},
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
               ${esc(copy.intro)}

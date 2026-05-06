@@ -45,11 +45,11 @@ function buildEmail({ language, name, courseCode, level }) {
     ? `Certificate of Attendance — ${courseCode || 'your course'} · learning with gioia`
     : `Teilnahmebestätigung — ${courseCode || 'dein Kurs'} · learning with gioia`;
 
-  const greeting = isEN ? `Hello ${name || 'student'},` : `Hallo ${name || 'Kursteilnehmer:in'}`;
+  const greeting = isEN ? `Hello ${name || 'student'},` : `Hallo ${name || 'Kursteilnehmer:in'},`;
   const courseLabel = [level, isEN ? 'course' : 'Kurs', courseCode].filter(Boolean).join(' ');
   const body = isEN
     ? `Below you will find the certificate for your ${esc(courseLabel || 'course')}.`
-    : `Anbei findest du das Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
+    : `anbei findest du das Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
   const closing = isEN
     ? 'It was a pleasure learning with you! Thank you for being part of the course, and maybe see you again soon.'
     : 'Es hat uns Spass gemacht, mit dir zu lernen! Danke, dass du dabei warst und vielleicht bis bald.';
