@@ -41,9 +41,6 @@ body.nav-active {
   --page-bg: #b8d9f0;
   background-color: #b8d9f0;
 }
-body:has(.modal-overlay.open) {
-  overflow: hidden;
-}
 
 /* ── Login screen ─────────────────────────────────────────────── */
 #login-screen {
@@ -509,14 +506,14 @@ button.submit:hover {
   background: rgba(214, 234, 248, 0.85);
   backdrop-filter: blur(3px);
   z-index: 200;
-  overflow-y: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   padding: var(--modal-viewport-gap) 1rem;
+  pointer-events: none;
 }
 .modal-overlay.open {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 }
 .modal {
   background: #fff;
@@ -524,11 +521,13 @@ button.submit:hover {
   width: min(92vw, 600px);
   max-height: calc(100dvh - (var(--modal-viewport-gap) * 2));
   overflow-y: auto;
+  overscroll-behavior: contain;
   margin: 0 auto;
   flex-shrink: 0;
   animation: fadeUp 0.2s ease both;
   border-radius: 2px;
   scrollbar-gutter: stable;
+  pointer-events: auto;
 }
 .modal.modal-wide {
   width: min(92vw, 900px);

@@ -176,6 +176,13 @@ const modalObserver = new MutationObserver((mutations) => {
 /* ── Panel lazy-loader ───────────────────────────────────────────── */
 const loadedPanels = new Set();
 
+function mountPanelModals(container) {
+  for (const overlay of container.querySelectorAll('.modal-overlay')) {
+    document.body.appendChild(overlay);
+    modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+  }
+}
+
 async function loadPanel(tab) {
   if (loadedPanels.has(tab)) return;
   const res = await fetch(`/admin/panels/${tab}.html`);
@@ -183,9 +190,7 @@ async function loadPanel(tab) {
   const container = document.getElementById('panel-' + tab);
   container.innerHTML = html;
   loadedPanels.add(tab);
-  for (const overlay of container.querySelectorAll('.modal-overlay')) {
-    modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
-  }
+  mountPanelModals(container);
   if (tab === 'courses') initAddParticipantSearch();
 }
 
