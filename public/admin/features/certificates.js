@@ -412,9 +412,10 @@ function buildCertificatePdf(data) {
   // Logo (centered, top)
   if (logoDataUrl) {
     try {
-      const logoW = 40;
-      const logoH = 24;
-      doc.addImage(logoDataUrl, 'PNG', (pageW - logoW) / 2, 18, logoW, logoH);
+      const logoW = 52;
+      const logoRatio = imageAspectRatio(doc, logoDataUrl) || 5.5;
+      const logoH = logoW / logoRatio;
+      doc.addImage(logoDataUrl, 'PNG', (pageW - logoW) / 2, 20, logoW, logoH);
     } catch (err) {
       console.error('addImage logo failed:', err);
     }
@@ -524,6 +525,16 @@ function buildCertificatePdf(data) {
   // Return base64 (without "data:application/pdf;base64," prefix)
   const dataUri = doc.output('datauristring');
   return dataUri.split(',')[1];
+}
+
+function imageAspectRatio(doc, dataUrl) {
+  try {
+    const props = doc.getImageProperties(dataUrl);
+    if (props?.width && props?.height) return props.width / props.height;
+  } catch (err) {
+    console.warn('Could not read image dimensions:', err);
+  }
+  return null;
 }
 
 /* ── Submit ─────────────────────────────────────────────────────── */
