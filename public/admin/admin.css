@@ -2222,7 +2222,7 @@ html[data-device='mobile'] .avail-day {
 }
 .cert-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem 1.6rem;
   align-items: start;
 }
@@ -2255,6 +2255,10 @@ html[data-device='mobile'] .avail-day {
   padding: 0.8rem;
   max-height: 26rem;
   overflow-y: auto;
+}
+.cert-preview-all {
+  display: grid;
+  gap: 0.8rem;
 }
 .cert-prev-page {
   background: #fff;

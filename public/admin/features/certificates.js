@@ -35,6 +35,7 @@ export async function openCertificateModal(courseId, coursesCache) {
     first_name: s.first_name || '',
     last_name: s.last_name || '',
     email: s.email,
+    subjects: s.subjects || '',
     selected: true,
   }));
 
@@ -46,6 +47,8 @@ export async function openCertificateModal(courseId, coursesCache) {
   if (langDe) langDe.checked = true;
   const inclAttCb = document.getElementById('cert-include-attendance');
   if (inclAttCb) inclAttCb.checked = false;
+  const previewAllCb = document.getElementById('cert-preview-all');
+  if (previewAllCb) previewAllCb.checked = false;
 
   renderRecipientList();
   await loadAssets();
@@ -96,6 +99,7 @@ function renderRecipientList() {
       if (currentRecipients[idx]) {
         currentRecipients[idx].selected = cb.checked;
         updateCount();
+        updatePreview();
       }
     });
   });
@@ -115,7 +119,8 @@ function bindOptionListeners() {
   document.querySelectorAll('input[name="cert-language"]').forEach((el) => {
     el.addEventListener('change', updatePreview);
   });
-  document.getElementById('cert-include-attendance').addEventListener('change', updatePreview);
+  document.getElementById('cert-include-attendance')?.addEventListener('change', updatePreview);
+  document.getElementById('cert-preview-all')?.addEventListener('change', updatePreview);
 }
 
 /* ── Attendance counts (per-student) ────────────────────────────── */
@@ -148,16 +153,44 @@ async function loadAttendanceCounts(courseId) {
 function getOptions() {
   const language = document.querySelector('input[name="cert-language"]:checked')?.value || 'de';
   const includeAttendance = document.getElementById('cert-include-attendance')?.checked || false;
-  return { language, includeAttendance };
+  const previewAll = document.getElementById('cert-preview-all')?.checked || false;
+  return { language, includeAttendance, previewAll };
 }
 
 function previewRecipient() {
   return currentRecipients.find((r) => r.selected) || currentRecipients[0] || null;
 }
 
+function titleCase(value) {
+  return String(value || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function certificateSubject(recipient, course, isEN) {
+  const service = String(course.service || '').toLowerCase();
+  const level = String(course.level || '').toUpperCase();
+
+  if (service === 'language course') {
+    if (level.startsWith('CH')) return 'Swiss German';
+    if (level.startsWith('EN')) return 'English';
+    return 'German';
+  }
+
+  if (service === 'tutoring' || service === 'gymivorbereitung') {
+    return recipient.subjects || (isEN ? 'Tutoring' : 'Nachhilfe');
+  }
+
+  return titleCase(course.service);
+}
+
 function buildCertificateData(recipient, course, opts) {
   const isEN = opts.language === 'en';
   const fullName = [recipient.first_name, recipient.last_name].filter(Boolean).join(' ') || '—';
+  const service = String(course.service || '').toLowerCase();
+  const isTutoring = service === 'tutoring' || service === 'gymivorbereitung';
 
   const sessions = (course.sessions || [])
     .filter((s) => s.status !== 'cancelled')
@@ -190,8 +223,8 @@ function buildCertificateData(recipient, course, opts) {
   return {
     fullName,
     courseCode: course.course_code || '',
-    subject: course.service || '',
-    level: course.level || '',
+    subject: certificateSubject(recipient, course, isEN),
+    level: isTutoring ? '' : course.level || '',
     location: locationDisplay,
     classType: classTypeDisplay,
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
@@ -295,14 +328,19 @@ function buildPreviewHtml(data) {
 
 function updatePreview() {
   const container = document.getElementById('cert-preview');
-  const recipient = previewRecipient();
-  if (!currentCourse || !recipient) {
+  const opts = getOptions();
+  const selectedRecipients = currentRecipients.filter((r) => r.selected);
+  const recipients = opts.previewAll ? selectedRecipients : [previewRecipient()].filter(Boolean);
+
+  if (!currentCourse || !recipients.length) {
     container.innerHTML = '<p class="cs-empty">Select at least one recipient to preview.</p>';
     return;
   }
-  const opts = getOptions();
-  const data = buildCertificateData(recipient, currentCourse, opts);
-  container.innerHTML = buildPreviewHtml(data);
+
+  container.classList.toggle('cert-preview-all', opts.previewAll);
+  container.innerHTML = recipients
+    .map((recipient) => buildPreviewHtml(buildCertificateData(recipient, currentCourse, opts)))
+    .join('');
 }
 
 /* ── Certificate ID generation ──────────────────────────────────── */
