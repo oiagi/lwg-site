@@ -37,14 +37,14 @@ function buildDeclineEmail(enquiry, language) {
     ? {
         subject: 'Bezüglich deiner Buchungsanfrage — learning with gioia',
         greeting: `Hallo ${esc(name)} :)`,
-        body: 'Vielen Dank für deine Anfrage. Leider war jemand schneller und der Kurs, den du angefragt hast, ist leider nicht mehr verfügbar :(',
+        body: 'Vielen Dank für deine Anfrage. Leider ist der gewünschte Kurs nicht mehr verfügbar :(',
         closing: 'Wir melden uns bald bei dir, um Optionen zu besprechen.',
         footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
       }
     : {
         subject: 'Regarding your booking request — learning with gioia',
         greeting: `Hi ${esc(name)} :)`,
-        body: 'Thank you for your request. Unfortunately, somebody was faster and the course you requested is no longer available :(',
+        body: 'Thank you for your request. Unfortunately, the course you requested is no longer available :(',
         closing: 'We will be in touch shortly to discuss options.',
         footer: 'If you have any questions, reply to this email or write to',
       };
