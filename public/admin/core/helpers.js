@@ -22,6 +22,25 @@ export function fmtDate(iso) {
   });
 }
 
+export function fmtDateWithEnd(iso, durationMinutes) {
+  if (!iso) return '—';
+  const start = new Date(iso);
+  const base = start.toLocaleString(LOCALE_DATETIME, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  if (!durationMinutes) return base;
+  const end = new Date(start.getTime() + durationMinutes * 60000);
+  const endTime = end.toLocaleString(LOCALE_DATETIME, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return `${base}–${endTime}`;
+}
+
 export function showMessage(el, text, ms = MESSAGE_TIMEOUT_MS) {
   el.textContent = text;
   el.style.display = 'inline';

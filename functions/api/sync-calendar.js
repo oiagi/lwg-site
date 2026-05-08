@@ -81,6 +81,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   for (const event of activeEvents) {
     const scheduledAt = event.start.dateTime || event.start.date;
+    const endAt = event.end?.dateTime || event.end?.date;
+    const durationMinutes =
+      scheduledAt && endAt ? Math.round((new Date(endAt) - new Date(scheduledAt)) / 60000) : 50;
     const isPast = new Date(scheduledAt) < now;
     const status = isPast ? 'completed' : 'scheduled';
     if (isPast) completedCount++;
@@ -95,7 +98,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${existing[0].id}`, {
         method: 'PATCH',
         headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-        body: JSON.stringify({ scheduled_at: scheduledAt, status }),
+        body: JSON.stringify({
+          scheduled_at: scheduledAt,
+          duration_minutes: durationMinutes,
+          status,
+        }),
       });
     } else {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
@@ -105,7 +112,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           course_id: course.id,
           teacher_id: course.teacher_id,
           scheduled_at: scheduledAt,
-          duration_minutes: 50,
+          duration_minutes: durationMinutes,
           status,
           calendar_event_id: event.id,
         }),
