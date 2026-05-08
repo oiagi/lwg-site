@@ -1,6 +1,6 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { fmtDate, esc, showMessage, queryString, attachListControls } from '../core/helpers.js';
+import { fmtDate, fmtDateWithEnd, esc, showMessage, queryString, attachListControls } from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
@@ -339,7 +339,7 @@ function renderCourses(courses) {
       <div class="session-row" id="sess-${s.id}">
         <div class="session-number">${idx + 1}.</div>
         <div class="session-status-dot ${s.status}"></div>
-        <div class="session-date">${fmtDate(s.scheduled_at)}</div>
+        <div class="session-date">${fmtDateWithEnd(s.scheduled_at, s.duration_minutes)}</div>
         <div class="session-status-label">${s.status}</div>
         <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
         ${
