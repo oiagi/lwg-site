@@ -12,7 +12,6 @@
 import {
   supabaseHeaders,
   requireAdminAuth,
-  jsonResponse,
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
@@ -37,6 +36,7 @@ const DB_SORTS = {
 };
 
 const DERIVED_SORTS = new Set(['course_count']);
+const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
 
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
@@ -111,12 +111,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       companyMap[c.id] = c.name;
     });
 
-    // Load all enrolments for course counts, and enquiry links for enquiry counts
+    // Load all enrolments for course counts, and linked enquiries for request flags/counts
     const [enrolRes, enquiryRes, courseRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/enrolments?select=student_id,course_id`, { headers: H }),
-      fetch(`${SUPABASE_URL}/rest/v1/enquiries?select=student_id&student_id=not.is.null`, {
-        headers: H,
-      }),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/enquiries?select=id,student_id,status,service,created_at,course_id,booking_data&student_id=not.is.null&order=created_at.desc`,
+        { headers: H }
+      ),
       fetch(
         `${SUPABASE_URL}/rest/v1/courses?select=id,course_code,service,level,status,group_type`,
         { headers: H }
@@ -138,8 +139,24 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const enquiries = enquiryRes.ok ? await enquiryRes.json() : [];
     const enquiryCountMap = {};
+    const pendingRequestCountMap = {};
+    const pendingRequestsByStudent = {};
+    let pendingRequestTotal = 0;
     enquiries.forEach((e) => {
       enquiryCountMap[e.student_id] = (enquiryCountMap[e.student_id] || 0) + 1;
+      if (UNTREATED_ENQUIRY_STATUSES.has(e.status)) {
+        pendingRequestTotal += 1;
+        pendingRequestCountMap[e.student_id] = (pendingRequestCountMap[e.student_id] || 0) + 1;
+        (pendingRequestsByStudent[e.student_id] ||= []).push({
+          id: e.id,
+          status: e.status,
+          service: e.service,
+          created_at: e.created_at,
+          course_id: e.course_id,
+          course: e.course_id ? coursesById[e.course_id] || null : null,
+          booking_data: e.booking_data || null,
+        });
+      }
     });
 
     const enriched = students.map((s) => {
@@ -150,10 +167,18 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         course_count: studentCourses.length,
         courses: studentCourses,
         enquiry_count: enquiryCountMap[s.id] || 0,
+        pending_request_count: pendingRequestCountMap[s.id] || 0,
+        pending_requests: pendingRequestsByStudent[s.id] || [],
       };
     });
 
-    return jsonResponse(sortEnrichedStudents(enriched, sort, dir));
+    return new Response(JSON.stringify(sortEnrichedStudents(enriched, sort, dir)), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Untreated-Request-Count': String(pendingRequestTotal),
+      },
+    });
   } catch (err) {
     console.error('Error:', err);
     return errorResponse('Connection error');
