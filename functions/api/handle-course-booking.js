@@ -14,7 +14,7 @@ import {
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
 import { PUBLIC_BOOKING_STATUS, PUBLIC_COURSE_CAPACITY } from './_public-course-booking.js';
 
 function cleanString(value, max = 320) {
@@ -131,6 +131,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     console.error('handle-course-booking enrolment error:', await enrolRes.text());
     return errorResponse('Could not enrol student');
   }
+
+  await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId, 'active');
 
   const updated = await patchEnquiry(SUPABASE_URL, H, enquiryId, {
     status: 'confirmed',
