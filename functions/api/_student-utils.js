@@ -48,6 +48,50 @@ export async function findOrCreateStudent(
 }
 
 /**
+ * Ensure a student has an access_token. Returns the token string.
+ * If none exists, generates and saves one.
+ */
+export async function getOrCreateStudentToken(supabaseUrl, serviceKey, studentId) {
+  const H = supabaseHeaders(serviceKey);
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}&select=access_token`,
+    { headers: H }
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  const existing = rows[0]?.access_token;
+  if (existing) return existing;
+
+  const token = crypto.randomUUID();
+  const patch = await fetch(
+    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}`,
+    {
+      method: 'PATCH',
+      headers: H,
+      body: JSON.stringify({ access_token: token, token_created_at: new Date().toISOString() }),
+    }
+  );
+  return patch.ok ? token : null;
+}
+
+/**
+ * Returns the language ('en' or 'de') from the student's most recent enquiry.
+ * Falls back to 'en'.
+ */
+export async function getStudentLanguage(supabaseUrl, serviceKey, studentId) {
+  const H = supabaseHeaders(serviceKey);
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/enquiries?student_id=eq.${encodeURIComponent(studentId)}&select=contact_data,booking_data&order=created_at.desc&limit=1`,
+    { headers: H }
+  );
+  if (!res.ok) return 'en';
+  const rows = await res.json();
+  if (!rows.length) return 'en';
+  const lang = rows[0].contact_data?.language || rows[0].booking_data?.language;
+  return lang === 'de' ? 'de' : 'en';
+}
+
+/**
  * Update a student's status and keep the active boolean in sync.
  * Dual-write compat: any code still reading students.active will see correct value.
  */
