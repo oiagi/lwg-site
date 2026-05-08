@@ -394,6 +394,8 @@ function renderCourses(courses) {
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
+          <button class="remove-enrollment-btn" data-action="removeStudentFromCourse"
+            data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
         ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
@@ -928,6 +930,41 @@ export async function deleteCourse(courseId, courseCode) {
     if (row) row.remove();
   } catch {
     alert('Could not delete course. Please try again.');
+  }
+}
+
+export async function removeStudentFromCourse(courseId, studentId, btn) {
+  const studentName = btn?.dataset.studentName || 'this student';
+  if (
+    !confirm(
+      `Remove ${studentName} from this course? Attendance records for this course will also be removed.`
+    )
+  ) {
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'removing...';
+  }
+
+  try {
+    const res = await apiFetch('/api/remove-enrollment', {
+      method: 'DELETE',
+      body: { course_id: courseId, student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not remove student.');
+
+    await loadCourses(currentCourseFilter);
+    const detail = document.getElementById('course-detail-' + courseId);
+    if (detail) detail.classList.add('open');
+  } catch (err) {
+    alert(err.message || 'Could not remove student from course.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'remove from course';
+    }
   }
 }
 

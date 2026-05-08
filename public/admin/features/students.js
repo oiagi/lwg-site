@@ -482,6 +482,10 @@ function renderAdminSection(s) {
         <td>${esc(c.level) || '—'}</td>
         <td>${esc(c.service) || '—'}</td>
         <td>${esc(c.location) || '—'}</td>
+        <td>
+          <button class="remove-enrollment-btn" data-action="removeStudentEnrollment"
+            data-args="${s.id},${c.id}" data-course-code="${esc(c.course_code || 'this course')}">remove</button>
+        </td>
       </tr>`;
     })
     .join('');
@@ -499,6 +503,7 @@ function renderAdminSection(s) {
             <th>level</th>
             <th>subject</th>
             <th>location</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>${courseRows}</tbody>
@@ -628,6 +633,41 @@ export async function submitEnrollStudent() {
     msg.style.display = 'block';
     btn.textContent = 'enroll';
     btn.disabled = false;
+  }
+}
+
+export async function removeStudentEnrollment(studentId, courseId, btn) {
+  const courseCode = btn?.dataset.courseCode || 'this course';
+  if (
+    !confirm(
+      `Remove this student from ${courseCode}? Attendance records for this course will also be removed.`
+    )
+  ) {
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'removing...';
+  }
+
+  try {
+    const res = await apiFetch('/api/remove-enrollment', {
+      method: 'DELETE',
+      body: { course_id: courseId, student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not remove student from course.');
+
+    selectedStudentId = studentId;
+    await loadStudentsKeepingContext(currentStudentFilter, studentId);
+    await fetchAndRenderStudent(studentId);
+  } catch (e) {
+    alert(e.message || 'Could not remove student from course.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'remove';
+    }
   }
 }
 
