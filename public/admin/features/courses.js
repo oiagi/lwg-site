@@ -28,6 +28,14 @@ let apSearchListenersAttached = false;
 let coursesCache = [];
 let courseControlsAttached = false;
 
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.course-status-wrap')) {
+    document.querySelectorAll('.status-dropdown').forEach((d) => {
+      d.style.display = 'none';
+    });
+  }
+});
+
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
 }
@@ -333,9 +341,19 @@ function renderCourses(courses) {
       const sessLine = total ? `${done} / ${total} sessions` : `${done} sessions completed`;
 
       const rebookFlag =
-        total && remaining !== null && remaining <= 3
-          ? `<span class="rebook-flag">${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
+        total && remaining !== null && remaining > 0 && remaining <= 3
+          ? `<span class="rebook-flag">${remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
           : '';
+
+      const dropItems =
+        ['active', 'paused', 'completed', 'cancelled']
+          .filter((s) => s !== c.status)
+          .map(
+            (s) =>
+              `<li><button class="status-opt-btn status-opt-btn--${s}" data-action="setCourseStatus" data-args="${c.id},${esc(c.course_code)},${s}">${s}</button></li>`
+          )
+          .join('') +
+        `<li class="status-dropdown-divider"></li><li><button class="status-opt-btn status-opt-btn--delete" data-action="setCourseStatus" data-args="${c.id},${esc(c.course_code)},delete">delete</button></li>`;
 
       const sessions = (c.sessions || [])
         .filter((s) => s.status !== 'cancelled')
@@ -429,9 +447,8 @@ function renderCourses(courses) {
           <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
-          <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
+          <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown" id="status-drop-${c.id}" style="display:none;">${dropItems}</ul></div>
           <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
-          <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
           <div class="detail-grid detail-grid--gap-lg">
@@ -920,10 +937,94 @@ export async function submitNewCourse() {
   }
 }
 
-export async function deleteCourse(courseId, courseCode) {
+export async function cancelCourse(courseId, courseCode) {
   if (
     !confirm(
-      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.`
+      `Cancel course ${courseCode || courseId}?\n\nAll upcoming sessions and calendar events will be cancelled. The course record will be kept.`
+    )
+  )
+    return;
+  try {
+    const res = await apiFetch('/api/cancel-course', {
+      method: 'PATCH',
+      body: { course_id: courseId },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not cancel course. Please try again.');
+  }
+}
+
+export async function completeCourse(courseId, courseCode) {
+  if (
+    !confirm(
+      `Mark course ${courseCode || courseId} as completed?\n\nThe course record will be kept and moved to the completed view.`
+    )
+  )
+    return;
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: courseId, status: 'completed' },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not mark course as completed. Please try again.');
+  }
+}
+
+export function toggleStatusDropdown(courseId) {
+  const drop = document.getElementById('status-drop-' + courseId);
+  if (!drop) return;
+  const isOpen = drop.style.display !== 'none';
+  document.querySelectorAll('.status-dropdown').forEach((d) => {
+    d.style.display = 'none';
+  });
+  if (!isOpen) drop.style.display = 'block';
+}
+
+export async function setCourseStatus(courseId, courseCode, newStatus) {
+  document.querySelectorAll('.status-dropdown').forEach((d) => {
+    d.style.display = 'none';
+  });
+
+  if (newStatus === 'delete') return deleteCourse(courseId, courseCode);
+  if (newStatus === 'cancelled') return cancelCourse(courseId, courseCode);
+  if (newStatus === 'completed') return completeCourse(courseId, courseCode);
+
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (
+    newStatus === 'active' &&
+    course?.status === 'cancelled' &&
+    !confirm(
+      `Reactivate course ${courseCode || courseId}?\n\nSessions cancelled with the course will not be restored. Use "sync calendar" to pull in upcoming sessions.`
+    )
+  )
+    return;
+
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: courseId, status: newStatus },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not update course status. Please try again.');
+  }
+}
+
+export async function deleteCourse(courseId, courseCode) {
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  const hasStudents = (course?.students || []).length > 0;
+  const enrollmentWarning = hasStudents
+    ? '\n\nThis course has enrolled students. Consider using "cancel" instead to keep the record.'
+    : '';
+  if (
+    !confirm(
+      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.${enrollmentWarning}`
     )
   )
     return;

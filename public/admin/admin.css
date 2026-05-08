@@ -475,24 +475,6 @@ button.submit:hover {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.delete-course-btn {
-  font-family: inherit;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid #c0392b;
-  background: transparent;
-  color: #c0392b;
-  padding: 0.2rem 0.6rem;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.delete-course-btn:hover {
-  background: #c0392b;
-  color: #fff;
-}
 .edit-course-btn {
   font-family: inherit;
   font-size: 0.68rem;
@@ -512,6 +494,72 @@ button.submit:hover {
 .edit-course-btn:hover {
   background: #1a1a1a;
   color: #fff;
+}
+.course-status-wrap {
+  position: relative;
+}
+button.course-status {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+button.course-status::after {
+  content: ' ▾';
+  font-size: 0.65em;
+  opacity: 0.6;
+}
+.status-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0.2rem 0;
+  z-index: 100;
+  white-space: nowrap;
+}
+.status-opt-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  color: #555;
+}
+.status-opt-btn:hover {
+  background: #f5f5f5;
+}
+.status-opt-btn--active {
+  color: #27ae60;
+}
+.status-opt-btn--paused {
+  color: #e67e22;
+}
+.status-opt-btn--completed {
+  color: #2980b9;
+}
+.status-opt-btn--cancelled {
+  color: #c0392b;
+}
+.status-opt-btn--delete {
+  color: #aaa;
+  font-size: 0.62rem;
+}
+.status-dropdown-divider {
+  height: 1px;
+  background: #eee;
+  margin: 0.2rem 0;
+  pointer-events: none;
 }
 
 /* ── Modal ─────────────────────────────────────────────────────── */
