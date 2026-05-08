@@ -22,6 +22,8 @@ import {
 const STUDENT_FIELDS = [
   'first_name',
   'last_name',
+  'gender',
+  'gender_note',
   'email',
   'phone',
   'postcode',

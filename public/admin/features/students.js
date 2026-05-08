@@ -267,6 +267,7 @@ function renderStudentDetail(container, s) {
       <p class="detail-meta">Personal</p>
       <p class="detail-body">
         ${fullName}<br>
+        ${s.gender ? esc(s.gender === 'other' && s.gender_note ? `other: ${s.gender_note}` : s.gender) + '<br>' : ''}
         ${s.email ? esc(s.email) + '<br>' : ''}
         ${s.phone ? esc(s.phone) + '<br>' : ''}
         ${hasPersonalAddress ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' + esc([s.postcode, s.city].filter(Boolean).join(' ')) : '<span class="detail-muted">no address</span>'}

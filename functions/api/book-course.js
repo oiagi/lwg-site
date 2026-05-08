@@ -31,6 +31,8 @@ const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const STUDENT_FIELDS = [
   'first_name',
   'last_name',
+  'gender',
+  'gender_note',
   'email',
   'phone',
   'street',
@@ -68,6 +70,14 @@ function cleanString(value, max = 320) {
   return cleaned ? cleaned.slice(0, max) : null;
 }
 
+function emailValid(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
+}
+
+function missingRequired(student, fields) {
+  return fields.find((field) => !student[field]);
+}
+
 function normalizeStudent(input) {
   const raw = pickDefined(input || {}, STUDENT_FIELDS);
   const out = {};
@@ -77,6 +87,12 @@ function normalizeStudent(input) {
   }
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
+  if (!['female', 'male', 'other'].includes(out.gender)) {
+    out.gender = null;
+    out.gender_note = null;
+  } else if (out.gender !== 'other') {
+    out.gender_note = null;
+  }
   return out;
 }
 
@@ -259,14 +275,57 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const courseId = cleanString(body.course_id, 80);
   if (!courseId) return errorResponse('course_id is required', 400);
 
+  const billingSeparate = body.student?.billing_separate === true;
   const student = normalizeStudent(body.student || {});
   const studentErr = validate(student, {
     first_name: { required: true, type: 'string', maxLength: 200 },
     last_name: { required: true, type: 'string', maxLength: 200 },
+    gender: { required: true, type: 'string', oneOf: ['female', 'male', 'other'] },
     email: { required: true, type: 'string', email: true, maxLength: 320 },
     consent_given: { required: true, type: 'boolean', oneOf: [true] },
   });
   if (studentErr) return errorResponse(studentErr, 400);
+  if (student.gender === 'other' && !student.gender_note) {
+    return errorResponse('gender_note is required when gender is other', 400);
+  }
+  const missing = missingRequired(student, [
+    'phone',
+    'street',
+    'street_number',
+    'postcode',
+    'city',
+    'emergency_contact',
+    'ec_relationship',
+    'ec_phone',
+    'ec_email',
+  ]);
+  if (missing) return errorResponse(`${missing} is required`, 400);
+  if (!emailValid(student.ec_email)) return errorResponse('ec_email must be valid', 400);
+  if (
+    billingSeparate ||
+    [
+      'billing_name',
+      'billing_email',
+      'billing_phone',
+      'billing_street',
+      'billing_street_number',
+      'billing_postcode',
+      'billing_city',
+    ].some((field) => student[field])
+  ) {
+    const missingBilling = missingRequired(student, [
+      'billing_name',
+      'billing_email',
+      'billing_phone',
+      'billing_street',
+      'billing_street_number',
+      'billing_postcode',
+      'billing_city',
+    ]);
+    if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
+    if (!emailValid(student.billing_email))
+      return errorResponse('billing_email must be valid', 400);
+  }
 
   const language = normalizePageLanguage(body.language);
 
@@ -297,6 +356,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     lead: {
       firstName: student.first_name,
       lastName: student.last_name,
+      gender: student.gender || null,
+      genderNote: student.gender_note || null,
       email: student.email,
       phone: student.phone || null,
     },
@@ -304,6 +365,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       {
         firstName: student.first_name,
         lastName: student.last_name,
+        gender: student.gender || null,
+        genderNote: student.gender_note || null,
         email: student.email,
         phone: student.phone || null,
       },
@@ -345,6 +408,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       studentId = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
         first_name: student.first_name,
         last_name: student.last_name,
+        gender: student.gender,
+        gender_note: student.gender_note,
         email: student.email,
         phone: student.phone,
         postcode: student.postcode,

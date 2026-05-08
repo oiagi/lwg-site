@@ -62,6 +62,11 @@
       <form id="booking-form" novalidate>
         <input type="hidden" id="booking-course-id">
 
+        <div class="field-summary" id="booking-field-summary">
+          <p>Required: all personal information, emergency contact, and terms acceptance.</p>
+          <p>Separate billing details are required only if the billing address differs.</p>
+        </div>
+
         <p class="section-label" id="label-personal">personal information</p>
         <div class="field-row">
           <div class="field">
@@ -83,29 +88,49 @@
             <div class="error" id="err-email">Please enter a valid email address.</div>
           </div>
           <div class="field">
-            <label for="bf-phone">phone</label>
+            <label for="bf-phone">phone *</label>
             <input type="tel" id="bf-phone" autocomplete="tel">
           </div>
         </div>
 
+        <div class="field">
+          <label for="bf-gender">form of address *</label>
+          <select id="bf-gender">
+            <option value="" disabled selected></option>
+            <option value="female">female</option>
+            <option value="male">male</option>
+            <option value="other">other</option>
+          </select>
+          <p class="field-hint" id="gender-disclaimer">
+            We ask this so we can address you correctly in our communication, especially formal German messages such as invoices.
+          </p>
+          <div class="error" id="err-gender">Please select a form of address.</div>
+        </div>
+
+        <div class="field" id="bf-gender-note-wrap" hidden>
+          <label for="bf-gender-note">please specify *</label>
+          <input type="text" id="bf-gender-note" autocomplete="off">
+          <div class="error" id="err-gender-note">Please specify your form of address.</div>
+        </div>
+
         <div class="field-row">
           <div class="field" style="flex:2;">
-            <label for="bf-street">street</label>
+            <label for="bf-street">street *</label>
             <input type="text" id="bf-street" autocomplete="address-line1">
           </div>
           <div class="field" style="flex:1;">
-            <label for="bf-street-number">number</label>
+            <label for="bf-street-number">number *</label>
             <input type="text" id="bf-street-number">
           </div>
         </div>
 
         <div class="field-row">
           <div class="field" style="flex:1;">
-            <label for="bf-postcode">postcode</label>
+            <label for="bf-postcode">postcode *</label>
             <input type="text" id="bf-postcode" autocomplete="postal-code">
           </div>
           <div class="field" style="flex:2;">
-            <label for="bf-city">city</label>
+            <label for="bf-city">city *</label>
             <input type="text" id="bf-city" autocomplete="address-level2">
           </div>
         </div>
@@ -113,22 +138,22 @@
         <p class="section-label" id="label-emergency">emergency contact</p>
         <div class="field-row">
           <div class="field">
-            <label for="bf-ec-name">name</label>
+            <label for="bf-ec-name">name *</label>
             <input type="text" id="bf-ec-name">
           </div>
           <div class="field">
-            <label for="bf-ec-relationship">relationship</label>
+            <label for="bf-ec-relationship">relationship *</label>
             <input type="text" id="bf-ec-relationship" placeholder="e.g. partner, parent">
           </div>
         </div>
 
         <div class="field-row">
           <div class="field">
-            <label for="bf-ec-phone">phone</label>
+            <label for="bf-ec-phone">phone *</label>
             <input type="tel" id="bf-ec-phone">
           </div>
           <div class="field">
-            <label for="bf-ec-email">email</label>
+            <label for="bf-ec-email">email *</label>
             <input type="email" id="bf-ec-email">
           </div>
         </div>
@@ -142,35 +167,35 @@
         <div id="billing-fields" hidden>
           <div class="field-row">
             <div class="field">
-              <label for="bf-billing-name">billing name</label>
+              <label for="bf-billing-name">billing name *</label>
               <input type="text" id="bf-billing-name">
             </div>
             <div class="field">
-              <label for="bf-billing-email">billing email</label>
+              <label for="bf-billing-email">billing email *</label>
               <input type="email" id="bf-billing-email">
             </div>
           </div>
           <div class="field">
-            <label for="bf-billing-phone">billing phone</label>
+            <label for="bf-billing-phone">billing phone *</label>
             <input type="tel" id="bf-billing-phone">
           </div>
           <div class="field-row">
             <div class="field" style="flex:2;">
-              <label for="bf-billing-street">street</label>
+              <label for="bf-billing-street">street *</label>
               <input type="text" id="bf-billing-street">
             </div>
             <div class="field" style="flex:1;">
-              <label for="bf-billing-street-number">number</label>
+              <label for="bf-billing-street-number">number *</label>
               <input type="text" id="bf-billing-street-number">
             </div>
           </div>
           <div class="field-row">
             <div class="field" style="flex:1;">
-              <label for="bf-billing-postcode">postcode</label>
+              <label for="bf-billing-postcode">postcode *</label>
               <input type="text" id="bf-billing-postcode">
             </div>
             <div class="field" style="flex:2;">
-              <label for="bf-billing-city">city</label>
+              <label for="bf-billing-city">city *</label>
               <input type="text" id="bf-billing-city">
             </div>
           </div>
@@ -219,6 +244,8 @@
       const successState = document.getElementById('success-state');
       const billingCheckbox = document.getElementById('bf-billing-separate');
       const billingFields = document.getElementById('billing-fields');
+      const genderSelect = document.getElementById('bf-gender');
+      const genderNoteWrap = document.getElementById('bf-gender-note-wrap');
       let courses = [];
       let selectedCourse = null;
       let statusMessageKey = 'loading';
@@ -352,10 +379,38 @@
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
       }
 
+      function showGeneratedError(id, message, show) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        let error = document.getElementById(`err-${id}`);
+        if (!error) {
+          error = document.createElement('div');
+          error.className = 'error';
+          error.id = `err-${id}`;
+          input.insertAdjacentElement('afterend', error);
+        }
+        error.textContent = message;
+        error.style.display = show ? 'block' : 'none';
+      }
+
+      function requireValue(id, message) {
+        const missing = !val(id);
+        showGeneratedError(id, message, missing);
+        return !missing;
+      }
+
+      function requireEmail(id, message) {
+        const invalid = !emailValid(val(id));
+        showGeneratedError(id, message, invalid);
+        return !invalid;
+      }
+
       function buildStudentPayload() {
         const student = {
           first_name: val('bf-first-name'),
           last_name: val('bf-last-name'),
+          gender: val('bf-gender') || null,
+          gender_note: val('bf-gender-note') || null,
           email: val('bf-email'),
           phone: val('bf-phone') || null,
           street: val('bf-street') || null,
@@ -366,6 +421,7 @@
           ec_relationship: val('bf-ec-relationship') || null,
           ec_phone: val('bf-ec-phone') || null,
           ec_email: val('bf-ec-email') || null,
+          billing_separate: billingCheckbox.checked,
           consent_given: document.getElementById('bf-consent').checked,
         };
         if (billingCheckbox.checked) {
@@ -386,16 +442,53 @@
 
         const firstName = val('bf-first-name');
         const lastName = val('bf-last-name');
+        const gender = val('bf-gender');
+        const genderNote = val('bf-gender-note');
         const email = val('bf-email');
         const consent = document.getElementById('bf-consent').checked;
+        const requiredFields = [
+          ['bf-phone', 'Please enter a phone number.'],
+          ['bf-street', 'Please enter a street.'],
+          ['bf-street-number', 'Please enter a street number.'],
+          ['bf-postcode', 'Please enter a postcode.'],
+          ['bf-city', 'Please enter a city.'],
+          ['bf-ec-name', 'Please enter an emergency contact name.'],
+          ['bf-ec-relationship', 'Please enter the emergency contact relationship.'],
+          ['bf-ec-phone', 'Please enter an emergency contact phone number.'],
+        ];
 
         let valid = true;
         showErr('err-first-name', !firstName);
         if (!firstName) valid = false;
         showErr('err-last-name', !lastName);
         if (!lastName) valid = false;
+        showErr('err-gender', !gender);
+        if (!gender) valid = false;
+        showErr('err-gender-note', gender === 'other' && !genderNote);
+        if (gender === 'other' && !genderNote) valid = false;
         showErr('err-email', !emailValid(email));
         if (!emailValid(email)) valid = false;
+        requiredFields.forEach(([id, message]) => {
+          if (!requireValue(id, message)) valid = false;
+        });
+        if (!requireEmail('bf-ec-email', 'Please enter a valid emergency contact email.')) {
+          valid = false;
+        }
+        if (billingCheckbox.checked) {
+          [
+            ['bf-billing-name', 'Please enter a billing name.'],
+            ['bf-billing-phone', 'Please enter a billing phone number.'],
+            ['bf-billing-street', 'Please enter a billing street.'],
+            ['bf-billing-street-number', 'Please enter a billing street number.'],
+            ['bf-billing-postcode', 'Please enter a billing postcode.'],
+            ['bf-billing-city', 'Please enter a billing city.'],
+          ].forEach(([id, message]) => {
+            if (!requireValue(id, message)) valid = false;
+          });
+          if (!requireEmail('bf-billing-email', 'Please enter a valid billing email.')) {
+            valid = false;
+          }
+        }
         showErr('err-consent', !consent);
         if (!consent) valid = false;
 
@@ -453,6 +546,23 @@
 
       billingCheckbox.addEventListener('change', () => {
         billingFields.hidden = !billingCheckbox.checked;
+        if (!billingCheckbox.checked) {
+          [
+            'bf-billing-name',
+            'bf-billing-email',
+            'bf-billing-phone',
+            'bf-billing-street',
+            'bf-billing-street-number',
+            'bf-billing-postcode',
+            'bf-billing-city',
+          ].forEach((id) => showGeneratedError(id, '', false));
+        }
+      });
+
+      genderSelect.addEventListener('change', () => {
+        const needsNote = genderSelect.value === 'other';
+        genderNoteWrap.hidden = !needsNote;
+        if (!needsNote) document.getElementById('bf-gender-note').value = '';
       });
 
       document.getElementById('booking-cancel').addEventListener('click', () => {

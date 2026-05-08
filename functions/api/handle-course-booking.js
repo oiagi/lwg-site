@@ -35,6 +35,8 @@ function getLead(enquiry) {
       cleanString(enquiry.lead_last, 200) ||
       cleanString(lead.lastName, 200) ||
       cleanString(intake.last_name, 200),
+    gender: cleanString(lead.gender, 20) || cleanString(intake.gender, 20),
+    gender_note: cleanString(lead.genderNote, 200) || cleanString(intake.gender_note, 200),
     email:
       cleanString(enquiry.lead_email, 320) ||
       cleanString(lead.email, 320) ||
