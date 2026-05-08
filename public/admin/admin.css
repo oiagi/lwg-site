@@ -1051,6 +1051,30 @@ button.submit:hover {
   background: #c0392b;
   color: #fff;
 }
+.remove-enrollment-btn {
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid #c0392b;
+  background: transparent;
+  color: #c0392b;
+  padding: 0.28rem 0.55rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    opacity 0.15s;
+}
+.remove-enrollment-btn:hover {
+  background: #c0392b;
+  color: #fff;
+}
+.remove-enrollment-btn:disabled {
+  cursor: progress;
+  opacity: 0.65;
+}
 .detail-action-msg {
   display: none;
   font-size: 0.72rem;
