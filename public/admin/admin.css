@@ -248,6 +248,23 @@ button.submit:hover {
 .main-tab:hover {
   color: var(--text);
 }
+.main-tab.has-request-flag::after {
+  content: attr(data-request-count);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  margin-left: 0.45rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.58rem;
+  line-height: 1;
+  letter-spacing: 0;
+  vertical-align: 0.08rem;
+}
 .logout-btn {
   position: absolute;
   right: 0;
@@ -1290,6 +1307,12 @@ html[data-device='mobile'] .student-detail-pane {
   border-left: 3px solid var(--text);
   padding-left: calc(0.9rem - 3px);
 }
+.student-row.has-pending-request {
+  background: rgba(192, 57, 43, 0.06);
+}
+.student-row.has-pending-request:hover {
+  background: rgba(192, 57, 43, 0.1);
+}
 .student-row:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: -2px;
@@ -1308,6 +1331,21 @@ html[data-device='mobile'] .student-detail-pane {
   color: var(--text);
   line-height: 1.25;
 }
+.request-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.4rem;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.08rem;
+}
 .student-sub {
   grid-column: 2;
   font-size: 0.72rem;
@@ -1318,6 +1356,10 @@ html[data-device='mobile'] .student-detail-pane {
 .student-sub .sep {
   color: var(--text-faint);
   margin: 0 0.35rem;
+}
+.request-subline {
+  color: #c0392b;
+  font-weight: 600;
 }
 .student-status {
   grid-row: 1 / span 2;
@@ -1412,6 +1454,19 @@ html[data-device='mobile'] .student-detail-pane {
   color: var(--text-muted);
   letter-spacing: 0.04em;
   margin-left: 0.6rem;
+}
+.detail-request-flag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.7rem;
+  padding: 0.18rem 0.45rem;
+  border: 1px solid rgba(192, 57, 43, 0.45);
+  color: #c0392b;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.12rem;
 }
 .detail-header-status {
   font-size: 0.68rem;
@@ -1807,6 +1862,68 @@ html[data-device='mobile'] .avail-day {
 .detail-error {
   color: #c0392b;
   font-size: 0.82rem;
+}
+
+/* ── Student request flags/list ───────────────────────────────────── */
+.student-request-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-soft);
+}
+.student-request-row {
+  display: grid;
+  grid-template-columns: 12px 1fr minmax(150px, auto);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.student-request-row.untreated {
+  background: rgba(192, 57, 43, 0.04);
+}
+.request-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-faint);
+}
+.request-dot.new,
+.request-dot.pending_course_booking {
+  background: #c0392b;
+}
+.request-dot.confirmed {
+  background: #27ae60;
+}
+.request-dot.declined,
+.request-dot.cancelled {
+  background: var(--text-faint);
+}
+.student-request-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.student-request-meta {
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.student-request-target {
+  justify-self: end;
+  text-align: right;
+}
+.student-request-course {
+  border: none;
+  background: transparent;
+  color: #2980b9;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: right;
+}
+.student-request-course:hover {
+  color: var(--text);
 }
 
 /* ── Admin section (student detail) ─────────────────────────────── */

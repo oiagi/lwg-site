@@ -183,7 +183,14 @@ function buildCustomerEmail(course, student, language = 'en') {
   };
 }
 
-function buildNotificationEmail(course, student, enquiryId) {
+function buildNotificationEmail(course, student, enquiryId, courseUrl) {
+  const courseLink = courseUrl
+    ? `<tr>
+            <td colspan="2" style="padding:18px 0 0;">
+              <a href="${esc(courseUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Open requested course</a>
+            </td>
+          </tr>`
+    : '';
   return {
     subject: `Direct course booking request — ${student.first_name || ''} ${student.last_name || ''}`,
     html: `<!DOCTYPE html>
@@ -203,6 +210,7 @@ function buildNotificationEmail(course, student, enquiryId) {
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Student</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc([student.first_name, student.last_name].filter(Boolean).join(' '))}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Email</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.email)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Phone</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.phone || '—')}</td></tr>
+            ${courseLink}
           </table>
         </td></tr>
       </table>
@@ -211,6 +219,11 @@ function buildNotificationEmail(course, student, enquiryId) {
 </body>
 </html>`,
   };
+}
+
+function adminCourseUrl(request, env, courseId) {
+  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+  return `${base}/admin/#courses/${encodeURIComponent(courseId)}`;
 }
 
 async function sendEmail(env, to, email) {
@@ -360,7 +373,16 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   await Promise.allSettled([
     sendEmail(env, student.email, buildCustomerEmail(publicCourse, student, language)),
-    sendEmail(env, NOTIFY_EMAILS, buildNotificationEmail(publicCourse, student, enquiryId)),
+    sendEmail(
+      env,
+      NOTIFY_EMAILS,
+      buildNotificationEmail(
+        publicCourse,
+        student,
+        enquiryId,
+        adminCourseUrl(request, env, course.id)
+      )
+    ),
   ]);
 
   return jsonResponse({ success: true, id: enquiryId, student_id: studentId });

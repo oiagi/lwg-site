@@ -67,7 +67,8 @@ export async function loadStudents(status = 'active') {
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
-    renderStudents(students);
+    const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    renderStudents(students, totalRequests);
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load students.</div>';
   }
@@ -82,6 +83,21 @@ function subjectLabel(s) {
 }
 
 function courseSubLine(s) {
+  if (s.pending_request_count) {
+    const request = (s.pending_requests || [])[0] || {};
+    const course = request.course || {};
+    const booking = request.booking_data || {};
+    const label =
+      [
+        course.course_code || booking.course_code,
+        course.level || booking.level,
+        course.service || booking.service,
+      ]
+        .filter(Boolean)
+        .join(' · ') || 'untreated request';
+    const extra = s.pending_request_count > 1 ? ` +${s.pending_request_count - 1}` : '';
+    return `<span class="request-subline">${esc(label)}${esc(extra)}</span>`;
+  }
   const activeCourses = (s.courses || []).filter(
     (c) => c.status !== 'cancelled' && c.status !== 'completed'
   );
@@ -104,8 +120,19 @@ function statusLabel(s) {
   return s.status || (s.active === false ? 'inactive' : 'active');
 }
 
-function renderStudents(students) {
+function updateStudentsSectionFlag(students, totalRequests = null) {
+  const count =
+    totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
+  const tab = document.getElementById('tab-students');
+  if (!tab) return;
+  tab.classList.toggle('has-request-flag', count > 0);
+  tab.dataset.requestCount = count ? String(count) : '';
+  tab.setAttribute('aria-label', count ? `students, ${count} untreated requests` : 'students');
+}
+
+function renderStudents(students, totalRequests = null) {
   const list = document.getElementById('student-list');
+  updateStudentsSectionFlag(students, totalRequests);
   if (!students.length) {
     list.innerHTML = '<div class="empty-state">no students found</div>';
     return;
@@ -124,12 +151,15 @@ function renderStudents(students) {
       const ref = esc(s.customer_reference) || '—';
       const status = statusLabel(s);
       const subLine = courseSubLine(s);
+      const requestFlag = s.pending_request_count
+        ? `<span class="request-flag" title="Untreated request">${s.pending_request_count > 1 ? esc(s.pending_request_count) : '!'}</span>`
+        : '';
       return `
-    <div class="student-row" id="student-${s.id}"
+    <div class="student-row${s.pending_request_count ? ' has-pending-request' : ''}" id="student-${s.id}"
          role="option" aria-selected="false" tabindex="0"
          data-action="selectStudent" data-args="${s.id}">
       <span class="student-ref">${ref}</span>
-      <span class="student-name">${name}</span>
+      <span class="student-name">${requestFlag}${name}</span>
       <span class="student-status ${esc(status)}">${esc(status)}</span>
       <span class="student-sub">${subLine}</span>
     </div>`;
@@ -192,7 +222,8 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
-    renderStudents(students);
+    const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    renderStudents(students, totalRequests);
     if (keepSelectedId) {
       const row = document.getElementById('student-' + keepSelectedId);
       if (row) row.scrollIntoView({ block: 'nearest' });
@@ -277,12 +308,16 @@ function renderStudentDetail(container, s) {
     </div>`;
 
   const adminHtml = renderAdminSection(s);
+  const requestHtml = renderRequestSection(s);
+  const requestFlag = s.pending_request_count
+    ? `<span class="detail-request-flag">${esc(String(s.pending_request_count))} untreated request${s.pending_request_count === 1 ? '' : 's'}</span>`
+    : '';
 
   container.innerHTML = `
     ${breadcrumb}
     <div class="detail-header">
       <div>
-        <span class="detail-header-name">${fullName}</span>${refLine}
+        <span class="detail-header-name">${fullName}</span>${refLine}${requestFlag}
       </div>
       <span class="detail-header-status ${esc(status)}">${esc(status)}</span>
     </div>
@@ -297,6 +332,10 @@ function renderStudentDetail(container, s) {
         <div>${coursesHtml}</div>
         ${enrolButton}
       </div>
+    </div>
+    <div class="detail-section">
+      <p class="detail-meta">Requests</p>
+      ${requestHtml}
     </div>
     <div class="detail-section">
       <p class="detail-meta">Admin</p>
@@ -314,6 +353,53 @@ function renderStudentDetail(container, s) {
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+function requestLabel(enquiry) {
+  if (enquiry.status === 'pending_course_booking') return 'group booking request';
+  return 'enquiry';
+}
+
+function requestCourseLabel(enquiry) {
+  const course = enquiry.course || {};
+  const booking = enquiry.booking_data || {};
+  return (
+    [
+      course.course_code || booking.course_code,
+      course.level || booking.level,
+      course.service || booking.service,
+    ]
+      .filter(Boolean)
+      .join(' · ') || 'requested course'
+  );
+}
+
+function renderRequestSection(s) {
+  const enquiries = s.enquiries || [];
+  if (!enquiries.length) return '<p class="detail-muted">No enquiries or booking requests yet.</p>';
+
+  return `
+    <div class="student-request-list">
+      ${enquiries
+        .map((enquiry) => {
+          const created = enquiry.created_at
+            ? new Date(enquiry.created_at).toLocaleDateString('de-CH')
+            : '—';
+          const courseLink = enquiry.course_id
+            ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
+            : '<span class="detail-muted">no linked course</span>';
+          return `
+            <div class="student-request-row${enquiry.untreated ? ' untreated' : ''}">
+              <span class="request-dot ${esc(enquiry.status || '')}"></span>
+              <div>
+                <p class="student-request-title">${esc(requestLabel(enquiry))}</p>
+                <p class="student-request-meta">${esc(created)} · <span class="enq-status ${esc(enquiry.status || '')}">${esc(enquiry.status || '—')}</span></p>
+              </div>
+              <div class="student-request-target">${courseLink}</div>
+            </div>`;
+        })
+        .join('')}
+    </div>`;
 }
 
 export function copyIntakeLink(token, btn) {
@@ -428,6 +514,10 @@ export function backToCourse(courseId) {
     detail: { tab: 'courses', openCourseId: courseId },
   });
   document.dispatchEvent(ev);
+}
+
+export function openRequestCourse(courseId) {
+  backToCourse(courseId);
 }
 
 /* ── Student modal ───────────────────────────────────────────────── */

@@ -208,6 +208,12 @@ function pendingBookingBlocks(course) {
       const email = b.lead_email || intake.email || '';
       const phone = b.lead_phone || intake.phone || '';
       const requestedAt = b.created_at ? fmtDate(b.created_at) : '—';
+      const nameHtml = b.student_id
+        ? `<button class="student-link" data-action="selectStudentFromCourse"
+            data-args="${esc(b.student_id)},${esc(course.id)},${esc(course.course_code || '')}">
+            ${esc(name)}
+          </button>`
+        : esc(name);
       const spots =
         booking.spots_remaining_at_booking !== null &&
         booking.spots_remaining_at_booking !== undefined
@@ -216,7 +222,7 @@ function pendingBookingBlocks(course) {
       return `
         <div class="pending-booking-row" id="pending-booking-${esc(b.id)}">
           <div>
-            <p class="pending-booking-name">${esc(name)}</p>
+            <p class="pending-booking-name">${nameHtml}</p>
             <p class="detail-muted">
               ${email ? esc(email) : 'no email'}${phone ? ' · ' + esc(phone) : ''}
             </p>
