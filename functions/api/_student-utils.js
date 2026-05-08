@@ -57,3 +57,46 @@ export async function setStudentStatus(supabaseUrl, serviceKey, studentId, statu
     body: JSON.stringify({ status, active: status === 'active' }),
   });
 }
+
+async function patchStudentEnquiries(supabaseUrl, H, filter, fields) {
+  const res = await fetch(`${supabaseUrl}/rest/v1/enquiries?${filter}`, {
+    method: 'PATCH',
+    headers: { ...H, Prefer: 'return=representation' },
+    body: JSON.stringify(fields),
+  });
+  if (!res.ok) {
+    console.error('Enquiry completion failed:', await res.text());
+    return 0;
+  }
+  const rows = await res.json().catch(() => []);
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
+/**
+ * Once a student is enrolled, their regular enquiry flags should leave the
+ * untreated queue. Public group-booking requests are only completed when the
+ * enrolment is for that exact requested course.
+ */
+export async function completeEnquiriesForEnrollment(supabaseUrl, serviceKey, studentId, courseId) {
+  if (!studentId || !courseId) return 0;
+  const H = supabaseHeaders(serviceKey);
+  const encodedStudentId = encodeURIComponent(studentId);
+  const encodedCourseId = encodeURIComponent(courseId);
+  let completed = 0;
+
+  completed += await patchStudentEnquiries(
+    supabaseUrl,
+    H,
+    `student_id=eq.${encodedStudentId}&status=eq.new`,
+    { status: 'confirmed', course_id: courseId }
+  );
+
+  completed += await patchStudentEnquiries(
+    supabaseUrl,
+    H,
+    `student_id=eq.${encodedStudentId}&status=eq.pending_course_booking&course_id=eq.${encodedCourseId}`,
+    { status: 'confirmed' }
+  );
+
+  return completed;
+}

@@ -536,12 +536,16 @@ export async function openEnrollStudentModal(studentId) {
   const sel = document.getElementById('es-course');
   const msg = document.getElementById('es-msg');
   const btn = document.getElementById('es-submit');
+  const createLink = document.getElementById('es-create-course');
 
   msg.style.display = 'none';
   msg.textContent = '';
   btn.textContent = 'enroll';
   btn.disabled = true;
   sel.innerHTML = '<option value="">loading courses…</option>';
+  if (createLink) {
+    createLink.href = `/admin/pages/course-new.html?student_id=${encodeURIComponent(studentId)}`;
+  }
 
   modal.classList.add('open');
 
@@ -559,7 +563,8 @@ export async function openEnrollStudentModal(studentId) {
     const available = courses.filter((c) => !enrolledIds.has(c.id));
     if (!available.length) {
       sel.innerHTML = '<option value="">no available courses</option>';
-      msg.textContent = 'Student is already enrolled in all active courses.';
+      msg.textContent =
+        'Student is already enrolled in all active courses. Create a new course instead.';
       msg.className = 'modal-msg';
       msg.style.display = 'block';
       return;

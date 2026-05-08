@@ -33,7 +33,11 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
-import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
+import {
+  completeEnquiriesForEnrollment,
+  findOrCreateStudent,
+  setStudentStatus,
+} from './_student-utils.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
@@ -270,6 +274,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         body: JSON.stringify({ student_id: sid, course_id: courseId }),
       });
       await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, 'active');
+      if (!enquiry_id) {
+        await completeEnquiriesForEnrollment(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, courseId);
+      }
     } catch (err) {
       console.error('Student/enrolment error:', err);
     }
