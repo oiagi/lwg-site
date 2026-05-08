@@ -343,14 +343,27 @@ function renderStudentDetail(container, s) {
       ${adminHtml}
     </div>
     ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
+    ${
+      s.intake_completed_at
+        ? `<div class="detail-section">
+             <p class="detail-meta">intake</p>
+             <div class="intake-flag">
+               <span class="intake-flag-label">Form completed ${new Date(s.intake_completed_at).toLocaleDateString('de-CH')}</span>
+               <button class="save-btn" data-action="markIntakeSeen" data-args="${s.id}">mark as seen</button>
+               <span class="detail-action-msg" id="intake-seen-msg-${s.id}"></span>
+             </div>
+           </div>`
+        : ''
+    }
     <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
+      <button class="save-btn" data-action="sendIntakeLink" data-args="${s.id}">send intake link</button>
       ${
         s.access_token
-          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>
-             <span class="detail-action-msg" id="intake-msg-${s.id}"></span>`
+          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>`
           : ''
       }
+      <span class="detail-action-msg" id="intake-msg-${s.id}"></span>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
@@ -401,6 +414,73 @@ function renderRequestSection(s) {
         })
         .join('')}
     </div>`;
+}
+
+export async function sendIntakeLink(studentId, btn) {
+  const msgEl = document.getElementById('intake-msg-' + studentId);
+  const show = (text) => {
+    if (msgEl) {
+      msgEl.textContent = text;
+      msgEl.style.display = 'inline';
+      setTimeout(() => {
+        msgEl.style.display = 'none';
+      }, MESSAGE_TIMEOUT_MS);
+    }
+  };
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'sending…';
+  }
+  try {
+    const res = await apiFetch('/api/send-intake-link', {
+      method: 'POST',
+      body: { student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Failed');
+    show('sent');
+  } catch (e) {
+    show('error: ' + (e.message || 'could not send'));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'send intake link';
+    }
+  }
+}
+
+export async function markIntakeSeen(studentId, btn) {
+  const msgEl = document.getElementById('intake-seen-msg-' + studentId);
+  const show = (text) => {
+    if (msgEl) {
+      msgEl.textContent = text;
+      msgEl.style.display = 'inline';
+      setTimeout(() => {
+        msgEl.style.display = 'none';
+      }, MESSAGE_TIMEOUT_MS);
+    }
+  };
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'saving…';
+  }
+  try {
+    const res = await apiFetch('/api/mark-intake-seen', {
+      method: 'POST',
+      body: { student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Failed');
+    await fetchAndRenderStudent(studentId);
+  } catch (e) {
+    show('error: ' + (e.message || 'could not update'));
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'mark as seen';
+    }
+  }
 }
 
 export function copyIntakeLink(token, btn) {

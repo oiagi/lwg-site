@@ -17,7 +17,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 import {
   isPublicCourseEligible,
   loadPublicCourseCandidates,
@@ -124,7 +124,7 @@ function formatPrice(amount, currency) {
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
 }
 
-function buildCustomerEmail(course, student, language = 'en') {
+function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) {
   const total = bookingTotal(course);
   const isGerman = language === 'de';
   const starts = new Date(course.first_session_at).toLocaleString(isGerman ? 'de-CH' : 'en-GB', {
@@ -136,12 +136,13 @@ function buildCustomerEmail(course, student, language = 'en') {
         htmlLang: 'de',
         greeting: `Danke, ${esc(student.first_name || 'du')} :)`,
         intro: 'Wir haben deine Buchungsanfrage erhalten. So geht es weiter:',
-        steps: [
-          'Wir bestätigen deine Anfrage so schnell wie möglich.',
-          'Du erhältst die Zahlungsinformationen für deinen Kurs.',
-          'Du bezahlst die Rechnung.',
-          'Fertig! Dein Platz im Kurs ist reserviert.',
-        ],
+        stepConfirm: 'Wir bestätigen deine Anfrage so schnell wie möglich.',
+        stepIntake:
+          'Bitte füll in der Zwischenzeit dieses Formular aus. Ohne diese Informationen können wir dich nicht in einen Kurs einschreiben!',
+        stepIntakeBtn: 'Formular ausfüllen →',
+        stepPaymentRequest: 'Du erhältst die Zahlungsinformationen für deinen Kurs.',
+        stepPay: 'Du bezahlst die Rechnung.',
+        stepDone: 'Fertig! Dein Platz im Kurs ist reserviert.',
         course: 'Kurs',
         starts: 'Start',
         place: 'Ort',
@@ -152,18 +153,31 @@ function buildCustomerEmail(course, student, language = 'en') {
         htmlLang: 'en',
         greeting: `Thank you, ${esc(student.first_name || 'there')} :)`,
         intro: "We've received your booking request. What happens next:",
-        steps: [
-          'We will confirm your request shortly.',
-          'You will receive the payment request for your course.',
-          'You pay the bill.',
-          "Done! You're all set for your course.",
-        ],
+        stepConfirm: 'We will confirm your request shortly.',
+        stepIntake:
+          'In the meantime, please complete this form. Without this information we cannot enroll you in the course!',
+        stepIntakeBtn: 'Complete the form →',
+        stepPaymentRequest: 'You will receive the payment request for your course.',
+        stepPay: 'You pay the bill.',
+        stepDone: "Done! You're all set for your course.",
         course: 'Course',
         starts: 'Starts',
         place: 'Place',
         totalPrice: 'Total price',
       };
-  const steps = copy.steps.map((step) => `<li>${esc(step)}</li>`).join('');
+
+  const intakeLinkHtml = intakeUrl
+    ? `<a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:8px 12px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:6px;">${copy.stepIntakeBtn}</a>`
+    : '';
+
+  const steps = [
+    `<li style="margin-bottom:8px;">${esc(copy.stepConfirm)}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepIntake)}${intakeLinkHtml ? '<br>' + intakeLinkHtml : ''}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepPaymentRequest)}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepPay)}</li>`,
+    `<li>${esc(copy.stepDone)}</li>`,
+  ].join('');
+
   return {
     subject: copy.subject,
     html: `<!DOCTYPE html>
@@ -436,8 +450,25 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Could not save booking request');
   }
 
+  let intakeFormUrl = null;
+  if (studentId) {
+    try {
+      const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
+      if (token) {
+        const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+        intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
+      }
+    } catch (err) {
+      console.error('book-course intake token error (non-fatal):', err);
+    }
+  }
+
   await Promise.allSettled([
-    sendEmail(env, student.email, buildCustomerEmail(publicCourse, student, language)),
+    sendEmail(
+      env,
+      student.email,
+      buildCustomerEmail(publicCourse, student, language, intakeFormUrl)
+    ),
     sendEmail(
       env,
       NOTIFY_EMAILS,

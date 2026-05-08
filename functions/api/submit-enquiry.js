@@ -18,7 +18,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -36,7 +36,7 @@ function esc(str) {
 // ── Label map for booking fields ─────────────────────────────────────────
 function label(key, language = 'en') {
   if (language === 'de') {
-    return key === 'lessonType' ? 'Gesuchter Unterricht' : key;
+    return key === 'lessonType' ? 'Gewünschter Unterricht' : key;
   }
   return key === 'lessonType' ? "What they're looking for" : key;
 }
@@ -58,7 +58,7 @@ function formatPreferredContact(value, language = 'en') {
 }
 
 // ── Customer confirmation email ───────────────────────────────────────────
-function buildCustomerEmail(booking, contact, language = 'en') {
+function buildCustomerEmail(booking, contact, language = 'en', intakeUrl = null) {
   const isGerman = language === 'de';
   const lead = contact.lead || contact;
   const name = lead.firstName || (isGerman ? 'du' : 'there');
@@ -69,6 +69,9 @@ function buildCustomerEmail(booking, contact, language = 'en') {
         htmlLang: 'de',
         thankYou: `Danke, ${esc(name)} :)`,
         body: 'Wir haben deine Nachricht erhalten und melden uns in Kürze bei dir, um deine Anfrage zu besprechen.',
+        intakeText:
+          'In der Zwischenzeit füll bitte dieses Formular aus. Ohne diese Angaben können wir dich nicht in einen Kurs einschreiben!',
+        intakeBtn: 'Formular ausfüllen →',
         enquiryLabel: 'Deine Anfrage',
         preferredContact: 'Bevorzugte Kontaktart',
         footer:
@@ -79,6 +82,9 @@ function buildCustomerEmail(booking, contact, language = 'en') {
         htmlLang: 'en',
         thankYou: `Thank you, ${esc(name)} :)`,
         body: "We've received your message and will contact you shortly to discuss your enquiry.",
+        intakeText:
+          'In the meantime, please complete this form. Without this information we cannot enroll you in a course!',
+        intakeBtn: 'Complete the form →',
         enquiryLabel: 'Your enquiry',
         preferredContact: 'Preferred contact',
         footer: 'If you have any questions in the meantime, reply to this email or write to',
@@ -97,6 +103,13 @@ function buildCustomerEmail(booking, contact, language = 'en') {
   const preferredContactRow = contact.preferredContact
     ? `<tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.preferredContact}</td>
        <td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPreferredContact(contact.preferredContact, language))}</td></tr>`
+    : '';
+
+  const intakeSection = intakeUrl
+    ? `<p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.intakeText)}</p>
+       <p style="margin:0 0 32px;">
+         <a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">${copy.intakeBtn}</a>
+       </p>`
     : '';
 
   return {
@@ -118,9 +131,10 @@ function buildCustomerEmail(booking, contact, language = 'en') {
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
               ${copy.thankYou}
             </p>
-            <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#333;">
+            <p style="margin:0 0 ${intakeUrl ? '24px' : '32px'};font-size:15px;line-height:1.7;color:#333;">
               ${esc(copy.body)}
             </p>
+            ${intakeSection}
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${copy.enquiryLabel}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
               ${bookingRows}
@@ -282,9 +296,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Database connection error');
   }
 
-  // ── 2. Link student to enquiry (best-effort, non-blocking) ───────────
+  // ── 2. Link student to enquiry + get intake token (best-effort) ──────
   // Enquiry is already persisted above. If student find/create or the
   // patch fails, we log and continue — the enquiry is not lost.
+  let intakeFormUrl = null;
   if (enquiryId !== 'unknown') {
     try {
       const studentId = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
@@ -299,6 +314,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ student_id: studentId }),
       });
+      const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
+      if (token) {
+        const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+        intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
+      }
     } catch (err) {
       console.error('Student link error (non-fatal):', err);
     }
@@ -307,7 +327,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   // ── 3. Send emails via Resend ──────────────────────────────────────────
   // Both emails are sent concurrently. Email failure does not fail the
   // request — data is already safely stored in Supabase.
-  const customerEmail = buildCustomerEmail(booking, contactWithLanguage, language);
+  const customerEmail = buildCustomerEmail(booking, contactWithLanguage, language, intakeFormUrl);
   const notificationEmail = buildNotificationEmail(booking, contactWithLanguage, enquiryId);
 
   const sendEmail = async (to, email) => {
