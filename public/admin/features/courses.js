@@ -1,6 +1,13 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { fmtDate, fmtDateWithEnd, esc, showMessage, queryString, attachListControls } from '../core/helpers.js';
+import {
+  fmtDate,
+  fmtDateWithEnd,
+  esc,
+  showMessage,
+  queryString,
+  attachListControls,
+} from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
