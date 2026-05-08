@@ -1,8 +1,8 @@
 // functions/api/log-session.js
 // PATCH /api/log-session
-// Body: { session_id, notes? }
+// Body: { session_id }
 //
-// Marks a session as completed and optionally adds teacher notes.
+// Marks a session as completed.
 // Also increments the sessions_completed count on the parent course.
 //
 // Environment variables:
@@ -26,7 +26,7 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const { body, error } = await parseJsonBody(request);
   if (error) return error;
 
-  const { session_id, notes } = body;
+  const { session_id } = body;
   if (!session_id) return errorResponse('Missing session_id', 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -43,9 +43,7 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   // ── Mark session as completed ────────────────────────────────────────
   const patch = {
     status: 'completed',
-    completed_at: new Date().toISOString(),
   };
-  if (notes !== undefined) patch.notes = notes;
 
   const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, {
     method: 'PATCH',
@@ -79,5 +77,8 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   }
 
   const updated = await updateRes.json();
-  return jsonResponse(updated[0] || {});
+  return jsonResponse({
+    ...(updated[0] || {}),
+    newly_completed: session.status !== 'completed',
+  });
 }, 'log-session');
