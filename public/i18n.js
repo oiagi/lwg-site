@@ -483,10 +483,6 @@
           en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
           de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
         },
-        '.field-summary': {
-          en: '<p>Required: all personal information and emergency contact fields.</p><p>Separate billing details are required only if the billing address differs.</p>',
-          de: '<p>Erforderlich: alle persönlichen Angaben und Notfallkontaktfelder.</p><p>Separate Rechnungsangaben sind nur erforderlich, wenn die Rechnungsadresse abweicht.</p>',
-        },
         '#intake-content > .section-label:nth-of-type(2)': {
           en: 'personal information',
           de: 'Persönliche Angaben',
