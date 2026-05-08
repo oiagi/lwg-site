@@ -339,7 +339,6 @@ function renderCourses(courses) {
         ${
           s.status === 'scheduled'
             ? `
-          <button class="log-btn" data-action="logSession" data-args="${s.id},${c.id}">mark completed</button>
           <button class="cancel-btn" data-action="cancelSession" data-args="${s.id},${c.id}">cancel</button>
         `
             : ''
@@ -560,34 +559,52 @@ export async function saveStudent(studentId) {
 }
 
 export async function logSession(sessionId, courseId) {
-  const notes = prompt('Add a note for this session (optional):') || '';
   try {
     const res = await apiFetch('/api/log-session', {
       method: 'PATCH',
-      body: { session_id: sessionId, notes },
+      body: { session_id: sessionId },
     });
     if (!res.ok) throw new Error();
-    const row = document.getElementById('sess-' + sessionId);
-    if (row) {
-      row.querySelector('.session-status-dot').className = 'session-status-dot completed';
-      row.querySelector('[style*=uppercase]').textContent = 'completed';
-      const btn = row.querySelector('.log-btn');
-      if (btn) btn.remove();
-    }
-    const courseRow = document.getElementById('course-' + courseId);
-    if (courseRow) {
-      const countEl = courseRow.querySelector('.course-sessions');
-      if (countEl) {
-        const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
-        if (match) {
-          const newDone = parseInt(match[1]) + 1;
-          const total = parseInt(match[2]);
-          countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
-        }
-      }
-    }
+    const result = await res.json();
+    markSessionCompletedInList(sessionId, courseId, result.newly_completed);
   } catch {
     alert('Could not log session. Please try again.');
+  }
+}
+
+function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
+  const row = document.getElementById('sess-' + sessionId);
+  if (row) {
+    const dot = row.querySelector('.session-status-dot');
+    if (dot) dot.className = 'session-status-dot completed';
+    const label = row.querySelector('.session-status-label');
+    if (label) label.textContent = 'completed';
+    const btn = row.querySelector('.log-btn');
+    if (btn) btn.remove();
+    const cancelBtn = row.querySelector('.cancel-btn');
+    if (cancelBtn) cancelBtn.remove();
+  }
+
+  if (!shouldIncrementCount) return;
+
+  const courseRow = document.getElementById('course-' + courseId);
+  if (!courseRow) return;
+
+  const countEl = courseRow.querySelector('.course-sessions');
+  if (!countEl) return;
+
+  const slashMatch = countEl.textContent.match(/(\d+) \/ (\d+)/);
+  if (slashMatch) {
+    const newDone = parseInt(slashMatch[1], 10) + 1;
+    const total = parseInt(slashMatch[2], 10);
+    countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
+    return;
+  }
+
+  const openEndedMatch = countEl.textContent.match(/(\d+) sessions completed/);
+  if (openEndedMatch) {
+    const newDone = parseInt(openEndedMatch[1], 10) + 1;
+    countEl.firstChild.textContent = newDone + ' sessions completed';
   }
 }
 
@@ -1022,6 +1039,7 @@ export async function submitAttendance() {
   const btn = document.getElementById('att-submit');
   const msgEl = document.getElementById('att-msg');
   const sessionId = document.getElementById('att-session-id').value;
+  const courseId = document.getElementById('att-course-id').value;
   msgEl.style.display = 'none';
 
   const records = [];
@@ -1050,7 +1068,9 @@ export async function submitAttendance() {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
-    msgEl.textContent = `Saved attendance for ${result.saved_count} student(s).`;
+    markSessionCompletedInList(sessionId, courseId, result.newly_completed);
+
+    msgEl.textContent = `Saved attendance for ${result.saved_count} student(s). Session marked completed.`;
     msgEl.className = 'modal-msg success';
     btn.textContent = 'saved';
 

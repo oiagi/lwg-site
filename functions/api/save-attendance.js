@@ -11,6 +11,8 @@
 // Upserts attendance records for a session. Each record maps a student
 // to a present/absent status. Uses Supabase's conflict resolution to
 // update existing records on re-submission (e.g. correcting a mistake).
+// When attendance is saved successfully, the session is marked completed
+// and the parent course's completed-session count is incremented once.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY
@@ -41,11 +43,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   // ── Verify session exists ────────────────────────────────────────────
-  const sessRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=id`, {
-    headers: H,
-  });
+  const sessRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=id,course_id,status`,
+    { headers: H }
+  );
   const sessions = await sessRes.json();
   if (!sessions.length) return errorResponse('Session not found', 404);
+  const session = sessions[0];
 
   // ── Upsert attendance records ─────────────────────────────────────────
   const saved = [];
@@ -88,10 +92,56 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
+  let completedSession = null;
+  let newlyCompleted = false;
+
+  if (!errors.length) {
+    const completionPatch = {
+      status: 'completed',
+    };
+
+    const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, {
+      method: 'PATCH',
+      headers: { ...H, Prefer: 'return=representation' },
+      body: JSON.stringify(completionPatch),
+    });
+
+    if (!updateRes.ok) {
+      console.error('Session completion error:', await updateRes.text());
+      return errorResponse('Attendance saved, but session completion failed');
+    }
+
+    const updated = await updateRes.json();
+    completedSession = updated[0] || null;
+    newlyCompleted = session.status !== 'completed';
+
+    if (newlyCompleted) {
+      try {
+        const courseRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}&select=sessions_completed`,
+          { headers: H }
+        );
+        const courses = await courseRes.json();
+        if (courses.length) {
+          const newCount = (courses[0].sessions_completed || 0) + 1;
+          await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}`, {
+            method: 'PATCH',
+            headers: H,
+            body: JSON.stringify({ sessions_completed: newCount }),
+          });
+        }
+      } catch (err) {
+        console.error('Course count update error:', err);
+      }
+    }
+  }
+
   return jsonResponse({
     success: true,
     saved_count: saved.length,
     records: saved,
+    session: completedSession,
+    newly_completed: newlyCompleted,
     errors: errors.length ? errors : undefined,
   });
 }, 'save-attendance');
