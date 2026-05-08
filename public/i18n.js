@@ -196,10 +196,6 @@
       },
       text: {
         h1: { en: 'make an enquiry', de: 'Anfrage senden' },
-        '.field-summary': {
-          en: '<p>Required: request description, first name, last name, email, preferred contact method.</p><p>Phone is required unless you choose email as your preferred contact method.</p>',
-          de: '<p>Erforderlich: Beschreibung deiner Anfrage, Vorname, Nachname, E-Mail, bevorzugte Kontaktart.</p><p>Telefon ist erforderlich, ausser du wählst E-Mail als bevorzugte Kontaktart.</p>',
-        },
         'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'Wonach suchst du?' },
         '#lesson-type': {
           en: 'e.g. German A2 course, IELTS exam prep, Maths tutoring - Gymnasium year 9, Gymivorbereitung grade 6...',
@@ -275,10 +271,6 @@
         '#booking-note': {
           en: 'Your spot is final once we confirm your booking. After that, we will send the payment request for your course.',
           de: 'Dein Platz ist nach unserer Bestätigung definitiv. Danach schicken wir dir die Rechnung für deinen Kurs.',
-        },
-        '#booking-field-summary': {
-          en: '<p>Required: all personal information, emergency contact, and terms acceptance.</p><p>Separate billing details are required only if the billing address differs.</p>',
-          de: '<p>Erforderlich: alle persönlichen Angaben, Notfallkontakt und Zustimmung zu den AGB.</p><p>Separate Rechnungsangaben sind nur erforderlich, wenn die Rechnungsadresse abweicht.</p>',
         },
         'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
