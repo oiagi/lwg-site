@@ -24,6 +24,8 @@ const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const RETURN_FIELDS = [
   'first_name',
   'last_name',
+  'gender',
+  'gender_note',
   'email',
   'phone',
   'street',
@@ -42,6 +44,14 @@ const RETURN_FIELDS = [
   'billing_postcode',
   'billing_city',
 ];
+
+function emailValid(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
+}
+
+function missingRequired(body, fields) {
+  return fields.find((field) => !body[field]);
+}
 
 async function loadStudentByToken(env, token) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -95,6 +105,40 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!body.first_name || !body.last_name) {
     return errorResponse('First name and last name are required', 400);
   }
+  if (!['female', 'male', 'other'].includes(body.gender)) {
+    return errorResponse('Form of address is required', 400);
+  }
+  if (body.gender === 'other' && !body.gender_note) {
+    return errorResponse('Please specify your form of address', 400);
+  }
+  const missing = missingRequired(body, [
+    'email',
+    'phone',
+    'street',
+    'street_number',
+    'postcode',
+    'city',
+    'emergency_contact',
+    'ec_relationship',
+    'ec_phone',
+    'ec_email',
+  ]);
+  if (missing) return errorResponse(`${missing} is required`, 400);
+  if (!emailValid(body.email)) return errorResponse('email must be valid', 400);
+  if (!emailValid(body.ec_email)) return errorResponse('ec_email must be valid', 400);
+  if (body.billing_separate) {
+    const missingBilling = missingRequired(body, [
+      'billing_name',
+      'billing_email',
+      'billing_phone',
+      'billing_street',
+      'billing_street_number',
+      'billing_postcode',
+      'billing_city',
+    ]);
+    if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
+    if (!emailValid(body.billing_email)) return errorResponse('billing_email must be valid', 400);
+  }
 
   const { student, error, status } = await loadStudentByToken(env, token);
   if (error) return errorResponse(error, status);
@@ -102,6 +146,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const editable = [
     'first_name',
     'last_name',
+    'gender',
+    'gender_note',
     'email',
     'phone',
     'street',
@@ -116,6 +162,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const update = {};
   for (const f of editable) {
     if (f in body) update[f] = body[f];
+  }
+  if (!['female', 'male', 'other'].includes(update.gender)) {
+    update.gender = null;
+    update.gender_note = null;
+  } else if (update.gender !== 'other') {
+    update.gender_note = null;
   }
 
   const billingFields = [

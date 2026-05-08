@@ -136,7 +136,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (studentIds.length) {
       const studentFilter = studentIds.map((id) => `id.eq.${id}`).join(',');
       const studRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects`,
+        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects`,
         { headers: H }
       );
       allStudents = studRes.ok ? await studRes.json() : [];

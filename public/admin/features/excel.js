@@ -11,6 +11,8 @@ const SHEETJS_SRC = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min
 const COLUMNS = [
   'first_name',
   'last_name',
+  'gender',
+  'gender_note',
   'email',
   'phone',
   'street',

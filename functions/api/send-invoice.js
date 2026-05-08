@@ -45,7 +45,15 @@ function cleanFilenamePart(value, fallback) {
     .slice(0, 80);
 }
 
-function buildEmail({ language, name, invoice }) {
+function invoiceGreeting({ language, name, first_name, last_name, gender }) {
+  if (language === 'en') return `Hello ${first_name || name || 'there'},`;
+  if (gender === 'female' && last_name) return `Sehr geehrte Frau ${last_name}`;
+  if (gender === 'male' && last_name) return `Sehr geehrter Herr ${last_name}`;
+  const fullName = [first_name, last_name].filter(Boolean).join(' ') || name;
+  return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
+}
+
+function buildEmail({ language, name, first_name, last_name, gender, invoice }) {
   const isEN = language === 'en';
   const invoiceNo = invoice.invoice_number || '';
   const amount = `${Number(invoice.total_amount || 0).toFixed(2)} ${invoice.currency || 'CHF'}`;
@@ -53,23 +61,23 @@ function buildEmail({ language, name, invoice }) {
     ? `Invoice ${invoiceNo} · learning with gioia`
     : `Rechnung ${invoiceNo} · learning with gioia`;
 
-  const greeting = isEN ? `Hello ${name || 'there'},` : `Hallo ${name || 'du'},`;
+  const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
   const courseLabel = invoice.subject || (isEN ? 'your course' : 'deinen Kurs');
   const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'danke, dass du mit uns lernst.';
+  const intro = isEN ? 'Thank you for learning with us.' : 'Vielen Dank, dass Sie mit uns lernen.';
   const invoiceLine = isEN
     ? `Attached you will find the invoice for ${courseLabel}.`
-    : `Anbei findest du die Rechnung für ${courseLabel}.`;
+    : `Anbei finden Sie die Rechnung für ${courseLabel}.`;
   const paymentLine = dueDate
     ? isEN
       ? `You can pay it easily with the QR bill in the PDF. The payment is due by ${dueDate}.`
-      : `Du kannst sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
+      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
     : isEN
       ? 'You will find the payment details directly in the attached PDF.'
-      : 'Die Zahlungsdetails findest du direkt im angehängten PDF.';
+      : 'Die Zahlungsdetails finden Sie direkt im angehängten PDF.';
   const questionLine = isEN
     ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworte einfach direkt auf diese E-Mail.';
+    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
   const html = `<!DOCTYPE html>
@@ -237,6 +245,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { subject, html } = buildEmail({
     language: body.language,
     name: body.name || '',
+    first_name: body.first_name || '',
+    last_name: body.last_name || '',
+    gender: body.gender || '',
     invoice: body.invoice,
   });
   const filename = `${body.language === 'en' ? 'invoice' : 'rechnung'}-${cleanFilenamePart(

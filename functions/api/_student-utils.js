@@ -13,7 +13,7 @@ import { supabaseHeaders } from './_utils.js';
 export async function findOrCreateStudent(
   supabaseUrl,
   serviceKey,
-  { first_name, last_name, email, phone, postcode, source }
+  { first_name, last_name, gender, gender_note, email, phone, postcode, source }
 ) {
   const H = supabaseHeaders(serviceKey);
 
@@ -32,6 +32,8 @@ export async function findOrCreateStudent(
     body: JSON.stringify({
       first_name: first_name || null,
       last_name: last_name || null,
+      gender: ['female', 'male', 'other'].includes(gender) ? gender : null,
+      gender_note: gender === 'other' ? gender_note || null : null,
       email: email || null,
       phone: phone || null,
       postcode: postcode || null,

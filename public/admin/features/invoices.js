@@ -229,6 +229,18 @@ function billingAddressLines(student) {
   return [billingName(student), street, city].filter(Boolean);
 }
 
+function formalGreeting(data) {
+  const lastName = data.recipientLastName || '';
+  if (data.recipientGender === 'female' && lastName) {
+    return `Sehr geehrte Frau ${lastName}`;
+  }
+  if (data.recipientGender === 'male' && lastName) {
+    return `Sehr geehrter Herr ${lastName}`;
+  }
+  const fullName = [data.recipientFirstName, data.recipientLastName].filter(Boolean).join(' ');
+  return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
+}
+
 function renderBulkInvoiceRecipients(recipients, skipped = []) {
   const wrap = document.getElementById('inv-bulk-recipients');
   if (!wrap) return;
@@ -493,6 +505,10 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     totalAmount,
     currency: currentCourse?.currency || 'CHF',
     recipientName: billingName(student),
+    recipientFirstName: student?.first_name || '',
+    recipientLastName: student?.last_name || '',
+    recipientGender: student?.gender || '',
+    recipientGenderNote: student?.gender_note || '',
     recipientEmail: currentBulkRecipients.length
       ? billingEmail(student)
       : val('inv-recipient-email'),
@@ -521,6 +537,7 @@ function money(value) {
 
 function buildPreviewHtml(data) {
   const recipient = data.recipientLines.map((line) => esc(line)).join('<br>');
+  const greeting = formalGreeting(data);
   const qrPreview =
     qrFileType === 'pdf'
       ? `<span>${qrPdfBytes ? 'QR bill PDF will be attached as page 2' : 'Loading QR bill PDF...'}</span>`
@@ -552,7 +569,7 @@ function buildPreviewHtml(data) {
       </div>
       <p class="inv-prev-date">${esc(longDate(data.invoiceDate))}</p>
       <h3>${esc(data.subject || 'Rechnung')}</h3>
-      <p class="inv-prev-greeting">Sehr geehrte Damen und Herren</p>
+      <p class="inv-prev-greeting">${esc(greeting)}</p>
       <div class="inv-prev-address">${recipient}</div>
       <table>
         <colgroup>
@@ -687,7 +704,7 @@ async function buildInvoicePdf(data) {
   y += titleLines.length * 8 + 7;
 
   setFont(10.5);
-  doc.text('Sehr geehrte Damen und Herren', margin, y);
+  doc.text(formalGreeting(data), margin, y);
 
   y += 18;
   const tableTop = y;
@@ -871,6 +888,10 @@ async function sendInvoiceRequest(data, student, pdfBase64) {
       course_id: currentCourse.id,
       email: data.recipientEmail,
       name: data.recipientName,
+      first_name: data.recipientFirstName,
+      last_name: data.recipientLastName,
+      gender: data.recipientGender,
+      gender_note: data.recipientGenderNote,
       language: data.language,
       invoice: {
         invoice_number: data.invoiceNumber,
