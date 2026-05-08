@@ -87,7 +87,7 @@ function normalizeStudent(input) {
   }
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
-  if (!['female', 'male', 'other'].includes(out.gender)) {
+  if (!['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(out.gender)) {
     out.gender = null;
     out.gender_note = null;
   } else if (out.gender !== 'other') {
@@ -294,7 +294,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const studentErr = validate(student, {
     first_name: { required: true, type: 'string', maxLength: 200 },
     last_name: { required: true, type: 'string', maxLength: 200 },
-    gender: { required: true, type: 'string', oneOf: ['female', 'male', 'other'] },
+    gender: {
+      required: true,
+      type: 'string',
+      oneOf: ['she/her', 'he/him', 'they/them', 'other', 'female', 'male'],
+    },
     email: { required: true, type: 'string', email: true, maxLength: 320 },
     consent_given: { required: true, type: 'boolean', oneOf: [true] },
   });

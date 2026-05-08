@@ -108,11 +108,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!body.first_name || !body.last_name) {
     return errorResponse('First name and last name are required', 400);
   }
-  if (!['female', 'male', 'other'].includes(body.gender)) {
-    return errorResponse('Form of address is required', 400);
+  if (!['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(body.gender)) {
+    return errorResponse('Pronouns are required', 400);
   }
   if (body.gender === 'other' && !body.gender_note) {
-    return errorResponse('Please specify your form of address', 400);
+    return errorResponse('Please specify your pronouns', 400);
   }
   const missing = missingRequired(body, [
     'email',
@@ -166,7 +166,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   for (const f of editable) {
     if (f in body) update[f] = body[f];
   }
-  if (!['female', 'male', 'other'].includes(update.gender)) {
+  if (!['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(update.gender)) {
     update.gender = null;
     update.gender_note = null;
   } else if (update.gender !== 'other') {
