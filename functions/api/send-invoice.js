@@ -47,10 +47,8 @@ function cleanFilenamePart(value, fallback) {
 
 function invoiceGreeting({ language, name, first_name, last_name, gender }) {
   if (language === 'en') return `Hello ${first_name || name || 'there'},`;
-  if ((gender === 'female' || gender === 'she/her') && last_name)
-    return `Sehr geehrte Frau ${last_name}`;
-  if ((gender === 'male' || gender === 'he/him') && last_name)
-    return `Sehr geehrter Herr ${last_name}`;
+  if (gender === 'female' && last_name) return `Sehr geehrte Frau ${last_name}`;
+  if (gender === 'male' && last_name) return `Sehr geehrter Herr ${last_name}`;
   const fullName = [first_name, last_name].filter(Boolean).join(' ') || name;
   return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
 }

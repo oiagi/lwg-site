@@ -108,11 +108,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!body.first_name || !body.last_name) {
     return errorResponse('First name and last name are required', 400);
   }
-  if (!['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(body.gender)) {
-    return errorResponse('Pronouns are required', 400);
+  if (!['female', 'male', 'other'].includes(body.gender)) {
+    return errorResponse('Salutation is required', 400);
   }
   if (body.gender === 'other' && !body.gender_note) {
-    return errorResponse('Please specify your pronouns', 400);
+    return errorResponse('Please specify your salutation', 400);
   }
   const missing = missingRequired(body, [
     'email',
