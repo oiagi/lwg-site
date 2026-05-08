@@ -87,7 +87,7 @@ function normalizeStudent(input) {
   }
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
-  if (!['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(out.gender)) {
+  if (!['female', 'male', 'other'].includes(out.gender)) {
     out.gender = null;
     out.gender_note = null;
   } else if (out.gender !== 'other') {

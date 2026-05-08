@@ -32,9 +32,7 @@ export async function findOrCreateStudent(
     body: JSON.stringify({
       first_name: first_name || null,
       last_name: last_name || null,
-      gender: ['she/her', 'he/him', 'they/them', 'other', 'female', 'male'].includes(gender)
-        ? gender
-        : null,
+      gender: ['female', 'male', 'other'].includes(gender) ? gender : null,
       gender_note: gender === 'other' ? gender_note || null : null,
       email: email || null,
       phone: phone || null,
