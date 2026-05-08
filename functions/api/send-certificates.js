@@ -51,8 +51,8 @@ function buildEmail({ language, name, courseCode, level }) {
     ? `Below you will find the certificate for your ${esc(courseLabel || 'course')}.`
     : `anbei findest du das Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
   const closing = isEN
-    ? 'It was a pleasure learning with you! Thank you for being part of the course, and maybe see you again soon.'
-    : 'Es hat uns Spass gemacht, mit dir zu lernen! Danke, dass du dabei warst und vielleicht bis bald.';
+    ? 'It was a pleasure learning with you! Thank you for participating in the course, and maybe see you again soon.'
+    : 'Es hat uns Spass gemacht, mit dir zu lernen! Danke, dass du dabei warst und vielleicht bis bald wieder.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
   const teamLine = 'Gioia';
 

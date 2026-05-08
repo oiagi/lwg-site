@@ -90,7 +90,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
     ? {
         subject: `Updated lesson plan${codeLabel} — learning with gioia`,
         htmlLang: 'en',
-        intro: `Attached is the current lesson plan for your ${label}. We are happy to have you.`,
+        intro: `Attached is the current lesson plan for your ${label}. We are delighted to have you in our course.`,
         sessions: 'Scheduled lessons',
         cancellation: 'Cancellation and postponement',
         questions: 'If you have any questions, you can reach us at',
