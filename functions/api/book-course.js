@@ -376,7 +376,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     sendEmail(
       env,
       NOTIFY_EMAILS,
-      buildNotificationEmail(publicCourse, student, enquiryId, adminCourseUrl(request, env, course.id))
+      buildNotificationEmail(
+        publicCourse,
+        student,
+        enquiryId,
+        adminCourseUrl(request, env, course.id)
+      )
     ),
   ]);
 

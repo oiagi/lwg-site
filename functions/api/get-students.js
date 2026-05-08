@@ -9,12 +9,7 @@
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
 
-import {
-  supabaseHeaders,
-  requireAdminAuth,
-  errorResponse,
-  withErrorHandling,
-} from './_utils.js';
+import { supabaseHeaders, requireAdminAuth, errorResponse, withErrorHandling } from './_utils.js';
 
 const DB_SORTS = {
   name: {

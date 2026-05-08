@@ -88,7 +88,11 @@ function courseSubLine(s) {
     const course = request.course || {};
     const booking = request.booking_data || {};
     const label =
-      [course.course_code || booking.course_code, course.level || booking.level, course.service || booking.service]
+      [
+        course.course_code || booking.course_code,
+        course.level || booking.level,
+        course.service || booking.service,
+      ]
         .filter(Boolean)
         .join(' · ') || 'untreated request';
     const extra = s.pending_request_count > 1 ? ` +${s.pending_request_count - 1}` : '';
@@ -360,7 +364,11 @@ function requestCourseLabel(enquiry) {
   const course = enquiry.course || {};
   const booking = enquiry.booking_data || {};
   return (
-    [course.course_code || booking.course_code, course.level || booking.level, course.service || booking.service]
+    [
+      course.course_code || booking.course_code,
+      course.level || booking.level,
+      course.service || booking.service,
+    ]
       .filter(Boolean)
       .join(' · ') || 'requested course'
   );
