@@ -105,7 +105,7 @@ function courseSubLine(s) {
   );
   const primary = activeCourses[0] || (s.courses && s.courses[0]);
   if (primary) {
-    const parts = [primary.course_code, primary.level, primary.service].filter(Boolean);
+    const parts = [primary.course_code, primary.level, primary.course_type].filter(Boolean);
     const label = parts.join(' · ');
     const extra = s.courses.length - 1 > 0 ? ` +${s.courses.length - 1}` : '';
     return esc(label) + esc(extra);
@@ -242,7 +242,7 @@ function renderStudentDetail(container, s) {
       ? s.courses
           .map(
             (c) =>
-              `<span class="course-tag">${esc(c.course_code) || '—'} · ${esc(c.service)} · <em>${esc(c.status)}</em></span>`
+              `<span class="course-tag">${esc(c.course_code) || '—'} · ${esc(c.course_type)} · <em>${esc(c.status)}</em></span>`
           )
           .join('')
       : '<span class="detail-muted">no courses</span>';
@@ -579,7 +579,7 @@ function renderAdminSection(s) {
         <td>${priceCell}</td>
         <td>${openCell}</td>
         <td>${esc(c.level) || '—'}</td>
-        <td>${esc(c.service) || '—'}</td>
+        <td>${esc(c.course_type) || '—'}</td>
         <td>${esc(c.location) || '—'}</td>
         <td>
           <button class="remove-enrollment-btn" data-action="removeStudentEnrollment"
@@ -678,7 +678,7 @@ export async function openEnrollStudentModal(studentId) {
       '<option value="">select a course…</option>' +
       available
         .map((c) => {
-          const label = [c.course_code, c.service, c.level].filter(Boolean).join(' · ');
+          const label = [c.course_code, c.course_type, c.level].filter(Boolean).join(' · ');
           return `<option value="${esc(c.id)}">${esc(label || c.id)}</option>`;
         })
         .join('');

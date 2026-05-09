@@ -51,7 +51,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (courseIds.length) {
       const courseFilter = courseIds.map((cid) => `id.eq.${cid}`).join(',');
       const courseRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location`,
+        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,course_type,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location`,
         { headers: H }
       );
       courses = courseRes.ok ? await courseRes.json() : [];
@@ -87,7 +87,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (enquiryCourseIds.length) {
       const enquiryCourseFilter = enquiryCourseIds.map((cid) => `id.eq.${cid}`).join(',');
       const enquiryCourseRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/courses?or=(${enquiryCourseFilter})&select=id,course_code,service,level,status,group_type`,
+        `${SUPABASE_URL}/rest/v1/courses?or=(${enquiryCourseFilter})&select=id,course_code,course_type,level,status,group_type`,
         { headers: H }
       );
       enquiryCourses = enquiryCourseRes.ok ? await enquiryCourseRes.json() : [];
