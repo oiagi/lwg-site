@@ -75,7 +75,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const courseFilter = courseIds.map((id) => `id.eq.${id}`).join(',');
   const [coursesRes, sessRes] = await Promise.all([
     fetch(
-      `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,service,level,sessions_total,sessions_completed,status`,
+      `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,course_type,level,sessions_total,sessions_completed,status`,
       { headers: H }
     ),
     fetch(

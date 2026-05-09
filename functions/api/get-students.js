@@ -114,7 +114,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         { headers: H }
       ),
       fetch(
-        `${SUPABASE_URL}/rest/v1/courses?select=id,course_code,service,level,status,group_type`,
+        `${SUPABASE_URL}/rest/v1/courses?select=id,course_code,course_type,level,status,group_type`,
         { headers: H }
       ),
     ]);
