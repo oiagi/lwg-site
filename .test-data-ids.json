@@ -1,0 +1,18 @@
+{
+  "studentEN": "d478c042-4bd0-4efb-9168-07d98372cbf1",
+  "studentDE": "a7400b03-dc71-4267-b3ae-2137b3a16d71",
+  "teacher": "7d95bcf8-4cd3-4012-819d-3e8d885a7fe7",
+  "course": "d35fcd2a-fbb0-483a-ac23-fa53ee9f9b82",
+  "sessions": [
+    "a5433b7d-0d7f-4489-be03-768f8c2c8ce3",
+    "2887f68c-0f09-4738-b9f1-e32ec4c6765a",
+    "da30dda1-149a-4a59-893f-e62206ce656f",
+    "7fbf98af-314e-441c-b6d0-906c8afc3c37",
+    "287b7aaa-4c3f-4a18-b392-beda4f4fb7b0",
+    "0de76d44-7bc9-46d5-8cbe-f1414314577b",
+    "42a2a9b5-e065-4c2e-9204-2c4b13500035",
+    "0a9f938f-71d8-4562-ba58-ec37d79d5a06"
+  ],
+  "enrolment": "f73e3b6e-3c6f-4e86-be59-3b40783b5425",
+  "enquiry": "69775744-16a6-4de9-9220-a751f61b5bd3"
+}

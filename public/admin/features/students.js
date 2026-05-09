@@ -2,12 +2,14 @@
 import { apiFetch } from '../core/api.js';
 import { esc, queryString, attachListControls } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { openConfirmSend } from './confirm-send.js';
 
 let currentStudentFilter = 'active';
 const studentListState = { search: '', sort: 'name', direction: 'asc' };
 let selectedStudentId = null;
 let fromCourseContext = null;
 let studentControlsAttached = false;
+let currentStudentDetail = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -162,6 +164,7 @@ async function fetchAndRenderStudent(id) {
     const res = await apiFetch('/api/get-student-detail?id=' + id);
     if (!res.ok) throw new Error();
     const s = await res.json();
+    currentStudentDetail = s;
     renderStudentDetail(pane, s);
   } catch {
     pane.innerHTML = '<p class="detail-error">Could not load student details.</p>';
@@ -307,13 +310,63 @@ function renderStudentDetail(container, s) {
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
       ${
         s.access_token
-          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>
+          ? `${s.email ? `<button class="save-btn" data-action="sendIntakeLink" data-args="${esc(String(s.id))}">send intake link</button>` : ''}
+             <button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>
              <span class="detail-action-msg" id="intake-msg-${s.id}"></span>`
           : ''
       }
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+export async function sendIntakeLink(studentId) {
+  const s = currentStudentDetail;
+  if (!s || String(s.id) !== String(studentId)) {
+    alert('Student data not loaded. Please try again.');
+    return;
+  }
+  if (!s.email) {
+    alert('This student has no email address on file.');
+    return;
+  }
+
+  const fullName = [s.first_name, s.last_name].filter(Boolean).join(' ') || '—';
+  const contentHtml = `
+    <p class="cs-section-label">intake form</p>
+    <ul class="cs-detail-list">
+      <li>Personal details form link</li>
+      <li>Link valid for 90 days</li>
+    </ul>
+  `;
+
+  openConfirmSend({
+    title: 'send intake link',
+    recipients: [{ name: fullName, email: s.email }],
+    subject: 'Dein Anmeldeformular / Your intake form · learning with gioia',
+    contentHtml,
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    onConfirm: async ({ language }) => {
+      const res = await apiFetch('/api/send-intake-link', {
+        method: 'POST',
+        body: { student_id: studentId, language },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      const msgEl = document.getElementById('intake-msg-' + studentId);
+      if (msgEl) {
+        msgEl.textContent = 'sent';
+        msgEl.style.display = 'inline';
+        setTimeout(() => {
+          msgEl.style.display = 'none';
+        }, MESSAGE_TIMEOUT_MS);
+      }
+    },
+  });
 }
 
 export function copyIntakeLink(token, btn) {

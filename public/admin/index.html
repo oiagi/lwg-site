@@ -54,6 +54,41 @@
 
   </div>
 
+  <!-- ── Confirm send modal (shared across all tabs) ────────────────── -->
+  <div class="modal-overlay" id="confirm-send-modal">
+    <div class="modal">
+      <h2 id="cs-title">confirm send</h2>
+      <div class="modal-field">
+        <label>Recipients <span id="cs-recipients-count" class="cs-meta"></span></label>
+        <ul id="cs-recipients" class="cs-recipients"></ul>
+      </div>
+      <div class="modal-field" id="cs-language-field" hidden>
+        <label>Language</label>
+        <div class="cert-radio-row">
+          <label class="cert-radio">
+            <input type="radio" name="cs-language" value="de" checked> Deutsch
+          </label>
+          <label class="cert-radio">
+            <input type="radio" name="cs-language" value="en"> English
+          </label>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Subject</label>
+        <p id="cs-subject" class="cs-subject"></p>
+      </div>
+      <div class="modal-field">
+        <label>Email contents</label>
+        <div id="cs-content" class="cs-content"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" data-action="closeConfirmSendModal">cancel</button>
+        <button class="modal-submit" id="cs-submit" data-action="submitConfirmSend">send</button>
+      </div>
+      <p class="modal-msg" id="cs-msg"></p>
+    </div>
+  </div>
+
   <script type="module" src="/admin/main.js"></script>
 </body>
 </html>
