@@ -247,7 +247,7 @@ function renderStudentDetail(container, s) {
           .join('')
       : '<span class="detail-muted">no courses</span>';
 
-  const enrolButton = `<button class="save-btn" data-action="openEnrollStudentModal" data-args="${esc(s.id)}" style="margin-top:0.6rem;">+ enroll in course</button>`;
+  const enrolButton = `<button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}" style="margin-top:0.6rem;">+ enrol in course</button>`;
 
   const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
   const status = statusLabel(s);
@@ -582,7 +582,7 @@ function renderAdminSection(s) {
         <td>${esc(c.course_type) || '—'}</td>
         <td>${esc(c.location) || '—'}</td>
         <td>
-          <button class="remove-enrollment-btn" data-action="removeStudentEnrollment"
+          <button class="remove-enrolment-btn" data-action="removeStudentEnrolment"
             data-args="${s.id},${c.id}" data-course-code="${esc(c.course_code || 'this course')}">remove</button>
         </td>
       </tr>`;
@@ -630,13 +630,13 @@ export function editStudent(studentId) {
   window.location.href = '/admin/pages/student-form.html?id=' + encodeURIComponent(studentId);
 }
 
-/* ── Enroll-in-course modal ──────────────────────────────────────── */
+/* ── Enrol-in-course modal ───────────────────────────────────────── */
 
-let enrollStudentId = null;
+let enrolStudentId = null;
 
-export async function openEnrollStudentModal(studentId) {
-  enrollStudentId = studentId;
-  const modal = document.getElementById('enroll-student-modal');
+export async function openEnrolStudentModal(studentId) {
+  enrolStudentId = studentId;
+  const modal = document.getElementById('enrol-student-modal');
   const sel = document.getElementById('es-course');
   const msg = document.getElementById('es-msg');
   const btn = document.getElementById('es-submit');
@@ -644,7 +644,7 @@ export async function openEnrollStudentModal(studentId) {
 
   msg.style.display = 'none';
   msg.textContent = '';
-  btn.textContent = 'enroll';
+  btn.textContent = 'enrol';
   btn.disabled = true;
   sel.innerHTML = '<option value="">loading courses…</option>';
   if (createLink) {
@@ -694,34 +694,34 @@ export async function openEnrollStudentModal(studentId) {
   }
 }
 
-export function closeEnrollStudentModal() {
-  document.getElementById('enroll-student-modal').classList.remove('open');
-  enrollStudentId = null;
+export function closeEnrolStudentModal() {
+  document.getElementById('enrol-student-modal').classList.remove('open');
+  enrolStudentId = null;
 }
 
-export async function submitEnrollStudent() {
+export async function submitEnrolStudent() {
   const btn = document.getElementById('es-submit');
   const msg = document.getElementById('es-msg');
   const courseId = document.getElementById('es-course').value;
-  if (!courseId || !enrollStudentId) return;
+  if (!courseId || !enrolStudentId) return;
 
   btn.disabled = true;
   btn.textContent = 'enrolling…';
   msg.style.display = 'none';
 
   try {
-    const res = await apiFetch('/api/add-enrollment', {
+    const res = await apiFetch('/api/add-enrolment', {
       method: 'POST',
-      body: { course_id: courseId, student_id: enrollStudentId },
+      body: { course_id: courseId, student_id: enrolStudentId },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed');
     }
     btn.textContent = 'enrolled';
-    const sid = enrollStudentId;
+    const sid = enrolStudentId;
     setTimeout(async () => {
-      closeEnrollStudentModal();
+      closeEnrolStudentModal();
       selectedStudentId = sid;
       await loadStudentsKeepingContext(currentStudentFilter, sid);
       await fetchAndRenderStudent(sid);
@@ -730,12 +730,12 @@ export async function submitEnrollStudent() {
     msg.textContent = 'Error: ' + e.message;
     msg.className = 'modal-msg err';
     msg.style.display = 'block';
-    btn.textContent = 'enroll';
+    btn.textContent = 'enrol';
     btn.disabled = false;
   }
 }
 
-export async function removeStudentEnrollment(studentId, courseId, btn) {
+export async function removeStudentEnrolment(studentId, courseId, btn) {
   const courseCode = btn?.dataset.courseCode || 'this course';
   if (
     !confirm(
@@ -751,7 +751,7 @@ export async function removeStudentEnrollment(studentId, courseId, btn) {
   }
 
   try {
-    const res = await apiFetch('/api/remove-enrollment', {
+    const res = await apiFetch('/api/remove-enrolment', {
       method: 'DELETE',
       body: { course_id: courseId, student_id: studentId },
     });

@@ -155,7 +155,7 @@ function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) 
         intro: "We've received your booking request. What happens next:",
         stepConfirm: 'We will confirm your request shortly.',
         stepIntake:
-          'In the meantime, please complete this form. Without this information we cannot enroll you in the course!',
+          'In the meantime, please complete this form. Without this information we cannot enrol you in the course!',
         stepIntakeBtn: 'Complete the form →',
         stepPaymentRequest: 'You will receive the payment request for your course.',
         stepPay: 'You pay the bill.',

@@ -106,7 +106,7 @@ export const AGB_SECTIONS = [
   {
     title: { en: 'Holidays and public holidays', de: 'Ferien und Feiertage' },
     html: {
-      en: '<ul class="legal-list"><li>The public holidays of the City of Zurich apply.</li><li>No courses or lessons take place from 24 December through 31 December or from 1 January through 7 January.</li><li>Where applicable, teacher holiday periods are planned into the respective course cycles in advance and communicated to participants in good time.</li><li>If lessons are cancelled by the school, replacement lessons are offered or partial refunds are granted.</li><li>Lesson absences caused by participants (e.g. holidays, illness) are not compensated.</li></ul>',
+      en: '<ul class="legal-list"><li>The public holidays of the City of Zürich apply.</li><li>No courses or lessons take place from 24 December through 31 December or from 1 January through 7 January.</li><li>Where applicable, teacher holiday periods are planned into the respective course cycles in advance and communicated to participants in good time.</li><li>If lessons are cancelled by the school, replacement lessons are offered or partial refunds are granted.</li><li>Lesson absences caused by participants (e.g. holidays, illness) are not compensated.</li></ul>',
       de: '<ul class="legal-list"><li>Es gelten die Feiertage der Stadt Zürich.</li><li>Vom 24. Dezember bis einschliesslich 31. Dezember sowie vom 1. Januar bis einschliesslich 7. Januar finden keine Kurse oder Lektionen statt.</li><li>Sofern zutreffend, werden Ferienzeiten der Lehrpersonen im Voraus in die jeweiligen Kurszyklen eingeplant und den Teilnehmerinnen und Teilnehmern rechtzeitig kommuniziert.</li><li>Bei Unterrichtsausfall durch die Schule werden Ersatzlektionen angeboten oder anteilige Rückerstattungen gewährt.</li><li>Unterrichtsausfall durch Teilnehmende (z. B. Ferien, Krankheit) wird nicht vergütet.</li></ul>',
     },
   },
@@ -120,7 +120,7 @@ export const AGB_SECTIONS = [
   {
     title: { en: 'Place of jurisdiction and law', de: 'Gerichtsstand und Recht' },
     html: {
-      en: '<ul class="legal-list"><li>Swiss law applies.</li><li>The place of jurisdiction is Zurich, Switzerland.</li></ul>',
+      en: '<ul class="legal-list"><li>Swiss law applies.</li><li>The place of jurisdiction is Zürich, Switzerland.</li></ul>',
       de: '<ul class="legal-list"><li>Es gilt Schweizer Recht.</li><li>Gerichtsstand ist Zürich, Schweiz.</li></ul>',
     },
   },

@@ -83,7 +83,7 @@ function buildCustomerEmail(booking, contact, language = 'en', intakeUrl = null)
         thankYou: `Thank you, ${esc(name)} :)`,
         body: "We've received your message and will contact you shortly to discuss your enquiry.",
         intakeText:
-          'In the meantime, please complete this form. Without this information we cannot enroll you in a course!',
+          'In the meantime, please complete this form. Without this information we cannot enrol you in a course!',
         intakeBtn: 'Complete the form →',
         enquiryLabel: 'Your enquiry',
         preferredContact: 'Preferred contact',

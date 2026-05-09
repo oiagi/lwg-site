@@ -40,9 +40,9 @@ function buildIntakeLinkEmail(student, intakeUrl, language) {
         footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
       }
     : {
-        subject: 'Please complete your enrollment form — learning with gioia',
+        subject: 'Please complete your enrolment form — learning with gioia',
         greeting: `Hi ${esc(name)} :)`,
-        body: 'In order to enroll you in one of our courses we need some more information from you. Please fill in the following form:',
+        body: 'In order to enrol you in one of our courses we need some more information from you. Please fill in the following form:',
         btn: 'Complete the form →',
         footer: 'If you have any questions, reply to this email or write to',
       };

@@ -1,4 +1,4 @@
-// functions/api/add-enrollment.js
+// functions/api/add-enrolment.js
 // Add an existing or new student to an existing course.
 // Creates a student record (as prospect) if no student_id is provided.
 
@@ -11,7 +11,7 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import {
-  completeEnquiriesForEnrollment,
+  completeEnquiriesForEnrolment,
   findOrCreateStudent,
   setStudentStatus,
 } from './_student-utils.js';
@@ -64,7 +64,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   await setStudentStatus(SUPABASE_URL, env.SUPABASE_SERVICE_KEY, sid, 'active');
-  const completed_enquiries = await completeEnquiriesForEnrollment(
+  const completed_enquiries = await completeEnquiriesForEnrolment(
     SUPABASE_URL,
     env.SUPABASE_SERVICE_KEY,
     sid,
