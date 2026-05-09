@@ -1,6 +1,6 @@
 /* ── Invoices ───────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { esc, showMessage } from '../core/helpers.js';
+import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 
 const SENDER = {
@@ -179,7 +179,14 @@ function bindInvoiceListeners() {
     });
   });
   document.querySelectorAll('input[name="inv-language"]').forEach((el) => {
-    el.addEventListener('change', updateInvoicePreview);
+    el.addEventListener('change', () => {
+      const lang = currentLang();
+      setVal(
+        'inv-subject',
+        formalCourseLabel(currentCourse, lang) || currentCourse?.course_code || ''
+      );
+      updateInvoicePreview();
+    });
   });
   document.getElementById('inv-qr-file')?.addEventListener('change', handleQrFile);
 }
@@ -231,13 +238,14 @@ function billingAddressLines(student) {
 
 function formalGreeting(data) {
   const lastName = data.recipientLastName || '';
-  if (data.recipientGender === 'female' && lastName) {
-    return `Sehr geehrte Frau ${lastName}`;
-  }
-  if (data.recipientGender === 'male' && lastName) {
-    return `Sehr geehrter Herr ${lastName}`;
-  }
   const fullName = [data.recipientFirstName, data.recipientLastName].filter(Boolean).join(' ');
+  if (data.language === 'en') {
+    if (data.recipientGender === 'female' && lastName) return `Dear Ms ${lastName},`;
+    if (data.recipientGender === 'male' && lastName) return `Dear Mr ${lastName},`;
+    return fullName ? `Dear ${fullName},` : 'Dear Sir or Madam,';
+  }
+  if (data.recipientGender === 'female' && lastName) return `Sehr geehrte Frau ${lastName}`;
+  if (data.recipientGender === 'male' && lastName) return `Sehr geehrter Herr ${lastName}`;
   return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
 }
 
@@ -331,9 +339,10 @@ function titleCase(value) {
     .join(' ');
 }
 
-function formalCourseLabel(course) {
+function formalCourseLabel(course, lang = 'de') {
   const courseType = String(course.course_type || '').toLowerCase();
-  const subject = course.subject || titleCase(course.course_type);
+  const rawSubject = course.subject || titleCase(course.course_type);
+  const subject = translateSubject(rawSubject, lang);
   const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course.level;
   return [subject, level, course.course_code].filter(Boolean).join(' · ');
 }
@@ -375,9 +384,9 @@ function defaultUnitPrice(course) {
   return 0;
 }
 
-function priceUnitLabel() {
+function priceUnitLabel(lang = 'de') {
   const minutes = Number(currentCourse?.session_length_minutes || 60);
-  return `Preis pro ${minutes}min CHF`;
+  return lang === 'en' ? `Price per ${minutes}min CHF` : `Preis pro ${minutes}min CHF`;
 }
 
 async function loadNextInvoiceNumber() {
@@ -390,6 +399,10 @@ async function loadNextInvoiceNumber() {
     console.error('Could not load next invoice number:', err);
     return '';
   }
+}
+
+function currentLang() {
+  return document.querySelector('input[name="inv-language"]:checked')?.value || 'de';
 }
 
 function buildDefaultInvoiceData(invoiceNumber) {
@@ -405,7 +418,7 @@ function buildDefaultInvoiceData(invoiceNumber) {
     customerReference: currentStudent.customer_reference || '',
     invoiceDate: formatDateInput(today),
     dueDate: formatDateInput(due),
-    subject: formalCourseLabel(currentCourse) || courseCode,
+    subject: formalCourseLabel(currentCourse, currentLang()) || courseCode,
     quantity,
     unitPrice: unitPrice.toFixed(2),
     totalAmount: totalAmount.toFixed(2),
@@ -506,25 +519,51 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
   };
 }
 
-function chDate(value) {
+function chDate(value, lang = 'de') {
   if (!value) return '';
   const date = new Date(value + 'T12:00:00');
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const locale = lang === 'en' ? 'en-GB' : 'de-CH';
+  return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function longDate(value) {
+function longDate(value, lang = 'de') {
   if (!value) return '';
   const date = new Date(value + 'T12:00:00');
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('de-CH', { day: '2-digit', month: 'long', year: 'numeric' });
+  const locale = lang === 'en' ? 'en-GB' : 'de-CH';
+  return date.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
 function money(value) {
   return Number(value || 0).toFixed(2);
 }
 
+function invoiceStrings(lang) {
+  const isEN = lang === 'en';
+  return {
+    dateLabel: isEN ? 'Date:' : 'Auftrag vom:',
+    invoiceNoLabel: isEN ? 'Invoice no.:' : 'Rechnungsnummer:',
+    customerNoLabel: isEN ? 'Customer no.:' : 'Kundennummer:',
+    vatLabel: isEN ? 'VAT no.:' : 'MWST-Nummer:',
+    titleFallback: isEN ? 'Invoice' : 'Rechnung',
+    colSubject: isEN ? 'Subject' : 'Fach',
+    colLessons: isEN ? 'No. of lessons' : 'Anzahl Lektionen',
+    colAmount: isEN ? 'Amount CHF' : 'Betrag CHF',
+    paymentText: (dueDate) =>
+      isEN
+        ? `Please transfer the amount before the start of the course, at the latest by ${longDate(dueDate, 'en')}.`
+        : `Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch bis zum ${chDate(dueDate, 'de')}.`,
+    closing: isEN ? 'Kind regards,' : 'Herzliche Grüsse',
+    footnote: isEN
+      ? '*Please note that cancelling or rescheduling a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before it starts, the lesson is considered as held and cannot be rescheduled.'
+      : '*Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt die Lektion als abgehalten und kann nicht mehr verschoben werden.',
+  };
+}
+
 function buildPreviewHtml(data) {
+  const lang = data.language || 'de';
+  const s = invoiceStrings(lang);
   const recipient = data.recipientLines.map((line) => esc(line)).join('<br>');
   const greeting = formalGreeting(data);
   const qrPreview =
@@ -550,14 +589,14 @@ function buildPreviewHtml(data) {
         <p>Email: ${esc(SENDER.email)}</p>
       </div>
       <div class="inv-prev-meta">
-        <p>Auftrag vom: ${esc(chDate(data.invoiceDate))}</p>
-        <p>Rechnungsnummer: ${esc(data.invoiceNumber)}</p>
-        <p>Kundennummer: ${esc(data.customerReference || '—')}</p>
-        <p>MWST-Nummer: ${esc(SENDER.vat)}</p>
+        <p>${esc(s.dateLabel)} ${esc(chDate(data.invoiceDate, lang))}</p>
+        <p>${esc(s.invoiceNoLabel)} ${esc(data.invoiceNumber)}</p>
+        <p>${esc(s.customerNoLabel)} ${esc(data.customerReference || '—')}</p>
+        <p>${esc(s.vatLabel)} ${esc(SENDER.vat)}</p>
         <p>Amount: CHF ${esc(money(data.totalAmount))}</p>
       </div>
-      <p class="inv-prev-date">${esc(longDate(data.invoiceDate))}</p>
-      <h3>${esc(data.subject || 'Rechnung')}</h3>
+      <p class="inv-prev-date">${esc(longDate(data.invoiceDate, lang))}</p>
+      <h3>${esc(data.subject || s.titleFallback)}</h3>
       <p class="inv-prev-greeting">${esc(greeting)}</p>
       <div class="inv-prev-address">${recipient}</div>
       <table>
@@ -569,10 +608,10 @@ function buildPreviewHtml(data) {
         </colgroup>
         <thead>
           <tr>
-            <th>Fach</th>
-            <th>Anzahl Lektionen</th>
-            <th>${esc(priceUnitLabel())}</th>
-            <th>Betrag CHF</th>
+            <th>${esc(s.colSubject)}</th>
+            <th>${esc(s.colLessons)}</th>
+            <th>${esc(priceUnitLabel(lang))}</th>
+            <th>${esc(s.colAmount)}</th>
           </tr>
         </thead>
         <tbody>
@@ -588,12 +627,12 @@ function buildPreviewHtml(data) {
           </tr>
         </tbody>
       </table>
-      <p>Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch bis zum ${esc(chDate(data.dueDate))}.</p>
-      <p>Herzliche Grüsse<br>Gioia Birukoff</p>
+      <p>${esc(s.paymentText(data.dueDate))}</p>
+      <p>${esc(s.closing)}<br>Gioia Birukoff</p>
       <div class="inv-prev-qr">
         ${qrPreview}
       </div>
-      <p class="inv-prev-note">*Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss.</p>
+      <p class="inv-prev-note">${esc(s.footnote)}</p>
     </div>
     ${qrPdfPreview}`;
 }
@@ -659,12 +698,15 @@ async function buildInvoicePdf(data) {
   doc.text(`Tel: ${SENDER.phone}`, margin, 44);
   doc.text(`Email: ${SENDER.email}`, margin, 49);
 
+  const lang = data.language || 'de';
+  const s = invoiceStrings(lang);
+
   let y = 66;
-  drawLabelValue('Auftrag vom:', chDate(data.invoiceDate), margin, y, margin + 24);
-  drawLabelValue('Rechnungsnummer:', data.invoiceNumber, margin + 72, y, margin + 106);
+  drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);
+  drawLabelValue(s.invoiceNoLabel, data.invoiceNumber, margin + 72, y, margin + 106);
   y += 6;
-  drawLabelValue('Kundennummer:', data.customerReference || '-', margin, y, margin + 26);
-  drawLabelValue('MWST-Nummer:', SENDER.vat, margin + 72, y, margin + 100);
+  drawLabelValue(s.customerNoLabel, data.customerReference || '-', margin, y, margin + 26);
+  drawLabelValue(s.vatLabel, SENDER.vat, margin + 72, y, margin + 100);
   y += 6;
   drawLabelValue('Amount:', `CHF ${money(data.totalAmount)}`, margin, y, margin + 18);
 
@@ -684,11 +726,11 @@ async function buildInvoicePdf(data) {
 
   y = Math.max(y + 18, 136);
   setFont(11);
-  doc.text(longDate(data.invoiceDate), margin, y);
+  doc.text(longDate(data.invoiceDate, lang), margin, y);
 
   y += 14;
   setFont(19, 'bold');
-  const titleLines = doc.splitTextToSize(data.subject || 'Rechnung', contentW);
+  const titleLines = doc.splitTextToSize(data.subject || s.titleFallback, contentW);
   doc.text(titleLines, margin, y);
   y += titleLines.length * 8 + 7;
 
@@ -713,7 +755,7 @@ async function buildInvoicePdf(data) {
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
   setFont(9, 'bold');
-  ['Fach', 'Anzahl Lektionen', priceUnitLabel(), 'Betrag CHF'].forEach((label, i) => {
+  [s.colSubject, s.colLessons, priceUnitLabel(lang), s.colAmount].forEach((label, i) => {
     doc.rect(xs[i], tableTop, widths[i], headerH);
     const headerLines = doc.splitTextToSize(label, widths[i] - 4);
     doc.text(headerLines, xs[i] + 2, tableTop + 5.2);
@@ -739,16 +781,9 @@ async function buildInvoicePdf(data) {
 
   y = totalTop + totalH + 18;
   setFont(10.5);
-  y = addWrappedText(
-    doc,
-    `Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch bis zum ${chDate(data.dueDate)}.`,
-    margin,
-    y,
-    contentW,
-    5.5
-  );
+  y = addWrappedText(doc, s.paymentText(data.dueDate), margin, y, contentW, 5.5);
   y += 10;
-  doc.text('Herzliche Grüsse', margin, y);
+  doc.text(s.closing, margin, y);
   doc.text('Gioia Birukoff', margin, y + 6);
 
   if (qrDataUrl) {
@@ -760,14 +795,7 @@ async function buildInvoicePdf(data) {
   }
 
   setFont(7.2);
-  addWrappedText(
-    doc,
-    '*Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt die Lektion als abgehalten und kann nicht mehr verschoben werden.',
-    margin,
-    pageH - 22,
-    contentW,
-    3.6
-  );
+  addWrappedText(doc, s.footnote, margin, pageH - 22, contentW, 3.6);
 
   return await mergeWithQrPdf(doc.output('arraybuffer'));
 }

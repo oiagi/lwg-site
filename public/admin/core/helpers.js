@@ -1,4 +1,19 @@
 /* ── Shared formatters & DOM utilities ─────────────────────────────── */
+
+const SUBJECT_DE = {
+  German: 'Deutsch',
+  'Swiss German': 'Schweizerdeutsch',
+  English: 'Englisch',
+  French: 'Französisch',
+  Mathematics: 'Mathematik',
+  Physics: 'Physik',
+};
+
+export function translateSubject(subject, lang) {
+  if (!subject) return subject;
+  if (lang === 'de') return SUBJECT_DE[subject] ?? subject;
+  return subject;
+}
 import { MESSAGE_TIMEOUT_MS, LOCALE_DATETIME } from './constants.js';
 
 export function esc(str) {
