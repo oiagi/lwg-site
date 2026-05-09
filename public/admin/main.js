@@ -50,6 +50,7 @@ import {
   openEnrolStudentModal,
   closeEnrolStudentModal,
   submitEnrolStudent,
+  initStudentTabFlag,
 } from './features/students.js';
 import {
   exportStudents,
@@ -284,6 +285,7 @@ async function showDashboard() {
     if (activeTab === 'students') options.studentId = id;
     if (activeTab === 'courses') options.openCourseId = id;
   }
+  if (activeTab !== 'students') initStudentTabFlag();
   await switchTab(activeTab, options);
 }
 
