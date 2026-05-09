@@ -133,6 +133,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     });
 
     const enquiries = enquiryRes.ok ? await enquiryRes.json() : [];
+    const studentIdSet = new Set(students.map((s) => s.id));
     const enquiryCountMap = {};
     const pendingRequestCountMap = {};
     const pendingRequestsByStudent = {};
@@ -140,7 +141,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     enquiries.forEach((e) => {
       enquiryCountMap[e.student_id] = (enquiryCountMap[e.student_id] || 0) + 1;
       if (UNTREATED_ENQUIRY_STATUSES.has(e.status)) {
-        pendingRequestTotal += 1;
+        if (studentIdSet.has(e.student_id)) pendingRequestTotal += 1;
         pendingRequestCountMap[e.student_id] = (pendingRequestCountMap[e.student_id] || 0) + 1;
         (pendingRequestsByStudent[e.student_id] ||= []).push({
           id: e.id,

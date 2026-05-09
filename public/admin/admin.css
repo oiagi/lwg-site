@@ -215,6 +215,26 @@ button.submit:hover {
   background: var(--text);
   color: #d6eaf8;
 }
+.filter-btn.has-flag-count::after {
+  content: attr(data-flag-count);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0.9rem;
+  height: 0.9rem;
+  margin-left: 0.35rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.58rem;
+  line-height: 1;
+  letter-spacing: 0;
+  vertical-align: 0.08rem;
+}
+.filter-btn.active.has-flag-count::after {
+  background: #e74c3c;
+}
 
 /* ── Main tabs ────────────────────────────────────────────────── */
 .main-tabs {
