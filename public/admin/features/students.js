@@ -2,12 +2,14 @@
 import { apiFetch } from '../core/api.js';
 import { esc, queryString, attachListControls } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { openConfirmSend } from './confirm-send.js';
 
 let currentStudentFilter = 'active';
 const studentListState = { search: '', sort: 'name', direction: 'asc' };
 let selectedStudentId = null;
 let fromCourseContext = null;
 let studentControlsAttached = false;
+let currentStudentDetail = null;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -192,6 +194,7 @@ async function fetchAndRenderStudent(id) {
     const res = await apiFetch('/api/get-student-detail?id=' + id);
     if (!res.ok) throw new Error();
     const s = await res.json();
+    currentStudentDetail = s;
     renderStudentDetail(pane, s);
   } catch {
     pane.innerHTML = '<p class="detail-error">Could not load student details.</p>';
@@ -417,37 +420,47 @@ function renderRequestSection(s) {
 }
 
 export async function sendIntakeLink(studentId, btn) {
-  const msgEl = document.getElementById('intake-msg-' + studentId);
-  const show = (text) => {
-    if (msgEl) {
-      msgEl.textContent = text;
-      msgEl.style.display = 'inline';
-      setTimeout(() => {
-        msgEl.style.display = 'none';
-      }, MESSAGE_TIMEOUT_MS);
-    }
-  };
+  const s = currentStudentDetail;
+  if (!s || String(s.id) !== String(studentId)) {
+    alert('Student data not loaded. Please try again.');
+    return;
+  }
+  if (!s.email) {
+    alert('This student has no email address on file.');
+    return;
+  }
 
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'sending…';
-  }
-  try {
-    const res = await apiFetch('/api/send-intake-link', {
-      method: 'POST',
-      body: { student_id: studentId },
-    });
-    const result = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(result.error || 'Failed');
-    show('sent');
-  } catch (e) {
-    show('error: ' + (e.message || 'could not send'));
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'send intake link';
-    }
-  }
+  const fullName = [s.first_name, s.last_name].filter(Boolean).join(' ') || '—';
+  const contentHtml = `
+    <p class="cs-section-label">intake form</p>
+    <ul class="cs-detail-list">
+      <li>Personal details form link</li>
+      <li>Link valid for 90 days</li>
+    </ul>
+  `;
+
+  openConfirmSend({
+    title: 'send intake link',
+    recipients: [{ name: fullName, email: s.email }],
+    subject: 'Dein Anmeldeformular / Your intake form · learning with gioia',
+    contentHtml,
+    onConfirm: async () => {
+      const res = await apiFetch('/api/send-intake-link', {
+        method: 'POST',
+        body: { student_id: studentId },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      const msgEl = document.getElementById('intake-msg-' + studentId);
+      if (msgEl) {
+        msgEl.textContent = 'sent';
+        msgEl.style.display = 'inline';
+        setTimeout(() => {
+          msgEl.style.display = 'none';
+        }, MESSAGE_TIMEOUT_MS);
+      }
+    },
+  });
 }
 
 export async function markIntakeSeen(studentId, btn) {

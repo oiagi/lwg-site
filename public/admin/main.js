@@ -187,6 +187,11 @@ const modalObserver = new MutationObserver((mutations) => {
   }
 });
 
+// Observe modals that are in index.html (not injected by loadPanel).
+for (const overlay of document.querySelectorAll('.modal-overlay')) {
+  modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+}
+
 /* ── Panel lazy-loader ───────────────────────────────────────────── */
 const loadedPanels = new Set();
 
