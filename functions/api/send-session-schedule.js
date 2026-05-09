@@ -21,7 +21,7 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { getCancellationPolicy } from './_agb.js';
+import { getCancellationPolicy, getGroupCancellationPolicy } from './_agb.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -140,7 +140,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
             <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
               <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
               <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(getCancellationPolicy(language))}
+                ${esc(['duo', 'group'].includes(String(course.group_type || '').toLowerCase()) ? getGroupCancellationPolicy(language) : getCancellationPolicy(language))}
               </p>
             </div>
           </td>
@@ -197,9 +197,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const [cr, sr, er] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level`, {
-      headers: H,
-    }),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level,group_type`,
+      {
+        headers: H,
+      }
+    ),
     fetch(
       `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course_id}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,duration_minutes,status`,
       { headers: H }

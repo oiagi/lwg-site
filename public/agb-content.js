@@ -17,7 +17,12 @@ export const AGB_CONSENT_HTML = {
 
 export const CANCELLATION_POLICY_BY_LANGUAGE = {
   en: 'Please note that cancelling or postponing a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before the start, the lesson is considered held and can no longer be postponed.',
-  de: 'Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt die Lektion als abgehalten und kann nicht mehr verschoben werden.',
+  de: 'Bitte beachte, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
+};
+
+export const GROUP_CANCELLATION_POLICY_BY_LANGUAGE = {
+  en: 'Once a group course is scheduled, individual lessons cannot be cancelled. Missed lessons are not refunded, credited toward another course, or converted to private lessons.',
+  de: 'Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht mehr abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch für einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.',
 };
 
 export const AGB_SECTIONS = [
@@ -130,6 +135,12 @@ export const AGB_SECTIONS = [
 
 export function getCancellationPolicy(language = 'de') {
   return CANCELLATION_POLICY_BY_LANGUAGE[language] || CANCELLATION_POLICY_BY_LANGUAGE.de;
+}
+
+export function getGroupCancellationPolicy(language = 'de') {
+  return (
+    GROUP_CANCELLATION_POLICY_BY_LANGUAGE[language] || GROUP_CANCELLATION_POLICY_BY_LANGUAGE.de
+  );
 }
 
 export function renderAgbLegalHtml(language = 'de') {
