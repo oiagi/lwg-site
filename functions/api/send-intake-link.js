@@ -2,7 +2,7 @@
 // POST /api/send-intake-link
 // Body: { student_id }
 //
-// Sends an intake form link email to the student.
+// Sends an email to the student with a personalised intake form link.
 // Requires admin auth. Language is inferred from the student's most recent enquiry.
 
 import {
@@ -29,72 +29,52 @@ function esc(str) {
 }
 
 function buildIntakeLinkEmail(student, intakeUrl, language) {
-  const isEnglish = language === 'en';
-  const greetingName =
-    student.first_name || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
-
-  const copy = isEnglish
+  const isDE = language === 'de';
+  const name = student.first_name || (isDE ? 'du' : 'there');
+  const copy = isDE
     ? {
-        subject: 'Your intake form · learning with gioia',
-        htmlLang: 'en',
-        title: 'Intake form',
-        greeting: `Hello ${greetingName},`,
-        body: 'Please fill in your personal details using the link below. This helps us keep your information up to date. Without this information, we are unable to enroll you in a course.',
-        linkLabel: 'Open intake form',
-        validNote: 'The link is valid for 90 days.',
-        questions: 'If you have any questions, please write to us at',
+        subject: 'Bitte fülle dein Anmeldeformular aus — learning with gioia',
+        greeting: `Hallo ${esc(name)} :)`,
+        body: 'Um dich für den gewünschten Kurs anzumelden, benötigen wir noch einige Informationen von dir. Bitte füll das folgende Formular aus:',
+        btn: 'Formular ausfüllen →',
+        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
       }
     : {
-        subject: 'Dein Anmeldeformular · learning with gioia',
-        htmlLang: 'de',
-        title: 'Anmeldeformular',
-        greeting: `Hallo ${greetingName},`,
-        body: 'Bitte fülle deine persönlichen Angaben über den untenstehenden Link aus. So können wir deine Daten aktuell halten. Ohne diese Angaben können wir dich leider nicht für einen Kurs anmelden.',
-        linkLabel: 'Anmeldeformular öffnen',
-        validNote: 'Der Link ist 90 Tage gültig.',
-        questions: 'Bei Fragen schreib uns einfach an',
+        subject: 'Please complete your enrollment form — learning with gioia',
+        greeting: `Hi ${esc(name)} :)`,
+        body: 'In order to enroll you in one of our courses we need some more information from you. Please fill in the following form:',
+        btn: 'Complete the form →',
+        footer: 'If you have any questions, reply to this email or write to',
       };
 
   return {
     subject: copy.subject,
     html: `<!DOCTYPE html>
-<html lang="${copy.htmlLang}">
+<html lang="${isDE ? 'de' : 'en'}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:600px;width:100%;">
-        <tr>
-          <td style="background:#1a1a1a;padding:32px 40px;">
-            <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px 40px 16px;">
-            <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              ${esc(copy.title)}
-            </p>
-            <p style="margin:0 0 8px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.greeting)}</p>
-            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.body)}</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 32px;text-align:center;">
-            <a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 32px;font-family:Georgia,serif;font-size:15px;letter-spacing:0.05em;">${esc(copy.linkLabel)}</a>
-            <p style="margin:16px 0 0;font-size:13px;color:#aaa;">${esc(copy.validNote)}</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
-            <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-              ${esc(copy.questions)}
-              <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
-            </p>
-            <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
-            </p>
-          </td>
-        </tr>
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#1a1a1a;padding:32px 40px;">
+          <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
+        </td></tr>
+        <tr><td style="padding:40px 40px 32px;">
+          <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">${copy.greeting}</p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.body)}</p>
+          <p style="margin:0 0 0;">
+            <a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">${copy.btn}</a>
+          </p>
+        </td></tr>
+        <tr><td style="padding:24px 40px 32px;border-top:1px solid #eee;">
+          <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
+            ${esc(copy.footer)}
+            <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
+          </p>
+          <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
+            <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
+          </p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
