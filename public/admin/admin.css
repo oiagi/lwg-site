@@ -870,6 +870,20 @@ button.course-status::after {
 .add-participant-btn:hover {
   color: #1a1a1a;
 }
+.course-location-row {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+}
+.course-location-row select {
+  flex: 1;
+  min-width: 0;
+}
+.course-location-row .add-participant-btn {
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding-bottom: 0.45rem;
+}
 
 /* ── Inline course-location address editor (overview) ─────────── */
 .loc-address-btn {
@@ -894,6 +908,9 @@ button.course-status::after {
   grid-template-columns: 2fr 1fr;
   gap: 0.4rem 0.6rem;
 }
+.loc-address-grid input:first-child {
+  grid-column: 1 / -1;
+}
 .loc-address-grid input {
   background: transparent;
   border: none;
@@ -915,6 +932,16 @@ button.course-status::after {
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
+}
+.course-inline-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.25rem;
+}
+.course-inline-check input {
+  width: auto;
+  margin: 0;
 }
 
 /* ── Pending direct course bookings ───────────────────────────── */

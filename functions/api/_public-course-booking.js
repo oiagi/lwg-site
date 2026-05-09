@@ -24,12 +24,13 @@ export function formatPublicLocation(course) {
     return city ? `Teacher's home, ${city}` : "Teacher's home";
   }
 
+  const company = (course.location_company || '').trim();
   const street = (course.location_street || '').trim();
   const number = (course.location_street_number || '').trim();
   const postal = (course.location_postal_code || '').trim();
   const line1 = [street, number].filter(Boolean).join(' ');
   const line2 = [postal, city].filter(Boolean).join(' ');
-  const address = [line1, line2].filter(Boolean).join(', ');
+  const address = [company, line1, line2].filter(Boolean).join(', ');
   return address || course.location || 'Classroom';
 }
 
@@ -96,7 +97,7 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
   const idFilter = courseId ? `&id=eq.${encodeURIComponent(courseId)}` : '';
 
   const coursesRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,course_type,subject,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
+    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,course_type,subject,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_company,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
     { headers: H }
   );
   if (!coursesRes.ok) {

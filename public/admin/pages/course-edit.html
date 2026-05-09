@@ -107,29 +107,27 @@
             <option value="USD">USD</option>
           </select>
         </div>
-        <div class="modal-field">
+        <div class="modal-field course-location-field">
           <label>Location</label>
-          <select id="ec-location">
-            <option value="">—</option>
-            <option value="online">Online</option>
-            <option value="teacher's home">Teacher's home</option>
-            <option value="student's home">Student's home</option>
-            <option value="company">Company</option>
-            <option value="classroom">Classroom</option>
-          </select>
+          <div class="course-location-row">
+            <select id="ec-location">
+              <option value="">—</option>
+              <option value="online">Online</option>
+              <option value="teacher's home">Teacher's home</option>
+              <option value="student's home">Student's home</option>
+              <option value="company">Company</option>
+              <option value="classroom">Classroom</option>
+            </select>
+            <button type="button" class="add-participant-btn" id="ec-toggle-address">+ add address</button>
+          </div>
         </div>
-        <div class="modal-field full">
-          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-            <input type="checkbox" id="ec-public-booking" style="width:auto;margin:0;">
-            <span>Show on public group course booking page</span>
-          </label>
-          <p class="label-hint" style="margin:0.35rem 0 0 1.45rem;">
-            Only suitable for group courses at teacher's home or classroom with open spots.
-          </p>
-        </div>
-        <div class="modal-field full">
+        <div class="modal-field full" id="ec-address-fields" style="display:none;">
           <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
           <div class="modal-grid">
+            <div class="modal-field full">
+              <label>Company name</label>
+              <input type="text" id="ec-loc-company" placeholder="e.g. Acme AG" maxlength="120">
+            </div>
             <div class="modal-field">
               <label>Street</label>
               <input type="text" id="ec-loc-street" placeholder="e.g. Bahnhofstrasse" maxlength="100">

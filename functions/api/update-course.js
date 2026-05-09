@@ -3,8 +3,8 @@
 // Body: { course_id, service?, level?, group_type?, status?, sessions_total?,
 //         session_length_minutes?, price_per_session?,
 //         price_per_person_per_60min?, currency?, location?,
-//         location_street?, location_street_number?, location_postal_code?,
-//         location_city?, public_booking_enabled? }
+//         location_company?, location_street?, location_street_number?,
+//         location_postal_code?, location_city?, public_booking_enabled? }
 //
 // Updates mutable fields on an existing course.
 
@@ -31,6 +31,7 @@ const ALLOWED_FIELDS = [
   'price_per_person_per_60min',
   'currency',
   'location',
+  'location_company',
   'location_street',
   'location_street_number',
   'location_postal_code',

@@ -7,11 +7,6 @@ function setVal(id, v) {
   if (el) el.value = v ?? '';
 }
 
-function setChecked(id, v) {
-  const el = document.getElementById(id);
-  if (el) el.checked = !!v;
-}
-
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
 const DEFAULT_PRICE_PER_PERSON = {
   private: 120,
@@ -42,6 +37,20 @@ function fillDefaultPerPersonPrice() {
   const priceEl = document.getElementById('ec-price-person');
   if (!priceEl || priceEl.value) return;
   priceEl.value = DEFAULT_PRICE_PER_PERSON[groupType] ?? '';
+}
+
+function hasLocationAddress() {
+  return ['ec-loc-company', 'ec-loc-street', 'ec-loc-number', 'ec-loc-postal', 'ec-loc-city'].some(
+    (id) => document.getElementById(id)?.value.trim()
+  );
+}
+
+function setAddressFieldsOpen(open) {
+  const fields = document.getElementById('ec-address-fields');
+  const toggle = document.getElementById('ec-toggle-address');
+  if (!fields || !toggle) return;
+  fields.style.display = open ? 'block' : 'none';
+  toggle.textContent = open ? '− hide address' : '+ add address';
 }
 
 function populate(course) {
@@ -78,11 +87,12 @@ function populate(course) {
   );
   setVal('ec-currency', course.currency || 'CHF');
   setVal('ec-location', course.location || '');
-  setChecked('ec-public-booking', course.public_booking_enabled);
+  setVal('ec-loc-company', course.location_company || '');
   setVal('ec-loc-street', course.location_street || '');
   setVal('ec-loc-number', course.location_street_number || '');
   setVal('ec-loc-postal', course.location_postal_code || '');
   setVal('ec-loc-city', course.location_city || '');
+  setAddressFieldsOpen(hasLocationAddress());
 }
 
 async function handleSubmit(e) {
@@ -114,11 +124,11 @@ async function handleSubmit(e) {
     price_per_person_per_60min: pricePersonVal === '' ? null : parseFloat(pricePersonVal),
     currency: document.getElementById('ec-currency').value || 'CHF',
     location: document.getElementById('ec-location').value || null,
+    location_company: document.getElementById('ec-loc-company').value.trim() || null,
     location_street: document.getElementById('ec-loc-street').value.trim() || null,
     location_street_number: document.getElementById('ec-loc-number').value.trim() || null,
     location_postal_code: document.getElementById('ec-loc-postal').value.trim() || null,
     location_city: document.getElementById('ec-loc-city').value.trim() || null,
-    public_booking_enabled: document.getElementById('ec-public-booking').checked,
   };
 
   btn.textContent = 'saving…';
@@ -184,6 +194,10 @@ async function handleSubmit(e) {
   document
     .getElementById('ec-level')
     .addEventListener('change', () => syncPlusEnabled('ec-level', 'ec-level-plus'));
+  document.getElementById('ec-toggle-address').addEventListener('click', () => {
+    const fields = document.getElementById('ec-address-fields');
+    setAddressFieldsOpen(fields?.style.display === 'none');
+  });
 
   document.getElementById('page-loading').style.display = 'none';
   document.getElementById('page-content').style.display = '';

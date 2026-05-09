@@ -71,9 +71,10 @@ function studentBookingTotal(course, sessions) {
 }
 
 function formatLocation(course) {
+  const company = course.location_company;
   const line1 = [course.location_street, course.location_street_number].filter(Boolean).join(' ');
   const line2 = [course.location_postal_code, course.location_city].filter(Boolean).join(' ');
-  const address = [line1, line2].filter(Boolean).join(', ');
+  const address = [company, line1, line2].filter(Boolean).join(', ');
   return address || course.location || '—';
 }
 
