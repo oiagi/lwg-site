@@ -259,6 +259,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [ADMIN_EMAIL],
+        reply_to: [ADMIN_EMAIL],
         subject: `Intake form completed — ${studentName}`,
         html,
       }),
