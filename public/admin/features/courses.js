@@ -469,42 +469,37 @@ function renderCourses(courses) {
               ${locationEditorHtml(c)}
             </div>
             <div>
-              <p class="detail-meta">contact</p>
-              ${
-                (c.participants || [])
-                  .map(
-                    (p) => `
-                <p class="detail-body">
-                  ${esc([p.firstName, p.lastName].filter(Boolean).join(' '))}
-                  ${p.email ? '<br><span class="detail-muted">' + esc(p.email) + '</span>' : ''}
-                  ${p.phone ? '<br><span class="detail-muted">' + esc(p.phone) + '</span>' : ''}
-                </p>
-              `
-                  )
-                  .join('') || '<p class="detail-body detail-muted">—</p>'
-              }
+              <p class="detail-meta">actions</p>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.4rem;">
+                <button class="save-btn"
+                  data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
+                  <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
+                  <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
+                  <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
+                  <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
+                </div>
+              </div>
+              ${sentCommunicationsBlock(c)}
             </div>
           </div>
           <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
           ${pendingBookingBlocks(c)}
           ${studentBlocks}
-          ${sentCommunicationsBlock(c)}
-          <div class="course-actions-row" style="margin-top:0.4rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
-            <button class="save-btn"
-              data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
-            <button class="save-btn"
-              data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
-            <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
-            <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
-            <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
-            <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
-          </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
           ${sessions}
