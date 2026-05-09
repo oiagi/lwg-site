@@ -192,6 +192,19 @@ h1 {
   margin: 0 0 2rem;
   color: var(--ink-mute);
 }
+.field-summary {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.9rem 0;
+  margin-bottom: 2rem;
+  color: var(--ink-mute);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+}
+.field-summary p {
+  margin: 0.2rem 0;
+}
 .section-label {
   margin: 2rem 0 1.2rem;
   padding-bottom: 0.35rem;
@@ -236,11 +249,40 @@ input[type='tel'] {
   outline: none;
   transition: border-color 0.2s;
 }
-input:focus {
+select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.4rem 1.4rem 0.4rem 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231a1614' opacity='0.4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.2rem center;
+  background-size: 8px 5px;
+}
+input:focus,
+select:focus {
   border-bottom-color: var(--ink-soft);
+  outline: none;
 }
 input::placeholder {
   color: rgba(26, 22, 20, 0.3);
+}
+.field-hint {
+  margin: 0.45rem 0 0;
+  color: var(--ink-mute);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
 }
 .booking-checkbox {
   display: flex;

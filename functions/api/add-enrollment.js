@@ -10,7 +10,11 @@ import {
   errorResponse,
   parseJsonBody,
 } from './_utils.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import {
+  completeEnquiriesForEnrollment,
+  findOrCreateStudent,
+  setStudentStatus,
+} from './_student-utils.js';
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authError = await requireAdminAuth(request, env);
@@ -59,5 +63,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     throw new Error(`Enrolment failed: ${txt}`);
   }
 
-  return jsonResponse({ student_id: sid, enrolled: true });
+  await setStudentStatus(SUPABASE_URL, env.SUPABASE_SERVICE_KEY, sid, 'active');
+  const completed_enquiries = await completeEnquiriesForEnrollment(
+    SUPABASE_URL,
+    env.SUPABASE_SERVICE_KEY,
+    sid,
+    course_id
+  );
+
+  return jsonResponse({ student_id: sid, enrolled: true, completed_enquiries });
 });

@@ -13,8 +13,91 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
+  normalizePageLanguage,
 } from './_utils.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
+
+const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
+const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildDeclineEmail(enquiry, language) {
+  const isDE = language === 'de';
+  const name = cleanString(enquiry.lead_first, 200) || (isDE ? 'du' : 'there');
+  const copy = isDE
+    ? {
+        subject: 'Bezüglich deiner Buchungsanfrage — learning with gioia',
+        greeting: `Hallo ${esc(name)} :)`,
+        body: 'Vielen Dank für deine Anfrage. Leider ist der gewünschte Kurs nicht mehr verfügbar :(',
+        closing: 'Wir melden uns bald bei dir, um Optionen zu besprechen.',
+        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+      }
+    : {
+        subject: 'Regarding your booking request — learning with gioia',
+        greeting: `Hi ${esc(name)} :)`,
+        body: 'Thank you for your request. Unfortunately, the course you requested is no longer available :(',
+        closing: 'We will be in touch shortly to discuss options.',
+        footer: 'If you have any questions, reply to this email or write to',
+      };
+
+  return {
+    subject: copy.subject,
+    html: `<!DOCTYPE html>
+<html lang="${isDE ? 'de' : 'en'}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#1a1a1a;padding:32px 40px;">
+          <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
+        </td></tr>
+        <tr><td style="padding:40px 40px 32px;">
+          <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">${copy.greeting}</p>
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.body)}</p>
+          <p style="margin:0 0 0;font-size:15px;line-height:1.7;color:#333;">${esc(copy.closing)}</p>
+        </td></tr>
+        <tr><td style="padding:24px 40px 32px;border-top:1px solid #eee;">
+          <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
+            ${esc(copy.footer)}
+            <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
+          </p>
+          <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
+            <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  };
+}
+
+async function sendEmail(env, to, email) {
+  if (!env.RESEND_API_KEY) return;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: Array.isArray(to) ? to : [to],
+      reply_to: NOTIFY_EMAILS,
+      subject: email.subject,
+      html: email.html,
+    }),
+  });
+  if (!res.ok) console.error('handle-course-booking email error:', await res.text());
+}
 import { PUBLIC_BOOKING_STATUS, PUBLIC_COURSE_CAPACITY } from './_public-course-booking.js';
 
 function cleanString(value, max = 320) {
@@ -35,6 +118,8 @@ function getLead(enquiry) {
       cleanString(enquiry.lead_last, 200) ||
       cleanString(lead.lastName, 200) ||
       cleanString(intake.last_name, 200),
+    gender: cleanString(lead.gender, 20) || cleanString(intake.gender, 20),
+    gender_note: cleanString(lead.genderNote, 200) || cleanString(intake.gender_note, 200),
     email:
       cleanString(enquiry.lead_email, 320) ||
       cleanString(lead.email, 320) ||
@@ -94,6 +179,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (action === 'decline') {
     const updated = await patchEnquiry(SUPABASE_URL, H, enquiryId, { status: 'declined' });
     if (!updated) return errorResponse('Could not decline booking request');
+
+    const recipientEmail = cleanString(enquiry.lead_email, 320);
+    if (env.RESEND_API_KEY && recipientEmail) {
+      const language = normalizePageLanguage(enquiry.contact_data?.language);
+      sendEmail(env, recipientEmail, buildDeclineEmail(enquiry, language)).catch((err) =>
+        console.error('handle-course-booking decline email error:', err)
+      );
+    }
+
     return jsonResponse({ success: true, status: updated.status });
   }
 
@@ -131,6 +225,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     console.error('handle-course-booking enrolment error:', await enrolRes.text());
     return errorResponse('Could not enrol student');
   }
+
+  await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId, 'active');
 
   const updated = await patchEnquiry(SUPABASE_URL, H, enquiryId, {
     status: 'confirmed',

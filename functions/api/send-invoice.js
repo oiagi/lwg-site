@@ -45,7 +45,15 @@ function cleanFilenamePart(value, fallback) {
     .slice(0, 80);
 }
 
-function buildEmail({ language, name, invoice }) {
+function invoiceGreeting({ language, name, first_name, last_name, gender }) {
+  if (language === 'en') return `Hello ${first_name || name || 'there'},`;
+  if (gender === 'female' && last_name) return `Sehr geehrte Frau ${last_name}`;
+  if (gender === 'male' && last_name) return `Sehr geehrter Herr ${last_name}`;
+  const fullName = [first_name, last_name].filter(Boolean).join(' ') || name;
+  return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
+}
+
+function buildEmail({ language, name, first_name, last_name, gender, invoice }) {
   const isEN = language === 'en';
   const invoiceNo = invoice.invoice_number || '';
   const amount = `${Number(invoice.total_amount || 0).toFixed(2)} ${invoice.currency || 'CHF'}`;
@@ -53,10 +61,10 @@ function buildEmail({ language, name, invoice }) {
     ? `Invoice ${invoiceNo} · learning with gioia`
     : `Rechnung ${invoiceNo} · learning with gioia`;
 
-  const greeting = isEN ? `Hello ${name || 'there'},` : `Hallo ${name || 'du'},`;
+  const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
   const courseLabel = invoice.subject || (isEN ? 'your course' : 'deinen Kurs');
   const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'danke, dass du mit uns lernst.';
+  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass du mit uns lerns.';
   const invoiceLine = isEN
     ? `Attached you will find the invoice for ${courseLabel}.`
     : `Anbei findest du die Rechnung für ${courseLabel}.`;
@@ -237,6 +245,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { subject, html } = buildEmail({
     language: body.language,
     name: body.name || '',
+    first_name: body.first_name || '',
+    last_name: body.last_name || '',
+    gender: body.gender || '',
     invoice: body.invoice,
   });
   const filename = `${body.language === 'en' ? 'invoice' : 'rechnung'}-${cleanFilenamePart(

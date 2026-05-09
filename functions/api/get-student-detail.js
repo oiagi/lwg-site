@@ -16,6 +16,8 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
+const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -63,7 +65,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           })
         : Promise.resolve(null),
       fetch(
-        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at`,
+        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at,course_id,booking_data,lead_first,lead_last,lead_email`,
         { headers: H }
       ),
       fetch(
@@ -80,12 +82,32 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const enquiries = enquiriesRes.ok ? await enquiriesRes.json() : [];
     const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
+    const enquiryCourseIds = [...new Set(enquiries.map((e) => e.course_id).filter(Boolean))];
+    let enquiryCourses = [];
+    if (enquiryCourseIds.length) {
+      const enquiryCourseFilter = enquiryCourseIds.map((cid) => `id.eq.${cid}`).join(',');
+      const enquiryCourseRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/courses?or=(${enquiryCourseFilter})&select=id,course_code,service,level,status,group_type`,
+        { headers: H }
+      );
+      enquiryCourses = enquiryCourseRes.ok ? await enquiryCourseRes.json() : [];
+    }
+    const enquiryCoursesById = {};
+    enquiryCourses.forEach((course) => {
+      enquiryCoursesById[course.id] = course;
+    });
+    const enrichedEnquiries = enquiries.map((enquiry) => ({
+      ...enquiry,
+      untreated: UNTREATED_ENQUIRY_STATUSES.has(enquiry.status),
+      course: enquiry.course_id ? enquiryCoursesById[enquiry.course_id] || null : null,
+    }));
 
     return jsonResponse({
       ...student,
       company_name,
       courses,
-      enquiries,
+      enquiries: enrichedEnquiries,
+      pending_request_count: enrichedEnquiries.filter((enquiry) => enquiry.untreated).length,
       invoices,
     });
   } catch (err) {

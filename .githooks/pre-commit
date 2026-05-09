@@ -1,0 +1,7 @@
+#!/bin/sh
+# Auto-format staged files with Prettier before committing.
+STAGED=$(git diff --name-only --cached --diff-filter=ACMR | grep -E '\.(js|mjs|json|css|md|html)$')
+if [ -n "$STAGED" ]; then
+  echo "$STAGED" | xargs npx prettier --write --log-level warn
+  echo "$STAGED" | xargs git add
+fi

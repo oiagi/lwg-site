@@ -17,7 +17,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
-import { findOrCreateStudent } from './_student-utils.js';
+import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 import {
   isPublicCourseEligible,
   loadPublicCourseCandidates,
@@ -31,6 +31,8 @@ const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const STUDENT_FIELDS = [
   'first_name',
   'last_name',
+  'gender',
+  'gender_note',
   'email',
   'phone',
   'street',
@@ -68,6 +70,14 @@ function cleanString(value, max = 320) {
   return cleaned ? cleaned.slice(0, max) : null;
 }
 
+function emailValid(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
+}
+
+function missingRequired(student, fields) {
+  return fields.find((field) => !student[field]);
+}
+
 function normalizeStudent(input) {
   const raw = pickDefined(input || {}, STUDENT_FIELDS);
   const out = {};
@@ -77,6 +87,12 @@ function normalizeStudent(input) {
   }
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
+  if (!['female', 'male', 'other'].includes(out.gender)) {
+    out.gender = null;
+    out.gender_note = null;
+  } else if (out.gender !== 'other') {
+    out.gender_note = null;
+  }
   return out;
 }
 
@@ -108,7 +124,7 @@ function formatPrice(amount, currency) {
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
 }
 
-function buildCustomerEmail(course, student, language = 'en') {
+function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) {
   const total = bookingTotal(course);
   const isGerman = language === 'de';
   const starts = new Date(course.first_session_at).toLocaleString(isGerman ? 'de-CH' : 'en-GB', {
@@ -116,38 +132,52 @@ function buildCustomerEmail(course, student, language = 'en') {
   });
   const copy = isGerman
     ? {
-        subject: `Buchungsanfrage erhalten — ${course.level || course.service || 'Gruppenkurs'} · learning with gioia`,
+        subject: `Buchungsanfrage erhalten — ${course.level || course.course_type || 'Gruppenkurs'} · learning with gioia`,
         htmlLang: 'de',
         greeting: `Danke, ${esc(student.first_name || 'du')} :)`,
         intro: 'Wir haben deine Buchungsanfrage erhalten. So geht es weiter:',
-        steps: [
-          'Wir bestätigen deine Anfrage so schnell wie möglich.',
-          'Du erhältst die Zahlungsinformationen für deinen Kurs.',
-          'Du bezahlst die Rechnung.',
-          'Fertig! Dein Platz im Kurs ist reserviert.',
-        ],
+        stepConfirm: 'Wir bestätigen deine Anfrage so schnell wie möglich.',
+        stepIntake:
+          'Bitte füll in der Zwischenzeit dieses Formular aus. Ohne diese Informationen können wir dich nicht in einen Kurs einschreiben!',
+        stepIntakeBtn: 'Formular ausfüllen →',
+        stepPaymentRequest: 'Du erhältst die Zahlungsinformationen für deinen Kurs.',
+        stepPay: 'Du bezahlst die Rechnung.',
+        stepDone: 'Fertig! Dein Platz im Kurs ist reserviert.',
         course: 'Kurs',
         starts: 'Start',
         place: 'Ort',
         totalPrice: 'Gesamtpreis',
       }
     : {
-        subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
+        subject: `Booking request received — ${course.level || course.course_type || 'group course'} · learning with gioia`,
         htmlLang: 'en',
         greeting: `Thank you, ${esc(student.first_name || 'there')} :)`,
         intro: "We've received your booking request. What happens next:",
-        steps: [
-          'We will confirm your request shortly.',
-          'You will receive the payment request for your course.',
-          'You pay the bill.',
-          "Done! You're all set for your course.",
-        ],
+        stepConfirm: 'We will confirm your request shortly.',
+        stepIntake:
+          'In the meantime, please complete this form. Without this information we cannot enroll you in the course!',
+        stepIntakeBtn: 'Complete the form →',
+        stepPaymentRequest: 'You will receive the payment request for your course.',
+        stepPay: 'You pay the bill.',
+        stepDone: "Done! You're all set for your course.",
         course: 'Course',
         starts: 'Starts',
         place: 'Place',
         totalPrice: 'Total price',
       };
-  const steps = copy.steps.map((step) => `<li>${esc(step)}</li>`).join('');
+
+  const intakeLinkHtml = intakeUrl
+    ? `<a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:8px 12px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:6px;">${copy.stepIntakeBtn}</a>`
+    : '';
+
+  const steps = [
+    `<li style="margin-bottom:8px;">${esc(copy.stepConfirm)}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepIntake)}${intakeLinkHtml ? '<br>' + intakeLinkHtml : ''}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepPaymentRequest)}</li>`,
+    `<li style="margin-bottom:8px;">${esc(copy.stepPay)}</li>`,
+    `<li>${esc(copy.stepDone)}</li>`,
+  ].join('');
+
   return {
     subject: copy.subject,
     html: `<!DOCTYPE html>
@@ -169,7 +199,7 @@ function buildCustomerEmail(course, student, language = 'en') {
             ${steps}
           </ul>
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.course}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.course}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.subject || course.course_type || 'Group course')} · ${esc(course.level || '—')}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.starts}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(starts)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.place}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.totalPrice}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPrice(total, course.currency))}</td></tr>
@@ -183,7 +213,14 @@ function buildCustomerEmail(course, student, language = 'en') {
   };
 }
 
-function buildNotificationEmail(course, student, enquiryId) {
+function buildNotificationEmail(course, student, enquiryId, courseUrl) {
+  const courseLink = courseUrl
+    ? `<tr>
+            <td colspan="2" style="padding:18px 0 0;">
+              <a href="${esc(courseUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Open requested course</a>
+            </td>
+          </tr>`
+    : '';
   return {
     subject: `Direct course booking request — ${student.first_name || ''} ${student.last_name || ''}`,
     html: `<!DOCTYPE html>
@@ -203,6 +240,7 @@ function buildNotificationEmail(course, student, enquiryId) {
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Student</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc([student.first_name, student.last_name].filter(Boolean).join(' '))}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Email</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.email)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">Phone</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(student.phone || '—')}</td></tr>
+            ${courseLink}
           </table>
         </td></tr>
       </table>
@@ -211,6 +249,11 @@ function buildNotificationEmail(course, student, enquiryId) {
 </body>
 </html>`,
   };
+}
+
+function adminCourseUrl(request, env, courseId) {
+  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+  return `${base}/admin/#courses/${encodeURIComponent(courseId)}`;
 }
 
 async function sendEmail(env, to, email) {
@@ -246,14 +289,61 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const courseId = cleanString(body.course_id, 80);
   if (!courseId) return errorResponse('course_id is required', 400);
 
+  const billingSeparate = body.student?.billing_separate === true;
   const student = normalizeStudent(body.student || {});
   const studentErr = validate(student, {
     first_name: { required: true, type: 'string', maxLength: 200 },
     last_name: { required: true, type: 'string', maxLength: 200 },
+    gender: {
+      required: true,
+      type: 'string',
+      oneOf: ['she/her', 'he/him', 'they/them', 'other', 'female', 'male'],
+    },
     email: { required: true, type: 'string', email: true, maxLength: 320 },
     consent_given: { required: true, type: 'boolean', oneOf: [true] },
   });
   if (studentErr) return errorResponse(studentErr, 400);
+  if (student.gender === 'other' && !student.gender_note) {
+    return errorResponse('gender_note is required when gender is other', 400);
+  }
+  const missing = missingRequired(student, [
+    'phone',
+    'street',
+    'street_number',
+    'postcode',
+    'city',
+    'emergency_contact',
+    'ec_relationship',
+    'ec_phone',
+    'ec_email',
+  ]);
+  if (missing) return errorResponse(`${missing} is required`, 400);
+  if (!emailValid(student.ec_email)) return errorResponse('ec_email must be valid', 400);
+  if (
+    billingSeparate ||
+    [
+      'billing_name',
+      'billing_email',
+      'billing_phone',
+      'billing_street',
+      'billing_street_number',
+      'billing_postcode',
+      'billing_city',
+    ].some((field) => student[field])
+  ) {
+    const missingBilling = missingRequired(student, [
+      'billing_name',
+      'billing_email',
+      'billing_phone',
+      'billing_street',
+      'billing_street_number',
+      'billing_postcode',
+      'billing_city',
+    ]);
+    if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
+    if (!emailValid(student.billing_email))
+      return errorResponse('billing_email must be valid', 400);
+  }
 
   const language = normalizePageLanguage(body.language);
 
@@ -267,10 +357,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const totalPrice = bookingTotal(publicCourse);
   const booking = {
     type: 'direct_course_booking',
-    lessonType: `${course.service || 'Group course'} ${course.level || ''}`.trim(),
+    lessonType: `${course.course_type || 'Group course'} ${course.level || ''}`.trim(),
     course_id: course.id,
     course_code: course.course_code || null,
-    service: course.service || null,
+    course_type: course.course_type || null,
     level: course.level || null,
     first_session_at: publicCourse.first_session_at,
     location_text: publicCourse.location_text,
@@ -284,6 +374,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     lead: {
       firstName: student.first_name,
       lastName: student.last_name,
+      gender: student.gender || null,
+      genderNote: student.gender_note || null,
       email: student.email,
       phone: student.phone || null,
     },
@@ -291,6 +383,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       {
         firstName: student.first_name,
         lastName: student.last_name,
+        gender: student.gender || null,
+        genderNote: student.gender_note || null,
         email: student.email,
         phone: student.phone || null,
       },
@@ -309,7 +403,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       method: 'POST',
       headers: { ...H, Prefer: 'return=representation' },
       body: JSON.stringify({
-        service: course.service || null,
+        service: course.course_type || null,
         lead_first: student.first_name,
         lead_last: student.last_name,
         lead_email: student.email,
@@ -332,6 +426,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       studentId = await findOrCreateStudent(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
         first_name: student.first_name,
         last_name: student.last_name,
+        gender: student.gender,
+        gender_note: student.gender_note,
         email: student.email,
         phone: student.phone,
         postcode: student.postcode,
@@ -358,9 +454,35 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Could not save booking request');
   }
 
+  let intakeFormUrl = null;
+  if (studentId) {
+    try {
+      const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
+      if (token) {
+        const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+        intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
+      }
+    } catch (err) {
+      console.error('book-course intake token error (non-fatal):', err);
+    }
+  }
+
   await Promise.allSettled([
-    sendEmail(env, student.email, buildCustomerEmail(publicCourse, student, language)),
-    sendEmail(env, NOTIFY_EMAILS, buildNotificationEmail(publicCourse, student, enquiryId)),
+    sendEmail(
+      env,
+      student.email,
+      buildCustomerEmail(publicCourse, student, language, intakeFormUrl)
+    ),
+    sendEmail(
+      env,
+      NOTIFY_EMAILS,
+      buildNotificationEmail(
+        publicCourse,
+        student,
+        enquiryId,
+        adminCourseUrl(request, env, course.id)
+      )
+    ),
   ]);
 
   return jsonResponse({ success: true, id: enquiryId, student_id: studentId });

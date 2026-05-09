@@ -33,7 +33,11 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
-import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
+import {
+  completeEnquiriesForEnrollment,
+  findOrCreateStudent,
+  setStudentStatus,
+} from './_student-utils.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
@@ -46,7 +50,7 @@ function getGroupType(booking) {
 
 function getLevelCode(booking) {
   if (booking.language === 'Swiss German') return 'CH';
-  if (booking.service === 'tutoring') return 'SUB';
+  if (booking.course_type === 'tutoring') return 'SUB';
   return booking.level || 'XX';
 }
 
@@ -183,7 +187,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
         course_code: courseCode,
-        service: booking.service || null,
+        course_type: booking.course_type || null,
+        subject: booking.subject || null,
         level: levelCode,
         group_type: groupType,
         teacher_id,
@@ -270,6 +275,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         body: JSON.stringify({ student_id: sid, course_id: courseId }),
       });
       await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, 'active');
+      if (!enquiry_id) {
+        await completeEnquiriesForEnrollment(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, courseId);
+      }
     } catch (err) {
       console.error('Student/enrolment error:', err);
     }

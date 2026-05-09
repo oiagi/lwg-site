@@ -419,7 +419,7 @@ function renderRequestSection(s) {
     </div>`;
 }
 
-export async function sendIntakeLink(studentId) {
+export async function sendIntakeLink(studentId, btn) {
   const s = currentStudentDetail;
   if (!s || String(s.id) !== String(studentId)) {
     alert('Student data not loaded. Please try again.');

@@ -43,7 +43,7 @@
     <h2>import students</h2>
     <p class="label-hint" style="margin-bottom:0.8rem;">
       Upload an .xlsx file with column headers matching student fields
-      (first_name, last_name, email, phone, status, …). Rows with a
+      (first_name, last_name, gender, gender_note, email, phone, status, …). Rows with a
       matching email are updated; the rest are created as new students.
     </p>
     <div class="modal-field">
@@ -69,6 +69,7 @@
         <option value="">loading courses…</option>
       </select>
     </div>
+    <a class="add-participant-btn" id="es-create-course" href="/admin/pages/course-new.html" style="display:inline-flex;margin-top:0.6rem;text-decoration:none;">+ create new course for this student</a>
     <div class="modal-actions">
       <button class="modal-cancel" data-action="closeEnrollStudentModal">cancel</button>
       <button class="modal-submit" id="es-submit" data-action="submitEnrollStudent" disabled>enroll</button>

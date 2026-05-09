@@ -7,7 +7,11 @@
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "dev": "npx wrangler pages dev public"
+    "dev": "npx wrangler pages dev public",
+    "prepare": "git config core.hooksPath .githooks",
+    "test:emails": "node scripts/send-test-emails.mjs",
+    "test:seed": "node scripts/seed-test-data.mjs",
+    "test:clean": "node scripts/seed-test-data.mjs --clean"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

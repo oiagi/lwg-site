@@ -21,6 +21,9 @@ function populate(data) {
   setValue('sm-id', data.id);
   setValue('sm-first-name', data.first_name);
   setValue('sm-last-name', data.last_name);
+  setValue('sm-gender', data.gender);
+  setValue('sm-gender-note', data.gender_note);
+  setGenderNote(data.gender === 'other');
   setValue('sm-email', data.email);
   setValue('sm-phone', data.phone);
   setValue('sm-street', data.street);
@@ -67,6 +70,20 @@ function populate(data) {
   setBilling(hasBilling);
 }
 
+function setGenderNote(show) {
+  const wrap = document.getElementById('sm-gender-note-wrap');
+  if (!wrap) return;
+  wrap.style.display = show ? 'block' : 'none';
+  if (!show) setValue('sm-gender-note', '');
+}
+
+function wireGenderToggle() {
+  const select = document.getElementById('sm-gender');
+  select?.addEventListener('change', () => {
+    setGenderNote(select.value === 'other');
+  });
+}
+
 function setBilling(show) {
   const cb = document.getElementById('sm-billing-separate');
   const section = document.getElementById('sm-billing-section');
@@ -94,6 +111,11 @@ function buildBody() {
   const body = {
     first_name: document.getElementById('sm-first-name').value.trim(),
     last_name: document.getElementById('sm-last-name').value.trim(),
+    gender: document.getElementById('sm-gender').value || null,
+    gender_note:
+      document.getElementById('sm-gender').value === 'other'
+        ? document.getElementById('sm-gender-note').value.trim() || null
+        : null,
     email: document.getElementById('sm-email').value.trim() || null,
     phone: document.getElementById('sm-phone').value.trim() || null,
     street: document.getElementById('sm-street').value.trim() || null,
@@ -198,8 +220,10 @@ async function handleSubmit(e) {
   } else {
     document.getElementById('sm-status').value = 'active';
     setBilling(false);
+    setGenderNote(false);
   }
 
+  wireGenderToggle();
   wireBillingToggle();
   document.getElementById('student-form').addEventListener('submit', handleSubmit);
 

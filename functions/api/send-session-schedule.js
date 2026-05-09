@@ -21,7 +21,7 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { getCancellationPolicy } from './_agb.js';
+import { getCancellationPolicy, getGroupCancellationPolicy } from './_agb.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -36,9 +36,12 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function fmtDate(iso, language = 'de') {
-  return new Date(iso).toLocaleString(language === 'en' ? 'en-GB' : 'de-CH', {
-    timeZone: 'Europe/Zurich',
+function fmtDate(iso, language = 'de', durationMinutes = null) {
+  const locale = language === 'en' ? 'en-GB' : 'de-CH';
+  const tz = 'Europe/Zurich';
+  const start = new Date(iso);
+  const base = start.toLocaleString(locale, {
+    timeZone: tz,
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
@@ -46,6 +49,10 @@ function fmtDate(iso, language = 'de') {
     hour: '2-digit',
     minute: '2-digit',
   });
+  if (!durationMinutes) return base;
+  const end = new Date(start.getTime() + durationMinutes * 60000);
+  const endTime = end.toLocaleString(locale, { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+  return `${base}–${endTime}`;
 }
 
 function sessionRows(sessions, language = 'de') {
@@ -61,7 +68,7 @@ function sessionRows(sessions, language = 'de') {
       (s, i) => `
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language))}</td>
+        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, s.duration_minutes))}</td>
       </tr>`
     )
     .join('');
@@ -83,7 +90,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
     ? {
         subject: `Updated lesson plan${codeLabel} — learning with gioia`,
         htmlLang: 'en',
-        intro: `Attached is the current lesson plan for your ${label}. We are happy to have you.`,
+        intro: `Attached is the current lesson plan for your ${label}. We are delighted to have you in our course.`,
         sessions: 'Scheduled lessons',
         cancellation: 'Cancellation and postponement',
         questions: 'If you have any questions, you can reach us at',
@@ -133,7 +140,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
             <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
               <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
               <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(getCancellationPolicy(language))}
+                ${esc(['duo', 'group'].includes(String(course.group_type || '').toLowerCase()) ? getGroupCancellationPolicy(language) : getCancellationPolicy(language))}
               </p>
             </div>
           </td>
@@ -190,11 +197,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const [cr, sr, er] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level`, {
-      headers: H,
-    }),
     fetch(
-      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course_id}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,status`,
+      `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level,group_type`,
+      {
+        headers: H,
+      }
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${course_id}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,duration_minutes,status`,
       { headers: H }
     ),
     fetch(`${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${course_id}&select=student_id`, {

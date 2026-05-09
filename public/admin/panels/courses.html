@@ -14,7 +14,7 @@
     <select id="course-sort" class="list-sort">
       <option value="created_at">Created date</option>
       <option value="course_code">Course code</option>
-      <option value="service">Subject</option>
+      <option value="course_type">Course type</option>
       <option value="level">Level</option>
       <option value="status">Status</option>
       <option value="student_count">Students</option>
@@ -160,6 +160,13 @@
         <label class="checkbox-label">
           <input type="checkbox" id="cert-include-attendance">
           Include "X of Y sessions attended"
+        </label>
+      </div>
+      <div>
+        <label>Preview mode</label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="cert-preview-all">
+          Show all selected previews
         </label>
       </div>
     </div>

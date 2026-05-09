@@ -1,6 +1,13 @@
 /* ── Courses tab ──────────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { fmtDate, esc, showMessage, queryString, attachListControls } from '../core/helpers.js';
+import {
+  fmtDate,
+  fmtDateWithEnd,
+  esc,
+  showMessage,
+  queryString,
+  attachListControls,
+} from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
@@ -20,6 +27,14 @@ let addParticipantCourseId = null;
 let apSearchListenersAttached = false;
 let coursesCache = [];
 let courseControlsAttached = false;
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.course-status-wrap')) {
+    document.querySelectorAll('.status-dropdown').forEach((d) => {
+      d.style.display = 'none';
+    });
+  }
+});
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -208,6 +223,12 @@ function pendingBookingBlocks(course) {
       const email = b.lead_email || intake.email || '';
       const phone = b.lead_phone || intake.phone || '';
       const requestedAt = b.created_at ? fmtDate(b.created_at) : '—';
+      const nameHtml = b.student_id
+        ? `<button class="student-link" data-action="selectStudentFromCourse"
+            data-args="${esc(b.student_id)},${esc(course.id)},${esc(course.course_code || '')}">
+            ${esc(name)}
+          </button>`
+        : esc(name);
       const spots =
         booking.spots_remaining_at_booking !== null &&
         booking.spots_remaining_at_booking !== undefined
@@ -216,7 +237,7 @@ function pendingBookingBlocks(course) {
       return `
         <div class="pending-booking-row" id="pending-booking-${esc(b.id)}">
           <div>
-            <p class="pending-booking-name">${esc(name)}</p>
+            <p class="pending-booking-name">${nameHtml}</p>
             <p class="detail-muted">
               ${email ? esc(email) : 'no email'}${phone ? ' · ' + esc(phone) : ''}
             </p>
@@ -320,9 +341,19 @@ function renderCourses(courses) {
       const sessLine = total ? `${done} / ${total} sessions` : `${done} sessions completed`;
 
       const rebookFlag =
-        total && remaining !== null && remaining <= 3
-          ? `<span class="rebook-flag">${remaining === 0 ? 'block complete' : remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
+        total && remaining !== null && remaining > 0 && remaining <= 3
+          ? `<span class="rebook-flag">${remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
           : '';
+
+      const dropItems =
+        ['active', 'paused', 'completed', 'cancelled']
+          .filter((s) => s !== c.status)
+          .map(
+            (s) =>
+              `<li><button class="status-opt-btn status-opt-btn--${s}" data-action="setCourseStatus" data-args="${c.id},${esc(c.course_code)},${s}">${s}</button></li>`
+          )
+          .join('') +
+        `<li class="status-dropdown-divider"></li><li><button class="status-opt-btn status-opt-btn--delete" data-action="setCourseStatus" data-args="${c.id},${esc(c.course_code)},delete">delete</button></li>`;
 
       const sessions = (c.sessions || [])
         .filter((s) => s.status !== 'cancelled')
@@ -333,13 +364,12 @@ function renderCourses(courses) {
       <div class="session-row" id="sess-${s.id}">
         <div class="session-number">${idx + 1}.</div>
         <div class="session-status-dot ${s.status}"></div>
-        <div class="session-date">${fmtDate(s.scheduled_at)}</div>
+        <div class="session-date">${fmtDateWithEnd(s.scheduled_at, s.duration_minutes)}</div>
         <div class="session-status-label">${s.status}</div>
         <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
         ${
           s.status === 'scheduled'
             ? `
-          <button class="log-btn" data-action="logSession" data-args="${s.id},${c.id}">mark completed</button>
           <button class="cancel-btn" data-action="cancelSession" data-args="${s.id},${c.id}">cancel</button>
         `
             : ''
@@ -389,6 +419,8 @@ function renderCourses(courses) {
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
+          <button class="remove-enrollment-btn" data-action="removeStudentFromCourse"
+            data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
         ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
@@ -415,16 +447,16 @@ function renderCourses(courses) {
           <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
-          <span class="course-status ${esc(c.status)}">${esc(c.status)}</span>
+          <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown" id="status-drop-${c.id}" style="display:none;">${dropItems}</ul></div>
           <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
-          <button class="delete-course-btn" data-action="deleteCourse" data-args="${c.id},${esc(c.course_code)}">delete</button>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
           <div class="detail-grid detail-grid--gap-lg">
             <div>
               <p class="detail-meta">details</p>
               <p class="detail-body">
-                Subject: ${esc(c.service) || '—'}<br>
+                Course type: ${esc(c.course_type) || '—'}<br>
+                Subject: ${esc(c.subject) || '—'}<br>
                 Level: ${esc(c.level) || '—'}<br>
                 Group size: ${esc(c.group_type) || '—'}<br>
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
@@ -437,42 +469,37 @@ function renderCourses(courses) {
               ${locationEditorHtml(c)}
             </div>
             <div>
-              <p class="detail-meta">contact</p>
-              ${
-                (c.participants || [])
-                  .map(
-                    (p) => `
-                <p class="detail-body">
-                  ${esc([p.firstName, p.lastName].filter(Boolean).join(' '))}
-                  ${p.email ? '<br><span class="detail-muted">' + esc(p.email) + '</span>' : ''}
-                  ${p.phone ? '<br><span class="detail-muted">' + esc(p.phone) + '</span>' : ''}
-                </p>
-              `
-                  )
-                  .join('') || '<p class="detail-body detail-muted">—</p>'
-              }
+              <p class="detail-meta">actions</p>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.4rem;">
+                <button class="save-btn"
+                  data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
+                  <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
+                  <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
+                  <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <button class="save-btn"
+                    data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
+                  <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
+                </div>
+              </div>
+              ${sentCommunicationsBlock(c)}
             </div>
           </div>
           <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
           ${pendingBookingBlocks(c)}
           ${studentBlocks}
-          ${sentCommunicationsBlock(c)}
-          <div class="course-actions-row" style="margin-top:0.4rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">
-            <button class="save-btn"
-              data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
-            <button class="save-btn"
-              data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
-            <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
-            <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
-            <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
-            <button class="save-btn"
-              data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
-            <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
-          </div>
           <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
           ${noSessions}
           ${sessions}
@@ -560,34 +587,52 @@ export async function saveStudent(studentId) {
 }
 
 export async function logSession(sessionId, courseId) {
-  const notes = prompt('Add a note for this session (optional):') || '';
   try {
     const res = await apiFetch('/api/log-session', {
       method: 'PATCH',
-      body: { session_id: sessionId, notes },
+      body: { session_id: sessionId },
     });
     if (!res.ok) throw new Error();
-    const row = document.getElementById('sess-' + sessionId);
-    if (row) {
-      row.querySelector('.session-status-dot').className = 'session-status-dot completed';
-      row.querySelector('[style*=uppercase]').textContent = 'completed';
-      const btn = row.querySelector('.log-btn');
-      if (btn) btn.remove();
-    }
-    const courseRow = document.getElementById('course-' + courseId);
-    if (courseRow) {
-      const countEl = courseRow.querySelector('.course-sessions');
-      if (countEl) {
-        const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
-        if (match) {
-          const newDone = parseInt(match[1]) + 1;
-          const total = parseInt(match[2]);
-          countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
-        }
-      }
-    }
+    const result = await res.json();
+    markSessionCompletedInList(sessionId, courseId, result.newly_completed);
   } catch {
     alert('Could not log session. Please try again.');
+  }
+}
+
+function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
+  const row = document.getElementById('sess-' + sessionId);
+  if (row) {
+    const dot = row.querySelector('.session-status-dot');
+    if (dot) dot.className = 'session-status-dot completed';
+    const label = row.querySelector('.session-status-label');
+    if (label) label.textContent = 'completed';
+    const btn = row.querySelector('.log-btn');
+    if (btn) btn.remove();
+    const cancelBtn = row.querySelector('.cancel-btn');
+    if (cancelBtn) cancelBtn.remove();
+  }
+
+  if (!shouldIncrementCount) return;
+
+  const courseRow = document.getElementById('course-' + courseId);
+  if (!courseRow) return;
+
+  const countEl = courseRow.querySelector('.course-sessions');
+  if (!countEl) return;
+
+  const slashMatch = countEl.textContent.match(/(\d+) \/ (\d+)/);
+  if (slashMatch) {
+    const newDone = parseInt(slashMatch[1], 10) + 1;
+    const total = parseInt(slashMatch[2], 10);
+    countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
+    return;
+  }
+
+  const openEndedMatch = countEl.textContent.match(/(\d+) sessions completed/);
+  if (openEndedMatch) {
+    const newDone = parseInt(openEndedMatch[1], 10) + 1;
+    countEl.firstChild.textContent = newDone + ' sessions completed';
   }
 }
 
@@ -714,7 +759,8 @@ function attachSearchListeners(i) {
 export function openNewCourseModal() {
   [
     'nc-teacher',
-    'nc-service',
+    'nc-course-type',
+    'nc-subject',
     'nc-level',
     'nc-group',
     'nc-sessions',
@@ -810,7 +856,8 @@ export async function submitNewCourse() {
   msgEl.style.display = 'none';
 
   const teacherId = document.getElementById('nc-teacher').value;
-  const service = document.getElementById('nc-service').value;
+  const courseType = document.getElementById('nc-course-type').value;
+  const subject = document.getElementById('nc-subject').value;
   const level = document.getElementById('nc-level').value;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
@@ -863,7 +910,7 @@ export async function submitNewCourse() {
         price_per_session: price ? parseFloat(price) : null,
         price_per_person_per_60min: pricePerson ? parseFloat(pricePerson) : null,
         location: location || null,
-        booking_data: { service, level, group: groupType },
+        booking_data: { course_type: courseType, subject, level, group: groupType },
         contact_data: { participants },
       },
     });
@@ -888,10 +935,94 @@ export async function submitNewCourse() {
   }
 }
 
-export async function deleteCourse(courseId, courseCode) {
+export async function cancelCourse(courseId, courseCode) {
   if (
     !confirm(
-      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.`
+      `Cancel course ${courseCode || courseId}?\n\nAll upcoming sessions and calendar events will be cancelled. The course record will be kept.`
+    )
+  )
+    return;
+  try {
+    const res = await apiFetch('/api/cancel-course', {
+      method: 'PATCH',
+      body: { course_id: courseId },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not cancel course. Please try again.');
+  }
+}
+
+export async function completeCourse(courseId, courseCode) {
+  if (
+    !confirm(
+      `Mark course ${courseCode || courseId} as completed?\n\nThe course record will be kept and moved to the completed view.`
+    )
+  )
+    return;
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: courseId, status: 'completed' },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not mark course as completed. Please try again.');
+  }
+}
+
+export function toggleStatusDropdown(courseId) {
+  const drop = document.getElementById('status-drop-' + courseId);
+  if (!drop) return;
+  const isOpen = drop.style.display !== 'none';
+  document.querySelectorAll('.status-dropdown').forEach((d) => {
+    d.style.display = 'none';
+  });
+  if (!isOpen) drop.style.display = 'block';
+}
+
+export async function setCourseStatus(courseId, courseCode, newStatus) {
+  document.querySelectorAll('.status-dropdown').forEach((d) => {
+    d.style.display = 'none';
+  });
+
+  if (newStatus === 'delete') return deleteCourse(courseId, courseCode);
+  if (newStatus === 'cancelled') return cancelCourse(courseId, courseCode);
+  if (newStatus === 'completed') return completeCourse(courseId, courseCode);
+
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (
+    newStatus === 'active' &&
+    course?.status === 'cancelled' &&
+    !confirm(
+      `Reactivate course ${courseCode || courseId}?\n\nSessions cancelled with the course will not be restored. Use "sync calendar" to pull in upcoming sessions.`
+    )
+  )
+    return;
+
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: courseId, status: newStatus },
+    });
+    if (!res.ok) throw new Error();
+    await loadCourses(currentCourseFilter);
+  } catch {
+    alert('Could not update course status. Please try again.');
+  }
+}
+
+export async function deleteCourse(courseId, courseCode) {
+  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  const hasStudents = (course?.students || []).length > 0;
+  const enrollmentWarning = hasStudents
+    ? '\n\nThis course has enrolled students. Consider using "cancel" instead to keep the record.'
+    : '';
+  if (
+    !confirm(
+      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.${enrollmentWarning}`
     )
   )
     return;
@@ -905,6 +1036,41 @@ export async function deleteCourse(courseId, courseCode) {
     if (row) row.remove();
   } catch {
     alert('Could not delete course. Please try again.');
+  }
+}
+
+export async function removeStudentFromCourse(courseId, studentId, btn) {
+  const studentName = btn?.dataset.studentName || 'this student';
+  if (
+    !confirm(
+      `Remove ${studentName} from this course? Attendance records for this course will also be removed.`
+    )
+  ) {
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'removing...';
+  }
+
+  try {
+    const res = await apiFetch('/api/remove-enrollment', {
+      method: 'DELETE',
+      body: { course_id: courseId, student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not remove student.');
+
+    await loadCourses(currentCourseFilter);
+    const detail = document.getElementById('course-detail-' + courseId);
+    if (detail) detail.classList.add('open');
+  } catch (err) {
+    alert(err.message || 'Could not remove student from course.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'remove from course';
+    }
   }
 }
 
@@ -1022,6 +1188,7 @@ export async function submitAttendance() {
   const btn = document.getElementById('att-submit');
   const msgEl = document.getElementById('att-msg');
   const sessionId = document.getElementById('att-session-id').value;
+  const courseId = document.getElementById('att-course-id').value;
   msgEl.style.display = 'none';
 
   const records = [];
@@ -1050,7 +1217,9 @@ export async function submitAttendance() {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
-    msgEl.textContent = `Saved attendance for ${result.saved_count} student(s).`;
+    markSessionCompletedInList(sessionId, courseId, result.newly_completed);
+
+    msgEl.textContent = `Saved attendance for ${result.saved_count} student(s). Session marked completed.`;
     msgEl.className = 'modal-msg success';
     btn.textContent = 'saved';
 
@@ -1130,7 +1299,8 @@ export function openEditCourseModal(courseId) {
   document.getElementById('ec-code-label').textContent = course.course_code
     ? 'Course code: ' + course.course_code
     : '';
-  document.getElementById('ec-service').value = course.service || 'language course';
+  document.getElementById('ec-course-type').value = course.course_type || 'language course';
+  document.getElementById('ec-subject').value = course.subject || 'German';
   document.getElementById('ec-level').value = course.level || '';
   document.getElementById('ec-group').value = course.group_type || 'private';
   document.getElementById('ec-status').value = course.status || 'active';
@@ -1182,7 +1352,8 @@ export async function submitEditCourse() {
 
   const body = {
     course_id: courseId,
-    service: document.getElementById('ec-service').value,
+    course_type: document.getElementById('ec-course-type').value,
+    subject: document.getElementById('ec-subject').value,
     level: document.getElementById('ec-level').value || null,
     group_type: document.getElementById('ec-group').value,
     status: document.getElementById('ec-status').value,
@@ -1298,7 +1469,8 @@ export async function sendCourseConfirmation(courseId) {
     <p class="cs-section-label">course overview</p>
     <ul class="cs-detail-list">
       <li>Code: ${esc(course.course_code || '—')}</li>
-      <li>Subject: ${esc(course.service || '—')}</li>
+      <li>Course type: ${esc(course.course_type || '—')}</li>
+      <li>Subject: ${esc(course.subject || '—')}</li>
       <li>Level: ${esc(course.level || '—')}</li>
       <li>Sessions: ${course.sessions_total ? esc(String(course.sessions_total)) : 'open-ended'}</li>
       <li>Location: ${esc(course.location || '—')}</li>

@@ -21,9 +21,9 @@ const DB_SORTS = {
     asc: 'course_code.asc',
     desc: 'course_code.desc',
   },
-  service: {
-    asc: 'service.asc,course_code.asc',
-    desc: 'service.desc,course_code.asc',
+  course_type: {
+    asc: 'course_type.asc,course_code.asc',
+    desc: 'course_type.desc,course_code.asc',
   },
   level: {
     asc: 'level.asc,course_code.asc',
@@ -88,7 +88,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const order = DB_SORTS[sort]?.[dir] || DB_SORTS.created_at.desc;
   const search = q
-    ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},service.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
+    ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},course_type.ilike.${encodeURIComponent(`*${q}*`)},subject.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
     : '';
   let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=${order}&select=*${search}`;
   if (status !== 'all') coursesUrl += `&status=eq.${status}`;
@@ -136,7 +136,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (studentIds.length) {
       const studentFilter = studentIds.map((id) => `id.eq.${id}`).join(',');
       const studRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects`,
+        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects`,
         { headers: H }
       );
       allStudents = studRes.ok ? await studRes.json() : [];

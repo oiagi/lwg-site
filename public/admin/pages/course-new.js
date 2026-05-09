@@ -5,6 +5,7 @@ import { esc } from '../core/helpers.js';
 
 let studentCache = [];
 let participantCount = 1;
+const prefillStudentId = new URLSearchParams(window.location.search).get('student_id');
 
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
 const DEFAULT_PRICE_PER_PERSON = {
@@ -137,6 +138,23 @@ function attachSearchListeners(i) {
   });
 }
 
+function applyStudentToParticipant(student, i = 0) {
+  const block = document.getElementById(`nc-p-${i}`);
+  if (block) block.dataset.selectedStudentId = student.id || '';
+  const first = document.getElementById(`nc-p${i}-first`);
+  const last = document.getElementById(`nc-p${i}-last`);
+  const email = document.getElementById(`nc-p${i}-email`);
+  const phone = document.getElementById(`nc-p${i}-phone`);
+  const search = document.getElementById(`nc-p${i}-search`);
+  if (first) first.value = student.first_name || '';
+  if (last) last.value = student.last_name || '';
+  if (email) email.value = student.email || '';
+  if (phone) phone.value = student.phone || '';
+  if (search) {
+    search.value = [student.first_name, student.last_name].filter(Boolean).join(' ');
+  }
+}
+
 function addParticipantBlock() {
   const container = document.getElementById('nc-participants');
   const i = participantCount++;
@@ -162,7 +180,8 @@ async function handleSubmit(e) {
     return;
   }
 
-  const service = document.getElementById('nc-service').value;
+  const courseType = document.getElementById('nc-course-type').value;
+  const subject = document.getElementById('nc-subject').value;
   const levelBase = document.getElementById('nc-level').value;
   const levelPlus = document.getElementById('nc-level-plus').value || '';
   const level = levelBase + levelPlus;
@@ -220,7 +239,7 @@ async function handleSubmit(e) {
         location_city: locationCity || null,
         public_booking_enabled: publicBookingEnabled,
         single_session: singleSession,
-        booking_data: { service, level, group: groupType },
+        booking_data: { course_type: courseType, subject, level, group: groupType },
         contact_data: { participants },
       },
     });
@@ -281,6 +300,21 @@ async function handleSubmit(e) {
   const container = document.getElementById('nc-participants');
   container.innerHTML = renderParticipantBlock(0);
   attachSearchListeners(0);
+
+  if (prefillStudentId) {
+    apiFetch('/api/get-student-detail?id=' + encodeURIComponent(prefillStudentId))
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
+      .then((student) => applyStudentToParticipant(student, 0))
+      .catch(() => {
+        const msgEl = document.getElementById('nc-msg');
+        msgEl.textContent = 'Could not prefill the selected student.';
+        msgEl.className = 'modal-msg err';
+        msgEl.style.display = 'block';
+      });
+  }
 
   // Load student cache for search (fire-and-forget)
   apiFetch('/api/get-students?status=all')
