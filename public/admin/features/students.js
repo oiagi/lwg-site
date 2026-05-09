@@ -69,7 +69,8 @@ export async function loadStudents(status = 'active') {
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
-    renderStudents(students);
+    const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    renderStudents(students, totalRequests);
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load students.</div>';
   }
@@ -84,6 +85,21 @@ function subjectLabel(s) {
 }
 
 function courseSubLine(s) {
+  if (s.pending_request_count) {
+    const request = (s.pending_requests || [])[0] || {};
+    const course = request.course || {};
+    const booking = request.booking_data || {};
+    const label =
+      [
+        course.course_code || booking.course_code,
+        course.level || booking.level,
+        course.course_type || booking.course_type,
+      ]
+        .filter(Boolean)
+        .join(' · ') || 'untreated request';
+    const extra = s.pending_request_count > 1 ? ` +${s.pending_request_count - 1}` : '';
+    return `<span class="request-subline">${esc(label)}${esc(extra)}</span>`;
+  }
   const activeCourses = (s.courses || []).filter(
     (c) => c.status !== 'cancelled' && c.status !== 'completed'
   );
@@ -106,8 +122,19 @@ function statusLabel(s) {
   return s.status || (s.active === false ? 'inactive' : 'active');
 }
 
-function renderStudents(students) {
+function updateStudentsSectionFlag(students, totalRequests = null) {
+  const count =
+    totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
+  const tab = document.getElementById('tab-students');
+  if (!tab) return;
+  tab.classList.toggle('has-request-flag', count > 0);
+  tab.dataset.requestCount = count ? String(count) : '';
+  tab.setAttribute('aria-label', count ? `students, ${count} untreated requests` : 'students');
+}
+
+function renderStudents(students, totalRequests = null) {
   const list = document.getElementById('student-list');
+  updateStudentsSectionFlag(students, totalRequests);
   if (!students.length) {
     list.innerHTML = '<div class="empty-state">no students found</div>';
     return;
@@ -126,12 +153,15 @@ function renderStudents(students) {
       const ref = esc(s.customer_reference) || '—';
       const status = statusLabel(s);
       const subLine = courseSubLine(s);
+      const requestFlag = s.pending_request_count
+        ? `<span class="request-flag" title="Untreated request">${s.pending_request_count > 1 ? esc(s.pending_request_count) : '!'}</span>`
+        : '';
       return `
-    <div class="student-row" id="student-${s.id}"
+    <div class="student-row${s.pending_request_count ? ' has-pending-request' : ''}" id="student-${s.id}"
          role="option" aria-selected="false" tabindex="0"
          data-action="selectStudent" data-args="${s.id}">
       <span class="student-ref">${ref}</span>
-      <span class="student-name">${name}</span>
+      <span class="student-name">${requestFlag}${name}</span>
       <span class="student-status ${esc(status)}">${esc(status)}</span>
       <span class="student-sub">${subLine}</span>
     </div>`;
@@ -195,7 +225,8 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
     const res = await apiFetch('/api/get-students' + qs);
     if (!res.ok) throw new Error();
     const students = await res.json();
-    renderStudents(students);
+    const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    renderStudents(students, totalRequests);
     if (keepSelectedId) {
       const row = document.getElementById('student-' + keepSelectedId);
       if (row) row.scrollIntoView({ block: 'nearest' });
@@ -239,6 +270,7 @@ function renderStudentDetail(container, s) {
       <p class="detail-meta">Personal</p>
       <p class="detail-body">
         ${fullName}<br>
+        ${s.gender ? esc(s.gender === 'other' && s.gender_note ? `other: ${s.gender_note}` : s.gender) + '<br>' : ''}
         ${s.email ? esc(s.email) + '<br>' : ''}
         ${s.phone ? esc(s.phone) + '<br>' : ''}
         ${hasPersonalAddress ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' + esc([s.postcode, s.city].filter(Boolean).join(' ')) : '<span class="detail-muted">no address</span>'}
@@ -280,12 +312,16 @@ function renderStudentDetail(container, s) {
     </div>`;
 
   const adminHtml = renderAdminSection(s);
+  const requestHtml = renderRequestSection(s);
+  const requestFlag = s.pending_request_count
+    ? `<span class="detail-request-flag">${esc(String(s.pending_request_count))} untreated request${s.pending_request_count === 1 ? '' : 's'}</span>`
+    : '';
 
   container.innerHTML = `
     ${breadcrumb}
     <div class="detail-header">
       <div>
-        <span class="detail-header-name">${fullName}</span>${refLine}
+        <span class="detail-header-name">${fullName}</span>${refLine}${requestFlag}
       </div>
       <span class="detail-header-status ${esc(status)}">${esc(status)}</span>
     </div>
@@ -302,22 +338,85 @@ function renderStudentDetail(container, s) {
       </div>
     </div>
     <div class="detail-section">
+      <p class="detail-meta">Requests</p>
+      ${requestHtml}
+    </div>
+    <div class="detail-section">
       <p class="detail-meta">Admin</p>
       ${adminHtml}
     </div>
     ${s.consent_given ? '<p class="detail-hint">Consent given' + (s.consent_date ? ' on ' + new Date(s.consent_date).toLocaleDateString('de-CH') : '') + '</p>' : ''}
+    ${
+      s.intake_completed_at
+        ? `<div class="detail-section">
+             <p class="detail-meta">intake</p>
+             <div class="intake-flag">
+               <span class="intake-flag-label">Form completed ${new Date(s.intake_completed_at).toLocaleDateString('de-CH')}</span>
+               <button class="save-btn" data-action="markIntakeSeen" data-args="${s.id}">mark as seen</button>
+               <span class="detail-action-msg" id="intake-seen-msg-${s.id}"></span>
+             </div>
+           </div>`
+        : ''
+    }
     <div class="detail-actions">
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
+      <button class="save-btn" data-action="sendIntakeLink" data-args="${s.id}">send intake link</button>
       ${
         s.access_token
-          ? `${s.email ? `<button class="save-btn" data-action="sendIntakeLink" data-args="${esc(String(s.id))}">send intake link</button>` : ''}
-             <button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>
-             <span class="detail-action-msg" id="intake-msg-${s.id}"></span>`
+          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>`
           : ''
       }
+      <span class="detail-action-msg" id="intake-msg-${s.id}"></span>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
   `;
+}
+
+function requestLabel(enquiry) {
+  if (enquiry.status === 'pending_course_booking') return 'group booking request';
+  return 'enquiry';
+}
+
+function requestCourseLabel(enquiry) {
+  const course = enquiry.course || {};
+  const booking = enquiry.booking_data || {};
+  return (
+    [
+      course.course_code || booking.course_code,
+      course.level || booking.level,
+      course.course_type || booking.course_type,
+    ]
+      .filter(Boolean)
+      .join(' · ') || 'requested course'
+  );
+}
+
+function renderRequestSection(s) {
+  const enquiries = s.enquiries || [];
+  if (!enquiries.length) return '<p class="detail-muted">No enquiries or booking requests yet.</p>';
+
+  return `
+    <div class="student-request-list">
+      ${enquiries
+        .map((enquiry) => {
+          const created = enquiry.created_at
+            ? new Date(enquiry.created_at).toLocaleDateString('de-CH')
+            : '—';
+          const courseLink = enquiry.course_id
+            ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
+            : '<span class="detail-muted">no linked course</span>';
+          return `
+            <div class="student-request-row${enquiry.untreated ? ' untreated' : ''}">
+              <span class="request-dot ${esc(enquiry.status || '')}"></span>
+              <div>
+                <p class="student-request-title">${esc(requestLabel(enquiry))}</p>
+                <p class="student-request-meta">${esc(created)} · <span class="enq-status ${esc(enquiry.status || '')}">${esc(enquiry.status || '—')}</span></p>
+              </div>
+              <div class="student-request-target">${courseLink}</div>
+            </div>`;
+        })
+        .join('')}
+    </div>`;
 }
 
 export async function sendIntakeLink(studentId) {
@@ -345,15 +444,10 @@ export async function sendIntakeLink(studentId) {
     recipients: [{ name: fullName, email: s.email }],
     subject: 'Dein Anmeldeformular / Your intake form · learning with gioia',
     contentHtml,
-    languageOptions: [
-      { value: 'de', label: 'Deutsch' },
-      { value: 'en', label: 'English' },
-    ],
-    defaultLanguage: 'de',
-    onConfirm: async ({ language }) => {
+    onConfirm: async () => {
       const res = await apiFetch('/api/send-intake-link', {
         method: 'POST',
-        body: { student_id: studentId, language },
+        body: { student_id: studentId },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
@@ -367,6 +461,39 @@ export async function sendIntakeLink(studentId) {
       }
     },
   });
+}
+
+export async function markIntakeSeen(studentId, btn) {
+  const msgEl = document.getElementById('intake-seen-msg-' + studentId);
+  const show = (text) => {
+    if (msgEl) {
+      msgEl.textContent = text;
+      msgEl.style.display = 'inline';
+      setTimeout(() => {
+        msgEl.style.display = 'none';
+      }, MESSAGE_TIMEOUT_MS);
+    }
+  };
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'saving…';
+  }
+  try {
+    const res = await apiFetch('/api/mark-intake-seen', {
+      method: 'POST',
+      body: { student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Failed');
+    await fetchAndRenderStudent(studentId);
+  } catch (e) {
+    show('error: ' + (e.message || 'could not update'));
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'mark as seen';
+    }
+  }
 }
 
 export function copyIntakeLink(token, btn) {
@@ -449,6 +576,10 @@ function renderAdminSection(s) {
         <td>${esc(c.level) || '—'}</td>
         <td>${esc(c.service) || '—'}</td>
         <td>${esc(c.location) || '—'}</td>
+        <td>
+          <button class="remove-enrollment-btn" data-action="removeStudentEnrollment"
+            data-args="${s.id},${c.id}" data-course-code="${esc(c.course_code || 'this course')}">remove</button>
+        </td>
       </tr>`;
     })
     .join('');
@@ -466,6 +597,7 @@ function renderAdminSection(s) {
             <th>level</th>
             <th>subject</th>
             <th>location</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>${courseRows}</tbody>
@@ -481,6 +613,10 @@ export function backToCourse(courseId) {
     detail: { tab: 'courses', openCourseId: courseId },
   });
   document.dispatchEvent(ev);
+}
+
+export function openRequestCourse(courseId) {
+  backToCourse(courseId);
 }
 
 /* ── Student modal ───────────────────────────────────────────────── */
@@ -499,12 +635,16 @@ export async function openEnrollStudentModal(studentId) {
   const sel = document.getElementById('es-course');
   const msg = document.getElementById('es-msg');
   const btn = document.getElementById('es-submit');
+  const createLink = document.getElementById('es-create-course');
 
   msg.style.display = 'none';
   msg.textContent = '';
   btn.textContent = 'enroll';
   btn.disabled = true;
   sel.innerHTML = '<option value="">loading courses…</option>';
+  if (createLink) {
+    createLink.href = `/admin/pages/course-new.html?student_id=${encodeURIComponent(studentId)}`;
+  }
 
   modal.classList.add('open');
 
@@ -522,7 +662,8 @@ export async function openEnrollStudentModal(studentId) {
     const available = courses.filter((c) => !enrolledIds.has(c.id));
     if (!available.length) {
       sel.innerHTML = '<option value="">no available courses</option>';
-      msg.textContent = 'Student is already enrolled in all active courses.';
+      msg.textContent =
+        'Student is already enrolled in all active courses. Create a new course instead.';
       msg.className = 'modal-msg';
       msg.style.display = 'block';
       return;
@@ -586,6 +727,41 @@ export async function submitEnrollStudent() {
     msg.style.display = 'block';
     btn.textContent = 'enroll';
     btn.disabled = false;
+  }
+}
+
+export async function removeStudentEnrollment(studentId, courseId, btn) {
+  const courseCode = btn?.dataset.courseCode || 'this course';
+  if (
+    !confirm(
+      `Remove this student from ${courseCode}? Attendance records for this course will also be removed.`
+    )
+  ) {
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'removing...';
+  }
+
+  try {
+    const res = await apiFetch('/api/remove-enrollment', {
+      method: 'DELETE',
+      body: { course_id: courseId, student_id: studentId },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not remove student from course.');
+
+    selectedStudentId = studentId;
+    await loadStudentsKeepingContext(currentStudentFilter, studentId);
+    await fetchAndRenderStudent(studentId);
+  } catch (e) {
+    alert(e.message || 'Could not remove student from course.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'remove';
+    }
   }
 }
 

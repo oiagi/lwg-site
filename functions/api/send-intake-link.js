@@ -1,10 +1,9 @@
 // functions/api/send-intake-link.js
 // POST /api/send-intake-link
-// Body: { student_id, language? }
-// Sends an intake form link email to the student.
+// Body: { student_id }
 //
-// Environment variables:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY, SITE_URL
+// Sends an intake form link email to the student.
+// Requires admin auth. Language is inferred from the student's most recent enquiry.
 
 import {
   supabaseHeaders,
@@ -13,8 +12,8 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
-  normalizePageLanguage,
 } from './_utils.js';
+import { getOrCreateStudentToken, getStudentLanguage } from './_student-utils.js';
 
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
@@ -29,10 +28,10 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function buildIntakeLinkEmail({ studentFirstName, intakeUrl, language }) {
+function buildIntakeLinkEmail(student, intakeUrl, language) {
   const isEnglish = language === 'en';
   const greetingName =
-    studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
+    student.first_name || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
 
   const copy = isEnglish
     ? {
@@ -105,51 +104,40 @@ function buildIntakeLinkEmail({ studentFirstName, intakeUrl, language }) {
 }
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY, SITE_URL } = env;
-
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not configured');
-    return errorResponse('Email service not configured', 500);
-  }
+  if (!env.RESEND_API_KEY) return errorResponse('Email service not configured', 500);
 
   const { body, error } = await parseJsonBody(request);
   if (error) return error;
+  if (!body.student_id) return errorResponse('Missing student_id', 400);
 
-  const { student_id } = body;
-  const language = normalizePageLanguage(body.language, 'de');
-  if (!student_id) return errorResponse('Missing student_id', 400);
-
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?id=eq.${student_id}&select=id,first_name,last_name,email,access_token`,
+
+  const stuRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(body.student_id)}&select=first_name,last_name,email`,
     { headers: H }
   );
-  if (!res.ok) return errorResponse('Database error', 500);
-  const rows = await res.json();
-  if (!rows.length) return errorResponse('Student not found', 404);
-  const student = rows[0];
-
+  if (!stuRes.ok) return errorResponse('Database error');
+  const students = await stuRes.json();
+  const student = students[0];
+  if (!student) return errorResponse('Student not found', 404);
   if (!student.email) return errorResponse('Student has no email address', 400);
-  if (!student.access_token) return errorResponse('Student has no intake link token', 400);
 
-  const baseUrl = SITE_URL || new URL(request.url).origin;
-  const intakeUrl = `${baseUrl}/intake.html?token=${encodeURIComponent(student.access_token)}`;
+  const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
+  if (!token) return errorResponse('Could not generate intake link', 500);
 
-  const email = buildIntakeLinkEmail({
-    studentFirstName: student.first_name || '',
-    intakeUrl,
-    language,
-  });
+  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+  const intakeUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
 
-  const emailRes = await fetch('https://api.resend.com/emails', {
+  const language = await getStudentLanguage(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
+  const email = buildIntakeLinkEmail(student, intakeUrl, language);
+
+  const sendRes = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [student.email],
@@ -159,10 +147,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }),
   });
 
-  if (!emailRes.ok) {
-    const errText = await emailRes.text();
-    console.error('Intake link email failed:', errText);
-    return errorResponse('Failed to send email', 500);
+  if (!sendRes.ok) {
+    console.error('send-intake-link email error:', await sendRes.text());
+    return errorResponse('Could not send email', 502);
   }
 
   return jsonResponse({ success: true });
