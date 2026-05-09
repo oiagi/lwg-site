@@ -1,6 +1,6 @@
 /* ── Certificates of attendance ───────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
-import { esc, showMessage } from '../core/helpers.js';
+import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { formatCourseAddress } from './courses.js';
 
@@ -202,7 +202,7 @@ function buildCertificateData(recipient, course, opts) {
   return {
     fullName,
     courseCode: course.course_code || '',
-    subject: certificateSubject(course),
+    subject: translateSubject(certificateSubject(course), opts.language),
     level: isTutoring ? '' : course.level || '',
     location: locationDisplay,
     classType: classTypeDisplay,
