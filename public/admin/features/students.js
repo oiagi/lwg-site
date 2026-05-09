@@ -10,6 +10,8 @@ let selectedStudentId = null;
 let fromCourseContext = null;
 let studentControlsAttached = false;
 let currentStudentDetail = null;
+const filterFlagCounts = { active: null, all: null, inactive: null };
+let filterCountsInitialized = false;
 
 export function getCurrentStudentFilter() {
   return currentStudentFilter;
@@ -70,7 +72,14 @@ export async function loadStudents(status = 'active') {
     if (!res.ok) throw new Error();
     const students = await res.json();
     const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    filterFlagCounts[status] =
+      totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
+    updateFilterBadges();
     renderStudents(students, totalRequests);
+    if (!filterCountsInitialized) {
+      filterCountsInitialized = true;
+      ['active', 'all', 'inactive'].filter((s) => s !== status).forEach(fetchStudentFlagCount);
+    }
   } catch {
     list.innerHTML = '<div class="loading-state">Could not load students.</div>';
   }
@@ -120,6 +129,28 @@ function courseSubLine(s) {
 
 function statusLabel(s) {
   return s.status || (s.active === false ? 'inactive' : 'active');
+}
+
+function updateFilterBadges() {
+  document.querySelectorAll('[data-student-status]').forEach((btn) => {
+    const status = btn.dataset.studentStatus;
+    const count = filterFlagCounts[status];
+    btn.classList.toggle('has-flag-count', count > 0);
+    btn.dataset.flagCount = count > 0 ? String(count) : '';
+  });
+}
+
+async function fetchStudentFlagCount(status) {
+  try {
+    const qs = status !== 'all' ? `?status=${status}` : '';
+    const res = await apiFetch('/api/get-students' + qs);
+    if (!res.ok) return;
+    filterFlagCounts[status] = Number(res.headers.get('X-Untreated-Request-Count')) || 0;
+    await res.json();
+    updateFilterBadges();
+  } catch {
+    /* silent */
+  }
 }
 
 function updateStudentsSectionFlag(students, totalRequests = null) {
