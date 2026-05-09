@@ -148,9 +148,14 @@ async function fetchStudentFlagCount(status) {
     filterFlagCounts[status] = Number(res.headers.get('X-Untreated-Request-Count')) || 0;
     await res.json();
     updateFilterBadges();
+    if (status === 'all') updateStudentsSectionFlag([], filterFlagCounts.all);
   } catch {
     /* silent */
   }
+}
+
+export async function initStudentTabFlag() {
+  await fetchStudentFlagCount('all');
 }
 
 function updateStudentsSectionFlag(students, totalRequests = null) {
