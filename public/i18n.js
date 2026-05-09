@@ -97,16 +97,16 @@
   const pages = {
     '/index.html': {
       title: {
-        en: 'Learning with Gioia - Language Courses & Tutoring in Zurich',
+        en: 'Learning with Gioia - Language Courses & Tutoring in Zürich',
         de: 'Learning with Gioia - Sprachkurse & Nachhilfe in Zürich',
       },
       description: {
-        en: 'Language courses, exam preparation and tutoring in Zurich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
+        en: 'Language courses, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
         de: 'Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Muttersprachliche Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
       },
       text: {
         '.hero-tagline': {
-          en: '<em>Language courses, exam preparation &amp; tutoring</em><span class="sep" aria-hidden="true">·</span><em>Zurich</em>',
+          en: '<em>Language courses, exam preparation &amp; tutoring</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
           de: '<em>Sprachkurse, Prüfungsvorbereitung &amp; Nachhilfe</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
         },
         '.lede p:nth-of-type(1)': {
@@ -126,7 +126,7 @@
         de: 'Kurse & Preise - Learning with Gioia',
       },
       description: {
-        en: 'German, Swiss German and English language courses, exam preparation and tutoring in Zurich. All levels welcome. Pricing upon request.',
+        en: 'German, Swiss German and English language courses, exam preparation and tutoring in Zürich. All levels welcome. Pricing upon request.',
         de: 'Deutsch-, Schweizerdeutsch- und Englischkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Alle Niveaus willkommen.',
       },
       text: {
@@ -153,7 +153,7 @@
         },
         '.section:nth-of-type(5) h2': { en: 'Location', de: 'Ort' },
         '.section:nth-of-type(5) p': {
-          en: 'Group classes are held in central Zurich, within easy reach of Zurich HB. The exact venue is confirmed when a course is scheduled. Private, company, and online sessions can of course take place wherever suits you best.*',
+          en: 'Group classes are held in central Zürich, within easy reach of Zürich HB. The exact venue is confirmed when a course is scheduled. Private, company, and online sessions can of course take place wherever suits you best.*',
           de: 'Gruppenkurse finden zentral in Zürich statt, gut erreichbar vom Zürich HB. Der genaue Ort wird bestätigt, sobald ein Kurs geplant ist. Privat-, Firmen- und Onlinelektionen können natürlich dort stattfinden, wo es für dich am besten passt.*',
         },
         '.section:nth-of-type(5) li': { en: 'Travel fees apply.', de: 'Reisekosten fallen an.' },
@@ -191,7 +191,7 @@
         de: 'Anfrage senden - Learning with Gioia',
       },
       description: {
-        en: 'Make a quick enquiry with Learning with Gioia - language courses, exam prep and tutoring in Zurich.',
+        en: 'Make a quick enquiry with Learning with Gioia - language courses, exam prep and tutoring in Zürich.',
         de: 'Sende eine kurze Anfrage an Learning with Gioia - für Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich.',
       },
       text: {
@@ -247,7 +247,7 @@
         de: 'Offene Gruppenkurse - Learning with Gioia',
       },
       description: {
-        en: 'Book open spots in small group language courses in Zurich.',
+        en: 'Book open spots in small group language courses in Zürich.',
         de: 'Freie Plätze in Kleingruppen-Sprachkursen in Zürich direkt anfragen.',
       },
       text: {
@@ -371,7 +371,7 @@
         de: 'Impressum - Learning with Gioia',
       },
       description: {
-        en: 'Legal information for Learning with Gioia / Birukoff World, sole proprietorship in Zurich.',
+        en: 'Legal information for Learning with Gioia / Birukoff World, sole proprietorship in Zürich.',
         de: 'Impressum von Learning with Gioia / Birukoff World, Einzelfirma in Zürich.',
       },
       text: {
@@ -379,7 +379,7 @@
         '.legal-meta': common.updated,
         '.legal-section:nth-of-type(1) h2': { en: 'Provider', de: 'Anbieterin' },
         '.legal-section:nth-of-type(1) address': {
-          en: '<strong>Birukoff World</strong><br>Sole proprietorship<br>Wildbachstrasse 65<br>8008 Zurich<br>Switzerland',
+          en: '<strong>Birukoff World</strong><br>Sole proprietorship<br>Wildbachstrasse 65<br>8008 Zürich<br>Switzerland',
           de: '<strong>Birukoff World</strong><br>Einzelfirma<br>Wildbachstrasse 65<br>8008 Zürich<br>Schweiz',
         },
         '.legal-section:nth-of-type(2) h2': { en: 'Contact', de: 'Kontakt' },
@@ -409,7 +409,7 @@
         '.legal-meta': common.updated,
         '.legal-section:nth-of-type(1) h2': { en: 'Controller', de: 'Verantwortliche Stelle' },
         '.legal-section:nth-of-type(1) address': {
-          en: '<strong>Birukoff World</strong><br>Sole proprietorship<br>Wildbachstrasse 65<br>8008 Zurich<br>Switzerland<br><a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>',
+          en: '<strong>Birukoff World</strong><br>Sole proprietorship<br>Wildbachstrasse 65<br>8008 Zürich<br>Switzerland<br><a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>',
           de: '<strong>Birukoff World</strong><br>Einzelfirma<br>Wildbachstrasse 65<br>8008 Zürich<br>Schweiz<br><a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>',
         },
         '.legal-section:nth-of-type(2) h2': { en: 'Principle', de: 'Grundsatz' },

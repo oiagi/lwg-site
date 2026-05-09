@@ -1099,7 +1099,7 @@ button.course-status::after {
   background: #c0392b;
   color: #fff;
 }
-.remove-enrollment-btn {
+.remove-enrolment-btn {
   font-family: inherit;
   font-size: 0.68rem;
   letter-spacing: 0.1em;
@@ -1115,11 +1115,11 @@ button.course-status::after {
     color 0.15s,
     opacity 0.15s;
 }
-.remove-enrollment-btn:hover {
+.remove-enrolment-btn:hover {
   background: #c0392b;
   color: #fff;
 }
-.remove-enrollment-btn:disabled {
+.remove-enrolment-btn:disabled {
   cursor: progress;
   opacity: 0.65;
 }

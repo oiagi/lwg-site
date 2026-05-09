@@ -123,7 +123,7 @@ async function patchStudentEnquiries(supabaseUrl, H, filter, fields) {
  * untreated queue. Public group-booking requests are only completed when the
  * enrolment is for that exact requested course.
  */
-export async function completeEnquiriesForEnrollment(supabaseUrl, serviceKey, studentId, courseId) {
+export async function completeEnquiriesForEnrolment(supabaseUrl, serviceKey, studentId, courseId) {
   if (!studentId || !courseId) return 0;
   const H = supabaseHeaders(serviceKey);
   const encodedStudentId = encodeURIComponent(studentId);

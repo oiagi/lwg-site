@@ -419,7 +419,7 @@ function renderCourses(courses) {
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
-          <button class="remove-enrollment-btn" data-action="removeStudentFromCourse"
+          <button class="remove-enrolment-btn" data-action="removeStudentFromCourse"
             data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
@@ -1017,12 +1017,12 @@ export async function setCourseStatus(courseId, courseCode, newStatus) {
 export async function deleteCourse(courseId, courseCode) {
   const course = coursesCache.find((c) => String(c.id) === String(courseId));
   const hasStudents = (course?.students || []).length > 0;
-  const enrollmentWarning = hasStudents
+  const enrolmentWarning = hasStudents
     ? '\n\nThis course has enrolled students. Consider using "cancel" instead to keep the record.'
     : '';
   if (
     !confirm(
-      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.${enrollmentWarning}`
+      `Delete course ${courseCode || courseId}?\n\nThis will cancel all upcoming calendar events and remove the course and all its sessions permanently.${enrolmentWarning}`
     )
   )
     return;
@@ -1055,7 +1055,7 @@ export async function removeStudentFromCourse(courseId, studentId, btn) {
   }
 
   try {
-    const res = await apiFetch('/api/remove-enrollment', {
+    const res = await apiFetch('/api/remove-enrolment', {
       method: 'DELETE',
       body: { course_id: courseId, student_id: studentId },
     });
@@ -1409,7 +1409,7 @@ export async function submitAddParticipant() {
       };
 
   try {
-    const res = await apiFetch('/api/add-enrollment', { method: 'POST', body });
+    const res = await apiFetch('/api/add-enrolment', { method: 'POST', body });
     if (!res.ok) {
       const e = await res.json();
       throw new Error(e.error || 'Failed');

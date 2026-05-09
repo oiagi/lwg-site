@@ -1,5 +1,5 @@
-// functions/api/remove-enrollment.js
-// DELETE /api/remove-enrollment
+// functions/api/remove-enrolment.js
+// DELETE /api/remove-enrolment
 // Body: { course_id, student_id }
 //
 // Removes one student from one course. Attendance rows for that student's
@@ -61,4 +61,4 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   if (!deleteRes.ok) return errorResponse('Could not remove enrolment');
 
   return jsonResponse({ success: true, course_id, student_id });
-}, 'remove-enrollment');
+}, 'remove-enrolment');
