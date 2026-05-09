@@ -112,7 +112,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
   const intakeUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
 
-  const language = await getStudentLanguage(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
+  const language =
+    body.language === 'de' || body.language === 'en'
+      ? body.language
+      : await getStudentLanguage(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
   const email = buildIntakeLinkEmail(student, intakeUrl, language);
 
   const sendRes = await fetch('https://api.resend.com/emails', {
