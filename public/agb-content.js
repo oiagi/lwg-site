@@ -22,7 +22,7 @@ export const CANCELLATION_POLICY_BY_LANGUAGE = {
 
 export const GROUP_CANCELLATION_POLICY_BY_LANGUAGE = {
   en: 'Once a group course is scheduled, individual lessons cannot be cancelled. Missed lessons are not refunded, credited toward another course, or converted to private lessons.',
-  de: 'Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch auf einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.',
+  de: 'Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht mehr abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch für einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.',
 };
 
 export const AGB_SECTIONS = [

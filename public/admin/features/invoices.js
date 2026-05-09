@@ -558,7 +558,7 @@ function invoiceStrings(lang, isGroup = false) {
     footnote: isGroup
       ? isEN
         ? '*Once a group course is scheduled, individual lessons cannot be cancelled. Missed lessons are not refunded, credited toward another course, or converted to private lessons.'
-        : '*Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch auf einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.'
+        : '*Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht mehr abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch für einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.'
       : isEN
         ? '*Please note that cancelling or rescheduling a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before it starts, the lesson is considered as held and cannot be rescheduled.'
         : '*Bitte beachte, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
