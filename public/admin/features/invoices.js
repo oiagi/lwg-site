@@ -539,7 +539,7 @@ function money(value) {
   return Number(value || 0).toFixed(2);
 }
 
-function invoiceStrings(lang) {
+function invoiceStrings(lang, isGroup = false) {
   const isEN = lang === 'en';
   return {
     dateLabel: isEN ? 'Date:' : 'Auftrag vom:',
@@ -555,15 +555,19 @@ function invoiceStrings(lang) {
         ? `Please transfer the amount before the start of the course, at the latest by ${longDate(dueDate, 'en')}.`
         : `Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch bis zum ${chDate(dueDate, 'de')}.`,
     closing: isEN ? 'Kind regards,' : 'Herzliche Grüsse',
-    footnote: isEN
-      ? '*Please note that cancelling or rescheduling a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before it starts, the lesson is considered as held and cannot be rescheduled.'
-      : '*Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt die Lektion als abgehalten und kann nicht mehr verschoben werden.',
+    footnote: isGroup
+      ? isEN
+        ? '*Once a group course is scheduled, individual lessons cannot be cancelled. Missed lessons are not refunded, credited toward another course, or converted to private lessons.'
+        : '*Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch auf einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.'
+      : isEN
+        ? '*Please note that cancelling or rescheduling a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before it starts, the lesson is considered as held and cannot be rescheduled.'
+        : '*Bitte beachte, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
   };
 }
 
 function buildPreviewHtml(data) {
   const lang = data.language || 'de';
-  const s = invoiceStrings(lang);
+  const s = invoiceStrings(lang, isSharedCourse(currentCourse));
   const recipient = data.recipientLines.map((line) => esc(line)).join('<br>');
   const greeting = formalGreeting(data);
   const qrPreview =
@@ -699,7 +703,7 @@ async function buildInvoicePdf(data) {
   doc.text(`Email: ${SENDER.email}`, margin, 49);
 
   const lang = data.language || 'de';
-  const s = invoiceStrings(lang);
+  const s = invoiceStrings(lang, isSharedCourse(currentCourse));
 
   let y = 66;
   drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);

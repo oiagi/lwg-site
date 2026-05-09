@@ -8,7 +8,9 @@ export {
   AGB_SECTIONS,
   AGB_UPDATED,
   CANCELLATION_POLICY_BY_LANGUAGE,
+  GROUP_CANCELLATION_POLICY_BY_LANGUAGE,
   getCancellationPolicy,
+  getGroupCancellationPolicy,
   renderAgbEmailHtml,
   renderAgbLegalHtml,
 } from '../../public/agb-content.js';
