@@ -61,7 +61,7 @@ export async function createCourseCalendarEvent({
       `Course: ${courseCode}\n` +
       (booking.lessonType
         ? `What: ${booking.lessonType}\n`
-        : `Service: ${booking.service || ''}\n`) +
+        : `Course type: ${booking.course_type || ''}\n`) +
       (booking.level ? `Level: ${booking.level}\n` : '') +
       (booking.language ? `Language: ${booking.language}\n` : '') +
       (booking.exam ? `Exam: ${booking.exam}\n` : '') +

@@ -180,7 +180,8 @@ async function handleSubmit(e) {
     return;
   }
 
-  const service = document.getElementById('nc-service').value;
+  const courseType = document.getElementById('nc-course-type').value;
+  const subject = document.getElementById('nc-subject').value;
   const levelBase = document.getElementById('nc-level').value;
   const levelPlus = document.getElementById('nc-level-plus').value || '';
   const level = levelBase + levelPlus;
@@ -238,7 +239,7 @@ async function handleSubmit(e) {
         location_city: locationCity || null,
         public_booking_enabled: publicBookingEnabled,
         single_session: singleSession,
-        booking_data: { service, level, group: groupType },
+        booking_data: { course_type: courseType, subject, level, group: groupType },
         contact_data: { participants },
       },
     });

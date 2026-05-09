@@ -49,7 +49,8 @@ function populate(course) {
   document.getElementById('ec-code-label').textContent = course.course_code
     ? 'Course code: ' + course.course_code
     : '';
-  setVal('ec-service', course.service || 'language course');
+  setVal('ec-course-type', course.course_type || 'language course');
+  setVal('ec-subject', course.subject || 'German');
   const { base, plus } = splitLevel(course.level);
   setVal('ec-level', base);
   setVal('ec-level-plus', plus);
@@ -100,7 +101,8 @@ async function handleSubmit(e) {
 
   const body = {
     course_id: courseId,
-    service: document.getElementById('ec-service').value,
+    course_type: document.getElementById('ec-course-type').value,
+    subject: document.getElementById('ec-subject').value,
     level:
       document.getElementById('ec-level').value +
         (document.getElementById('ec-level-plus').value || '') || null,

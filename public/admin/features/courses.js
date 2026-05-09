@@ -455,7 +455,8 @@ function renderCourses(courses) {
             <div>
               <p class="detail-meta">details</p>
               <p class="detail-body">
-                Subject: ${esc(c.service) || '—'}<br>
+                Course type: ${esc(c.course_type) || '—'}<br>
+                Subject: ${esc(c.subject) || '—'}<br>
                 Level: ${esc(c.level) || '—'}<br>
                 Group size: ${esc(c.group_type) || '—'}<br>
                 Sessions: ${total ? total + ' sessions' : 'open-ended'}<br>
@@ -763,7 +764,8 @@ function attachSearchListeners(i) {
 export function openNewCourseModal() {
   [
     'nc-teacher',
-    'nc-service',
+    'nc-course-type',
+    'nc-subject',
     'nc-level',
     'nc-group',
     'nc-sessions',
@@ -859,7 +861,8 @@ export async function submitNewCourse() {
   msgEl.style.display = 'none';
 
   const teacherId = document.getElementById('nc-teacher').value;
-  const service = document.getElementById('nc-service').value;
+  const courseType = document.getElementById('nc-course-type').value;
+  const subject = document.getElementById('nc-subject').value;
   const level = document.getElementById('nc-level').value;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
@@ -912,7 +915,7 @@ export async function submitNewCourse() {
         price_per_session: price ? parseFloat(price) : null,
         price_per_person_per_60min: pricePerson ? parseFloat(pricePerson) : null,
         location: location || null,
-        booking_data: { service, level, group: groupType },
+        booking_data: { course_type: courseType, subject, level, group: groupType },
         contact_data: { participants },
       },
     });
@@ -1301,7 +1304,8 @@ export function openEditCourseModal(courseId) {
   document.getElementById('ec-code-label').textContent = course.course_code
     ? 'Course code: ' + course.course_code
     : '';
-  document.getElementById('ec-service').value = course.service || 'language course';
+  document.getElementById('ec-course-type').value = course.course_type || 'language course';
+  document.getElementById('ec-subject').value = course.subject || 'German';
   document.getElementById('ec-level').value = course.level || '';
   document.getElementById('ec-group').value = course.group_type || 'private';
   document.getElementById('ec-status').value = course.status || 'active';
@@ -1353,7 +1357,8 @@ export async function submitEditCourse() {
 
   const body = {
     course_id: courseId,
-    service: document.getElementById('ec-service').value,
+    course_type: document.getElementById('ec-course-type').value,
+    subject: document.getElementById('ec-subject').value,
     level: document.getElementById('ec-level').value || null,
     group_type: document.getElementById('ec-group').value,
     status: document.getElementById('ec-status').value,
@@ -1469,7 +1474,8 @@ export async function sendCourseConfirmation(courseId) {
     <p class="cs-section-label">course overview</p>
     <ul class="cs-detail-list">
       <li>Code: ${esc(course.course_code || '—')}</li>
-      <li>Subject: ${esc(course.service || '—')}</li>
+      <li>Course type: ${esc(course.course_type || '—')}</li>
+      <li>Subject: ${esc(course.subject || '—')}</li>
       <li>Level: ${esc(course.level || '—')}</li>
       <li>Sessions: ${course.sessions_total ? esc(String(course.sessions_total)) : 'open-ended'}</li>
       <li>Location: ${esc(course.location || '—')}</li>

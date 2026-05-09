@@ -50,7 +50,7 @@ function getGroupType(booking) {
 
 function getLevelCode(booking) {
   if (booking.language === 'Swiss German') return 'CH';
-  if (booking.service === 'tutoring') return 'SUB';
+  if (booking.course_type === 'tutoring') return 'SUB';
   return booking.level || 'XX';
 }
 
@@ -187,7 +187,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
       body: JSON.stringify({
         course_code: courseCode,
-        service: booking.service || null,
+        course_type: booking.course_type || null,
+        subject: booking.subject || null,
         level: levelCode,
         group_type: groupType,
         teacher_id,
