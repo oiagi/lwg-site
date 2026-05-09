@@ -161,36 +161,15 @@ function previewRecipient() {
   return currentRecipients.find((r) => r.selected) || currentRecipients[0] || null;
 }
 
-function titleCase(value) {
-  return String(value || '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-function certificateSubject(recipient, course, isEN) {
-  const service = String(course.service || '').toLowerCase();
-  const level = String(course.level || '').toUpperCase();
-
-  if (service === 'language course') {
-    if (level.startsWith('CH')) return 'Swiss German';
-    if (level.startsWith('EN')) return 'English';
-    return 'German';
-  }
-
-  if (service === 'tutoring' || service === 'gymivorbereitung') {
-    return recipient.subjects || (isEN ? 'Tutoring' : 'Nachhilfe');
-  }
-
-  return titleCase(course.service);
+function certificateSubject(course) {
+  return course.subject || '';
 }
 
 function buildCertificateData(recipient, course, opts) {
   const isEN = opts.language === 'en';
   const fullName = [recipient.first_name, recipient.last_name].filter(Boolean).join(' ') || '—';
-  const service = String(course.service || '').toLowerCase();
-  const isTutoring = service === 'tutoring' || service === 'gymivorbereitung';
+  const courseType = String(course.course_type || '').toLowerCase();
+  const isTutoring = courseType === 'tutoring' || courseType === 'gymivorbereitung';
 
   const sessions = (course.sessions || [])
     .filter((s) => s.status !== 'cancelled')
@@ -223,7 +202,7 @@ function buildCertificateData(recipient, course, opts) {
   return {
     fullName,
     courseCode: course.course_code || '',
-    subject: certificateSubject(recipient, course, isEN),
+    subject: certificateSubject(course),
     level: isTutoring ? '' : course.level || '',
     location: locationDisplay,
     classType: classTypeDisplay,

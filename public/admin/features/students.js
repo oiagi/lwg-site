@@ -91,7 +91,7 @@ function courseSubLine(s) {
       [
         course.course_code || booking.course_code,
         course.level || booking.level,
-        course.service || booking.service,
+        course.course_type || booking.course_type,
       ]
         .filter(Boolean)
         .join(' · ') || 'untreated request';
@@ -381,7 +381,7 @@ function requestCourseLabel(enquiry) {
     [
       course.course_code || booking.course_code,
       course.level || booking.level,
-      course.service || booking.service,
+      course.course_type || booking.course_type,
     ]
       .filter(Boolean)
       .join(' · ') || 'requested course'

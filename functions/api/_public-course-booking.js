@@ -70,7 +70,8 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
   return {
     id: course.id,
     course_code: course.course_code,
-    service: course.service,
+    course_type: course.course_type,
+    subject: course.subject,
     level: course.level,
     group_type: course.group_type,
     session_length_minutes: course.session_length_minutes,
@@ -95,7 +96,7 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
   const idFilter = courseId ? `&id=eq.${encodeURIComponent(courseId)}` : '';
 
   const coursesRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,service,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
+    `${SUPABASE_URL}/rest/v1/courses?public_booking_enabled=is.true&status=eq.active&group_type=eq.group&location=in.("teacher's home","classroom")${idFilter}&order=course_code.asc&select=id,course_code,course_type,subject,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_street,location_street_number,location_postal_code,location_city,public_booking_enabled`,
     { headers: H }
   );
   if (!coursesRes.ok) {

@@ -132,7 +132,7 @@ function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) 
   });
   const copy = isGerman
     ? {
-        subject: `Buchungsanfrage erhalten — ${course.level || course.service || 'Gruppenkurs'} · learning with gioia`,
+        subject: `Buchungsanfrage erhalten — ${course.level || course.course_type || 'Gruppenkurs'} · learning with gioia`,
         htmlLang: 'de',
         greeting: `Danke, ${esc(student.first_name || 'du')} :)`,
         intro: 'Wir haben deine Buchungsanfrage erhalten. So geht es weiter:',
@@ -149,7 +149,7 @@ function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) 
         totalPrice: 'Gesamtpreis',
       }
     : {
-        subject: `Booking request received — ${course.level || course.service || 'group course'} · learning with gioia`,
+        subject: `Booking request received — ${course.level || course.course_type || 'group course'} · learning with gioia`,
         htmlLang: 'en',
         greeting: `Thank you, ${esc(student.first_name || 'there')} :)`,
         intro: "We've received your booking request. What happens next:",
@@ -199,7 +199,7 @@ function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) 
             ${steps}
           </ul>
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.course}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.service || 'Group course')} · ${esc(course.level || '—')}</td></tr>
+            <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.course}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.subject || course.course_type || 'Group course')} · ${esc(course.level || '—')}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.starts}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(starts)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.place}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(course.location_text)}</td></tr>
             <tr><td style="padding:6px 0;color:#888;font-size:13px;">${copy.totalPrice}</td><td style="padding:6px 0 6px 24px;font-size:13px;">${esc(formatPrice(total, course.currency))}</td></tr>
@@ -357,10 +357,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const totalPrice = bookingTotal(publicCourse);
   const booking = {
     type: 'direct_course_booking',
-    lessonType: `${course.service || 'Group course'} ${course.level || ''}`.trim(),
+    lessonType: `${course.course_type || 'Group course'} ${course.level || ''}`.trim(),
     course_id: course.id,
     course_code: course.course_code || null,
-    service: course.service || null,
+    course_type: course.course_type || null,
     level: course.level || null,
     first_session_at: publicCourse.first_session_at,
     location_text: publicCourse.location_text,
@@ -403,7 +403,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       method: 'POST',
       headers: { ...H, Prefer: 'return=representation' },
       body: JSON.stringify({
-        service: course.service || null,
+        service: course.course_type || null,
         lead_first: student.first_name,
         lead_last: student.last_name,
         lead_email: student.email,

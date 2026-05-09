@@ -108,7 +108,7 @@ function courseDetailRows(course, sessions, language = 'de') {
   }[language === 'en' ? 'en' : 'de'];
   const rows = [
     [label.code, course.course_code || '-'],
-    [label.subject, course.service || '-'],
+    [label.subject, course.subject || '-'],
     [label.level, course.level || '-'],
     [label.format, course.group_type || '-'],
     [label.lessons, lessons !== null ? String(lessons) : label.open],

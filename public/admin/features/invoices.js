@@ -332,20 +332,9 @@ function titleCase(value) {
 }
 
 function formalCourseLabel(course) {
-  const service = String(course.service || '').toLowerCase();
-  let subject = titleCase(course.service);
-
-  if (service === 'language course') {
-    subject = String(course.level || '')
-      .toUpperCase()
-      .startsWith('CH')
-      ? 'Swiss German'
-      : 'German';
-  } else if (service === 'tutoring' || service === 'gymivorbereitung') {
-    subject = currentStudent?.subjects || 'Nachhilfe';
-  }
-
-  const level = service === 'tutoring' || service === 'gymivorbereitung' ? '' : course.level;
+  const courseType = String(course.course_type || '').toLowerCase();
+  const subject = course.subject || titleCase(course.course_type);
+  const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course.level;
   return [subject, level, course.course_code].filter(Boolean).join(' · ');
 }
 

@@ -21,9 +21,9 @@ const DB_SORTS = {
     asc: 'course_code.asc',
     desc: 'course_code.desc',
   },
-  service: {
-    asc: 'service.asc,course_code.asc',
-    desc: 'service.desc,course_code.asc',
+  course_type: {
+    asc: 'course_type.asc,course_code.asc',
+    desc: 'course_type.desc,course_code.asc',
   },
   level: {
     asc: 'level.asc,course_code.asc',
@@ -88,7 +88,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const order = DB_SORTS[sort]?.[dir] || DB_SORTS.created_at.desc;
   const search = q
-    ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},service.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
+    ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},course_type.ilike.${encodeURIComponent(`*${q}*`)},subject.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
     : '';
   let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=${order}&select=*${search}`;
   if (status !== 'all') coursesUrl += `&status=eq.${status}`;

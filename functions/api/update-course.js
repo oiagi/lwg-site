@@ -20,7 +20,8 @@ import {
 } from './_utils.js';
 
 const ALLOWED_FIELDS = [
-  'service',
+  'course_type',
+  'subject',
   'level',
   'group_type',
   'status',
