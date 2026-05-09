@@ -91,27 +91,31 @@
           <label>Price per person / 60 min <span class="label-hint">(CHF)</span></label>
           <input type="number" id="nc-price-person" min="0" step="0.01" placeholder="e.g. 50">
         </div>
-        <div class="modal-field">
+        <div class="modal-field course-location-field">
           <label>Location</label>
-          <select id="nc-location">
-            <option value="">—</option>
-            <option value="online">Online</option>
-            <option value="teacher's home">Teacher's home</option>
-            <option value="student's home">Student's home</option>
-            <option value="company">Company</option>
-            <option value="classroom">Classroom</option>
-          </select>
+          <div class="course-location-row">
+            <select id="nc-location">
+              <option value="">—</option>
+              <option value="online">Online</option>
+              <option value="teacher's home">Teacher's home</option>
+              <option value="student's home">Student's home</option>
+              <option value="company">Company</option>
+              <option value="classroom">Classroom</option>
+            </select>
+            <button type="button" class="add-participant-btn" id="nc-toggle-address">+ add address</button>
+          </div>
         </div>
         <div class="modal-field">
           <label>First session date &amp; time</label>
           <input type="datetime-local" id="nc-datetime">
         </div>
-        <div class="modal-field full">
-          <button type="button" class="add-participant-btn" id="nc-toggle-address">+ add address</button>
-        </div>
         <div class="modal-field full" id="nc-address-fields" style="display:none;">
           <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
           <div class="modal-grid">
+            <div class="modal-field full">
+              <label>Company name</label>
+              <input type="text" id="nc-loc-company" placeholder="e.g. Acme AG" maxlength="120">
+            </div>
             <div class="modal-field">
               <label>Street</label>
               <input type="text" id="nc-loc-street" placeholder="e.g. Bahnhofstrasse" maxlength="100">

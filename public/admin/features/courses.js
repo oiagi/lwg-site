@@ -50,14 +50,15 @@ export function openBulkInvoiceModal(courseId) {
 
 /* ── Location address helpers ───────────────────────────────────── */
 export function formatCourseAddress(course) {
+  const company = (course.location_company || '').trim();
   const street = (course.location_street || '').trim();
   const num = (course.location_street_number || '').trim();
   const postal = (course.location_postal_code || '').trim();
   const city = (course.location_city || '').trim();
-  if (!street && !num && !postal && !city) return '';
+  if (!company && !street && !num && !postal && !city) return '';
   const line1 = [street, num].filter(Boolean).join(' ');
   const line2 = [postal, city].filter(Boolean).join(' ');
-  return [line1, line2].filter(Boolean).join(', ');
+  return [company, line1, line2].filter(Boolean).join(', ');
 }
 
 function locationSummaryHtml(course) {
@@ -73,6 +74,8 @@ function locationEditorHtml(course) {
   return `
     <div class="loc-address-editor" id="loc-editor-${course.id}" style="display:none;">
       <div class="loc-address-grid">
+        <input type="text" id="loc-company-${course.id}" placeholder="Company"
+          maxlength="120" value="${esc(course.location_company || '')}">
         <input type="text" id="loc-street-${course.id}" placeholder="Street"
           maxlength="100" value="${esc(course.location_street || '')}">
         <input type="text" id="loc-number-${course.id}" placeholder="No."
@@ -107,6 +110,7 @@ export function toggleCourseAddressEditor(courseId) {
 }
 
 export async function saveCourseAddress(courseId) {
+  const company = document.getElementById('loc-company-' + courseId).value.trim();
   const street = document.getElementById('loc-street-' + courseId).value.trim();
   const number = document.getElementById('loc-number-' + courseId).value.trim();
   const postal = document.getElementById('loc-postal-' + courseId).value.trim();
@@ -118,6 +122,7 @@ export async function saveCourseAddress(courseId) {
       method: 'PATCH',
       body: {
         course_id: courseId,
+        location_company: company || null,
         location_street: street || null,
         location_street_number: number || null,
         location_postal_code: postal || null,
@@ -131,6 +136,7 @@ export async function saveCourseAddress(courseId) {
     const updated = await res.json();
     const cached = coursesCache.find((c) => String(c.id) === String(courseId));
     if (cached) {
+      cached.location_company = updated.location_company;
       cached.location_street = updated.location_street;
       cached.location_street_number = updated.location_street_number;
       cached.location_postal_code = updated.location_postal_code;
@@ -145,6 +151,39 @@ export async function saveCourseAddress(courseId) {
       msg.style.color = '#c33';
       msg.style.display = 'inline';
     }
+  }
+}
+
+export async function togglePublicBooking(courseId) {
+  const input = document.getElementById('public-booking-' + courseId);
+  const msg = document.getElementById('public-booking-msg-' + courseId);
+  if (!input) return;
+  input.disabled = true;
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: {
+        course_id: courseId,
+        public_booking_enabled: input.checked,
+      },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Save failed');
+    }
+    const updated = await res.json();
+    const cached = coursesCache.find((c) => String(c.id) === String(courseId));
+    if (cached) cached.public_booking_enabled = !!updated.public_booking_enabled;
+    showMessage(msg, 'saved');
+  } catch (err) {
+    input.checked = !input.checked;
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.style.color = '#c33';
+      msg.style.display = 'inline';
+    }
+  } finally {
+    input.disabled = false;
   }
 }
 
@@ -463,7 +502,14 @@ function renderCourses(courses) {
                 Session length: ${c.session_length_minutes ? esc(String(c.session_length_minutes)) + ' min' : '—'}<br>
                 Price/session: ${formatMoney(c.price_per_session, c.currency)}<br>
                 Price/person/60min: ${formatMoney(c.price_per_person_per_60min, c.currency)}<br>
-                Public booking: ${c.public_booking_enabled ? 'enabled' : 'disabled'}<br>
+                Public booking:
+                <label class="course-inline-check">
+                  <input type="checkbox" id="public-booking-${c.id}"
+                    ${c.public_booking_enabled ? 'checked' : ''}
+                    data-action-change="togglePublicBooking" data-args="${c.id}">
+                  <span>show on public booking page</span>
+                </label>
+                <span class="saved-msg" id="public-booking-msg-${c.id}">saved</span><br>
                 Location: ${locationSummaryHtml(c)}
               </p>
               ${locationEditorHtml(c)}

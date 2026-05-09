@@ -1,5 +1,5 @@
--- Add a structured course location address (street, street number, postal
--- code, city) so the certificate of attendance can show the actual venue
+-- Add a structured course location address (company, street, street number,
+-- postal code, city) so the certificate of attendance can show the actual venue
 -- instead of just the location type ("online", "company", "student's home", …).
 -- The existing courses.location column is kept and continues to hold the
 -- location type; the new columns are all optional.
@@ -14,3 +14,4 @@ ALTER TABLE courses ADD COLUMN IF NOT EXISTS location_street        TEXT;
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS location_street_number TEXT;
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS location_postal_code   TEXT;
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS location_city          TEXT;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS location_company       TEXT;

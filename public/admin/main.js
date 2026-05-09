@@ -29,6 +29,7 @@ import {
   markInvoicePaid,
   toggleCourseAddressEditor,
   saveCourseAddress,
+  togglePublicBooking,
   handleCourseBooking,
 } from './features/courses.js';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
@@ -103,6 +104,7 @@ const actions = {
   submitInvoice,
   toggleCourseAddressEditor,
   saveCourseAddress,
+  togglePublicBooking,
   handleCourseBooking,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,

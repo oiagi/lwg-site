@@ -191,6 +191,7 @@ async function handleSubmit(e) {
   const price = document.getElementById('nc-price').value;
   const pricePerson = document.getElementById('nc-price-person').value;
   const location = document.getElementById('nc-location').value;
+  const locationCompany = document.getElementById('nc-loc-company').value.trim();
   const locationStreet = document.getElementById('nc-loc-street').value.trim();
   const locationNumber = document.getElementById('nc-loc-number').value.trim();
   const locationPostal = document.getElementById('nc-loc-postal').value.trim();
@@ -233,6 +234,7 @@ async function handleSubmit(e) {
         price_per_session: price ? parseFloat(price) : null,
         price_per_person_per_60min: pricePerson ? parseFloat(pricePerson) : null,
         location: location || null,
+        location_company: locationCompany || null,
         location_street: locationStreet || null,
         location_street_number: locationNumber || null,
         location_postal_code: locationPostal || null,
