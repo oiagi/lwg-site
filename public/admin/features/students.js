@@ -444,10 +444,15 @@ export async function sendIntakeLink(studentId, btn) {
     recipients: [{ name: fullName, email: s.email }],
     subject: 'Dein Anmeldeformular / Your intake form · learning with gioia',
     contentHtml,
-    onConfirm: async () => {
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    onConfirm: async ({ language }) => {
       const res = await apiFetch('/api/send-intake-link', {
         method: 'POST',
-        body: { student_id: studentId },
+        body: { student_id: studentId, language },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
