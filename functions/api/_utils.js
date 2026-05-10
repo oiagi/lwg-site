@@ -157,7 +157,10 @@ export async function checkRateLimit(request, { maxRequests = 5, windowSeconds =
     const count = cached ? parseInt(await cached.text(), 10) : 0;
 
     if (count >= maxRequests) {
-      return errorResponse('Too many requests. Please try again later.', 429);
+      return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': String(windowSeconds) },
+      });
     }
 
     const res = new Response(String(count + 1), {

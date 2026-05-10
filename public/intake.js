@@ -121,6 +121,9 @@
   function showFieldError(id, show) {
     const el = document.getElementById(id);
     setErrorVisible(el, show);
+    document
+      .getElementById(id.replace(/^err-/, 'if-'))
+      ?.setAttribute('aria-invalid', show ? 'true' : 'false');
   }
 
   function emailValid(value) {
@@ -139,6 +142,7 @@
     }
     error.textContent = message;
     setErrorVisible(error, show);
+    input.setAttribute('aria-invalid', show ? 'true' : 'false');
   }
 
   function requireValue(id, message) {

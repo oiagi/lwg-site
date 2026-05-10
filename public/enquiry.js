@@ -23,6 +23,9 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   function showErr(id, show) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('is-visible-block', show);
+    document
+      .getElementById(id.replace(/^err-/, ''))
+      ?.setAttribute('aria-invalid', show ? 'true' : 'false');
   }
 
   let valid = true;

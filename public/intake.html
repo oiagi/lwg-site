@@ -34,12 +34,12 @@
       <div class="field-row">
         <div class="field">
           <label for="if-first-name">first name *</label>
-          <input type="text" id="if-first-name" autocomplete="given-name" />
+          <input type="text" id="if-first-name" autocomplete="given-name" aria-describedby="err-first-name" />
           <div class="error" id="err-first-name">Please enter a first name.</div>
         </div>
         <div class="field">
           <label for="if-last-name">last name *</label>
-          <input type="text" id="if-last-name" autocomplete="family-name" />
+          <input type="text" id="if-last-name" autocomplete="family-name" aria-describedby="err-last-name" />
           <div class="error" id="err-last-name">Please enter a last name.</div>
         </div>
       </div>
@@ -57,7 +57,7 @@
 
       <div class="field">
         <label for="if-gender">salutation *</label>
-        <select id="if-gender">
+        <select id="if-gender" aria-describedby="err-gender">
           <option value="" disabled selected></option>
           <option value="female">Ms</option>
           <option value="male">Mr</option>
@@ -68,7 +68,7 @@
 
       <div class="field is-hidden" id="if-gender-note-wrap">
         <label for="if-gender-note">please specify *</label>
-        <input type="text" id="if-gender-note" autocomplete="off" />
+        <input type="text" id="if-gender-note" autocomplete="off" aria-describedby="err-gender-note" />
         <div class="error" id="err-gender-note">Please specify your salutation.</div>
       </div>
 

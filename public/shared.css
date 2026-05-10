@@ -102,6 +102,9 @@ body {
 .is-visible-block {
   display: block !important;
 }
+.error.is-visible-block {
+  animation: fadeIn 0.15s ease;
+}
 
 .is-visible-inline {
   display: inline !important;
