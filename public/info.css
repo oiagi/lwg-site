@@ -130,8 +130,22 @@ html[data-device='mobile'] .pricing-grid {
   grid-template-columns: 1fr;
   gap: 0.6rem;
 }
+html[data-device='mobile'] .cta-row {
+  flex-direction: column;
+}
 
 /* ── Book CTA ────────────────────────────────────────────────── */
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+.cta-row .book-cta {
+  flex: 1;
+  margin-top: 0;
+}
 .book-cta {
   display: block;
   margin-top: 3rem;
@@ -232,4 +246,15 @@ html[data-device='desktop'] .book-cta {
   max-width: 360px;
   margin-left: auto;
   margin-right: auto;
+}
+html[data-device='desktop'] .cta-row {
+  margin-top: 3.5rem;
+  padding-left: calc(180px + 3rem);
+  justify-content: flex-start;
+}
+html[data-device='desktop'] .cta-row .book-cta {
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: none;
 }
