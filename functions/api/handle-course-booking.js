@@ -19,8 +19,6 @@ import { findOrCreateStudent, setStudentStatus } from './_student-utils.js';
 
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const ENQUIRY_FIELDS =
-  'id,status,course_id,student_id,lead_first,lead_last,lead_email,lead_phone,booking_data,contact_data';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -166,7 +164,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const enquiryRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${encodeURIComponent(enquiryId)}&select=${ENQUIRY_FIELDS}`,
+    `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${encodeURIComponent(enquiryId)}&select=*`,
     { headers: H }
   );
   if (!enquiryRes.ok) return errorResponse('Database error');

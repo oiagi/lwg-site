@@ -22,10 +22,6 @@ import {
   parseJsonBody,
 } from './_utils.js';
 
-const SESSION_FIELDS = 'id,course_id,status,calendar_event_id';
-const COURSE_FIELDS = 'id,teacher_id,sessions_completed';
-const TEACHER_FIELDS = 'id,calendar_id,refresh_token,access_token,token_expiry';
-
 export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -39,19 +35,16 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   if (!session_id) return errorResponse('Missing session_id', 400);
 
   // ── Load session ──────────────────────────────────────────────────────
-  const sessRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=${SESSION_FIELDS}`,
-    {
-      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-    }
-  );
+  const sessRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}&select=*`, {
+    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+  });
   const sessions = await sessRes.json();
   if (!sessions.length) return errorResponse('Session not found', 404);
   const session = sessions[0];
 
   // ── Load course ───────────────────────────────────────────────────────
   const courseRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}&select=${COURSE_FIELDS}`,
+    `${SUPABASE_URL}/rest/v1/courses?id=eq.${session.course_id}&select=*`,
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const courses = await courseRes.json();
@@ -60,7 +53,7 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
 
   // ── Load teacher ──────────────────────────────────────────────────────
   const teacherRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=${TEACHER_FIELDS}`,
+    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`,
     { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
   );
   const teachers = await teacherRes.json();

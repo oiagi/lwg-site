@@ -23,8 +23,6 @@ import { getCancellationPolicy, getGroupCancellationPolicy, renderAgbEmailHtml }
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
-const COURSE_FIELDS =
-  'id,course_code,subject,level,group_type,sessions_total,session_length_minutes,price_per_person_per_60min,currency,location,location_company,location_street,location_street_number,location_postal_code,location_city';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -250,9 +248,7 @@ async function loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, courseId) {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const [cr, sr, er] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=${COURSE_FIELDS}`, {
-      headers: H,
-    }),
+    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=*`, { headers: H }),
     fetch(
       `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${courseId}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,status`,
       { headers: H }
