@@ -131,6 +131,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       // Generate access_token for the student sessions portal link
       data.access_token = crypto.randomUUID();
       data.token_created_at = new Date().toISOString();
+      data.intake_token = crypto.randomUUID();
+      data.intake_token_created_at = new Date().toISOString();
       if (!data.source) data.source = 'manual';
       if (data.status === undefined) {
         data.status = 'active';

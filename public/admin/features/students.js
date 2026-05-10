@@ -398,8 +398,8 @@ function renderStudentDetail(container, s) {
       <button class="save-btn" data-action="editStudent" data-args="${s.id}">edit</button>
       <button class="save-btn" data-action="sendIntakeLink" data-args="${s.id}">send intake link</button>
       ${
-        s.access_token
-          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>`
+        s.intake_token || s.access_token
+          ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.intake_token || s.access_token)}">copy intake link</button>`
           : ''
       }
       <span class="detail-action-msg" id="intake-msg-${s.id}"></span>
@@ -455,7 +455,7 @@ function renderRequestSection(s) {
     </div>`;
 }
 
-export async function sendIntakeLink(studentId, btn) {
+export async function sendIntakeLink(studentId, _btn) {
   const s = currentStudentDetail;
   if (!s || String(s.id) !== String(studentId)) {
     alert('Student data not loaded. Please try again.');
@@ -492,6 +492,11 @@ export async function sendIntakeLink(studentId, btn) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      if (body.token && currentStudentDetail) {
+        currentStudentDetail.intake_token = body.token;
+        const copyBtn = document.querySelector('[data-action="copyIntakeLink"]');
+        if (copyBtn) copyBtn.dataset.args = body.token;
+      }
       const msgEl = document.getElementById('intake-msg-' + studentId);
       if (msgEl) {
         msgEl.textContent = 'sent';

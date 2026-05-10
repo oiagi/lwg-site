@@ -23,6 +23,9 @@ import {
 } from './_utils.js';
 import { fetchCourseEvents } from './_calendar.js';
 
+const COURSE_FIELDS = 'id,teacher_id,course_code';
+const TEACHER_FIELDS = 'id,calendar_id,refresh_token,access_token,token_expiry';
+
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -36,17 +39,23 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!course_id) return errorResponse('Missing course_id', 400);
 
   // ── Load course ──────────────────────────────────────────────────────
-  const cr = await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=*`, {
-    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-  });
+  const cr = await fetch(
+    `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=${COURSE_FIELDS}`,
+    {
+      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    }
+  );
   const courses = await cr.json();
   if (!courses.length) return errorResponse('Course not found', 404);
   const course = courses[0];
 
   // ── Load teacher ─────────────────────────────────────────────────────
-  const tr = await fetch(`${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=*`, {
-    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-  });
+  const tr = await fetch(
+    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${course.teacher_id}&select=${TEACHER_FIELDS}`,
+    {
+      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    }
+  );
   const teachers = await tr.json();
   if (!teachers.length || !teachers[0].refresh_token) {
     return errorResponse('Teacher not found or not authorised', 400);
