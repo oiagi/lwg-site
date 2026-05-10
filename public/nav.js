@@ -151,13 +151,9 @@
   });
 
   // ── Ripple effect ───────────────────────────────────────────────
-  function triggerRipple(x, y) {
+  function triggerRipple() {
     const ripple = document.createElement('div');
     ripple.classList.add('ripple');
-    const size = Math.max(window.innerWidth, window.innerHeight) * 2.5;
-    ripple.style.width = ripple.style.height = size + 'px';
-    ripple.style.left = x - size / 2 + 'px';
-    ripple.style.top = y - size / 2 + 'px';
     document.body.appendChild(ripple);
     ripple.addEventListener('animationend', function () {
       ripple.remove();

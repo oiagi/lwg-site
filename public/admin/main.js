@@ -68,7 +68,7 @@ import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js'
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
   const panel = document.getElementById('panel-teachers');
-  if (panel && panel.style.display !== 'none') {
+  if (panel && !panel.classList.contains('is-hidden')) {
     onTeacherSelect();
   }
 });
@@ -234,7 +234,7 @@ async function switchTab(tab, options = {}) {
   await loadPanel(tab);
   const tabs = TABS;
   for (const t of tabs) {
-    document.getElementById('panel-' + t).style.display = tab === t ? 'block' : 'none';
+    document.getElementById('panel-' + t).classList.toggle('is-hidden', tab !== t);
     document.getElementById('tab-' + t).classList.toggle('active', tab === t);
   }
   if (tab === 'courses') {
@@ -278,8 +278,8 @@ window.addEventListener('popstate', () => {
 
 /* ── Show dashboard ──────────────────────────────────────────────── */
 async function showDashboard() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('login-screen').classList.add('is-hidden');
+  document.getElementById('dashboard').classList.add('is-visible-block');
   const { tab, id } = parseHash();
   const activeTab = tab || 'students';
   const options = { replaceHistory: true };
@@ -303,18 +303,18 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 
   try {
     await signIn(email, pwd);
-    document.getElementById('pwd-error').style.display = 'none';
+    document.getElementById('pwd-error').classList.remove('is-visible-block');
     showDashboard();
   } catch {
-    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-error').classList.add('is-visible-block');
   }
 });
 
 /* ── Logout ──────────────────────────────────────────────────────── */
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await signOut();
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('dashboard').classList.remove('is-visible-block');
+  document.getElementById('login-screen').classList.remove('is-hidden');
   document.getElementById('admin-email').value = '';
   document.getElementById('admin-pwd').value = '';
 });

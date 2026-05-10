@@ -73,7 +73,7 @@ function populate(data) {
 function setGenderNote(show) {
   const wrap = document.getElementById('sm-gender-note-wrap');
   if (!wrap) return;
-  wrap.style.display = show ? 'block' : 'none';
+  wrap.classList.toggle('is-hidden', !show);
   if (!show) setValue('sm-gender-note', '');
 }
 
@@ -89,8 +89,8 @@ function setBilling(show) {
   const section = document.getElementById('sm-billing-section');
   const hint = document.getElementById('sm-billing-hint');
   cb.checked = show;
-  section.style.display = show ? 'block' : 'none';
-  if (hint) hint.style.display = show ? 'none' : 'block';
+  section.classList.toggle('is-hidden', !show);
+  if (hint) hint.classList.toggle('is-hidden', show);
 }
 
 function wireBillingToggle() {
@@ -160,14 +160,14 @@ async function handleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('sm-submit');
   const msgEl = document.getElementById('sm-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
 
   const firstName = document.getElementById('sm-first-name').value.trim();
   const lastName = document.getElementById('sm-last-name').value.trim();
   if (!firstName || !lastName) {
     msgEl.textContent = 'First name and last name are required.';
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     return;
   }
 
@@ -183,7 +183,7 @@ async function handleSubmit(e) {
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'save student';
     btn.disabled = false;
   }
@@ -227,6 +227,6 @@ async function handleSubmit(e) {
   wireBillingToggle();
   document.getElementById('student-form').addEventListener('submit', handleSubmit);
 
-  document.getElementById('page-loading').style.display = 'none';
-  document.getElementById('page-content').style.display = '';
+  document.getElementById('page-loading').classList.add('is-hidden');
+  document.getElementById('page-content').classList.remove('is-hidden');
 })();

@@ -56,7 +56,7 @@ export async function openCertificateModal(courseId, coursesCache) {
   updatePreview();
 
   const msg = document.getElementById('cert-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   const btn = document.getElementById('cert-submit');
   btn.textContent = 'send certificates';
@@ -558,7 +558,7 @@ function imageAspectRatio(doc, dataUrl) {
 export async function submitCertificates() {
   const btn = document.getElementById('cert-submit');
   const msg = document.getElementById('cert-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
 
   const opts = getOptions();
   const selected = currentRecipients.filter((r) => r.selected);
@@ -625,7 +625,7 @@ export async function submitCertificates() {
       ? `Sent ${sent}, failed ${failed}. Check console for details.`
       : `Sent ${sent} certificate(s).`;
     msg.className = 'modal-msg ' + (failed ? 'err' : 'success');
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = failed ? 'send certificates' : 'sent';
 
     if (!failed) {
@@ -636,7 +636,7 @@ export async function submitCertificates() {
   } catch (err) {
     msg.textContent = 'Error: ' + (err.message || err);
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'send certificates';
     btn.disabled = false;
   }

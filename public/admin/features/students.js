@@ -180,7 +180,7 @@ function renderStudents(students, totalRequests = null) {
     <div class="student-list-header">
       <span>Ref</span>
       <span>Name</span>
-      <span style="text-align:right;">Status</span>
+      <span class="text-right">Status</span>
     </div>`;
 
   const rows = students
@@ -283,7 +283,7 @@ function renderStudentDetail(container, s) {
           .join('')
       : '<span class="detail-muted">no courses</span>';
 
-  const enrolButton = `<button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}" style="margin-top:0.6rem;">+ enrol in course</button>`;
+  const enrolButton = `<button class="save-btn mt-medium" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">+ enrol in course</button>`;
 
   const fullName = esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—';
   const status = statusLabel(s);
@@ -495,9 +495,9 @@ export async function sendIntakeLink(studentId, btn) {
       const msgEl = document.getElementById('intake-msg-' + studentId);
       if (msgEl) {
         msgEl.textContent = 'sent';
-        msgEl.style.display = 'inline';
+        msgEl.classList.add('is-visible-inline');
         setTimeout(() => {
-          msgEl.style.display = 'none';
+          msgEl.classList.remove('is-visible-inline');
         }, MESSAGE_TIMEOUT_MS);
       }
     },
@@ -509,9 +509,9 @@ export async function markIntakeSeen(studentId, btn) {
   const show = (text) => {
     if (msgEl) {
       msgEl.textContent = text;
-      msgEl.style.display = 'inline';
+      msgEl.classList.add('is-visible-inline');
       setTimeout(() => {
-        msgEl.style.display = 'none';
+        msgEl.classList.remove('is-visible-inline');
       }, MESSAGE_TIMEOUT_MS);
     }
   };
@@ -543,9 +543,9 @@ export function copyIntakeLink(token, btn) {
   const done = (text) => {
     if (msgEl) {
       msgEl.textContent = text;
-      msgEl.style.display = 'inline';
+      msgEl.classList.add('is-visible-inline');
       setTimeout(() => {
-        msgEl.style.display = 'none';
+        msgEl.classList.remove('is-visible-inline');
       }, MESSAGE_TIMEOUT_MS);
     }
   };
@@ -590,7 +590,7 @@ function renderAdminSection(s) {
   const notesBlock = s.progress_notes ? `<p class="detail-note">${esc(s.progress_notes)}</p>` : '';
 
   if (!courses.length) {
-    return `${metaBlock}${notesBlock}<p class="detail-muted" style="margin-top:0.8rem;">No courses enrolled yet.</p>`;
+    return `${metaBlock}${notesBlock}<p class="detail-muted mt-large">No courses enrolled yet.</p>`;
   }
 
   const courseRows = courses
@@ -678,7 +678,7 @@ export async function openEnrolStudentModal(studentId) {
   const btn = document.getElementById('es-submit');
   const createLink = document.getElementById('es-create-course');
 
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   btn.textContent = 'enrol';
   btn.disabled = true;
@@ -706,7 +706,7 @@ export async function openEnrolStudentModal(studentId) {
       msg.textContent =
         'Student is already enrolled in all active courses. Create a new course instead.';
       msg.className = 'modal-msg';
-      msg.style.display = 'block';
+      msg.classList.add('is-visible-block');
       return;
     }
 
@@ -726,7 +726,7 @@ export async function openEnrolStudentModal(studentId) {
     sel.innerHTML = '<option value="">error loading</option>';
     msg.textContent = 'Could not load courses.';
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
   }
 }
 
@@ -743,7 +743,7 @@ export async function submitEnrolStudent() {
 
   btn.disabled = true;
   btn.textContent = 'enrolling…';
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
 
   try {
     const res = await apiFetch('/api/add-enrolment', {
@@ -765,7 +765,7 @@ export async function submitEnrolStudent() {
   } catch (e) {
     msg.textContent = 'Error: ' + e.message;
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'enrol';
     btn.disabled = false;
   }

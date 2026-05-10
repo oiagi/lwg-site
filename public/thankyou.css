@@ -47,6 +47,12 @@ p {
   margin-bottom: 1.2rem;
   letter-spacing: 0.02em;
 }
+.thankyou-link {
+  color: var(--ink);
+}
+.thankyou-link--error {
+  color: #b8492e;
+}
 .home-link {
   display: inline-block;
   margin-top: 1.6rem;

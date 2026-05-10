@@ -17,6 +17,61 @@ import {
 } from './_utils.js';
 
 const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
+const STUDENT_DETAIL_FIELDS = [
+  'id',
+  'first_name',
+  'last_name',
+  'gender',
+  'gender_note',
+  'email',
+  'phone',
+  'postcode',
+  'street',
+  'street_number',
+  'city',
+  'current_level',
+  'progress_notes',
+  'company_id',
+  'active',
+  'status',
+  'source',
+  'created_at',
+  'billing_name',
+  'billing_address',
+  'billing_phone',
+  'billing_email',
+  'billing_street',
+  'billing_street_number',
+  'billing_postcode',
+  'billing_city',
+  'rate_per_session',
+  'currency',
+  'vat_number',
+  'nationality',
+  'native_language',
+  'target_language',
+  'learning_goals',
+  'emergency_contact',
+  'ec_phone',
+  'ec_email',
+  'ec_relationship',
+  'desired_start_date',
+  'referral_source',
+  'payment_method',
+  'course_type',
+  'course_format',
+  'location',
+  'service',
+  'grade',
+  'subjects',
+  'consent_given',
+  'consent_date',
+  'intake_completed_at',
+  'intake_token',
+  'intake_token_created_at',
+  'access_token',
+  'token_created_at',
+].join(',');
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -32,9 +87,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   try {
     // ── Load student ────────────────────────────────────────────────────
-    const stuRes = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=*`, {
-      headers: H,
-    });
+    const stuRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=${STUDENT_DETAIL_FIELDS}`,
+      {
+        headers: H,
+      }
+    );
     const students = await stuRes.json();
     if (!students.length) return errorResponse('Student not found', 404);
     const student = students[0];

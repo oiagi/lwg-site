@@ -58,8 +58,9 @@ export function fmtDateWithEnd(iso, durationMinutes) {
 
 export function showMessage(el, text, ms = MESSAGE_TIMEOUT_MS) {
   el.textContent = text;
-  el.style.display = 'inline';
-  setTimeout(() => (el.style.display = 'none'), ms);
+  el.classList.remove('error-text');
+  el.classList.add('is-visible-inline');
+  setTimeout(() => el.classList.remove('is-visible-inline'), ms);
 }
 
 export function dl(key, val) {

@@ -45,7 +45,7 @@ export async function openInvoiceModal(courseId, studentId, coursesCache) {
   renderBulkInvoiceRecipients([]);
 
   const msg = document.getElementById('inv-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   const btn = document.getElementById('inv-submit');
   btn.textContent = 'send invoice';
@@ -115,7 +115,7 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
   titleEl.textContent = `send invoices — ${course.course_code || 'course'}`;
 
   const msg = document.getElementById('inv-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   const btn = document.getElementById('inv-submit');
   btn.textContent = `send ${currentBulkRecipients.length} invoices`;
@@ -253,14 +253,14 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
   const wrap = document.getElementById('inv-bulk-recipients');
   if (!wrap) return;
   if (!recipients.length) {
-    wrap.style.display = 'none';
+    wrap.classList.add('is-hidden');
     wrap.innerHTML = '';
     return;
   }
   const skippedText = skipped.length
     ? `<p class="label-hint">${skipped.length} student(s) skipped because they already have an open invoice for this course.</p>`
     : '';
-  wrap.style.display = 'block';
+  wrap.classList.remove('is-hidden');
   wrap.innerHTML = `
     <label>Recipients <span class="cs-meta" id="inv-bulk-count"></span></label>
     <div class="invoice-recipient-list">
@@ -605,10 +605,10 @@ function buildPreviewHtml(data) {
       <div class="inv-prev-address">${recipient}</div>
       <table>
         <colgroup>
-          <col style="width:33.5%">
-          <col style="width:22.5%">
-          <col style="width:29.5%">
-          <col style="width:14.5%">
+          <col class="invoice-col-subject">
+          <col class="invoice-col-lessons">
+          <col class="invoice-col-unit">
+          <col class="invoice-col-amount">
         </colgroup>
         <thead>
           <tr>
@@ -807,7 +807,7 @@ async function buildInvoicePdf(data) {
 export async function submitInvoice() {
   const btn = document.getElementById('inv-submit');
   const msg = document.getElementById('inv-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
 
   const data = getInvoiceData();
   const isBulk = currentBulkRecipients.length > 0;
@@ -815,19 +815,19 @@ export async function submitInvoice() {
   if (isBulk && !bulkRecipients.length) {
     msg.textContent = 'Select at least one recipient.';
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     return;
   }
   if (!data.invoiceNumber || !data.recipientEmail || !data.totalAmount) {
     msg.textContent = 'Please fill invoice number, email, and amount.';
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     return;
   }
   if (qrFileType === 'pdf' && !qrPdfBytes) {
     msg.textContent = 'The QR bill PDF is still loading. Please wait a moment.';
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     return;
   }
   if (
@@ -873,7 +873,7 @@ export async function submitInvoice() {
         ? `Sent ${sent}; failed ${failed.length}. ${failed.join(' | ')}`
         : `Sent ${sent} invoices.`;
       msg.className = failed.length ? 'modal-msg err' : 'modal-msg success';
-      msg.style.display = 'block';
+      msg.classList.add('is-visible-block');
       btn.textContent = failed.length ? 'send invoices' : 'sent';
       btn.disabled = failed.length ? false : true;
       if (failed.length) updateBulkInvoiceCount();
@@ -889,13 +889,13 @@ export async function submitInvoice() {
     if (rowMsg) showMessage(rowMsg, 'sent');
     msg.textContent = 'Invoice sent.';
     msg.className = 'modal-msg success';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'sent';
     setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
   } catch (err) {
     msg.textContent = 'Error: ' + (err.message || err);
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = isBulk ? 'send invoices' : 'send invoice';
     btn.disabled = false;
   }

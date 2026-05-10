@@ -36,7 +36,6 @@ async function populateTeacherSelects() {
       if (panel && !panel.querySelector('.auth-note')) {
         const note = document.createElement('p');
         note.className = 'auth-note';
-        note.style.cssText = 'font-size:0.72rem;color:#c0392b;margin-bottom:0.6rem;';
         note.innerHTML =
           'Teacher has not authorised calendar access. ' +
           '<a class="auth-link" href="#" data-teacher-id="' +
