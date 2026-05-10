@@ -17,7 +17,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
-import { findOrCreateStudent, getOrCreateIntakeToken } from './_student-utils.js';
+import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 import {
   isPublicCourseEligible,
   loadPublicCourseCandidates,
@@ -457,7 +457,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   let intakeFormUrl = null;
   if (studentId) {
     try {
-      const token = await getOrCreateIntakeToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
+      const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
       if (token) {
         const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
         intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;

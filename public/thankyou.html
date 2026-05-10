@@ -68,7 +68,11 @@
 
   <script src="/i18n.js"></script>
   <script src="/nav.js"></script>
-    <script src="/thankyou.js"></script>
+  <script>
+    /* Clear session storage so a refresh does not re-trigger anything. */
+    sessionStorage.removeItem('booking');
+    sessionStorage.removeItem('contact');
+  </script>
 
 </body>
 </html>

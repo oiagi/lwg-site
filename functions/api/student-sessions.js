@@ -33,7 +33,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   // ── Find student by access token ─────────────────────────────────────
   const studentRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${encodeURIComponent(token)}&select=id,first_name,last_name,current_level,token_created_at,created_at`,
+    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${token}&select=id,first_name,last_name,current_level,token_created_at,created_at`,
     { headers: H }
   );
   if (!studentRes.ok) return errorResponse('Database error');

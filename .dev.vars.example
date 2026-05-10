@@ -4,9 +4,7 @@ SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-role-key
 
 # Admin dashboard login uses Supabase Auth users, not env vars.
-# Create the admin email/password in Supabase Authentication, then list
-# allowed admin email addresses here. Admin APIs fail closed if this is empty.
-ADMIN_EMAILS=you@example.com
+# Create the admin email/password in Supabase Authentication.
 
 # ── Email (Resend) ────────────────────────────────────────────────
 RESEND_API_KEY=re_your-resend-key

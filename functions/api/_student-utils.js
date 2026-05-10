@@ -40,10 +40,6 @@ export async function findOrCreateStudent(
       source,
       status: 'prospect',
       active: false,
-      access_token: crypto.randomUUID(),
-      token_created_at: new Date().toISOString(),
-      intake_token: crypto.randomUUID(),
-      intake_token_created_at: new Date().toISOString(),
     }),
   });
   if (!res.ok) throw new Error(`Student creation failed: ${await res.text()}`);
@@ -52,7 +48,7 @@ export async function findOrCreateStudent(
 }
 
 /**
- * Ensure a student has a sessions access_token. Returns the token string.
+ * Ensure a student has an access_token. Returns the token string.
  * If none exists, generates and saves one.
  */
 export async function getOrCreateStudentToken(supabaseUrl, serviceKey, studentId) {
@@ -76,74 +72,6 @@ export async function getOrCreateStudentToken(supabaseUrl, serviceKey, studentId
     }
   );
   return patch.ok ? token : null;
-}
-
-/**
- * Ensure a student has a dedicated intake token. Existing students may only
- * have access_token from before intake links were split from sessions links,
- * so callers can fall back to access_token while migration emails catch up.
- */
-export async function getOrCreateIntakeToken(supabaseUrl, serviceKey, studentId) {
-  const H = supabaseHeaders(serviceKey);
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}&select=intake_token,access_token`,
-    { headers: H }
-  );
-  if (!res.ok) return null;
-  const rows = await res.json();
-  const existing = rows[0]?.intake_token;
-  if (existing) return existing;
-
-  const token = crypto.randomUUID();
-  const patch = await fetch(
-    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}`,
-    {
-      method: 'PATCH',
-      headers: H,
-      body: JSON.stringify({
-        intake_token: token,
-        intake_token_created_at: new Date().toISOString(),
-      }),
-    }
-  );
-  return patch.ok ? token : rows[0]?.access_token || null;
-}
-
-/**
- * Replace a student's intake token. Use after one-time intake form submission
- * so a completed intake URL no longer remains a reusable credential, without
- * invalidating the student's sessions portal link.
- */
-export async function rotateIntakeToken(supabaseUrl, serviceKey, studentId) {
-  const token = crypto.randomUUID();
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}`,
-    {
-      method: 'PATCH',
-      headers: supabaseHeaders(serviceKey),
-      body: JSON.stringify({
-        intake_token: token,
-        intake_token_created_at: new Date().toISOString(),
-      }),
-    }
-  );
-  return res.ok ? token : null;
-}
-
-/**
- * Replace a student's sessions access token.
- */
-export async function rotateStudentToken(supabaseUrl, serviceKey, studentId) {
-  const token = crypto.randomUUID();
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}`,
-    {
-      method: 'PATCH',
-      headers: supabaseHeaders(serviceKey),
-      body: JSON.stringify({ access_token: token, token_created_at: new Date().toISOString() }),
-    }
-  );
-  return res.ok ? token : null;
 }
 
 /**
