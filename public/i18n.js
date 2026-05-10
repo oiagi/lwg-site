@@ -634,6 +634,7 @@
     },
     enquiryPhone: { en: 'phone', de: 'Telefon' },
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },
+    enquirySubmitting: { en: 'sending…', de: 'Wird gesendet…' },
     sessionsHeading: { en: 'your sessions', de: 'Deine Lektionen' },
     noSessionLink: {
       en: 'No session link provided.<br>Please use the link sent to you by your teacher.',
