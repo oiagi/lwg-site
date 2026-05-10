@@ -173,6 +173,7 @@ async function handleSubmit(e) {
 
   btn.textContent = 'saving…';
   btn.disabled = true;
+  btn.dataset.loading = '';
 
   const body = buildBody();
   try {
@@ -180,11 +181,12 @@ async function handleSubmit(e) {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
     window.location.href = '/admin#students';
-  } catch (err) {
-    msgEl.textContent = 'Error: ' + err.message;
+  } catch {
+    msgEl.textContent = 'Something went wrong. Please try again.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     btn.textContent = 'save student';
+    delete btn.dataset.loading;
     btn.disabled = false;
   }
 }

@@ -81,7 +81,9 @@ export async function loadStudents(status = 'active') {
       ['active', 'all', 'inactive'].filter((s) => s !== status).forEach(fetchStudentFlagCount);
     }
   } catch {
-    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+    list.innerHTML =
+      '<div class="loading-state">Could not load students. <button type="button" class="inline-link-btn">Retry</button></div>';
+    list.querySelector('button').addEventListener('click', () => loadStudents(status));
   }
 }
 
@@ -268,7 +270,11 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
       if (row) row.scrollIntoView({ block: 'nearest' });
     }
   } catch {
-    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+    list.innerHTML =
+      '<div class="loading-state">Could not load students. <button type="button" class="inline-link-btn">Retry</button></div>';
+    list
+      .querySelector('button')
+      .addEventListener('click', () => loadStudentsKeepingContext(status, keepSelectedId));
   }
 }
 
