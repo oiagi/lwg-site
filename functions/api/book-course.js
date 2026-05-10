@@ -367,7 +367,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     spots_remaining_at_booking: publicCourse.spots_remaining,
     total_price: totalPrice,
     currency: publicCourse.currency,
-    payment_note: 'Payment after personal confirmation.',
     language,
   };
   const contact = {
