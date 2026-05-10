@@ -1,3 +1,5 @@
+// Translation map: nav/common are shared; pages is keyed by page path, each entry has title/description/text.
+// text keys are CSS selectors; values are { en, de } strings (may contain HTML).
 (function () {
   'use strict';
 

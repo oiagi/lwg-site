@@ -1,3 +1,4 @@
+// Each entry: { name, function, contexts, meaning, meaningDe, examples[{type, de, en}], tip, tipDe, category }
 (function () {
   'use strict';
 
