@@ -182,7 +182,11 @@
           en: 'per person / 60 min',
           de: 'pro Person / 60 Min.',
         },
-        '.book-cta': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
+        '.cta-row .book-cta:first-child': {
+          en: 'open group courses ->',
+          de: 'offene Gruppenkurse ->',
+        },
+        '.cta-row .book-cta:last-child': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
       },
     },
     '/enquiry.html': {
@@ -268,9 +272,9 @@
         '#label-personal': { en: 'personal information', de: 'Persönliche Angaben' },
         '#label-emergency': { en: 'emergency contact', de: 'Notfallkontakt' },
         '#label-billing': { en: 'billing', de: 'Rechnung' },
-        '#booking-note': {
-          en: 'Your spot is final once we confirm your booking. After that, we will send the payment request for your course.',
-          de: 'Dein Platz ist nach unserer Bestätigung definitiv. Danach schicken wir dir die Rechnung für deinen Kurs.',
+        '#booking-payment-note': {
+          en: "What happens after your booking? We will review your request and confirm your spot. Then we will send you the invoice for your booking. Once we receive your payment you're all booked in.",
+          de: 'Was passiert nach deiner Buchungsanfrage? Wir prüfen deine Anfrage und bestätigen deinen Platz. Dann schicken wir dir die Rechnung für deine Buchung. Sobald deine Zahlung eingegangen ist, bist du fix dabei.',
         },
         'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -610,10 +614,6 @@
     groupCoursesAvailable: { en: 'available', de: 'frei' },
     groupCoursesMaxPeople: { en: 'max. 5 people', de: 'max. 5 Personen' },
     groupCoursesPerPerson: { en: 'per person / 60min', de: 'pro Person / 60 Min.' },
-    groupCoursesPayment: {
-      en: 'payment after confirmation',
-      de: 'Zahlung erst nach Bestätigung',
-    },
     groupCoursesBook: { en: 'request spot ->', de: 'Platz anfragen ->' },
     groupCoursesSelected: { en: 'selected course', de: 'Ausgewählter Kurs' },
     groupCoursesSubmitting: { en: 'sending...', de: 'Wird gesendet...' },

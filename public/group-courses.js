@@ -106,7 +106,6 @@ renderAgbConsent();
           <div class="course-item__side">
             ${price ? `<p class="course-price">${esc(price)}</p>` : ''}
             <p class="course-note">${t('maxPeople')}</p>
-            <p class="course-note">${t('payment')}</p>
             <button type="button" class="course-book-btn" data-course-id="${esc(course.id)}">${t('book')}</button>
           </div>
         </article>`;
@@ -138,7 +137,7 @@ renderAgbConsent();
     document.getElementById('booking-title').textContent =
       `${t('selected')}: ${course.level || ''}`;
     document.getElementById('booking-note').textContent =
-      `${course.service || 'Group course'} - ${fmtDate(course.first_session_at)} - ${course.location_text}. ${t('payment')}.`;
+      `${course.service || 'Group course'} - ${fmtDate(course.first_session_at)} - ${course.location_text}.`;
     bookingPanel.hidden = false;
     successState.hidden = true;
     bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
