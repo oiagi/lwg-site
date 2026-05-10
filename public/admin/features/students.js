@@ -284,6 +284,9 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
     if (!res.ok) throw new Error();
     const students = await res.json();
     const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    filterFlagCounts[status] =
+      totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
+    updateFilterBadges();
     renderStudents(students, totalRequests);
     if (keepSelectedId) {
       const row = document.getElementById('student-' + keepSelectedId);
@@ -486,6 +489,8 @@ function renderRequestSection(s) {
               : enquiry.untreated
                 ? `<div class="student-request-actions">
                      <button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">enrol</button>
+                     <button class="save-btn secondary-btn" data-action="markStudentEnquiryTreated" data-args="${esc(enquiry.id)},${esc(s.id)}">mark treated</button>
+                     <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
                    </div>`
                 : '';
           return `
@@ -560,6 +565,45 @@ export async function handleStudentRequestBooking(enquiryId, action, courseId, s
       button.disabled = false;
     });
     if (btn) btn.textContent = action === 'approve' ? 'approve' : 'decline';
+  }
+}
+
+export async function markStudentEnquiryTreated(enquiryId, studentId, btn) {
+  if (!confirm('Mark this enquiry as treated without enrolling the student?')) return;
+
+  const msg = document.getElementById('student-request-msg-' + enquiryId);
+  const row = btn?.closest('.student-request-row');
+  const buttons = row ? [...row.querySelectorAll('button')] : btn ? [btn] : [];
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+  if (btn) btn.textContent = 'saving...';
+
+  try {
+    const res = await apiFetch('/api/mark-enquiry-treated', {
+      method: 'POST',
+      body: { enquiry_id: enquiryId, student_id: studentId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    if (msg) {
+      msg.textContent = 'treated';
+      msg.classList.add('is-visible-inline');
+    }
+    selectedStudentId = studentId;
+    await loadStudentsKeepingContext(currentStudentFilter, studentId);
+    await fetchAndRenderStudent(studentId);
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.classList.add('error-text', 'is-visible-inline');
+    } else {
+      alert('Could not mark enquiry treated: ' + err.message);
+    }
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+    if (btn) btn.textContent = 'mark treated';
   }
 }
 
