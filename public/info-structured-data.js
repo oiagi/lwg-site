@@ -1,7 +1,80 @@
 (() => {
   const script = document.createElement('script');
   script.type = 'application/ld+json';
-  script.textContent =
-    '[\n    {\n      "@context": "https://schema.org",\n      "@type": "Course",\n      "name": "German Language Course",\n      "description": "German language courses for all levels, taught by native speakers with linguistics degrees.",\n      "provider": {\n        "@type": "Organization",\n        "name": "Learning with Gioia",\n        "url": "https://learningwithgioia.ch"\n      },\n      "inLanguage": "de",\n      "locationCreated": {\n        "@type": "Place",\n        "address": { "@type": "PostalAddress", "addressLocality": "Zürich", "addressCountry": "CH" }\n      }\n    },\n    {\n      "@context": "https://schema.org",\n      "@type": "Course",\n      "name": "English Language Course",\n      "description": "English language courses for all levels, taught by native speakers with linguistics degrees.",\n      "provider": {\n        "@type": "Organization",\n        "name": "Learning with Gioia",\n        "url": "https://learningwithgioia.ch"\n      },\n      "inLanguage": "en",\n      "locationCreated": {\n        "@type": "Place",\n        "address": { "@type": "PostalAddress", "addressLocality": "Zürich", "addressCountry": "CH" }\n      }\n    },\n    {\n      "@context": "https://schema.org",\n      "@type": "Course",\n      "name": "Exam Preparation",\n      "description": "Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe language exams.",\n      "provider": {\n        "@type": "Organization",\n        "name": "Learning with Gioia",\n        "url": "https://learningwithgioia.ch"\n      },\n      "locationCreated": {\n        "@type": "Place",\n        "address": { "@type": "PostalAddress", "addressLocality": "Zürich", "addressCountry": "CH" }\n      }\n    }\n  ]';
+  script.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Course',
+        name: 'German Language Course',
+        description:
+          'German language courses for all levels, taught by native speakers with linguistics degrees.',
+        provider: {
+          '@type': 'Organization',
+          name: 'Learning with Gioia',
+          url: 'https://learningwithgioia.ch',
+        },
+        inLanguage: 'de',
+        hasCourseInstance: {
+          '@type': 'CourseInstance',
+          courseMode: 'onsite',
+          location: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Zürich',
+              addressCountry: 'CH',
+            },
+          },
+        },
+      },
+      {
+        '@type': 'Course',
+        name: 'English Language Course',
+        description:
+          'English language courses for all levels, taught by native speakers with linguistics degrees.',
+        provider: {
+          '@type': 'Organization',
+          name: 'Learning with Gioia',
+          url: 'https://learningwithgioia.ch',
+        },
+        inLanguage: 'en',
+        hasCourseInstance: {
+          '@type': 'CourseInstance',
+          courseMode: 'onsite',
+          location: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Zürich',
+              addressCountry: 'CH',
+            },
+          },
+        },
+      },
+      {
+        '@type': 'Course',
+        name: 'Exam Preparation',
+        description: 'Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe language exams.',
+        provider: {
+          '@type': 'Organization',
+          name: 'Learning with Gioia',
+          url: 'https://learningwithgioia.ch',
+        },
+        hasCourseInstance: {
+          '@type': 'CourseInstance',
+          courseMode: 'onsite',
+          location: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Zürich',
+              addressCountry: 'CH',
+            },
+          },
+        },
+      },
+    ],
+  });
   document.head.appendChild(script);
 })();
