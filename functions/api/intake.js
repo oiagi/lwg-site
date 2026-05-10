@@ -1,11 +1,11 @@
 // functions/api/intake.js
-// GET  /api/intake?token=<access_token>   → returns the student's intake fields
+// GET  /api/intake?token=<intake_token>   → returns the student's intake fields
 // POST /api/intake                        → updates the student's intake fields
 //   body: { token, first_name, last_name, email?, phone?, street?, ... }
 //
-// The student's access_token (also used for /sessions.html) acts as the
-// credential — no admin login required. The token is the same one that
-// expires after 90 days, so an admin can revoke a link by rotating it.
+// The student's intake_token acts as the credential — no admin login required.
+// Legacy access_token links are still accepted while older emails are around,
+// but rotating intake links no longer invalidates /sessions.html links.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY
@@ -18,6 +18,7 @@ import {
   checkRateLimit,
   parseJsonBody,
 } from './_utils.js';
+import { rotateIntakeToken } from './_student-utils.js';
 
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ADMIN_EMAIL = 'info@learningwithgioia.ch';
@@ -48,6 +49,16 @@ const RETURN_FIELDS = [
   'billing_city',
 ];
 
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function emailValid(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
 }
@@ -59,17 +70,25 @@ function missingRequired(body, fields) {
 async function loadStudentByToken(env, token) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
-  const select = ['id', 'token_created_at', 'created_at', ...RETURN_FIELDS].join(',');
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${encodeURIComponent(token)}&select=${select}`,
-    { headers: H }
-  );
+  const select = [
+    'id',
+    'intake_token_created_at',
+    'token_created_at',
+    'created_at',
+    ...RETURN_FIELDS,
+  ].join(',');
+  const encodedToken = encodeURIComponent(token);
+  const tokenFilter = `or=(intake_token.eq.${encodedToken},access_token.eq.${encodedToken})`;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/students?${tokenFilter}&select=${select}`, {
+    headers: H,
+  });
   if (!res.ok) return { error: 'Database error', status: 500 };
   const rows = await res.json();
   if (!rows.length) return { error: 'Invalid token', status: 404 };
   const student = rows[0];
 
-  const tokenDate = student.token_created_at || student.created_at;
+  const tokenDate =
+    student.intake_token_created_at || student.token_created_at || student.created_at;
   if (tokenDate) {
     const ageMs = Date.now() - new Date(tokenDate).getTime();
     if (ageMs > TOKEN_MAX_AGE_MS) {
@@ -209,12 +228,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Database error');
   }
 
-  // Best-effort: record completion timestamp (requires intake_completed_at column in students table)
+  // Best-effort: record completion timestamp and rotate the intake bearer link
+  // so the completed intake URL cannot be reused indefinitely.
   fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${student.id}`, {
     method: 'PATCH',
     headers: H,
     body: JSON.stringify({ intake_completed_at: new Date().toISOString() }),
   }).catch(() => {});
+  rotateIntakeToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, student.id).catch(() => {});
 
   // Best-effort: notify admin
   if (RESEND_API_KEY) {
@@ -237,11 +258,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
             <tr>
               <td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;">Student</td>
-              <td style="padding:6px 0 6px 20px;font-size:13px;">${studentName}</td>
+              <td style="padding:6px 0 6px 20px;font-size:13px;">${esc(studentName)}</td>
             </tr>
             <tr>
               <td style="padding:6px 0;color:#888;font-size:13px;">Email</td>
-              <td style="padding:6px 0 6px 20px;font-size:13px;">${studentEmail}</td>
+              <td style="padding:6px 0 6px 20px;font-size:13px;">${esc(studentEmail)}</td>
             </tr>
           </table>
         </td></tr>
@@ -260,7 +281,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         from: FROM_EMAIL,
         to: [ADMIN_EMAIL],
         reply_to: [ADMIN_EMAIL],
-        subject: `Intake form completed — ${studentName}`,
+        subject: `Intake form completed — ${studentName.replace(/[\r\n]+/g, ' ').slice(0, 120)}`,
         html,
       }),
     }).catch(() => {});

@@ -76,6 +76,20 @@ export async function requireAdminAuth(request, env) {
   if (!user) {
     return errorResponse('Unauthorised', 401);
   }
+
+  const allowedEmails = (env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+  if (!allowedEmails.length) {
+    return errorResponse('Admin allowlist is not configured', 403);
+  }
+
+  const userEmail = user.email?.trim().toLowerCase();
+  if (!userEmail || !allowedEmails.includes(userEmail)) {
+    return errorResponse('Forbidden', 403);
+  }
+
   return null;
 }
 

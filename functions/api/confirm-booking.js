@@ -39,6 +39,9 @@ import {
   setStudentStatus,
 } from './_student-utils.js';
 
+const ENQUIRY_FIELDS = 'id,booking_data,contact_data';
+const TEACHER_FIELDS = 'id,name,calendar_id,refresh_token,access_token,token_expiry';
+
 // ── Course code helpers ──────────────────────────────────────────────
 
 function getGroupType(booking) {
@@ -101,9 +104,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   let booking = booking_data || {},
     contact = contact_data || {};
   if (enquiry_id) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}&select=*`, {
-      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-    });
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${enquiry_id}&select=${ENQUIRY_FIELDS}`,
+      {
+        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+      }
+    );
     const rows = await r.json();
     if (!rows.length) return errorResponse('Enquiry not found', 404);
     booking = rows[0].booking_data || {};
@@ -111,9 +117,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   // ── Load teacher ────────────────────────────────────────────────────
-  const tr = await fetch(`${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}&select=*`, {
-    headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-  });
+  const tr = await fetch(
+    `${SUPABASE_URL}/rest/v1/teachers?id=eq.${teacher_id}&select=${TEACHER_FIELDS}`,
+    {
+      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+    }
+  );
   const teachers = await tr.json();
   if (!teachers.length) return errorResponse('Teacher not found', 404);
   const teacher = teachers[0];

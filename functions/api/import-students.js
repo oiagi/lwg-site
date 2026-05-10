@@ -129,6 +129,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         if (!insert.source) insert.source = 'import';
         insert.access_token = crypto.randomUUID();
         insert.token_created_at = new Date().toISOString();
+        insert.intake_token = crypto.randomUUID();
+        insert.intake_token_created_at = new Date().toISOString();
         const res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
           method: 'POST',
           headers: headersWithRepr,

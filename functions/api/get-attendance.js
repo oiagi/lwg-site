@@ -19,6 +19,8 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
+const ATTENDANCE_FIELDS = 'id,session_id,student_id,present,notes,created_at,updated_at';
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -36,7 +38,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     // ── By session ──────────────────────────────────────────────────────
     if (sessionId) {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/attendance?session_id=eq.${sessionId}&select=*`,
+        `${SUPABASE_URL}/rest/v1/attendance?session_id=eq.${sessionId}&select=${ATTENDANCE_FIELDS}`,
         { headers: H }
       );
       if (!res.ok) return errorResponse('Database error');
@@ -47,7 +49,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     // ── By student ──────────────────────────────────────────────────────
     if (studentId) {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/attendance?student_id=eq.${studentId}&order=created_at.desc&select=*`,
+        `${SUPABASE_URL}/rest/v1/attendance?student_id=eq.${studentId}&order=created_at.desc&select=${ATTENDANCE_FIELDS}`,
         { headers: H }
       );
       if (!res.ok) return errorResponse('Database error');
@@ -68,9 +70,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
       // Load attendance for all sessions
       const filter = sessionIds.map((id) => `session_id.eq.${id}`).join(',');
-      const attRes = await fetch(`${SUPABASE_URL}/rest/v1/attendance?or=(${filter})&select=*`, {
-        headers: H,
-      });
+      const attRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/attendance?or=(${filter})&select=${ATTENDANCE_FIELDS}`,
+        {
+          headers: H,
+        }
+      );
       const attendance = attRes.ok ? await attRes.json() : [];
 
       // Group by session

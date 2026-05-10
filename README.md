@@ -40,13 +40,15 @@ This runs `wrangler pages dev public` which serves static files from `public/` a
 ## Environment variables
 
 See `.dev.vars.example` for the full list. Admin dashboard email/passwords are
-managed as Supabase Auth users, not environment variables.
+managed as Supabase Auth users, and admin API access is limited to the
+comma-separated `ADMIN_EMAILS` allowlist.
 
 | Variable               | Purpose                                   |
 | ---------------------- | ----------------------------------------- |
 | `SUPABASE_URL`         | Supabase project URL                      |
 | `SUPABASE_ANON_KEY`    | Supabase anonymous key (frontend)         |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key (API functions) |
+| `ADMIN_EMAILS`         | Comma-separated admin email allowlist     |
 | `RESEND_API_KEY`       | Resend email service key                  |
 | `GOOGLE_CLIENT_ID`     | Google OAuth client ID (calendar)         |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                |

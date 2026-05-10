@@ -36,6 +36,35 @@ const DB_SORTS = {
 };
 
 const DERIVED_SORTS = new Set(['student_count', 'sessions_remaining']);
+const COURSE_FIELDS = [
+  'id',
+  'course_code',
+  'course_type',
+  'subject',
+  'level',
+  'group_type',
+  'status',
+  'teacher_id',
+  'participant_names',
+  'participants',
+  'sessions_total',
+  'sessions_completed',
+  'session_length_minutes',
+  'price_per_session',
+  'price_per_person_per_60min',
+  'currency',
+  'location',
+  'location_company',
+  'location_street',
+  'location_street_number',
+  'location_postal_code',
+  'location_city',
+  'public_booking_enabled',
+  'course_confirmation_sent_at',
+  'created_at',
+].join(',');
+const SESSION_FIELDS =
+  'id,course_id,teacher_id,scheduled_at,duration_minutes,status,calendar_event_id,created_at';
 
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
@@ -90,7 +119,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const search = q
     ? `&or=(course_code.ilike.${encodeURIComponent(`*${q}*`)},course_type.ilike.${encodeURIComponent(`*${q}*`)},subject.ilike.${encodeURIComponent(`*${q}*`)},level.ilike.${encodeURIComponent(`*${q}*`)},group_type.ilike.${encodeURIComponent(`*${q}*`)},location.ilike.${encodeURIComponent(`*${q}*`)},status.ilike.${encodeURIComponent(`*${q}*`)})`
     : '';
-  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=${order}&select=*${search}`;
+  let coursesUrl = `${SUPABASE_URL}/rest/v1/courses?order=${order}&select=${COURSE_FIELDS}${search}`;
   if (status !== 'all') coursesUrl += `&status=eq.${status}`;
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -108,7 +137,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const [sessRes, enrolRes, certRes, pendingRes] = await Promise.all([
       fetch(
-        `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
+        `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=${SESSION_FIELDS}`,
         { headers: H }
       ),
       fetch(

@@ -13,7 +13,7 @@ import {
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
-import { getOrCreateStudentToken, getStudentLanguage } from './_student-utils.js';
+import { getOrCreateIntakeToken, getStudentLanguage, rotateIntakeToken } from './_student-utils.js';
 
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
@@ -106,7 +106,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!student) return errorResponse('Student not found', 404);
   if (!student.email) return errorResponse('Student has no email address', 400);
 
-  const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
+  const token =
+    (await rotateIntakeToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id)) ||
+    (await getOrCreateIntakeToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id));
   if (!token) return errorResponse('Could not generate intake link', 500);
 
   const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
@@ -135,5 +137,5 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Could not send email', 502);
   }
 
-  return jsonResponse({ success: true });
+  return jsonResponse({ success: true, token });
 }, 'send-intake-link');

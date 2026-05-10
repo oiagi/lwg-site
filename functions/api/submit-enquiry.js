@@ -3,7 +3,7 @@
 // Body: { booking: {...}, contact: {...} }
 //
 // Environment variables (set in Cloudflare Pages → Settings → Environment variables):
-//   SUPABASE_URL         — https://eedxxgbsxnuxarwiommo.supabase.co
+//   SUPABASE_URL         — Supabase project URL
 //   SUPABASE_SERVICE_KEY — service_role key
 //   RESEND_API_KEY       — Resend API key
 
@@ -18,7 +18,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
-import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
+import { findOrCreateStudent, getOrCreateIntakeToken } from './_student-utils.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -314,7 +314,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ student_id: studentId }),
       });
-      const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
+      const token = await getOrCreateIntakeToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
       if (token) {
         const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
         intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
