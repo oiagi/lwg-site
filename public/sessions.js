@@ -54,6 +54,7 @@ async function load() {
       const completed = course.sessions_completed || 0;
       const remaining = total ? total - completed : null;
       const pct = total ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+      const pctStep = Math.min(100, Math.round(pct / 5) * 5);
 
       const countLine = total
         ? `${completed} of ${total} ${rt('completedOf')} · ${remaining} ${rt('remaining')}`
@@ -82,8 +83,8 @@ async function load() {
         <div class="course-block">
           <p class="course-code">${course.course_code} · ${course.service || ''} ${course.level ? '· ' + course.level : ''}</p>
           <p class="session-count">${countLine}</p>
-          ${total ? `<div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>` : ''}
-          ${sessionRows || `<p style="font-size:0.82rem;color:#aaa;">${rt('noSessions')}</p>`}
+          ${total ? `<div class="progress-bar-wrap"><div class="progress-bar progress-bar--${pctStep}"></div></div>` : ''}
+          ${sessionRows || `<p class="sessions-empty-note">${rt('noSessions')}</p>`}
           ${rebookNote}
         </div>`;
     });

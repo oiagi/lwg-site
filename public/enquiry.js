@@ -22,7 +22,7 @@ document.addEventListener('lwg:language-applied', updatePhoneLabel);
 document.getElementById('submit-btn').addEventListener('click', async () => {
   function showErr(id, show) {
     const el = document.getElementById(id);
-    if (el) el.style.display = show ? 'block' : 'none';
+    if (el) el.classList.toggle('is-visible-block', show);
   }
 
   let valid = true;
@@ -53,7 +53,9 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   if (!preferredContactVal) valid = false;
 
   if (!valid) {
-    const first = [...document.querySelectorAll('.error')].find((e) => e.style.display === 'block');
+    const first = [...document.querySelectorAll('.error')].find((e) =>
+      e.classList.contains('is-visible-block')
+    );
     if (first) {
       first.scrollIntoView({ behavior: 'smooth', block: 'center' });
       const input = first.closest('.field')?.querySelector('input, select, textarea');
@@ -94,6 +96,6 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   } catch {
     delete btn.dataset.loading;
     btn.disabled = false;
-    document.getElementById('submit-error').style.display = 'block';
+    document.getElementById('submit-error').classList.add('is-visible-block');
   }
 });

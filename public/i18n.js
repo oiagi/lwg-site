@@ -353,14 +353,14 @@
           de: 'Wir haben deine Nachricht erhalten und melden uns bald, um deine Anfrage zu besprechen.',
         },
         '#success-state p:nth-of-type(2)': {
-          en: 'If you have any questions in the meantime, write to us at <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
-          de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a href="mailto:info@learningwithgioia.ch" style="color:#1a1614;">info@learningwithgioia.ch</a>.',
+          en: 'If you have any questions in the meantime, write to us at <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         },
         '#success-state .home-link': { en: 'back to home', de: 'Zurück zur Startseite' },
         '#error-state h1': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
         '#error-state p': {
-          en: 'Your enquiry may not have been received. Please try again or email us directly at <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
-          de: 'Deine Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuche es erneut oder schreibe uns direkt an <a href="mailto:info@learningwithgioia.ch" style="color:#b8492e;">info@learningwithgioia.ch</a>.',
+          en: 'Your enquiry may not have been received. Please try again or email us directly at <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Deine Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuche es erneut oder schreibe uns direkt an <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         },
         '#error-state .home-link': { en: 'try again', de: 'Erneut versuchen' },
       },

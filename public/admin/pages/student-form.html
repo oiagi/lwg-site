@@ -20,7 +20,7 @@
     <p class="loading-state">loading…</p>
   </div>
 
-  <main id="page-content" class="page-form-shell" style="display:none;">
+  <main id="page-content" class="page-form-shell is-hidden">
     <a href="/admin#students" class="page-form-back">← back to students</a>
     <h1 id="student-form-title">new student</h1>
 
@@ -41,7 +41,7 @@
               <option value="other">other</option>
             </select>
           </div>
-          <div class="modal-field" id="sm-gender-note-wrap" style="display:none;">
+          <div class="modal-field is-hidden" id="sm-gender-note-wrap">
             <label>Please specify</label>
             <input type="text" id="sm-gender-note" placeholder="Preferred address">
           </div>
@@ -71,7 +71,7 @@
             <input type="checkbox" id="sm-billing-separate"> differs from student address
           </label>
         </div>
-        <div id="sm-billing-section" style="display:none;">
+        <div id="sm-billing-section" class="is-hidden">
           <div class="modal-grid">
             <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
             <div class="modal-field"><label>Billing phone</label><input type="tel" id="sm-billing-phone" placeholder="+41…"></div>
@@ -82,7 +82,7 @@
             <div class="modal-field"><label>Billing city</label><input type="text" id="sm-billing-city" autocomplete="billing address-level2" placeholder="e.g. Zürich"></div>
           </div>
         </div>
-        <p class="label-hint" id="sm-billing-hint" style="margin-top:0.4rem;">Student's personal address will be used for billing.</p>
+        <p class="label-hint mt-small" id="sm-billing-hint">Student's personal address will be used for billing.</p>
       </section>
 
       <section class="modal-section">

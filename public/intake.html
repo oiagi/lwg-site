@@ -22,7 +22,7 @@
   <div class="form-container" id="main">
     <div id="intake-loading" class="loading-state">loading…</div>
 
-    <div id="intake-content" style="display:none;">
+    <div id="intake-content" class="is-hidden">
       <h1>your details</h1>
       <p class="intake-intro">
         Please fill in or confirm the information below so we can keep your records up to date.
@@ -66,29 +66,29 @@
         <div class="error" id="err-gender">Please select a salutation.</div>
       </div>
 
-      <div class="field" id="if-gender-note-wrap" style="display:none;">
+      <div class="field is-hidden" id="if-gender-note-wrap">
         <label for="if-gender-note">please specify *</label>
         <input type="text" id="if-gender-note" autocomplete="off" />
         <div class="error" id="err-gender-note">Please specify your salutation.</div>
       </div>
 
       <div class="field-row">
-        <div class="field" style="flex:2;">
+        <div class="field field--grow-2">
           <label for="if-street">street *</label>
           <input type="text" id="if-street" autocomplete="address-line1" />
         </div>
-        <div class="field" style="flex:1;">
+        <div class="field field--grow-1">
           <label for="if-street-number">number *</label>
           <input type="text" id="if-street-number" />
         </div>
       </div>
 
       <div class="field-row">
-        <div class="field" style="flex:1;">
+        <div class="field field--grow-1">
           <label for="if-postcode">postcode *</label>
           <input type="text" id="if-postcode" autocomplete="postal-code" />
         </div>
-        <div class="field" style="flex:2;">
+        <div class="field field--grow-2">
           <label for="if-city">city *</label>
           <input type="text" id="if-city" autocomplete="address-level2" />
         </div>
@@ -124,7 +124,7 @@
         <span>billing address differs from personal address</span>
       </label>
 
-      <div id="if-billing-section" style="display:none;">
+      <div id="if-billing-section" class="is-hidden">
         <div class="field-row">
           <div class="field">
             <label for="if-billing-name">billing name *</label>
@@ -142,22 +142,22 @@
         </div>
 
         <div class="field-row">
-          <div class="field" style="flex:2;">
+          <div class="field field--grow-2">
             <label for="if-billing-street">street *</label>
             <input type="text" id="if-billing-street" />
           </div>
-          <div class="field" style="flex:1;">
+          <div class="field field--grow-1">
             <label for="if-billing-street-number">number *</label>
             <input type="text" id="if-billing-street-number" />
           </div>
         </div>
 
         <div class="field-row">
-          <div class="field" style="flex:1;">
+          <div class="field field--grow-1">
             <label for="if-billing-postcode">postcode *</label>
             <input type="text" id="if-billing-postcode" />
           </div>
-          <div class="field" style="flex:2;">
+          <div class="field field--grow-2">
             <label for="if-billing-city">city *</label>
             <input type="text" id="if-billing-city" />
           </div>
@@ -165,18 +165,18 @@
       </div>
 
       <button class="submit" id="intake-submit-btn">save details →</button>
-      <div class="error" id="submit-error" style="display:none;text-align:center;margin-top:1rem;">
+      <div class="error submit-error" id="submit-error">
         Something went wrong — please try again or email us at
         <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
       </div>
     </div>
 
-    <div id="intake-thanks" style="display:none;text-align:center;">
+    <div id="intake-thanks" class="is-hidden text-center">
       <h1>thank you.</h1>
       <p>Your details have been saved. We'll be in touch shortly.</p>
     </div>
 
-    <div id="intake-error" style="display:none;text-align:center;">
+    <div id="intake-error" class="is-hidden text-center">
       <h1>link expired or invalid.</h1>
       <p>Please contact your teacher for a new link, or email
         <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.

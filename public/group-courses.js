@@ -150,7 +150,7 @@ renderAgbConsent();
 
   function showErr(id, show) {
     const el = document.getElementById(id);
-    if (el) el.style.display = show ? 'block' : 'none';
+    if (el) el.classList.toggle('is-visible-block', show);
   }
 
   function emailValid(value) {
@@ -168,7 +168,7 @@ renderAgbConsent();
       input.insertAdjacentElement('afterend', error);
     }
     error.textContent = message;
-    error.style.display = show ? 'block' : 'none';
+    error.classList.toggle('is-visible-block', show);
   }
 
   function requireValue(id, message) {
@@ -271,8 +271,8 @@ renderAgbConsent();
     if (!consent) valid = false;
 
     if (!valid) {
-      const first = [...document.querySelectorAll('.error')].find(
-        (el) => el.style.display === 'block'
+      const first = [...document.querySelectorAll('.error')].find((el) =>
+        el.classList.contains('is-visible-block')
       );
       first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
@@ -280,7 +280,7 @@ renderAgbConsent();
 
     const btn = document.getElementById('booking-submit');
     const errorEl = document.getElementById('booking-error');
-    errorEl.style.display = 'none';
+    errorEl.classList.remove('is-visible-block');
     btn.disabled = true;
     btn.dataset.loading = '';
     btn.textContent = t('submitting');
@@ -307,7 +307,7 @@ renderAgbConsent();
       await loadCourses();
     } catch (err) {
       errorEl.textContent = err.message || t('serverError');
-      errorEl.style.display = 'block';
+      errorEl.classList.add('is-visible-block');
     } finally {
       delete btn.dataset.loading;
       btn.disabled = false;

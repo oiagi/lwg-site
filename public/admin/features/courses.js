@@ -31,10 +31,22 @@ let courseControlsAttached = false;
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.course-status-wrap')) {
     document.querySelectorAll('.status-dropdown').forEach((d) => {
-      d.style.display = 'none';
+      d.classList.add('is-hidden');
     });
   }
 });
+
+function setVisible(el, show, visibleClass = 'is-visible-block') {
+  if (!el) return;
+  el.classList.toggle('is-hidden', !show);
+  el.classList.toggle(visibleClass, show);
+}
+
+function showErrorMessage(el, text) {
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('error-text', 'is-visible-inline');
+}
 
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
@@ -72,7 +84,7 @@ function locationSummaryHtml(course) {
 
 function locationEditorHtml(course) {
   return `
-    <div class="loc-address-editor" id="loc-editor-${course.id}" style="display:none;">
+    <div class="loc-address-editor is-hidden" id="loc-editor-${course.id}">
       <div class="loc-address-grid">
         <input type="text" id="loc-company-${course.id}" placeholder="Company"
           maxlength="120" value="${esc(course.location_company || '')}">
@@ -104,9 +116,9 @@ export function toggleCourseAddressEditor(courseId) {
   const editor = document.getElementById('loc-editor-' + courseId);
   const line = document.getElementById('loc-line-' + courseId);
   if (!editor || !line) return;
-  const open = editor.style.display !== 'none';
-  editor.style.display = open ? 'none' : 'block';
-  line.style.display = open ? '' : 'none';
+  const open = !editor.classList.contains('is-hidden');
+  setVisible(editor, !open);
+  line.classList.toggle('is-hidden', !open);
 }
 
 export async function saveCourseAddress(courseId) {
@@ -147,9 +159,7 @@ export async function saveCourseAddress(courseId) {
     document.getElementById('course-detail-' + courseId)?.classList.add('open');
   } catch (err) {
     if (msg) {
-      msg.textContent = 'Error: ' + err.message;
-      msg.style.color = '#c33';
-      msg.style.display = 'inline';
+      showErrorMessage(msg, 'Error: ' + err.message);
     }
   }
 }
@@ -178,9 +188,7 @@ export async function togglePublicBooking(courseId) {
   } catch (err) {
     input.checked = !input.checked;
     if (msg) {
-      msg.textContent = 'Error: ' + err.message;
-      msg.style.color = '#c33';
-      msg.style.display = 'inline';
+      showErrorMessage(msg, 'Error: ' + err.message);
     }
   } finally {
     input.disabled = false;
@@ -367,7 +375,7 @@ export async function loadCourses(status = 'active') {
 function renderCourses(courses) {
   const list = document.getElementById('course-list');
   if (!courses.length) {
-    list.innerHTML = '<div class="loading-state" style="padding:2rem 0;">No courses found.</div>';
+    list.innerHTML = '<div class="loading-state loading-state--spacious">No courses found.</div>';
     return;
   }
 
@@ -486,7 +494,7 @@ function renderCourses(courses) {
           <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
           <span class="course-sessions">${sessLine}${rebookFlag}</span>
-          <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown" id="status-drop-${c.id}" style="display:none;">${dropItems}</ul></div>
+          <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown is-hidden" id="status-drop-${c.id}">${dropItems}</ul></div>
           <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
@@ -516,25 +524,25 @@ function renderCourses(courses) {
             </div>
             <div>
               <p class="detail-meta">actions</p>
-              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.4rem;">
+              <div class="detail-action-stack">
                 <button class="save-btn"
                   data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
-                <div style="display:flex;align-items:center;gap:0.4rem;">
+                <div class="detail-action-row">
                   <button class="save-btn"
                     data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
                   <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:0.4rem;">
+                <div class="detail-action-row">
                   <button class="save-btn"
                     data-action="openScheduleModal" data-args="${c.id}">send schedule</button>
                   <span class="saved-msg" id="schedule-msg-${c.id}">sent</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:0.4rem;">
+                <div class="detail-action-row">
                   <button class="save-btn"
                     data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
                   <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:0.4rem;">
+                <div class="detail-action-row">
                   <button class="save-btn"
                     data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
                   <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
@@ -543,10 +551,10 @@ function renderCourses(courses) {
               ${sentCommunicationsBlock(c)}
             </div>
           </div>
-          <p class="detail-meta" style="margin-bottom:0.8rem;">students & progress</p>
+          <p class="detail-meta mb-medium">students & progress</p>
           ${pendingBookingBlocks(c)}
           ${studentBlocks}
-          <p style="font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:#aaa;margin:1rem 0 0.6rem;">sessions</p>
+          <p class="sessions-heading">sessions</p>
           ${noSessions}
           ${sessions}
         </div>
@@ -684,12 +692,13 @@ function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
 
 /* ── Participant block helpers ──────────────────────────────────── */
 function renderParticipantBlock(i, { showRemove = false } = {}) {
+  const extraClass = i > 0 ? ' participant-block--additional' : '';
   return `
-    <div class="participant-block modal-grid" id="nc-p-${i}" data-selected-student-id="" style="${i > 0 ? 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;' : ''}">
+    <div class="participant-block modal-grid${extraClass}" id="nc-p-${i}" data-selected-student-id="">
       ${
         showRemove
           ? `<div class="participant-block-header">
-               <span class="detail-meta" style="margin:0;">Participant ${i + 1}</span>
+               <span class="detail-meta detail-meta--flush">Participant ${i + 1}</span>
                <button class="remove-participant-btn" data-action="removeParticipantBlock">remove</button>
              </div>`
           : ''
@@ -701,7 +710,7 @@ function renderParticipantBlock(i, { showRemove = false } = {}) {
             placeholder="Type name or email…" autocomplete="off"
             role="combobox" aria-expanded="false" aria-haspopup="listbox"
             aria-controls="nc-p${i}-dropdown">
-          <ul id="nc-p${i}-dropdown" class="search-dropdown" role="listbox" style="display:none;"></ul>
+          <ul id="nc-p${i}-dropdown" class="search-dropdown is-hidden" role="listbox"></ul>
         </div>
       </div>
       <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
@@ -714,14 +723,14 @@ function renderParticipantBlock(i, { showRemove = false } = {}) {
 function hideDropdown(i) {
   const dropdown = document.getElementById(`nc-p${i}-dropdown`);
   const search = document.getElementById(`nc-p${i}-search`);
-  if (dropdown) dropdown.style.display = 'none';
+  if (dropdown) dropdown.classList.add('is-hidden');
   if (search) search.setAttribute('aria-expanded', 'false');
 }
 
 /* ── Shared student search autocomplete ────────────────────────── */
 function buildStudentSearch(inputEl, dropdownEl, onSelect) {
   function hide() {
-    dropdownEl.style.display = 'none';
+    dropdownEl.classList.add('is-hidden');
     inputEl.setAttribute('aria-expanded', 'false');
   }
 
@@ -756,13 +765,8 @@ function buildStudentSearch(inputEl, dropdownEl, onSelect) {
       })
       .join('');
 
-    dropdownEl.style.display = 'block';
+    dropdownEl.classList.remove('is-hidden');
     inputEl.setAttribute('aria-expanded', 'true');
-
-    dropdownEl.querySelectorAll('li').forEach((li) => {
-      li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
-      li.addEventListener('mouseout', () => (li.style.background = ''));
-    });
   });
 
   inputEl.addEventListener('blur', () => {
@@ -772,7 +776,7 @@ function buildStudentSearch(inputEl, dropdownEl, onSelect) {
   inputEl.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     const first = dropdownEl.querySelector('li');
-    if (first && dropdownEl.style.display !== 'none') {
+    if (first && !dropdownEl.classList.contains('is-hidden')) {
       e.preventDefault();
       first.click();
     }
@@ -838,7 +842,7 @@ export function openNewCourseModal() {
   });
   const msgEl = document.getElementById('nc-msg');
   if (msgEl) {
-    msgEl.style.display = 'none';
+    msgEl.classList.remove('is-visible-block');
     msgEl.textContent = '';
   }
   const btn = document.getElementById('nc-submit');
@@ -899,7 +903,7 @@ export function addParticipantBlock() {
 export async function submitNewCourse() {
   const btn = document.getElementById('nc-submit');
   const msgEl = document.getElementById('nc-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
 
   const teacherId = document.getElementById('nc-teacher').value;
   const courseType = document.getElementById('nc-course-type').value;
@@ -916,7 +920,7 @@ export async function submitNewCourse() {
   if (!teacherId || !datetime) {
     msgEl.textContent = 'Please select a teacher and set a first session date.';
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     return;
   }
 
@@ -975,7 +979,7 @@ export async function submitNewCourse() {
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'create course & calendar event';
     btn.disabled = false;
   }
@@ -1022,16 +1026,16 @@ export async function completeCourse(courseId, courseCode) {
 export function toggleStatusDropdown(courseId) {
   const drop = document.getElementById('status-drop-' + courseId);
   if (!drop) return;
-  const isOpen = drop.style.display !== 'none';
+  const isOpen = !drop.classList.contains('is-hidden');
   document.querySelectorAll('.status-dropdown').forEach((d) => {
-    d.style.display = 'none';
+    d.classList.add('is-hidden');
   });
-  if (!isOpen) drop.style.display = 'block';
+  if (!isOpen) drop.classList.remove('is-hidden');
 }
 
 export async function setCourseStatus(courseId, courseCode, newStatus) {
   document.querySelectorAll('.status-dropdown').forEach((d) => {
-    d.style.display = 'none';
+    d.classList.add('is-hidden');
   });
 
   if (newStatus === 'delete') return deleteCourse(courseId, courseCode);
@@ -1146,9 +1150,7 @@ export async function handleCourseBooking(enquiryId, action, courseId, btn) {
     if (detail) detail.classList.add('open');
   } catch (err) {
     if (msg) {
-      msg.textContent = 'Error: ' + err.message;
-      msg.style.color = '#c33';
-      msg.style.display = 'inline';
+      showErrorMessage(msg, 'Error: ' + err.message);
     } else {
       alert('Could not update booking request: ' + err.message);
     }
@@ -1165,9 +1167,9 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
   document.getElementById('att-course-id').value = courseId;
   document.getElementById('att-title').textContent = 'attendance — ' + (dateLabel || '');
   const container = document.getElementById('att-students');
-  container.innerHTML = '<p class="loading-state" style="padding:1rem 0;">loading students…</p>';
+  container.innerHTML = '<p class="loading-state loading-state--compact">loading students…</p>';
   const msg = document.getElementById('att-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   const btn = document.getElementById('att-submit');
   btn.textContent = 'save attendance';
@@ -1195,7 +1197,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
 
     if (!attendanceStudents.length) {
       container.innerHTML =
-        '<p style="font-size:0.78rem;color:#aaa;padding:1rem 0;">No students enrolled in this course.</p>';
+        '<p class="attendance-empty-note">No students enrolled in this course.</p>';
       return;
     }
 
@@ -1221,8 +1223,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
       })
       .join('');
   } catch {
-    container.innerHTML =
-      '<p style="font-size:0.78rem;color:#c0392b;">Could not load students.</p>';
+    container.innerHTML = '<p class="attendance-error-note">Could not load students.</p>';
   }
 }
 
@@ -1235,7 +1236,7 @@ export async function submitAttendance() {
   const msgEl = document.getElementById('att-msg');
   const sessionId = document.getElementById('att-session-id').value;
   const courseId = document.getElementById('att-course-id').value;
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
 
   const records = [];
   document.querySelectorAll('#att-students input[type="checkbox"]').forEach((cb) => {
@@ -1248,7 +1249,7 @@ export async function submitAttendance() {
   if (!records.length) {
     msgEl.textContent = 'No students to record attendance for.';
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     return;
   }
 
@@ -1273,7 +1274,7 @@ export async function submitAttendance() {
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'save attendance';
     btn.disabled = false;
   }
@@ -1307,13 +1308,13 @@ export function openAddParticipantModal(courseId) {
   document.getElementById('ap-email').value = '';
   document.getElementById('ap-phone').value = '';
   const msgEl = document.getElementById('ap-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
   msgEl.textContent = '';
   const btn = document.getElementById('ap-submit');
   btn.textContent = 'add';
   btn.disabled = false;
   const dropdown = document.getElementById('ap-dropdown');
-  if (dropdown) dropdown.style.display = 'none';
+  if (dropdown) dropdown.classList.add('is-hidden');
   document.getElementById('add-participant-modal').classList.add('open');
 
   // Ensure studentCache is populated
@@ -1370,7 +1371,7 @@ export function openEditCourseModal(courseId) {
   document.getElementById('ec-location').value = course.location || '';
 
   const msg = document.getElementById('ec-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   const btn = document.getElementById('ec-submit');
   btn.textContent = 'save changes';
@@ -1386,7 +1387,7 @@ export function closeEditCourseModal() {
 export async function submitEditCourse() {
   const btn = document.getElementById('ec-submit');
   const msg = document.getElementById('ec-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
 
   const courseId = document.getElementById('ec-id').value;
   if (!courseId) return;
@@ -1430,7 +1431,7 @@ export async function submitEditCourse() {
   } catch (err) {
     msg.textContent = 'Error: ' + err.message;
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'save changes';
     btn.disabled = false;
   }
@@ -1439,7 +1440,7 @@ export async function submitEditCourse() {
 export async function submitAddParticipant() {
   const btn = document.getElementById('ap-submit');
   const msgEl = document.getElementById('ap-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
   btn.disabled = true;
   btn.textContent = 'adding…';
 
@@ -1467,7 +1468,7 @@ export async function submitAddParticipant() {
     }, 1000);
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'add';
     btn.disabled = false;
   }

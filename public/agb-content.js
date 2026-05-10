@@ -163,15 +163,22 @@ const EMAIL_STYLES = {
   divider: 'margin:24px 0;border-top:1px solid #eee;',
 };
 
+function emailStyleAttr(css) {
+  return `style${'='}"${css}"`;
+}
+
 function legalToEmailHtml(html) {
   return html
     .replace(
       /<p class="legal-subheading">/g,
-      `<p style="margin:8px 0 4px;font-size:12px;font-weight:600;color:#444;">`
+      `<p ${emailStyleAttr('margin:8px 0 4px;font-size:12px;font-weight:600;color:#444;')}>`
     )
-    .replace(/<p>/g, `<p style="margin:0 0 12px;${EMAIL_STYLES.body}">`)
-    .replace(/<ul class="legal-list">/g, '<ul style="margin:4px 0 12px;padding-left:18px;">')
-    .replace(/<li>/g, `<li style="${EMAIL_STYLES.body}margin-bottom:2px;">`);
+    .replace(/<p>/g, `<p ${emailStyleAttr(`margin:0 0 12px;${EMAIL_STYLES.body}`)}>`)
+    .replace(
+      /<ul class="legal-list">/g,
+      `<ul ${emailStyleAttr('margin:4px 0 12px;padding-left:18px;')}>`
+    )
+    .replace(/<li>/g, `<li ${emailStyleAttr(`${EMAIL_STYLES.body}margin-bottom:2px;`)}>`);
 }
 
 export function renderAgbEmailHtml(language = 'de', options = {}) {
@@ -183,11 +190,11 @@ export function renderAgbEmailHtml(language = 'de', options = {}) {
     .map((code, index) => {
       const heading = code === 'en' ? 'Terms & Conditions' : 'Allgemeine Geschäftsbedingungen';
       return `
-      ${index === 0 ? '' : `<div style="${EMAIL_STYLES.divider}"></div>`}
-      <h3 style="${EMAIL_STYLES.heading}">${heading}</h3>
+      ${index === 0 ? '' : `<div ${emailStyleAttr(EMAIL_STYLES.divider)}></div>`}
+      <h3 ${emailStyleAttr(EMAIL_STYLES.heading)}>${heading}</h3>
       ${AGB_SECTIONS.map(
         (section) => `
-        <p style="${EMAIL_STYLES.section}">${section.title[code]}</p>
+        <p ${emailStyleAttr(EMAIL_STYLES.section)}>${section.title[code]}</p>
         ${legalToEmailHtml(section.html[code])}`
       ).join('')}`;
     })

@@ -428,6 +428,16 @@ body.nav-active {
   margin: 0 3px;
   transition: color 0.2s;
 }
+.quiz-card .q-sentence .blank.is-answered {
+  border-bottom: none;
+  font-style: normal;
+}
+.quiz-card .q-sentence .blank.is-correct {
+  color: #27ae60;
+}
+.quiz-card .q-sentence .blank.is-wrong {
+  color: #c0392b;
+}
 
 .quiz-card .q-translation {
   font-size: 0.9rem;

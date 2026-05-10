@@ -47,7 +47,7 @@ export function openConfirmSend({
 
   msg.textContent = '';
   msg.className = 'modal-msg';
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
 
   btn.disabled = selectedRecipients().length === 0;
   btn.textContent = 'send';
@@ -77,7 +77,7 @@ export async function submitConfirmSend() {
   } catch (err) {
     msg.textContent = 'Error: ' + (err.message || err);
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.disabled = false;
     btn.textContent = 'send';
   }

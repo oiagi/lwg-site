@@ -67,7 +67,6 @@ const STUDENT_DETAIL_FIELDS = [
   'consent_given',
   'consent_date',
   'intake_completed_at',
-  'intake_seen_at',
   'intake_token',
   'intake_token_created_at',
   'access_token',

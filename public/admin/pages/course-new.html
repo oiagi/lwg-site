@@ -20,7 +20,7 @@
     <p class="loading-state">loading…</p>
   </div>
 
-  <main id="page-content" class="page-form-shell" style="display:none;">
+  <main id="page-content" class="page-form-shell is-hidden">
     <a href="/admin#courses" class="page-form-back">← back to courses</a>
     <h1>new course</h1>
 
@@ -109,8 +109,8 @@
           <label>First session date &amp; time</label>
           <input type="datetime-local" id="nc-datetime">
         </div>
-        <div class="modal-field full" id="nc-address-fields" style="display:none;">
-          <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
+        <div class="modal-field full is-hidden" id="nc-address-fields">
+          <p class="modal-section-label modal-section-label--compact">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
           <div class="modal-grid">
             <div class="modal-field full">
               <label>Company name</label>
@@ -135,23 +135,23 @@
           </div>
         </div>
         <div class="modal-field full">
-          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-            <input type="checkbox" id="nc-public-booking" style="width:auto;margin:0;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="nc-public-booking">
             <span>Show on public group course booking page</span>
           </label>
-          <p class="label-hint" style="margin:0.35rem 0 0 1.45rem;">
+          <p class="label-hint checkbox-label-hint">
             Only suitable for group courses at teacher's home or classroom with open spots.
           </p>
         </div>
         <div class="modal-field full">
-          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-            <input type="checkbox" id="nc-single-session" style="width:auto;margin:0;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="nc-single-session">
             <span>Only create the first session — I'll plan the rest manually in Google Calendar</span>
           </label>
         </div>
       </div>
 
-      <p class="modal-section-label" style="margin: 1.4rem 0 0.8rem; border-top: 1px solid var(--border-soft); padding-top: 1.2rem;">Participants</p>
+      <p class="modal-section-label modal-section-label--participants">Participants</p>
       <div id="nc-participants"></div>
       <button type="button" class="add-participant-btn" id="nc-add-participant">+ add participant</button>
 

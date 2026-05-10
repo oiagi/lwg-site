@@ -30,15 +30,20 @@ function fillDefaultPerPersonPrice() {
   priceEl.value = DEFAULT_PRICE_PER_PERSON[groupType] ?? '';
 }
 
+function setDropdownOpen(dropdownEl, inputEl, open) {
+  dropdownEl.classList.toggle('is-hidden', !open);
+  inputEl.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
 /* ── Participant block ───────────────────────────────────────────── */
 function renderParticipantBlock(i, showRemove = false) {
+  const extraClass = i > 0 ? ' participant-block--additional' : '';
   return `
-    <div class="participant-block modal-grid" id="nc-p-${i}" data-selected-student-id=""
-         style="${i > 0 ? 'margin-top:1rem;padding-top:1rem;border-top:1px solid #eee;' : ''}">
+    <div class="participant-block modal-grid${extraClass}" id="nc-p-${i}" data-selected-student-id="">
       ${
         showRemove
           ? `<div class="participant-block-header">
-               <span class="detail-meta" style="margin:0;">Participant ${i + 1}</span>
+               <span class="detail-meta detail-meta--flush">Participant ${i + 1}</span>
                <button type="button" class="remove-participant-btn" data-remove-block>remove</button>
              </div>`
           : ''
@@ -50,7 +55,7 @@ function renderParticipantBlock(i, showRemove = false) {
             placeholder="Type name or email…" autocomplete="off"
             role="combobox" aria-expanded="false" aria-haspopup="listbox"
             aria-controls="nc-p${i}-dropdown">
-          <ul id="nc-p${i}-dropdown" class="search-dropdown" role="listbox" style="display:none;"></ul>
+          <ul id="nc-p${i}-dropdown" class="search-dropdown is-hidden" role="listbox"></ul>
         </div>
       </div>
       <div class="modal-field"><label>First name</label><input type="text" id="nc-p${i}-first" placeholder="First name"></div>
@@ -62,8 +67,7 @@ function renderParticipantBlock(i, showRemove = false) {
 
 function buildStudentSearch(inputEl, dropdownEl, onSelect) {
   function hide() {
-    dropdownEl.style.display = 'none';
-    inputEl.setAttribute('aria-expanded', 'false');
+    setDropdownOpen(dropdownEl, inputEl, false);
   }
 
   inputEl.addEventListener('input', () => {
@@ -96,12 +100,7 @@ function buildStudentSearch(inputEl, dropdownEl, onSelect) {
       })
       .join('');
 
-    dropdownEl.style.display = 'block';
-    inputEl.setAttribute('aria-expanded', 'true');
-    dropdownEl.querySelectorAll('li').forEach((li) => {
-      li.addEventListener('mouseover', () => (li.style.background = '#f5f5f5'));
-      li.addEventListener('mouseout', () => (li.style.background = ''));
-    });
+    setDropdownOpen(dropdownEl, inputEl, true);
   });
 
   inputEl.addEventListener('blur', () => setTimeout(() => hide(), 150));
@@ -109,7 +108,7 @@ function buildStudentSearch(inputEl, dropdownEl, onSelect) {
   inputEl.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     const first = dropdownEl.querySelector('li');
-    if (first && dropdownEl.style.display !== 'none') {
+    if (first && !dropdownEl.classList.contains('is-hidden')) {
       e.preventDefault();
       first.click();
     }
@@ -169,14 +168,14 @@ async function handleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('nc-submit');
   const msgEl = document.getElementById('nc-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
 
   const teacherId = document.getElementById('nc-teacher').value;
   const datetime = document.getElementById('nc-datetime').value;
   if (!teacherId || !datetime) {
     msgEl.textContent = 'Please select a teacher and set a first session date.';
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     return;
   }
 
@@ -251,7 +250,7 @@ async function handleSubmit(e) {
 
     msgEl.textContent = `Created. Course: ${result.course_code}`;
     msgEl.className = 'modal-msg success';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'created';
 
     setTimeout(() => {
@@ -260,7 +259,7 @@ async function handleSubmit(e) {
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'create course & calendar event';
     btn.disabled = false;
   }
@@ -314,7 +313,7 @@ async function handleSubmit(e) {
         const msgEl = document.getElementById('nc-msg');
         msgEl.textContent = 'Could not prefill the selected student.';
         msgEl.className = 'modal-msg err';
-        msgEl.style.display = 'block';
+        msgEl.classList.add('is-visible-block');
       });
   }
 
@@ -335,8 +334,8 @@ async function handleSubmit(e) {
   const addressToggle = document.getElementById('nc-toggle-address');
   const addressFields = document.getElementById('nc-address-fields');
   addressToggle.addEventListener('click', () => {
-    const open = addressFields.style.display !== 'none';
-    addressFields.style.display = open ? 'none' : 'block';
+    const open = !addressFields.classList.contains('is-hidden');
+    addressFields.classList.toggle('is-hidden', open);
     addressToggle.textContent = open ? '+ add address' : '− hide address';
   });
 
@@ -350,7 +349,7 @@ async function handleSubmit(e) {
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#nc-participants')) {
       document.querySelectorAll('.search-dropdown').forEach((d) => {
-        d.style.display = 'none';
+        d.classList.add('is-hidden');
       });
     }
   });
@@ -363,6 +362,6 @@ async function handleSubmit(e) {
   syncPlusEnabled('nc-level', 'nc-level-plus');
   fillDefaultPerPersonPrice();
 
-  document.getElementById('page-loading').style.display = 'none';
-  document.getElementById('page-content').style.display = '';
+  document.getElementById('page-loading').classList.add('is-hidden');
+  document.getElementById('page-content').classList.remove('is-hidden');
 })();

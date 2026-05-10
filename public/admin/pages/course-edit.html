@@ -20,10 +20,10 @@
     <p class="loading-state">loading…</p>
   </div>
 
-  <main id="page-content" class="page-form-shell" style="display:none;">
+  <main id="page-content" class="page-form-shell is-hidden">
     <a href="/admin#courses" class="page-form-back">← back to courses</a>
     <h1>edit course</h1>
-    <p class="label-hint" id="ec-code-label" style="margin-bottom:1rem;"></p>
+    <p class="label-hint mb-large" id="ec-code-label"></p>
 
     <form id="course-edit-form" novalidate>
       <input type="hidden" id="ec-id" value="">
@@ -121,8 +121,8 @@
             <button type="button" class="add-participant-btn" id="ec-toggle-address">+ add address</button>
           </div>
         </div>
-        <div class="modal-field full" id="ec-address-fields" style="display:none;">
-          <p class="modal-section-label" style="margin:0 0 0.8rem;">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
+        <div class="modal-field full is-hidden" id="ec-address-fields">
+          <p class="modal-section-label modal-section-label--compact">Course location address <span class="label-hint">(optional — appears on certificate of attendance)</span></p>
           <div class="modal-grid">
             <div class="modal-field full">
               <label>Company name</label>

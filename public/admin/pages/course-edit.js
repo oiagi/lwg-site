@@ -49,7 +49,7 @@ function setAddressFieldsOpen(open) {
   const fields = document.getElementById('ec-address-fields');
   const toggle = document.getElementById('ec-toggle-address');
   if (!fields || !toggle) return;
-  fields.style.display = open ? 'block' : 'none';
+  fields.classList.toggle('is-hidden', !open);
   toggle.textContent = open ? '− hide address' : '+ add address';
 }
 
@@ -99,7 +99,7 @@ async function handleSubmit(e) {
   e.preventDefault();
   const btn = document.getElementById('ec-submit');
   const msgEl = document.getElementById('ec-msg');
-  msgEl.style.display = 'none';
+  msgEl.classList.remove('is-visible-block');
 
   const courseId = document.getElementById('ec-id').value;
   if (!courseId) return;
@@ -141,7 +141,7 @@ async function handleSubmit(e) {
 
     msgEl.textContent = 'Course updated.';
     msgEl.className = 'modal-msg success';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'saved';
 
     setTimeout(() => {
@@ -150,7 +150,7 @@ async function handleSubmit(e) {
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.className = 'modal-msg err';
-    msgEl.style.display = 'block';
+    msgEl.classList.add('is-visible-block');
     btn.textContent = 'save changes';
     btn.disabled = false;
   }
@@ -196,9 +196,9 @@ async function handleSubmit(e) {
     .addEventListener('change', () => syncPlusEnabled('ec-level', 'ec-level-plus'));
   document.getElementById('ec-toggle-address').addEventListener('click', () => {
     const fields = document.getElementById('ec-address-fields');
-    setAddressFieldsOpen(fields?.style.display === 'none');
+    setAddressFieldsOpen(fields?.classList.contains('is-hidden'));
   });
 
-  document.getElementById('page-loading').style.display = 'none';
-  document.getElementById('page-content').style.display = '';
+  document.getElementById('page-loading').classList.add('is-hidden');
+  document.getElementById('page-content').classList.remove('is-hidden');
 })();

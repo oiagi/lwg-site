@@ -105,7 +105,7 @@ export function openImportModal() {
   btn.disabled = true;
   btn.textContent = 'import';
   const msg = document.getElementById('import-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   msg.textContent = '';
   modal.classList.add('open');
 }
@@ -121,7 +121,7 @@ export async function handleImportFile() {
   const preview = document.getElementById('import-preview');
   const submit = document.getElementById('import-submit');
   const msg = document.getElementById('import-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   if (!file) {
     preview.innerHTML = '';
     submit.disabled = true;
@@ -154,11 +154,11 @@ export async function handleImportFile() {
     const total = cleaned.length;
     const sample = cleaned.slice(0, 5);
     preview.innerHTML = `
-      <p class="detail-muted" style="font-size:0.78rem;margin-bottom:0.4rem;">
+      <p class="detail-muted import-preview-note">
         ${total} row${total === 1 ? '' : 's'} ready to import. Showing first ${sample.length}:
       </p>
-      <div style="overflow-x:auto;max-height:240px;">
-        <table class="admin-course-table" style="min-width:520px;">
+      <div class="import-preview-table-wrap">
+        <table class="admin-course-table import-preview-table">
           <thead><tr><th>first_name</th><th>last_name</th><th>email</th><th>phone</th><th>status</th></tr></thead>
           <tbody>
             ${sample
@@ -184,7 +184,7 @@ export async function handleImportFile() {
     submit.disabled = true;
     msg.textContent = 'Could not read file: ' + err.message;
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
   }
 }
 
@@ -192,7 +192,7 @@ export async function submitImport() {
   if (!parsedImportRows?.length) return;
   const btn = document.getElementById('import-submit');
   const msg = document.getElementById('import-msg');
-  msg.style.display = 'none';
+  msg.classList.remove('is-visible-block');
   btn.disabled = true;
   btn.textContent = 'importing…';
   try {
@@ -204,7 +204,7 @@ export async function submitImport() {
     if (!res.ok) throw new Error(result.error || 'Import failed');
     msg.textContent = `Imported: ${result.created} new, ${result.updated} updated, ${result.skipped} skipped.`;
     msg.className = 'modal-msg success';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'done';
     setTimeout(() => {
       closeImportModal();
@@ -213,7 +213,7 @@ export async function submitImport() {
   } catch (err) {
     msg.textContent = 'Error: ' + err.message;
     msg.className = 'modal-msg err';
-    msg.style.display = 'block';
+    msg.classList.add('is-visible-block');
     btn.textContent = 'import';
     btn.disabled = false;
   }

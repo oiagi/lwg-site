@@ -295,9 +295,7 @@ function selectAnswer(btn, selected, q) {
   const blank = document.querySelector('.blank');
   if (blank) {
     blank.textContent = isCorrect ? selected : correctValues[0];
-    blank.style.borderBottom = 'none';
-    blank.style.fontStyle = 'normal';
-    blank.style.color = isCorrect ? '#27ae60' : '#c0392b';
+    blank.classList.add('is-answered', isCorrect ? 'is-correct' : 'is-wrong');
   }
 
   const expl = document.getElementById('explanation');

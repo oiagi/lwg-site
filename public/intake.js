@@ -9,10 +9,18 @@
   const genderSelect = document.getElementById('if-gender');
   const genderNoteWrap = document.getElementById('if-gender-note-wrap');
 
+  function setHidden(el, hidden) {
+    if (el) el.classList.toggle('is-hidden', hidden);
+  }
+
+  function setErrorVisible(el, show) {
+    if (el) el.classList.toggle('is-visible-block', show);
+  }
+
   function showError() {
-    loading.style.display = 'none';
-    content.style.display = 'none';
-    errorState.style.display = 'block';
+    setHidden(loading, true);
+    setHidden(content, true);
+    setHidden(errorState, false);
   }
 
   function setVal(id, v) {
@@ -27,11 +35,11 @@
 
   function setBillingVisible(show) {
     billingCheckbox.checked = show;
-    billingSection.style.display = show ? 'block' : 'none';
+    setHidden(billingSection, !show);
   }
 
   function setGenderNoteVisible(show) {
-    genderNoteWrap.style.display = show ? 'block' : 'none';
+    setHidden(genderNoteWrap, !show);
     if (!show) setVal('if-gender-note', '');
   }
 
@@ -103,8 +111,8 @@
       }
       const data = await res.json();
       populate(data);
-      loading.style.display = 'none';
-      content.style.display = 'block';
+      setHidden(loading, true);
+      setHidden(content, false);
     } catch {
       showError();
     }
@@ -112,7 +120,7 @@
 
   function showFieldError(id, show) {
     const el = document.getElementById(id);
-    if (el) el.style.display = show ? 'block' : 'none';
+    setErrorVisible(el, show);
   }
 
   function emailValid(value) {
@@ -130,7 +138,7 @@
       input.insertAdjacentElement('afterend', error);
     }
     error.textContent = message;
-    error.style.display = show ? 'block' : 'none';
+    setErrorVisible(error, show);
   }
 
   function requireValue(id, message) {
@@ -196,8 +204,8 @@
     }
 
     if (!valid) {
-      const first = [...document.querySelectorAll('.error')].find(
-        (e) => e.style.display === 'block'
+      const first = [...document.querySelectorAll('.error')].find((e) =>
+        e.classList.contains('is-visible-block')
       );
       if (first) {
         first.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -238,7 +246,7 @@
     const btn = document.getElementById('intake-submit-btn');
     btn.dataset.loading = '';
     btn.disabled = true;
-    document.getElementById('submit-error').style.display = 'none';
+    document.getElementById('submit-error').classList.remove('is-visible-block');
 
     try {
       const res = await fetch('/api/intake', {
@@ -247,13 +255,13 @@
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error('Server error');
-      content.style.display = 'none';
-      thanks.style.display = 'block';
+      setHidden(content, true);
+      setHidden(thanks, false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       delete btn.dataset.loading;
       btn.disabled = false;
-      document.getElementById('submit-error').style.display = 'block';
+      document.getElementById('submit-error').classList.add('is-visible-block');
     }
   });
 
