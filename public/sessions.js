@@ -31,7 +31,19 @@ async function load() {
 
   try {
     const res = await fetch('/api/student-sessions?token=' + encodeURIComponent(token));
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      if (res.status === 410) {
+        const body = await res.json().catch(() => ({}));
+        const msg = String(body.error || 'This link has expired. Please contact us for a new one.')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        content.innerHTML = `<div class="error-state">${msg}<br><a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a></div>`;
+        window.LWG_I18N?.localizeInternalLinks(content);
+        return;
+      }
+      throw new Error();
+    }
     const data = await res.json();
 
     if (!data.courses || !data.courses.length) {

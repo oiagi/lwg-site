@@ -219,6 +219,7 @@ async function handleSubmit(e) {
 
   btn.textContent = 'creating…';
   btn.disabled = true;
+  btn.dataset.loading = '';
 
   try {
     const durationMinutes = parseInt(sessionLength) || 50;
@@ -256,11 +257,12 @@ async function handleSubmit(e) {
     setTimeout(() => {
       window.location.href = '/admin#courses';
     }, 1500);
-  } catch (err) {
-    msgEl.textContent = 'Error: ' + err.message;
+  } catch {
+    msgEl.textContent = 'Something went wrong. Please try again.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     btn.textContent = 'create course & calendar event';
+    delete btn.dataset.loading;
     btn.disabled = false;
   }
 }

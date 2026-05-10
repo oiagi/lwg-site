@@ -12,9 +12,58 @@ const BILLING_FIELDS = [
   'sm-billing-city',
 ];
 
+let initialFormState = '';
+let formIsDirty = false;
+let isSubmitting = false;
+
 function setValue(id, v) {
   const el = document.getElementById(id);
   if (el) el.value = v ?? '';
+}
+
+function formSnapshot() {
+  const form = document.getElementById('student-form');
+  if (!form) return '';
+  return [...form.querySelectorAll('input, select, textarea')]
+    .map((el) => `${el.id}:${el.type === 'checkbox' ? el.checked : el.value}`)
+    .join('|');
+}
+
+function rememberCleanState() {
+  initialFormState = formSnapshot();
+  formIsDirty = false;
+}
+
+function updateDirtyState() {
+  formIsDirty = formSnapshot() !== initialFormState;
+}
+
+function confirmDiscard() {
+  return !formIsDirty || confirm('Discard unsaved student changes?');
+}
+
+function wireDirtyGuard() {
+  const form = document.getElementById('student-form');
+  form?.addEventListener('input', updateDirtyState);
+  form?.addEventListener('change', updateDirtyState);
+  form
+    ?.querySelectorAll('#sm-first-name, #sm-last-name, #sm-email, #sm-ec-email, #sm-billing-email')
+    .forEach((field) => {
+      field.addEventListener('input', () => clearFieldError(field.id));
+    });
+
+  window.addEventListener('beforeunload', (e) => {
+    if (!formIsDirty || isSubmitting) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  document.querySelectorAll('.page-form-back, .page-form-actions .modal-cancel').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (confirmDiscard()) return;
+      e.preventDefault();
+    });
+  });
 }
 
 function populate(data) {
@@ -107,6 +156,67 @@ function wireBillingToggle() {
   });
 }
 
+function setFieldError(id, message) {
+  const field = document.getElementById(id);
+  if (!field) return null;
+  const wrap = field.closest('.modal-field');
+  let error = wrap?.querySelector('.field-error');
+  if (!error && wrap) {
+    error = document.createElement('span');
+    error.className = 'field-error';
+    error.id = `${id}-error`;
+    wrap.appendChild(error);
+  }
+  field.setAttribute('aria-invalid', 'true');
+  if (error) {
+    error.textContent = message;
+    field.setAttribute('aria-describedby', error.id);
+  }
+  return field;
+}
+
+function clearFieldError(id) {
+  const field = document.getElementById(id);
+  if (!field) return;
+  const wrap = field.closest('.modal-field');
+  const error = wrap?.querySelector('.field-error');
+  field.removeAttribute('aria-invalid');
+  field.removeAttribute('aria-describedby');
+  if (error) error.textContent = '';
+}
+
+function validateForm() {
+  const requiredFields = [
+    ['sm-first-name', 'First name is required.'],
+    ['sm-last-name', 'Last name is required.'],
+  ];
+  const emailFields = [
+    ['sm-email', 'Enter a valid student email.'],
+    ['sm-ec-email', 'Enter a valid emergency contact email.'],
+    ['sm-billing-email', 'Enter a valid billing email.'],
+  ];
+  const invalid = [];
+
+  [...requiredFields, ...emailFields].forEach(([id]) => clearFieldError(id));
+
+  requiredFields.forEach(([id, message]) => {
+    const el = document.getElementById(id);
+    if (!el?.value.trim()) invalid.push(setFieldError(id, message));
+  });
+
+  emailFields.forEach(([id, message]) => {
+    const el = document.getElementById(id);
+    if (el?.value.trim() && !el.validity.valid) invalid.push(setFieldError(id, message));
+  });
+
+  const firstInvalid = invalid.find(Boolean);
+  if (firstInvalid) {
+    firstInvalid.focus();
+    return false;
+  }
+  return true;
+}
+
 function buildBody() {
   const body = {
     first_name: document.getElementById('sm-first-name').value.trim(),
@@ -162,10 +272,8 @@ async function handleSubmit(e) {
   const msgEl = document.getElementById('sm-msg');
   msgEl.classList.remove('is-visible-block');
 
-  const firstName = document.getElementById('sm-first-name').value.trim();
-  const lastName = document.getElementById('sm-last-name').value.trim();
-  if (!firstName || !lastName) {
-    msgEl.textContent = 'First name and last name are required.';
+  if (!validateForm()) {
+    msgEl.textContent = 'Please fix the highlighted fields.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     return;
@@ -173,18 +281,23 @@ async function handleSubmit(e) {
 
   btn.textContent = 'saving…';
   btn.disabled = true;
+  btn.dataset.loading = '';
+  isSubmitting = true;
 
   const body = buildBody();
   try {
     const res = await apiFetch('/api/save-student', { method: 'POST', body });
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
+    formIsDirty = false;
     window.location.href = '/admin#students';
-  } catch (err) {
-    msgEl.textContent = 'Error: ' + err.message;
+  } catch {
+    isSubmitting = false;
+    msgEl.textContent = 'Something went wrong. Please try again.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     btn.textContent = 'save student';
+    delete btn.dataset.loading;
     btn.disabled = false;
   }
 }
@@ -225,6 +338,8 @@ async function handleSubmit(e) {
 
   wireGenderToggle();
   wireBillingToggle();
+  wireDirtyGuard();
+  rememberCleanState();
   document.getElementById('student-form').addEventListener('submit', handleSubmit);
 
   document.getElementById('page-loading').classList.add('is-hidden');

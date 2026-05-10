@@ -23,6 +23,9 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   function showErr(id, show) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('is-visible-block', show);
+    document
+      .getElementById(id.replace(/^err-/, ''))
+      ?.setAttribute('aria-invalid', show ? 'true' : 'false');
   }
 
   let valid = true;
@@ -76,8 +79,10 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   };
 
   const btn = document.getElementById('submit-btn');
+  const originalText = btn.textContent;
   btn.dataset.loading = '';
   btn.disabled = true;
+  btn.textContent = window.LWG_I18N?.translateRuntime('enquirySubmitting') || 'sending…';
 
   try {
     const res = await fetch('/api/submit-enquiry', {
@@ -96,6 +101,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   } catch {
     delete btn.dataset.loading;
     btn.disabled = false;
+    btn.textContent = originalText;
     document.getElementById('submit-error').classList.add('is-visible-block');
   }
 });

@@ -56,13 +56,6 @@ function attachStudentListControls() {
 export async function loadStudents(status = 'active') {
   attachStudentListControls();
   const list = document.getElementById('student-list');
-  // Reset selection and right pane on every reload attempt
-  selectedStudentId = null;
-  const pane = document.getElementById('student-detail-panel');
-  if (pane) {
-    pane.className = 'student-detail-empty';
-    pane.innerHTML = '<p>select a student to view their details</p>';
-  }
   if (!list.querySelector('.student-row')) {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
@@ -76,13 +69,42 @@ export async function loadStudents(status = 'active') {
       totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
     updateFilterBadges();
     renderStudents(students, totalRequests);
+    restoreStudentSelection(students);
     if (!filterCountsInitialized) {
       filterCountsInitialized = true;
       ['active', 'all', 'inactive'].filter((s) => s !== status).forEach(fetchStudentFlagCount);
     }
   } catch {
-    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+    list.innerHTML =
+      '<div class="loading-state">Could not load students. <button type="button" class="inline-link-btn">Retry</button></div>';
+    list.querySelector('button').addEventListener('click', () => loadStudents(status));
   }
+}
+
+function clearStudentDetailPane() {
+  selectedStudentId = null;
+  currentStudentDetail = null;
+  const pane = document.getElementById('student-detail-panel');
+  if (!pane) return;
+  pane.className = 'student-detail-empty';
+  pane.innerHTML = '<p>select a student to view their details</p>';
+}
+
+function restoreStudentSelection(students) {
+  if (!selectedStudentId) {
+    clearStudentDetailPane();
+    return;
+  }
+  const stillVisible = students.some((s) => String(s.id) === String(selectedStudentId));
+  if (!stillVisible) {
+    clearStudentDetailPane();
+    return;
+  }
+  document.querySelectorAll('.student-row').forEach((row) => {
+    const isSelected = row.id === 'student-' + selectedStudentId;
+    row.classList.toggle('selected', isSelected);
+    row.setAttribute('aria-selected', String(isSelected));
+  });
 }
 
 function subjectLabel(s) {
@@ -194,7 +216,7 @@ function renderStudents(students, totalRequests = null) {
         : '';
       return `
     <div class="student-row${s.pending_request_count ? ' has-pending-request' : ''}" id="student-${s.id}"
-         role="option" aria-selected="false" tabindex="0"
+         role="option" aria-selected="${String(String(s.id) === String(selectedStudentId))}" tabindex="0"
          data-action="selectStudent" data-args="${s.id}">
       <span class="student-ref">${ref}</span>
       <span class="student-name">${requestFlag}${name}</span>
@@ -262,13 +284,20 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
     if (!res.ok) throw new Error();
     const students = await res.json();
     const totalRequests = Number(res.headers.get('X-Untreated-Request-Count')) || null;
+    filterFlagCounts[status] =
+      totalRequests ?? students.reduce((sum, s) => sum + Number(s.pending_request_count || 0), 0);
+    updateFilterBadges();
     renderStudents(students, totalRequests);
     if (keepSelectedId) {
       const row = document.getElementById('student-' + keepSelectedId);
       if (row) row.scrollIntoView({ block: 'nearest' });
     }
   } catch {
-    list.innerHTML = '<div class="loading-state">Could not load students.</div>';
+    list.innerHTML =
+      '<div class="loading-state">Could not load students. <button type="button" class="inline-link-btn">Retry</button></div>';
+    list
+      .querySelector('button')
+      .addEventListener('click', () => loadStudentsKeepingContext(status, keepSelectedId));
   }
 }
 
@@ -300,6 +329,15 @@ function renderStudentDetail(container, s) {
   const hasPersonalAddress = s.street || s.postcode || s.city;
   const hasBillingAddress =
     s.billing_street || s.billing_postcode || s.billing_city || s.billing_name;
+  const contactLine = (kind, value, hrefPrefix) => {
+    if (!value) return '';
+    const safeValue = esc(value);
+    const hrefValue = hrefPrefix === 'tel:' ? String(value).replace(/[^\d+]/g, '') : value;
+    return `<span class="detail-contact-line">
+      <a class="detail-contact-link" href="${hrefPrefix}${esc(hrefValue)}">${safeValue}</a>
+      <button class="detail-copy-btn" data-action="copyDetailValue" data-copy-value="${safeValue}" title="Copy ${esc(kind)}">copy</button>
+    </span>`;
+  };
 
   const personalBlock = `
     <div>
@@ -307,8 +345,8 @@ function renderStudentDetail(container, s) {
       <p class="detail-body">
         ${fullName}<br>
         ${s.gender ? esc(s.gender === 'other' && s.gender_note ? `other: ${s.gender_note}` : s.gender) + '<br>' : ''}
-        ${s.email ? esc(s.email) + '<br>' : ''}
-        ${s.phone ? esc(s.phone) + '<br>' : ''}
+        ${contactLine('email', s.email, 'mailto:')}
+        ${contactLine('phone', s.phone, 'tel:')}
         ${hasPersonalAddress ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' + esc([s.postcode, s.city].filter(Boolean).join(' ')) : '<span class="detail-muted">no address</span>'}
       </p>
     </div>`;
@@ -320,8 +358,8 @@ function renderStudentDetail(container, s) {
       <p class="detail-meta">Emergency contact</p>
       <p class="detail-body">
         ${esc(s.emergency_contact || '')}${s.ec_relationship ? ' <span class="detail-muted">(' + esc(s.ec_relationship) + ')</span>' : ''}<br>
-        ${s.ec_phone ? esc(s.ec_phone) + '<br>' : ''}
-        ${s.ec_email ? esc(s.ec_email) : ''}
+        ${contactLine('phone', s.ec_phone, 'tel:')}
+        ${contactLine('email', s.ec_email, 'mailto:')}
       </p>
     </div>`
       : `
@@ -337,8 +375,8 @@ function renderStudentDetail(container, s) {
         ${
           hasBillingAddress
             ? `${esc(s.billing_name) || fullName}<br>
-               ${s.billing_email ? esc(s.billing_email) + '<br>' : ''}
-               ${s.billing_phone ? esc(s.billing_phone) + '<br>' : ''}
+               ${contactLine('email', s.billing_email, 'mailto:')}
+               ${contactLine('phone', s.billing_phone, 'tel:')}
                ${esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' '))}<br>
                ${esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))}`
             : '<span class="detail-muted">same as personal</span>'
@@ -441,6 +479,20 @@ function renderRequestSection(s) {
           const courseLink = enquiry.course_id
             ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
             : '<span class="detail-muted">no linked course</span>';
+          const actions =
+            enquiry.untreated && enquiry.status === 'pending_course_booking' && enquiry.course_id
+              ? `<div class="student-request-actions">
+                   <button class="save-btn" data-action="handleStudentRequestBooking" data-args="${esc(enquiry.id)},approve,${esc(enquiry.course_id)},${esc(s.id)}">approve</button>
+                   <button class="delete-btn" data-action="handleStudentRequestBooking" data-args="${esc(enquiry.id)},decline,${esc(enquiry.course_id)},${esc(s.id)}">decline</button>
+                   <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
+                 </div>`
+              : enquiry.untreated
+                ? `<div class="student-request-actions">
+                     <button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">enrol</button>
+                     <button class="save-btn secondary-btn" data-action="markStudentEnquiryTreated" data-args="${esc(enquiry.id)},${esc(s.id)}">mark treated</button>
+                     <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
+                   </div>`
+                : '';
           return `
             <div class="student-request-row${enquiry.untreated ? ' untreated' : ''}">
               <span class="request-dot ${esc(enquiry.status || '')}"></span>
@@ -448,14 +500,114 @@ function renderRequestSection(s) {
                 <p class="student-request-title">${esc(requestLabel(enquiry))}</p>
                 <p class="student-request-meta">${esc(created)} · <span class="enq-status ${esc(enquiry.status || '')}">${esc(enquiry.status || '—')}</span></p>
               </div>
-              <div class="student-request-target">${courseLink}</div>
+              <div class="student-request-target">${courseLink}${actions}</div>
             </div>`;
         })
         .join('')}
     </div>`;
 }
 
-export async function sendIntakeLink(studentId, btn) {
+export function copyDetailValue(btn) {
+  const value = btn?.dataset.copyValue || '';
+  if (!value) return;
+  const original = btn.textContent;
+  const done = () => {
+    btn.textContent = 'copied';
+    setTimeout(() => {
+      btn.textContent = original || 'copy';
+    }, MESSAGE_TIMEOUT_MS);
+  };
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard
+      .writeText(value)
+      .then(done)
+      .catch(() => prompt('Copy this value:', value));
+  } else {
+    prompt('Copy this value:', value);
+  }
+}
+
+export async function handleStudentRequestBooking(enquiryId, action, courseId, studentId, btn) {
+  const verb = action === 'approve' ? 'approve' : 'decline';
+  if (!confirm(`${verb[0].toUpperCase() + verb.slice(1)} this direct booking request?`)) return;
+
+  const msg = document.getElementById('student-request-msg-' + enquiryId);
+  const row = btn?.closest('.student-request-row');
+  const buttons = row ? [...row.querySelectorAll('button')] : btn ? [btn] : [];
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+  if (btn) btn.textContent = action === 'approve' ? 'approving…' : 'declining…';
+
+  try {
+    const res = await apiFetch('/api/handle-course-booking', {
+      method: 'POST',
+      body: { enquiry_id: enquiryId, action },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    if (msg) {
+      msg.textContent = action === 'approve' ? 'approved' : 'declined';
+      msg.classList.add('is-visible-inline');
+    }
+    selectedStudentId = studentId;
+    await loadStudentsKeepingContext(currentStudentFilter, studentId);
+    await fetchAndRenderStudent(studentId);
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.classList.add('error-text', 'is-visible-inline');
+    } else {
+      alert('Could not update booking request: ' + err.message);
+    }
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+    if (btn) btn.textContent = action === 'approve' ? 'approve' : 'decline';
+  }
+}
+
+export async function markStudentEnquiryTreated(enquiryId, studentId, btn) {
+  if (!confirm('Mark this enquiry as treated without enrolling the student?')) return;
+
+  const msg = document.getElementById('student-request-msg-' + enquiryId);
+  const row = btn?.closest('.student-request-row');
+  const buttons = row ? [...row.querySelectorAll('button')] : btn ? [btn] : [];
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
+  if (btn) btn.textContent = 'saving...';
+
+  try {
+    const res = await apiFetch('/api/mark-enquiry-treated', {
+      method: 'POST',
+      body: { enquiry_id: enquiryId, student_id: studentId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    if (msg) {
+      msg.textContent = 'treated';
+      msg.classList.add('is-visible-inline');
+    }
+    selectedStudentId = studentId;
+    await loadStudentsKeepingContext(currentStudentFilter, studentId);
+    await fetchAndRenderStudent(studentId);
+  } catch (err) {
+    if (msg) {
+      msg.textContent = 'Error: ' + err.message;
+      msg.classList.add('error-text', 'is-visible-inline');
+    } else {
+      alert('Could not mark enquiry treated: ' + err.message);
+    }
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+    if (btn) btn.textContent = 'mark treated';
+  }
+}
+
+export async function sendIntakeLink(studentId, _btn) {
   const s = currentStudentDetail;
   if (!s || String(s.id) !== String(studentId)) {
     alert('Student data not loaded. Please try again.');

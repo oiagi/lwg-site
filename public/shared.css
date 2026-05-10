@@ -24,6 +24,19 @@
   left: 0;
 }
 
+/* ── Screen-reader only utility ────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Keyboard focus ring ────────────────────────────────────────── */
 *:focus-visible {
   outline: 2px solid #2980b9;
@@ -88,6 +101,9 @@ body {
 
 .is-visible-block {
   display: block !important;
+}
+.error.is-visible-block {
+  animation: fadeIn 0.15s ease;
 }
 
 .is-visible-inline {

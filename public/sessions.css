@@ -189,12 +189,22 @@ h1 {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 .error-state {
   text-align: center;
   padding: 3rem 0;
   color: var(--ink-mute);
   font-size: 0.9rem;
   line-height: 1.8;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 html[data-device='mobile'] .container {
   width: 96vw;

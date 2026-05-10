@@ -168,6 +168,12 @@ renderAgbConsent();
     }
     error.textContent = message;
     error.classList.toggle('is-visible-block', show);
+    input.setAttribute('aria-invalid', show ? 'true' : 'false');
+    if (show) {
+      input.setAttribute('aria-describedby', `err-${id}`);
+    } else {
+      input.removeAttribute('aria-describedby');
+    }
   }
 
   function requireValue(id, message) {

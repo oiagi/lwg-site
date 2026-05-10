@@ -38,7 +38,7 @@
     <!-- ── What are you looking for? ──────────────────────────────────── -->
     <div class="field">
       <label for="lesson-type">what are you looking for?</label>
-      <textarea id="lesson-type" name="lesson_type"
+      <textarea id="lesson-type" name="lesson_type" aria-describedby="err-lesson-type"
                 placeholder="e.g. German A2 course, IELTS exam prep, Maths tutoring – Gymnasium year 9, Gymivorbereitung grade 6…"></textarea>
       <div class="error" id="err-lesson-type">Please describe what you are looking for.</div>
     </div>
@@ -49,12 +49,12 @@
     <div class="field-row">
       <div class="field">
         <label for="lead-first">first name</label>
-        <input type="text" id="lead-first" name="lead_first" autocomplete="given-name" />
+        <input type="text" id="lead-first" name="lead_first" autocomplete="given-name" aria-describedby="err-lead-first" />
         <div class="error" id="err-lead-first">Please enter a first name.</div>
       </div>
       <div class="field">
         <label for="lead-last">last name</label>
-        <input type="text" id="lead-last" name="lead_last" autocomplete="family-name" />
+        <input type="text" id="lead-last" name="lead_last" autocomplete="family-name" aria-describedby="err-lead-last" />
         <div class="error" id="err-lead-last">Please enter a last name.</div>
       </div>
     </div>
@@ -62,19 +62,19 @@
     <div class="field-row">
       <div class="field">
         <label for="lead-email">email</label>
-        <input type="email" id="lead-email" name="lead_email" autocomplete="email" />
+        <input type="email" id="lead-email" name="lead_email" autocomplete="email" aria-describedby="err-lead-email" />
         <div class="error" id="err-lead-email">Please enter an email address.</div>
       </div>
       <div class="field">
         <label for="lead-phone" id="label-lead-phone">phone</label>
-        <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" />
+        <input type="tel" id="lead-phone" name="lead_phone" autocomplete="tel" aria-describedby="err-lead-phone" />
         <div class="error" id="err-lead-phone">Please enter a phone number.</div>
       </div>
     </div>
 
     <div class="field">
       <label for="preferred-contact">preferred contact method</label>
-      <select id="preferred-contact" name="preferred_contact">
+      <select id="preferred-contact" name="preferred_contact" aria-describedby="err-preferred-contact">
         <option value="" disabled selected></option>
         <option value="Email">Email</option>
         <option value="Phone">Phone</option>
