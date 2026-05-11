@@ -168,6 +168,21 @@
               <input type="email" id="bf-billing-email">
             </div>
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="bf-billing-gender">billing salutation *</label>
+              <select id="bf-billing-gender">
+                <option value="" disabled selected></option>
+                <option value="female">Ms</option>
+                <option value="male">Mr</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field" id="bf-billing-gender-note-wrap" hidden>
+              <label for="bf-billing-gender-note">please specify *</label>
+              <input type="text" id="bf-billing-gender-note" autocomplete="off">
+            </div>
+          </div>
           <div class="field">
             <label for="bf-billing-phone">billing phone *</label>
             <input type="tel" id="bf-billing-phone">

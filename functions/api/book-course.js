@@ -44,6 +44,8 @@ const STUDENT_FIELDS = [
   'ec_phone',
   'ec_email',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_email',
   'billing_phone',
   'billing_street',
@@ -323,6 +325,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     billingSeparate ||
     [
       'billing_name',
+      'billing_gender',
       'billing_email',
       'billing_phone',
       'billing_street',
@@ -333,6 +336,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   ) {
     const missingBilling = missingRequired(student, [
       'billing_name',
+      'billing_gender',
       'billing_email',
       'billing_phone',
       'billing_street',
@@ -341,6 +345,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       'billing_city',
     ]);
     if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
+    if (!['female', 'male', 'other'].includes(student.billing_gender)) {
+      return errorResponse('billing_gender is required', 400);
+    }
+    if (student.billing_gender === 'other' && !student.billing_gender_note) {
+      return errorResponse('billing_gender_note is required when billing_gender is other', 400);
+    }
+    if (student.billing_gender !== 'other') student.billing_gender_note = null;
     if (!emailValid(student.billing_email))
       return errorResponse('billing_email must be valid', 400);
   }

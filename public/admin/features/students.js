@@ -329,6 +329,8 @@ function renderStudentDetail(container, s) {
   const hasPersonalAddress = s.street || s.postcode || s.city;
   const hasBillingAddress =
     s.billing_street || s.billing_postcode || s.billing_city || s.billing_name;
+  const billingGender = s.billing_gender || s.gender || '';
+  const billingGenderNote = s.billing_gender_note || '';
   const contactLine = (kind, value, hrefPrefix) => {
     if (!value) return '';
     const safeValue = esc(value);
@@ -375,6 +377,7 @@ function renderStudentDetail(container, s) {
         ${
           hasBillingAddress
             ? `${esc(s.billing_name) || fullName}<br>
+               ${billingGender ? esc(billingGender === 'other' && billingGenderNote ? `other: ${billingGenderNote}` : billingGender) + '<br>' : ''}
                ${contactLine('email', s.billing_email, 'mailto:')}
                ${contactLine('phone', s.billing_phone, 'tel:')}
                ${esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' '))}<br>

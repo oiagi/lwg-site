@@ -24,6 +24,8 @@ const COLUMNS = [
   'ec_phone',
   'ec_email',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_email',
   'billing_phone',
   'billing_street',

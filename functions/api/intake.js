@@ -40,6 +40,8 @@ const RETURN_FIELDS = [
   'ec_phone',
   'ec_email',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_email',
   'billing_phone',
   'billing_street',
@@ -47,6 +49,9 @@ const RETURN_FIELDS = [
   'billing_postcode',
   'billing_city',
 ];
+const RETURN_FIELDS_COMPAT = RETURN_FIELDS.filter(
+  (field) => !['billing_gender', 'billing_gender_note'].includes(field)
+);
 
 function emailValid(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
@@ -59,15 +64,22 @@ function missingRequired(body, fields) {
 async function loadStudentByToken(env, token) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
-  const select = ['id', 'token_created_at', 'created_at', ...RETURN_FIELDS].join(',');
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?access_token=eq.${encodeURIComponent(token)}&select=${select}`,
-    { headers: H }
-  );
+  const baseUrl = `${SUPABASE_URL}/rest/v1/students?access_token=eq.${encodeURIComponent(token)}`;
+  let selectedFields = RETURN_FIELDS;
+  let select = ['id', 'token_created_at', 'created_at', ...selectedFields].join(',');
+  let res = await fetch(`${baseUrl}&select=${select}`, { headers: H });
+  if (!res.ok && res.status === 400) {
+    selectedFields = RETURN_FIELDS_COMPAT;
+    select = ['id', 'token_created_at', 'created_at', ...selectedFields].join(',');
+    res = await fetch(`${baseUrl}&select=${select}`, { headers: H });
+  }
   if (!res.ok) return { error: 'Database error', status: 500 };
   const rows = await res.json();
   if (!rows.length) return { error: 'Invalid token', status: 404 };
   const student = rows[0];
+  for (const field of RETURN_FIELDS) {
+    if (!(field in student)) student[field] = null;
+  }
 
   const tokenDate = student.token_created_at || student.created_at;
   if (tokenDate) {
@@ -132,6 +144,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (body.billing_separate) {
     const missingBilling = missingRequired(body, [
       'billing_name',
+      'billing_gender',
       'billing_email',
       'billing_phone',
       'billing_street',
@@ -140,6 +153,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       'billing_city',
     ]);
     if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
+    if (!['female', 'male', 'other'].includes(body.billing_gender)) {
+      return errorResponse('Billing salutation is required', 400);
+    }
+    if (body.billing_gender === 'other' && !body.billing_gender_note) {
+      return errorResponse('Please specify the billing salutation', 400);
+    }
     if (!emailValid(body.billing_email)) return errorResponse('billing_email must be valid', 400);
   }
 
@@ -175,6 +194,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const billingFields = [
     'billing_name',
+    'billing_gender',
+    'billing_gender_note',
     'billing_email',
     'billing_phone',
     'billing_street',
@@ -185,6 +206,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (body.billing_separate) {
     for (const f of billingFields) {
       if (f in body) update[f] = body[f];
+    }
+    if (!['female', 'male', 'other'].includes(update.billing_gender)) {
+      update.billing_gender = null;
+      update.billing_gender_note = null;
+    } else if (update.billing_gender !== 'other') {
+      update.billing_gender_note = null;
     }
     const streetLine = [update.billing_street, update.billing_street_number]
       .filter(Boolean)
