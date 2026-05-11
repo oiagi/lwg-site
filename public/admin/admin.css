@@ -2790,6 +2790,7 @@ html[data-device='mobile'] .avail-day {
 }
 .inv-prev-meta {
   margin: 1rem 0 2rem;
+  width: 46%;
 }
 .inv-prev-date {
   margin: 0 0 1rem;
@@ -2805,10 +2806,19 @@ html[data-device='mobile'] .avail-day {
   margin-bottom: 1.4rem;
 }
 .inv-prev-address {
-  border-top: 1px solid #ddd;
   font-size: 0.76rem;
-  margin: 1.2rem 0;
-  padding-top: 0.6rem;
+  margin: 0;
+  position: absolute;
+  right: 2.2rem;
+  top: 8.8rem;
+  width: 46%;
+}
+.inv-prev-address p {
+  border-bottom: 1px solid #ddd;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.25rem;
 }
 .inv-prev-page table {
   border-collapse: collapse;
