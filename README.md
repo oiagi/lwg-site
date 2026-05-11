@@ -106,6 +106,7 @@ Defined in `.dev.vars` (local) and the Cloudflare Pages dashboard (production). 
 | `RESEND_API_KEY`       | Resend email service                                             |
 | `GOOGLE_CLIENT_ID`     | Google OAuth client ID                                           |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                                       |
+| `GOOGLE_REDIRECT_URI`  | Exact Google OAuth callback URI, if different from `SITE_URL`    |
 | `SITE_URL`             | Canonical URL for OAuth redirects (falls back to request origin) |
 | `ALLOWED_ORIGINS`      | Comma-separated CORS allowlist                                   |
 

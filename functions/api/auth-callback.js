@@ -13,6 +13,24 @@
 
 import { withErrorHandling } from './_utils.js';
 
+function oauthRedirectUri(env, requestUrl) {
+  const origin = env.SITE_URL || new URL(requestUrl).origin;
+  return env.GOOGLE_REDIRECT_URI || `${origin}/api/auth-callback`;
+}
+
+async function fetchPrimaryCalendar(accessToken) {
+  const res = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList/primary', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!res.ok) {
+    console.error('Primary calendar lookup failed:', await res.text());
+    return null;
+  }
+
+  return res.json();
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
@@ -44,7 +62,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${siteUrl}/api/auth-callback`,
+        redirect_uri: oauthRedirectUri(env, request.url),
         grant_type: 'authorization_code',
       }),
     });
@@ -62,12 +80,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   // ── Store tokens in Supabase against the teacher record ─────────────
   const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+  const primaryCalendar = await fetchPrimaryCalendar(tokens.access_token);
 
   try {
     const patch = {
       access_token: tokens.access_token,
       token_expires_at: expiresAt,
     };
+    if (primaryCalendar?.id) {
+      patch.calendar_id = primaryCalendar.id;
+      patch.google_account = primaryCalendar.id.includes('@')
+        ? primaryCalendar.id
+        : primaryCalendar.summary;
+    }
     // Only update refresh token if Google issued a new one
     // (Google only issues it on first consent or when prompt=consent is used)
     if (tokens.refresh_token) {

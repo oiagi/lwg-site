@@ -48,10 +48,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
   });
   const teachers = await tr.json();
-  if (!teachers.length || !teachers[0].refresh_token) {
-    return errorResponse('Teacher not found or not authorised', 400);
-  }
+  if (!teachers.length) return errorResponse('Teacher not found', 404);
   const teacher = teachers[0];
+  if (!teacher.refresh_token)
+    return errorResponse('Teacher has not authorised Google Calendar', 400);
+  if (!teacher.calendar_id) return errorResponse('Teacher has no Google Calendar selected', 400);
 
   // ── Get access token ─────────────────────────────────────────────────
   let accessToken;
