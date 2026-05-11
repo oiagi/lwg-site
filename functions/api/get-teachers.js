@@ -25,7 +25,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   try {
     // Select only non-sensitive fields — never return tokens to the client
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/teachers?active=eq.true&select=id,name,email,google_account,token_expires_at,refresh_token`,
+      `${SUPABASE_URL}/rest/v1/teachers?active=eq.true&select=id,name,email,google_account,calendar_id,token_expires_at,refresh_token`,
       { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
     );
 
@@ -39,7 +39,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       name: t.name,
       email: t.email,
       google_account: t.google_account,
-      authorised: !!t.refresh_token,
+      authorised: !!t.refresh_token && !!t.calendar_id,
       token_valid: t.token_expires_at ? new Date(t.token_expires_at) > new Date() : false,
     }));
 

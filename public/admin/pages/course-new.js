@@ -257,8 +257,8 @@ async function handleSubmit(e) {
     setTimeout(() => {
       window.location.href = '/admin#courses';
     }, 1500);
-  } catch {
-    msgEl.textContent = 'Something went wrong. Please try again.';
+  } catch (err) {
+    msgEl.textContent = err.message || 'Something went wrong. Please try again.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     btn.textContent = 'create course & calendar event';
@@ -291,7 +291,7 @@ async function handleSubmit(e) {
       teachers
         .map(
           (t) =>
-            `<option value="${esc(t.id)}"${!t.authorised ? ' disabled' : ''}>${esc(t.name)}${!t.authorised ? ' (not authorised)' : ''}</option>`
+            `<option value="${esc(t.id)}" data-authorised="${t.authorised ? 'true' : 'false'}">${esc(t.name)}${!t.authorised ? ' (calendar not authorised)' : ''}</option>`
         )
         .join('');
   } catch {

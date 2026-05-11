@@ -14,6 +14,11 @@
 
 import { verifySupabaseToken, withErrorHandling } from './_utils.js';
 
+function oauthRedirectUri(env, requestUrl) {
+  const origin = env.SITE_URL || new URL(requestUrl).origin;
+  return env.GOOGLE_REDIRECT_URI || `${origin}/api/auth-callback`;
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const GOOGLE_CLIENT_ID = env.GOOGLE_CLIENT_ID;
 
@@ -35,10 +40,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   // Scopes requested:
   //   calendar.events   — create and manage events
   //   calendar.readonly — read calendar metadata
-  const siteUrl = env.SITE_URL || new URL(request.url).origin;
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: `${siteUrl}/api/auth-callback`,
+    redirect_uri: oauthRedirectUri(env, request.url),
     response_type: 'code',
     scope:
       'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',

@@ -118,19 +118,22 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!teachers.length) return errorResponse('Teacher not found', 404);
   const teacher = teachers[0];
 
-  if (!teacher.refresh_token) {
+  const canUseCalendar = !!teacher.refresh_token && !!teacher.calendar_id;
+  if (!canUseCalendar && !single_session) {
     return errorResponse(
-      'Teacher has not authorised Google Calendar. Please authenticate first.',
+      'Teacher has not authorised Google Calendar. Re-authorise the teacher or choose the manual first-session option.',
       400
     );
   }
 
   let accessToken;
-  try {
-    accessToken = await getValidAccessToken(teacher, env);
-  } catch (err) {
-    console.error('Token error:', err);
-    return errorResponse(err.message, err.statusCode || 500);
+  if (canUseCalendar) {
+    try {
+      accessToken = await getValidAccessToken(teacher, env);
+    } catch (err) {
+      console.error('Token error:', err);
+      if (!single_session) return errorResponse(err.message, err.statusCode || 500);
+    }
   }
 
   // ── Course code ───────────────────────────────────────────────────────
@@ -158,23 +161,26 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   // ── Calendar event ───────────────────────────────────────────────────
-  let calendarEventId, recurrenceRule;
-  try {
-    ({ eventId: calendarEventId, recurrenceRule } = await createCourseCalendarEvent({
-      accessToken,
-      calendarId: teacher.calendar_id,
-      courseCode,
-      booking,
-      contact,
-      teacherName: teacher.name,
-      firstSessionAt: first_session_at,
-      durationMinutes: duration_minutes,
-      sessionsTotal: sessions_total,
-      singleSession: single_session,
-    }));
-  } catch (err) {
-    console.error('Calendar API error:', err);
-    return errorResponse(err.message || 'Calendar API error');
+  let calendarEventId = null,
+    recurrenceRule = null;
+  if (accessToken && teacher.calendar_id) {
+    try {
+      ({ eventId: calendarEventId, recurrenceRule } = await createCourseCalendarEvent({
+        accessToken,
+        calendarId: teacher.calendar_id,
+        courseCode,
+        booking,
+        contact,
+        teacherName: teacher.name,
+        firstSessionAt: first_session_at,
+        durationMinutes: duration_minutes,
+        sessionsTotal: sessions_total,
+        singleSession: single_session,
+      }));
+    } catch (err) {
+      console.error('Calendar API error:', err);
+      if (!single_session) return errorResponse(err.message || 'Calendar API error');
+    }
   }
 
   // ── Course record ────────────────────────────────────────────────────
@@ -223,32 +229,52 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Database error');
   }
 
-  // ── Sync sessions from the recurring calendar event ──────────────────
-  try {
-    const { active } = await fetchCourseEvents({
-      accessToken,
-      calendarId: teacher.calendar_id,
-      courseCode,
-    });
-    const now = new Date();
-    for (const event of active) {
-      const scheduledAt = event.start.dateTime || event.start.date;
-      const isPast = new Date(scheduledAt) < now;
-      await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-        method: 'POST',
-        headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
-        body: JSON.stringify({
-          course_id: courseId,
-          teacher_id,
-          scheduled_at: scheduledAt,
-          duration_minutes,
-          status: isPast ? 'completed' : 'scheduled',
-          calendar_event_id: event.id,
-        }),
+  // ── Sync/create sessions ─────────────────────────────────────────────
+  if (calendarEventId) {
+    try {
+      const { active } = await fetchCourseEvents({
+        accessToken,
+        calendarId: teacher.calendar_id,
+        courseCode,
       });
+      const now = new Date();
+      for (const event of active) {
+        const scheduledAt = event.start.dateTime || event.start.date;
+        const isPast = new Date(scheduledAt) < now;
+        await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+          method: 'POST',
+          headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+          body: JSON.stringify({
+            course_id: courseId,
+            teacher_id,
+            scheduled_at: scheduledAt,
+            duration_minutes,
+            status: isPast ? 'completed' : 'scheduled',
+            calendar_event_id: event.id,
+          }),
+        });
+      }
+    } catch (err) {
+      console.error('Session sync error:', err);
     }
-  } catch (err) {
-    console.error('Session sync error:', err);
+  }
+
+  if (!calendarEventId) {
+    const now = new Date();
+    const isPast = new Date(first_session_at) < now;
+    const sr = await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+      method: 'POST',
+      headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
+      body: JSON.stringify({
+        course_id: courseId,
+        teacher_id,
+        scheduled_at: first_session_at,
+        duration_minutes,
+        status: isPast ? 'completed' : 'scheduled',
+        calendar_event_id: null,
+      }),
+    });
+    if (!sr.ok) console.error('Manual session creation failed:', await sr.text());
   }
 
   // ── Students + enrolments ────────────────────────────────────────────

@@ -18,6 +18,10 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 # the request origin if omitted (safe for local dev).
 # SITE_URL=http://localhost:8788
 
+# Optional exact OAuth redirect URI. If set, this exact URI must also be
+# registered in Google Cloud Console for the OAuth client.
+# GOOGLE_REDIRECT_URI=http://localhost:8788/api/auth-callback
+
 # ── CORS ─────────────────────────────────────────────────────────
 # Comma-separated list of allowed origins
 # (defaults to https://learningwithgioia.ch,https://oiagi.org,http://localhost)
