@@ -22,6 +22,8 @@ renderAgbConsent();
   const billingFields = document.getElementById('billing-fields');
   const genderSelect = document.getElementById('bf-gender');
   const genderNoteWrap = document.getElementById('bf-gender-note-wrap');
+  const billingGenderSelect = document.getElementById('bf-billing-gender');
+  const billingGenderNoteWrap = document.getElementById('bf-billing-gender-note-wrap');
   let courses = [];
   let selectedCourse = null;
   let statusMessageKey = 'loading';
@@ -209,6 +211,9 @@ renderAgbConsent();
     };
     if (billingCheckbox.checked) {
       student.billing_name = val('bf-billing-name') || null;
+      student.billing_gender = val('bf-billing-gender') || null;
+      student.billing_gender_note =
+        student.billing_gender === 'other' ? val('bf-billing-gender-note') || null : null;
       student.billing_email = val('bf-billing-email') || null;
       student.billing_phone = val('bf-billing-phone') || null;
       student.billing_street = val('bf-billing-street') || null;
@@ -260,6 +265,7 @@ renderAgbConsent();
     if (billingCheckbox.checked) {
       [
         ['bf-billing-name', 'Please enter a billing name.'],
+        ['bf-billing-gender', 'Please select a billing salutation.'],
         ['bf-billing-phone', 'Please enter a billing phone number.'],
         ['bf-billing-street', 'Please enter a billing street.'],
         ['bf-billing-street-number', 'Please enter a billing street number.'],
@@ -270,6 +276,13 @@ renderAgbConsent();
       });
       if (!requireEmail('bf-billing-email', 'Please enter a valid billing email.')) {
         valid = false;
+      }
+      if (val('bf-billing-gender') === 'other') {
+        if (!requireValue('bf-billing-gender-note', 'Please specify the billing salutation.')) {
+          valid = false;
+        }
+      } else {
+        showGeneratedError('bf-billing-gender-note', '', false);
       }
     }
     showErr('err-consent', !consent);
@@ -332,6 +345,8 @@ renderAgbConsent();
     if (!billingCheckbox.checked) {
       [
         'bf-billing-name',
+        'bf-billing-gender',
+        'bf-billing-gender-note',
         'bf-billing-email',
         'bf-billing-phone',
         'bf-billing-street',
@@ -346,6 +361,12 @@ renderAgbConsent();
     const needsNote = genderSelect.value === 'other';
     genderNoteWrap.hidden = !needsNote;
     if (!needsNote) document.getElementById('bf-gender-note').value = '';
+  });
+
+  billingGenderSelect.addEventListener('change', () => {
+    const needsNote = billingGenderSelect.value === 'other';
+    billingGenderNoteWrap.hidden = !needsNote;
+    if (!needsNote) document.getElementById('bf-billing-gender-note').value = '';
   });
 
   document.getElementById('booking-cancel').addEventListener('click', () => {

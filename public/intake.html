@@ -136,6 +136,22 @@
           </div>
         </div>
 
+        <div class="field-row">
+          <div class="field">
+            <label for="if-billing-gender">billing salutation *</label>
+            <select id="if-billing-gender" aria-describedby="err-if-billing-gender">
+              <option value="" disabled selected></option>
+              <option value="female">Ms</option>
+              <option value="male">Mr</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field is-hidden" id="if-billing-gender-note-wrap">
+            <label for="if-billing-gender-note">please specify *</label>
+            <input type="text" id="if-billing-gender-note" autocomplete="off" />
+          </div>
+        </div>
+
         <div class="field">
           <label for="if-billing-phone">billing phone *</label>
           <input type="tel" id="if-billing-phone" />

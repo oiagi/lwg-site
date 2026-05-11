@@ -45,12 +45,25 @@ function cleanFilenamePart(value, fallback) {
     .slice(0, 80);
 }
 
+function surnameFromName(name) {
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  return parts.length > 1 ? parts[parts.length - 1] : '';
+}
+
+function fullNameFromParts(firstName, lastName, fallbackName = '') {
+  return [firstName, lastName].filter(Boolean).join(' ') || fallbackName;
+}
+
 function invoiceGreeting({ language, name, first_name, last_name, gender }) {
   if (language === 'en') return `Hello ${first_name || name || 'there'},`;
-  if (gender === 'female' && last_name) return `Sehr geehrte Frau ${last_name}`;
-  if (gender === 'male' && last_name) return `Sehr geehrter Herr ${last_name}`;
-  const fullName = [first_name, last_name].filter(Boolean).join(' ') || name;
-  return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
+  const surname = last_name || surnameFromName(name);
+  if (gender === 'female' && surname) return `Liebe Frau ${surname}`;
+  if (gender === 'male' && surname) return `Lieber Herr ${surname}`;
+  const fullName = fullNameFromParts(first_name, last_name, name);
+  return fullName ? `Guten Tag ${fullName}` : 'Guten Tag';
 }
 
 function buildEmail({ language, name, first_name, last_name, gender, invoice }) {

@@ -242,6 +242,10 @@ function splitName(name) {
   };
 }
 
+function fullNameFromParts(firstName, lastName, fallbackName = '') {
+  return [firstName, lastName].filter(Boolean).join(' ') || fallbackName;
+}
+
 function invoiceRecipient(student) {
   if (hasBillingAddressData(student)) {
     const name = student.billing_name || '';
@@ -250,8 +254,8 @@ function invoiceRecipient(student) {
       name,
       firstName,
       lastName,
-      gender: '',
-      genderNote: '',
+      gender: student.billing_gender || student.gender || '',
+      genderNote: student.billing_gender_note || '',
       email: student.billing_email || '',
       street: [student.billing_street, student.billing_street_number].filter(Boolean).join(' '),
       city: [student.billing_postcode, student.billing_city].filter(Boolean).join(' '),
@@ -276,16 +280,18 @@ function billingAddressLines(student) {
 }
 
 function formalGreeting(data) {
-  const lastName = data.recipientLastName || '';
-  const fullName = [data.recipientFirstName, data.recipientLastName].filter(Boolean).join(' ');
+  const lastName = data.recipientLastName || splitName(data.recipientName).lastName || '';
+  const fullName = fullNameFromParts(
+    data.recipientFirstName,
+    data.recipientLastName,
+    data.recipientName
+  );
   if (data.language === 'en') {
-    if (data.recipientGender === 'female' && lastName) return `Dear Ms ${lastName},`;
-    if (data.recipientGender === 'male' && lastName) return `Dear Mr ${lastName},`;
     return fullName ? `Dear ${fullName},` : 'Dear Sir or Madam,';
   }
-  if (data.recipientGender === 'female' && lastName) return `Sehr geehrte Frau ${lastName}`;
-  if (data.recipientGender === 'male' && lastName) return `Sehr geehrter Herr ${lastName}`;
-  return fullName ? `Guten Tag ${fullName}` : 'Sehr geehrte Damen und Herren';
+  if (data.recipientGender === 'female' && lastName) return `Liebe Frau ${lastName}`;
+  if (data.recipientGender === 'male' && lastName) return `Lieber Herr ${lastName}`;
+  return fullName ? `Guten Tag ${fullName}` : 'Guten Tag';
 }
 
 function renderBulkInvoiceRecipients(recipients, skipped = []) {

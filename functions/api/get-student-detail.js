@@ -17,7 +17,7 @@ import {
 } from './_utils.js';
 
 const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
-const STUDENT_DETAIL_FIELDS = [
+const STUDENT_DETAIL_FIELD_LIST = [
   'id',
   'first_name',
   'last_name',
@@ -37,6 +37,8 @@ const STUDENT_DETAIL_FIELDS = [
   'source',
   'created_at',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_address',
   'billing_phone',
   'billing_email',
@@ -71,7 +73,11 @@ const STUDENT_DETAIL_FIELDS = [
   'intake_token_created_at',
   'access_token',
   'token_created_at',
-].join(',');
+];
+const STUDENT_DETAIL_FIELDS = STUDENT_DETAIL_FIELD_LIST.join(',');
+const STUDENT_DETAIL_FIELDS_COMPAT = STUDENT_DETAIL_FIELD_LIST.filter(
+  (field) => !['billing_gender', 'billing_gender_note'].includes(field)
+).join(',');
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
@@ -87,15 +93,25 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   try {
     // ── Load student ────────────────────────────────────────────────────
-    const stuRes = await fetch(
+    let stuRes = await fetch(
       `${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=${STUDENT_DETAIL_FIELDS}`,
       {
         headers: H,
       }
     );
+    if (!stuRes.ok && stuRes.status === 400) {
+      stuRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?id=eq.${id}&select=${STUDENT_DETAIL_FIELDS_COMPAT}`,
+        {
+          headers: H,
+        }
+      );
+    }
     const students = await stuRes.json();
     if (!students.length) return errorResponse('Student not found', 404);
     const student = students[0];
+    student.billing_gender ??= null;
+    student.billing_gender_note ??= null;
 
     // ── Load enrolments + courses ───────────────────────────────────────
     const enrolRes = await fetch(

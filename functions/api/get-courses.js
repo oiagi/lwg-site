@@ -36,6 +36,10 @@ const DB_SORTS = {
 };
 
 const DERIVED_SORTS = new Set(['student_count', 'sessions_remaining']);
+const STUDENT_SELECT =
+  'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_gender,billing_gender_note,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
+const STUDENT_SELECT_COMPAT =
+  'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
 
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
@@ -135,11 +139,21 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     let allStudents = [];
     if (studentIds.length) {
       const studentFilter = studentIds.map((id) => `id.eq.${id}`).join(',');
-      const studRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects`,
+      let studRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=${STUDENT_SELECT}`,
         { headers: H }
       );
+      if (!studRes.ok && studRes.status === 400) {
+        studRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=${STUDENT_SELECT_COMPAT}`,
+          { headers: H }
+        );
+      }
       allStudents = studRes.ok ? await studRes.json() : [];
+      allStudents.forEach((student) => {
+        student.billing_gender ??= null;
+        student.billing_gender_note ??= null;
+      });
     }
 
     // ── Batch fetch open invoices for these courses ───────────────────

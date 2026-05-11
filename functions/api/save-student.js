@@ -36,6 +36,8 @@ const STUDENT_FIELDS = [
   'status',
   'source',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_address',
   'billing_street',
   'billing_street_number',
@@ -74,6 +76,7 @@ const BILLING_ADDRESS_FIELDS = [
   'billing_postcode',
   'billing_city',
 ];
+const GENDER_VALUES = new Set(['female', 'male', 'other']);
 
 function buildBillingAddress(data) {
   const streetLine = [data.billing_street, data.billing_street_number].filter(Boolean).join(' ');
@@ -106,10 +109,28 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   // active is excluded from allowed fields because it is derived from status below.
   const data = pickDefined(body, STUDENT_FIELDS);
 
+  if ('gender' in data) {
+    if (!GENDER_VALUES.has(data.gender)) {
+      data.gender = null;
+      data.gender_note = null;
+    } else if (data.gender !== 'other') {
+      data.gender_note = null;
+    }
+  }
+
+  if ('billing_gender' in data) {
+    if (!GENDER_VALUES.has(data.billing_gender)) {
+      data.billing_gender = null;
+      data.billing_gender_note = null;
+    } else if (data.billing_gender !== 'other') {
+      data.billing_gender_note = null;
+    }
+  }
+
   // Derive billing_address for PDF/invoice compat whenever split billing fields are updated
   if (BILLING_ADDRESS_FIELDS.some((k) => k in data)) {
     const derived = buildBillingAddress(data);
-    if (derived) data.billing_address = derived;
+    data.billing_address = derived || null;
   }
 
   // Dual-write: always keep active in sync with status during migration

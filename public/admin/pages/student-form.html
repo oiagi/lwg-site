@@ -74,6 +74,19 @@
         <div id="sm-billing-section" class="is-hidden">
           <div class="modal-grid">
             <div class="modal-field"><label>Billing name</label><input type="text" id="sm-billing-name" placeholder="Full name (if different from student)"></div>
+            <div class="modal-field">
+              <label>Billing form of address</label>
+              <select id="sm-billing-gender">
+                <option value="">—</option>
+                <option value="female">female</option>
+                <option value="male">male</option>
+                <option value="other">other</option>
+              </select>
+            </div>
+            <div class="modal-field is-hidden" id="sm-billing-gender-note-wrap">
+              <label>Please specify billing salutation</label>
+              <input type="text" id="sm-billing-gender-note" placeholder="Preferred address">
+            </div>
             <div class="modal-field"><label>Billing phone</label><input type="tel" id="sm-billing-phone" placeholder="+41…"></div>
             <div class="modal-field"><label>Billing email</label><input type="email" id="sm-billing-email" placeholder="billing@example.com"></div>
             <div class="modal-field"><label>Billing street</label><input type="text" id="sm-billing-street" placeholder="e.g. Bahnhofstrasse"></div>

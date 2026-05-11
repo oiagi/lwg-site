@@ -8,6 +8,8 @@
   const billingSection = document.getElementById('if-billing-section');
   const genderSelect = document.getElementById('if-gender');
   const genderNoteWrap = document.getElementById('if-gender-note-wrap');
+  const billingGenderSelect = document.getElementById('if-billing-gender');
+  const billingGenderNoteWrap = document.getElementById('if-billing-gender-note-wrap');
 
   function setHidden(el, hidden) {
     if (el) el.classList.toggle('is-hidden', hidden);
@@ -43,11 +45,18 @@
     if (!show) setVal('if-gender-note', '');
   }
 
+  function setBillingGenderNoteVisible(show) {
+    setHidden(billingGenderNoteWrap, !show);
+    if (!show) setVal('if-billing-gender-note', '');
+  }
+
   billingCheckbox.addEventListener('change', (e) => {
     setBillingVisible(e.target.checked);
     if (!e.target.checked) {
       [
         'if-billing-name',
+        'if-billing-gender',
+        'if-billing-gender-note',
         'if-billing-email',
         'if-billing-phone',
         'if-billing-street',
@@ -60,6 +69,10 @@
 
   genderSelect.addEventListener('change', (e) => {
     setGenderNoteVisible(e.target.value === 'other');
+  });
+
+  billingGenderSelect.addEventListener('change', (e) => {
+    setBillingGenderNoteVisible(e.target.value === 'other');
   });
 
   function populate(data) {
@@ -90,6 +103,9 @@
     );
     setBillingVisible(hasBilling);
     setVal('if-billing-name', data.billing_name);
+    setVal('if-billing-gender', data.billing_gender);
+    setVal('if-billing-gender-note', data.billing_gender_note);
+    setBillingGenderNoteVisible(data.billing_gender === 'other');
     setVal('if-billing-email', data.billing_email);
     setVal('if-billing-phone', data.billing_phone);
     setVal('if-billing-street', data.billing_street);
@@ -194,6 +210,7 @@
     if (billingCheckbox.checked) {
       [
         ['if-billing-name', 'Please enter a billing name.'],
+        ['if-billing-gender', 'Please select a billing salutation.'],
         ['if-billing-phone', 'Please enter a billing phone number.'],
         ['if-billing-street', 'Please enter a billing street.'],
         ['if-billing-street-number', 'Please enter a billing street number.'],
@@ -204,6 +221,18 @@
       });
       if (!requireEmail('if-billing-email', 'Please enter a valid billing email.')) {
         valid = false;
+      }
+      const billingGender = getVal('if-billing-gender');
+      const billingGenderNote = getVal('if-billing-gender-note');
+      if (billingGender === 'other' && !billingGenderNote) {
+        showGeneratedError(
+          'if-billing-gender-note',
+          'Please specify the billing salutation.',
+          true
+        );
+        valid = false;
+      } else {
+        showGeneratedError('if-billing-gender-note', '', false);
       }
     }
 
@@ -239,6 +268,9 @@
     };
     if (billingCheckbox.checked) {
       body.billing_name = getVal('if-billing-name') || null;
+      body.billing_gender = getVal('if-billing-gender') || null;
+      body.billing_gender_note =
+        body.billing_gender === 'other' ? getVal('if-billing-gender-note') || null : null;
       body.billing_email = getVal('if-billing-email') || null;
       body.billing_phone = getVal('if-billing-phone') || null;
       body.billing_street = getVal('if-billing-street') || null;

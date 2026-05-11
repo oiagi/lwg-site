@@ -34,6 +34,8 @@ const ALLOWED_FIELDS = [
   'ec_phone',
   'ec_email',
   'billing_name',
+  'billing_gender',
+  'billing_gender_note',
   'billing_email',
   'billing_phone',
   'billing_street',
@@ -47,6 +49,7 @@ const ALLOWED_FIELDS = [
 ];
 
 const VALID_STATUS = new Set(['active', 'inactive', 'prospect']);
+const VALID_GENDER = new Set(['female', 'male', 'other']);
 
 function pickAllowed(row) {
   const out = {};
@@ -57,6 +60,15 @@ function pickAllowed(row) {
     }
   }
   if (out.status && !VALID_STATUS.has(out.status)) delete out.status;
+  for (const field of ['gender', 'billing_gender']) {
+    const noteField = `${field}_note`;
+    if (out[field] && !VALID_GENDER.has(out[field])) {
+      delete out[field];
+      delete out[noteField];
+    } else if (out[field] && out[field] !== 'other') {
+      delete out[noteField];
+    }
+  }
   return out;
 }
 

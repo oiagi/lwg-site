@@ -4,6 +4,8 @@ import { apiFetch } from '../core/api.js';
 
 const BILLING_FIELDS = [
   'sm-billing-name',
+  'sm-billing-gender',
+  'sm-billing-gender-note',
   'sm-billing-phone',
   'sm-billing-email',
   'sm-billing-street',
@@ -84,6 +86,9 @@ function populate(data) {
   setValue('sm-ec-email', data.ec_email);
   setValue('sm-ec-relationship', data.ec_relationship);
   setValue('sm-billing-name', data.billing_name);
+  setValue('sm-billing-gender', data.billing_gender || data.gender);
+  setValue('sm-billing-gender-note', data.billing_gender_note);
+  setBillingGenderNote((data.billing_gender || data.gender) === 'other');
   setValue('sm-billing-phone', data.billing_phone);
   setValue('sm-billing-email', data.billing_email);
 
@@ -126,10 +131,22 @@ function setGenderNote(show) {
   if (!show) setValue('sm-gender-note', '');
 }
 
+function setBillingGenderNote(show) {
+  const wrap = document.getElementById('sm-billing-gender-note-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('is-hidden', !show);
+  if (!show) setValue('sm-billing-gender-note', '');
+}
+
 function wireGenderToggle() {
   const select = document.getElementById('sm-gender');
   select?.addEventListener('change', () => {
     setGenderNote(select.value === 'other');
+  });
+
+  const billingSelect = document.getElementById('sm-billing-gender');
+  billingSelect?.addEventListener('change', () => {
+    setBillingGenderNote(billingSelect.value === 'other');
   });
 }
 
@@ -244,6 +261,14 @@ function buildBody() {
 
   if (document.getElementById('sm-billing-separate').checked) {
     body.billing_name = document.getElementById('sm-billing-name').value.trim() || null;
+    body.billing_gender =
+      document.getElementById('sm-billing-gender').value ||
+      document.getElementById('sm-gender').value ||
+      null;
+    body.billing_gender_note =
+      body.billing_gender === 'other'
+        ? document.getElementById('sm-billing-gender-note').value.trim() || null
+        : null;
     body.billing_phone = document.getElementById('sm-billing-phone').value.trim() || null;
     body.billing_email = document.getElementById('sm-billing-email').value.trim() || null;
     body.billing_street = document.getElementById('sm-billing-street').value.trim() || null;
@@ -253,6 +278,8 @@ function buildBody() {
     body.billing_city = document.getElementById('sm-billing-city').value.trim() || null;
   } else {
     body.billing_name = null;
+    body.billing_gender = null;
+    body.billing_gender_note = null;
     body.billing_phone = null;
     body.billing_email = null;
     body.billing_street = null;
@@ -334,6 +361,7 @@ async function handleSubmit(e) {
     document.getElementById('sm-status').value = 'active';
     setBilling(false);
     setGenderNote(false);
+    setBillingGenderNote(false);
   }
 
   wireGenderToggle();
