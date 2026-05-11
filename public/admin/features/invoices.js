@@ -215,25 +215,64 @@ function studentName(student) {
   return [student.first_name, student.last_name].filter(Boolean).join(' ') || student.email || '—';
 }
 
-function billingName(student) {
-  return student.billing_name || studentName(student);
-}
-
 function billingEmail(student) {
   return student.billing_email || student.email || '';
 }
 
+function hasBillingAddressData(student) {
+  return Boolean(
+    student?.billing_name ||
+    student?.billing_street ||
+    student?.billing_street_number ||
+    student?.billing_postcode ||
+    student?.billing_city
+  );
+}
+
+function splitName(name) {
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return { firstName: '', lastName: '' };
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+  return {
+    firstName: parts.slice(0, -1).join(' '),
+    lastName: parts[parts.length - 1],
+  };
+}
+
+function invoiceRecipient(student) {
+  if (hasBillingAddressData(student)) {
+    const name = student.billing_name || '';
+    const { firstName, lastName } = splitName(name);
+    return {
+      name,
+      firstName,
+      lastName,
+      gender: '',
+      genderNote: '',
+      email: student.billing_email || '',
+      street: [student.billing_street, student.billing_street_number].filter(Boolean).join(' '),
+      city: [student.billing_postcode, student.billing_city].filter(Boolean).join(' '),
+    };
+  }
+
+  return {
+    name: studentName(student),
+    firstName: student?.first_name || '',
+    lastName: student?.last_name || '',
+    gender: student?.gender || '',
+    genderNote: student?.gender_note || '',
+    email: student?.email || '',
+    street: [student?.street, student?.street_number].filter(Boolean).join(' '),
+    city: [student?.postcode, student?.city].filter(Boolean).join(' '),
+  };
+}
+
 function billingAddressLines(student) {
-  const street = [
-    student.billing_street || student.street,
-    student.billing_street_number || student.street_number,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  const city = [student.billing_postcode || student.postcode, student.billing_city || student.city]
-    .filter(Boolean)
-    .join(' ');
-  return [billingName(student), street, city].filter(Boolean);
+  const recipient = invoiceRecipient(student);
+  return [recipient.name, recipient.street, recipient.city].filter(Boolean);
 }
 
 function formalGreeting(data) {
@@ -492,6 +531,7 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
   const quantity = numVal('inv-quantity');
   const unitPrice = numVal('inv-unit-price');
   const totalAmount = numVal('inv-total') || quantity * unitPrice;
+  const recipient = invoiceRecipient(student);
   return {
     language,
     invoiceNumber,
@@ -506,13 +546,13 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     unitPrice,
     totalAmount,
     currency: currentCourse?.currency || 'CHF',
-    recipientName: billingName(student),
-    recipientFirstName: student?.first_name || '',
-    recipientLastName: student?.last_name || '',
-    recipientGender: student?.gender || '',
-    recipientGenderNote: student?.gender_note || '',
+    recipientName: recipient.name,
+    recipientFirstName: recipient.firstName,
+    recipientLastName: recipient.lastName,
+    recipientGender: recipient.gender,
+    recipientGenderNote: recipient.genderNote,
     recipientEmail: currentBulkRecipients.length
-      ? billingEmail(student)
+      ? recipient.email || billingEmail(student)
       : val('inv-recipient-email'),
     recipientLines: billingAddressLines(student),
     courseCode: currentCourse?.course_code || '',
@@ -561,7 +601,7 @@ function invoiceStrings(lang, isGroup = false) {
         : '*Sobald ein Gruppenkurs geplant ist, können einzelne Lektionen nicht mehr abgesagt werden. Versäumte Lektionen werden weder rückerstattet noch für einen anderen Kurs angerechnet oder in Privatstunden umgewandelt.'
       : isEN
         ? '*Please note that cancelling or rescheduling a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before it starts, the lesson is considered as held and cannot be rescheduled.'
-        : '*Bitte beachte, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
+        : '*Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
   };
 }
 
@@ -599,10 +639,13 @@ function buildPreviewHtml(data) {
         <p>${esc(s.vatLabel)} ${esc(SENDER.vat)}</p>
         <p>Amount: CHF ${esc(money(data.totalAmount))}</p>
       </div>
+      <div class="inv-prev-address">
+        <p class="inv-prev-address-sender">${esc(SENDER.name)} ${esc(SENDER.street)} ${esc(SENDER.city)}</p>
+        <div>${recipient}</div>
+      </div>
       <p class="inv-prev-date">${esc(longDate(data.invoiceDate, lang))}</p>
       <h3>${esc(data.subject || s.titleFallback)}</h3>
       <p class="inv-prev-greeting">${esc(greeting)}</p>
-      <div class="inv-prev-address">${recipient}</div>
       <table>
         <colgroup>
           <col class="invoice-col-subject">
@@ -682,6 +725,8 @@ async function buildInvoicePdf(data) {
   const pageH = 297;
   const margin = 22;
   const contentW = pageW - margin * 2;
+  const addressW = 76;
+  const addressX = pageW - margin - addressW;
 
   const setFont = (size, style = 'normal') => {
     doc.setFont('helvetica', style);
@@ -716,16 +761,17 @@ async function buildInvoicePdf(data) {
 
   y = 94;
   setFont(7);
-  doc.text(`${SENDER.name} ${SENDER.street} ${SENDER.city}`, margin, y);
+  doc.text(`${SENDER.name} ${SENDER.street} ${SENDER.city}`, addressX, y);
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.15);
-  doc.line(margin, y + 1.8, margin + 76, y + 1.8);
+  doc.line(addressX, y + 2.6, addressX + addressW, y + 2.6);
 
   setFont(10.5);
   y += 10;
   data.recipientLines.forEach((line) => {
-    doc.text(line, margin, y);
-    y += 5.8;
+    const lines = doc.splitTextToSize(String(line || ''), addressW);
+    doc.text(lines, addressX, y);
+    y += lines.length * 5.8;
   });
 
   y = Math.max(y + 18, 136);
