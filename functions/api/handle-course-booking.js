@@ -84,7 +84,7 @@ function buildDeclineEmail(enquiry, language) {
 }
 
 async function sendEmail(env, to, email) {
-  if (!env.RESEND_API_KEY) return;
+  if (!env.RESEND_API_KEY) return false;
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
@@ -96,7 +96,11 @@ async function sendEmail(env, to, email) {
       html: email.html,
     }),
   });
-  if (!res.ok) console.error('handle-course-booking email error:', await res.text());
+  if (!res.ok) {
+    console.error('handle-course-booking email error:', await res.text());
+    return false;
+  }
+  return true;
 }
 import { PUBLIC_BOOKING_STATUS, PUBLIC_COURSE_CAPACITY } from './_public-course-booking.js';
 
@@ -180,15 +184,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     const updated = await patchEnquiry(SUPABASE_URL, H, enquiryId, { status: 'declined' });
     if (!updated) return errorResponse('Could not decline booking request');
 
-    const recipientEmail = cleanString(enquiry.lead_email, 320);
+    const lead = getLead(enquiry);
+    const recipientEmail = lead.email;
+    let emailSent = false;
     if (env.RESEND_API_KEY && recipientEmail) {
       const language = normalizePageLanguage(enquiry.contact_data?.language);
-      sendEmail(env, recipientEmail, buildDeclineEmail(enquiry, language)).catch((err) =>
-        console.error('handle-course-booking decline email error:', err)
-      );
+      emailSent = await sendEmail(env, recipientEmail, buildDeclineEmail(enquiry, language));
     }
 
-    return jsonResponse({ success: true, status: updated.status });
+    return jsonResponse({ success: true, status: updated.status, email_sent: emailSent });
   }
 
   const courseId = enquiry.course_id;
