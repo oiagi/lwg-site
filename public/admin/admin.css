@@ -2788,9 +2788,15 @@ html[data-device='mobile'] .avail-day {
 .inv-prev-sender {
   margin-bottom: 1rem;
 }
+.inv-prev-details {
+  align-items: start;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 0.95fr) minmax(16rem, 1.05fr);
+  margin: 1rem 0 2.4rem;
+}
 .inv-prev-meta {
-  margin: 1rem 0 2rem;
-  width: 46%;
+  margin: 0;
 }
 .inv-prev-date {
   margin: 0 0 1rem;
@@ -2808,10 +2814,6 @@ html[data-device='mobile'] .avail-day {
 .inv-prev-address {
   font-size: 0.76rem;
   margin: 0;
-  position: absolute;
-  right: 2.2rem;
-  top: 8.8rem;
-  width: 46%;
 }
 .inv-prev-address p {
   border-bottom: 1px solid #ddd;
