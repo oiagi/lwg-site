@@ -77,7 +77,7 @@ function buildEmail({ language, name, first_name, last_name, gender, invoice }) 
   const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
   const courseLabel = invoice.subject || (isEN ? 'your course' : 'deinen Kurs');
   const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass du mit uns lerns.';
+  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass du mit uns lernst.';
   const invoiceLine = isEN
     ? `Attached you will find the invoice for ${courseLabel}.`
     : `Anbei findest du die Rechnung für ${courseLabel}.`;

@@ -75,6 +75,52 @@ function buildPaymentThankYouEmail(student, language) {
   };
 }
 
+async function sendPaymentThankYouEmail(env, invoice, H) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
+  if (!RESEND_API_KEY || !invoice?.student_id) return false;
+
+  try {
+    const stuRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(invoice.student_id)}&select=first_name,last_name,gender,email,billing_email`,
+      { headers: H }
+    );
+    const students = stuRes.ok ? await stuRes.json() : [];
+    const student = students[0] || {};
+    const recipientEmail = student.billing_email || student.email;
+    if (!recipientEmail) return false;
+
+    const language = await getStudentLanguage(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_KEY,
+      invoice.student_id
+    );
+    const email = buildPaymentThankYouEmail(student, language);
+
+    const sendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [recipientEmail],
+        reply_to: NOTIFY_EMAILS,
+        subject: email.subject,
+        html: email.html,
+      }),
+    });
+    if (!sendRes.ok) {
+      console.error('mark-invoice-paid email error:', await sendRes.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('mark-invoice-paid email error (non-fatal):', err);
+    return false;
+  }
+}
+
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
@@ -83,7 +129,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
   if (!body.invoice_id) return errorResponse('Missing invoice_id', 400);
 
-  const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/invoices?id=eq.${body.invoice_id}`, {
@@ -100,45 +146,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const rows = await res.json().catch(() => []);
   const invoice = rows[0] || null;
 
-  if (RESEND_API_KEY && invoice?.student_id) {
-    (async () => {
-      try {
-        const stuRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(invoice.student_id)}&select=first_name,last_name,gender,email`,
-          { headers: H }
-        );
-        const students = stuRes.ok ? await stuRes.json() : [];
-        const student = students[0];
-        const recipientEmail = student?.email || invoice.recipient_email;
-        if (!recipientEmail) return;
+  const emailSent = await sendPaymentThankYouEmail(env, invoice, H);
 
-        const language = await getStudentLanguage(
-          SUPABASE_URL,
-          SUPABASE_SERVICE_KEY,
-          invoice.student_id
-        );
-        const email = buildPaymentThankYouEmail(student || {}, language);
-
-        const sendRes = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: [recipientEmail],
-            reply_to: NOTIFY_EMAILS,
-            subject: email.subject,
-            html: email.html,
-          }),
-        });
-        if (!sendRes.ok) console.error('mark-invoice-paid email error:', await sendRes.text());
-      } catch (err) {
-        console.error('mark-invoice-paid email error (non-fatal):', err);
-      }
-    })();
-  }
-
-  return jsonResponse({ success: true, invoice });
+  return jsonResponse({ success: true, invoice, email_sent: emailSent });
 }, 'mark-invoice-paid');
