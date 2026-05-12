@@ -10,6 +10,16 @@
 # redepartikeln.html renamed to modalpartikeln.html
 /redepartikeln.html  /modalpartikeln.html  301
 
+# Canonical language-prefixed public URLs
+/index.html  /en/  301
+/info.html  /en/info  301
+/group-courses.html  /en/group-courses  301
+/enquiry.html  /en/enquiry  301
+/impressum.html  /de/impressum  301
+/datenschutzerklaerung.html  /de/datenschutzerklaerung  301
+/agb.html  /de/agb  301
+/modalpartikeln.html  /de/modalpartikeln  301
+
 # Language-prefixed public pages. These serve the same static HTML files;
 # i18n.js reads /en or /de from the URL and applies the matching language.
 /en   /  200

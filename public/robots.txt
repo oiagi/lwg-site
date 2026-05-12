@@ -2,13 +2,12 @@ User-agent: *
 Allow: /
 
 # Flow and admin pages — not useful for search
-Disallow: /contact-details.html
+Disallow: /admin/
+Disallow: /intake.html
+Disallow: /en/intake
+Disallow: /de/intake
 Disallow: /thankyou.html
 Disallow: /en/thankyou
 Disallow: /de/thankyou
-Disallow: /admin.html
-Disallow: /modalpartikeln.html
-Disallow: /en/modalpartikeln
-Disallow: /de/modalpartikeln
 
 Sitemap: https://learningwithgioia.ch/sitemap.xml

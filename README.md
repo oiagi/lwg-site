@@ -15,7 +15,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 ```
 .
 ├── public/                  # Static files served by Cloudflare Pages
-│   ├── *.html               # 11 pages (see Pages below)
+│   ├── *.html               # 10 pages (see Pages below)
 │   ├── shared.css           # Global styles, navigation, animations
 │   ├── nav.js               # Navigation component injected into all pages
 │   ├── i18n.js              # EN/DE language switching for public pages
@@ -46,7 +46,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 | Page                 | File                         | Notes                                                            |
 | -------------------- | ---------------------------- | ---------------------------------------------------------------- |
 | Home                 | `index.html`                 |                                                                  |
-| About                | `info.html`                  |                                                                  |
+| Courses and pricing  | `info.html`                  |                                                                  |
 | Group courses        | `group-courses.html`         | Public listing + booking form                                    |
 | Enquiry              | `enquiry.html`               | Contact form                                                     |
 | Thank you            | `thankyou.html`              | Post-submission landing page                                     |
