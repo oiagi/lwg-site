@@ -149,7 +149,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       });
     } else {
       // ── Create new student ───────────────────────────────────────────
-      // Generate access_token for the student sessions portal link
+      // Generate access_token for student-facing intake links.
       data.access_token = crypto.randomUUID();
       data.token_created_at = new Date().toISOString();
       if (!data.source) data.source = 'manual';
