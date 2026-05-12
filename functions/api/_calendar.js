@@ -124,7 +124,9 @@ export async function fetchCourseEvents({ accessToken, calendarId, courseCode })
   if (!res.ok) {
     const err = await res.text();
     console.error('Calendar fetch error:', err);
-    throw new Error(`Calendar API error: ${err.slice(0, 200)}`);
+    const error = new Error(`Calendar API error (${res.status}): ${err.slice(0, 200)}`);
+    error.statusCode = res.status >= 500 ? 502 : res.status;
+    throw error;
   }
 
   const data = await res.json();

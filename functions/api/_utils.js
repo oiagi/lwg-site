@@ -215,6 +215,15 @@ export async function getValidAccessToken(teacher, env) {
       throw err;
     }
 
+    if (parsed.error === 'invalid_client') {
+      const detail = parsed.error_description ? ` Google says: ${parsed.error_description}` : '';
+      const err = new Error(
+        `Google OAuth credentials are invalid.${detail} Check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the local/deployed environment, then re-authorise the teacher if the OAuth client changed.`
+      );
+      err.statusCode = 502;
+      throw err;
+    }
+
     const err = new Error(`Token refresh failed (${res.status}): ${body}`);
     err.statusCode = 502;
     throw err;
