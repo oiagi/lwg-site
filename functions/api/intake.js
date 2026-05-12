@@ -3,9 +3,9 @@
 // POST /api/intake                        → updates the student's intake fields
 //   body: { token, first_name, last_name, email?, phone?, street?, ... }
 //
-// The student's access_token (also used for /sessions.html) acts as the
-// credential — no admin login required. The token is the same one that
-// expires after 90 days, so an admin can revoke a link by rotating it.
+// The student's access_token acts as the credential — no admin login
+// required. The token expires after 90 days, so an admin can revoke a link by
+// rotating it.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY

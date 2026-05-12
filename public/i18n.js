@@ -14,7 +14,6 @@
     '/datenschutzerklaerung.html': 'datenschutzerklaerung',
     '/agb.html': 'agb',
     '/modalpartikeln.html': 'modalpartikeln',
-    '/sessions.html': 'sessions',
     '/intake.html': 'intake',
   };
   const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
@@ -566,13 +565,6 @@
         },
       },
     },
-    '/sessions.html': {
-      title: {
-        en: 'My Sessions - learning with gioia',
-        de: 'Meine Lektionen - Learning with Gioia',
-      },
-      text: { '.error-state': { en: 'loading...', de: 'Wird geladen...' } },
-    },
     '/modalpartikeln.html': {
       title: { en: 'Modal particles', de: 'Modalpartikeln' },
       text: {
@@ -635,29 +627,7 @@
     enquiryPhone: { en: 'phone', de: 'Telefon' },
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },
     enquirySubmitting: { en: 'sending…', de: 'Wird gesendet…' },
-    sessionsHeading: { en: 'your sessions', de: 'Deine Lektionen' },
-    noSessionLink: {
-      en: 'No session link provided.<br>Please use the link sent to you by your teacher.',
-      de: 'Kein Lektionslink angegeben.<br>Bitte verwende den Link, den dir deine Lehrperson gesendet hat.',
-    },
-    noSessions: { en: 'No sessions scheduled yet.', de: 'Noch keine Lektionen geplant.' },
     makeEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
-    completedOf: { en: 'sessions completed', de: 'Lektionen abgeschlossen' },
-    remaining: { en: 'remaining', de: 'Verbleibend' },
-    rebookSome: {
-      en: (n) =>
-        `You have ${n} session${n === 1 ? '' : 's'} remaining. Ready to continue? <a href="/enquiry.html">Make a new enquiry -></a>`,
-      de: (n) =>
-        `Du hast noch ${n} Lektion${n === 1 ? '' : 'en'} übrig. Bereit weiterzumachen? <a href="/enquiry.html">Neue Anfrage senden -></a>`,
-    },
-    rebookDone: {
-      en: 'Your current block is complete. <a href="/enquiry.html">Book your next block -></a>',
-      de: 'Dein aktueller Block ist abgeschlossen. <a href="/enquiry.html">Nächsten Block buchen -></a>',
-    },
-    couldNotLoad: {
-      en: 'Could not load your sessions.<br>Please check your link or contact your teacher.',
-      de: 'Deine Lektionen konnten nicht geladen werden.<br>Bitte prüfe den Link oder kontaktiere deine Lehrperson.',
-    },
   };
 
   function setMeta(name, value) {
