@@ -638,16 +638,18 @@ function buildPreviewHtml(data) {
         <p>Tel: ${esc(SENDER.phone)}</p>
         <p>Email: ${esc(SENDER.email)}</p>
       </div>
-      <div class="inv-prev-meta">
-        <p>${esc(s.dateLabel)} ${esc(chDate(data.invoiceDate, lang))}</p>
-        <p>${esc(s.invoiceNoLabel)} ${esc(data.invoiceNumber)}</p>
-        <p>${esc(s.customerNoLabel)} ${esc(data.customerReference || '—')}</p>
-        <p>${esc(s.vatLabel)} ${esc(SENDER.vat)}</p>
-        <p>Amount: CHF ${esc(money(data.totalAmount))}</p>
-      </div>
-      <div class="inv-prev-address">
-        <p class="inv-prev-address-sender">${esc(SENDER.name)} ${esc(SENDER.street)} ${esc(SENDER.city)}</p>
-        <div>${recipient}</div>
+      <div class="inv-prev-details">
+        <div class="inv-prev-meta">
+          <p>${esc(s.dateLabel)} ${esc(chDate(data.invoiceDate, lang))}</p>
+          <p>${esc(s.invoiceNoLabel)} ${esc(data.invoiceNumber)}</p>
+          <p>${esc(s.customerNoLabel)} ${esc(data.customerReference || '—')}</p>
+          <p>${esc(s.vatLabel)} ${esc(SENDER.vat)}</p>
+          <p>Amount: CHF ${esc(money(data.totalAmount))}</p>
+        </div>
+        <div class="inv-prev-address">
+          <p class="inv-prev-address-sender">${esc(SENDER.name)} ${esc(SENDER.street)} ${esc(SENDER.city)}</p>
+          <div>${recipient}</div>
+        </div>
       </div>
       <p class="inv-prev-date">${esc(longDate(data.invoiceDate, lang))}</p>
       <h3>${esc(data.subject || s.titleFallback)}</h3>
@@ -757,15 +759,19 @@ async function buildInvoicePdf(data) {
   const s = invoiceStrings(lang, isSharedCourse(currentCourse));
 
   let y = 66;
+  const metaStartY = y;
   drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);
-  drawLabelValue(s.invoiceNoLabel, data.invoiceNumber, margin + 72, y, margin + 106);
   y += 6;
-  drawLabelValue(s.customerNoLabel, data.customerReference || '-', margin, y, margin + 26);
-  drawLabelValue(s.vatLabel, SENDER.vat, margin + 72, y, margin + 100);
+  drawLabelValue(s.invoiceNoLabel, data.invoiceNumber, margin, y, margin + 31);
+  y += 6;
+  drawLabelValue(s.customerNoLabel, data.customerReference || '-', margin, y, margin + 29);
+  y += 6;
+  drawLabelValue(s.vatLabel, SENDER.vat, margin, y, margin + 27);
   y += 6;
   drawLabelValue('Amount:', `CHF ${money(data.totalAmount)}`, margin, y, margin + 18);
+  const metaEndY = y;
 
-  y = 94;
+  y = metaStartY;
   setFont(7);
   doc.text(`${SENDER.name} ${SENDER.street} ${SENDER.city}`, addressX, y);
   doc.setDrawColor(180, 180, 180);
@@ -779,8 +785,9 @@ async function buildInvoicePdf(data) {
     doc.text(lines, addressX, y);
     y += lines.length * 5.8;
   });
+  const addressEndY = y;
 
-  y = Math.max(y + 18, 136);
+  y = Math.max(metaEndY, addressEndY) + 20;
   setFont(11);
   doc.text(longDate(data.invoiceDate, lang), margin, y);
 
