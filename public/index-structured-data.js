@@ -5,7 +5,7 @@
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: 'Learning with Gioia',
-    url: 'https://learningwithgioia.ch',
+    url: 'https://learningwithgioia.ch/en/',
     logo: {
       '@type': 'ImageObject',
       url: 'https://learningwithgioia.ch/lwg_logo.svg',

@@ -12,7 +12,7 @@
         provider: {
           '@type': 'Organization',
           name: 'Learning with Gioia',
-          url: 'https://learningwithgioia.ch',
+          url: 'https://learningwithgioia.ch/en/',
         },
         inLanguage: 'de',
         hasCourseInstance: {
@@ -36,7 +36,7 @@
         provider: {
           '@type': 'Organization',
           name: 'Learning with Gioia',
-          url: 'https://learningwithgioia.ch',
+          url: 'https://learningwithgioia.ch/en/',
         },
         inLanguage: 'en',
         hasCourseInstance: {
@@ -59,7 +59,7 @@
         provider: {
           '@type': 'Organization',
           name: 'Learning with Gioia',
-          url: 'https://learningwithgioia.ch',
+          url: 'https://learningwithgioia.ch/en/',
         },
         hasCourseInstance: {
           '@type': 'CourseInstance',
