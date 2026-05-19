@@ -37,7 +37,7 @@ function renderFiles(files) {
       const name = esc(f.name.replace(/\.pdf$/i, ''));
       const date = esc(formatDate(f.created_at));
       const amount =
-        f.total_amount != null
+        f.total_amount !== null && f.total_amount !== undefined
           ? esc(`${Number(f.total_amount).toFixed(2)} ${f.currency || 'CHF'}`)
           : '';
       const statusClass = f.status === 'paid' ? 'paid' : f.status === 'sent' ? 'sent' : 'draft';
