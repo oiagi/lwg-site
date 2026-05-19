@@ -1803,6 +1803,7 @@ html[data-device='mobile'] .student-detail-pane {
   grid-template-columns: 140px 1fr 100px 80px 90px;
   gap: 0 1rem;
   align-items: center;
+  padding-right: 1rem;
 }
 .inv-number {
   font-size: 0.88rem;
@@ -1840,6 +1841,10 @@ html[data-device='mobile'] .student-detail-pane {
 }
 .inv-status.cancelled {
   color: #c0392b;
+}
+.inv-status.overdue {
+  color: #c0392b;
+  font-weight: 600;
 }
 .inv-session-check {
   display: flex;

@@ -193,6 +193,35 @@ async function updateInvoiceStatus(env, invoiceId, status) {
   }
 }
 
+async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return;
+  const yearMatch = invoiceNumber.match(/^LWG-(\d{4})-/);
+  const year = yearMatch ? yearMatch[1] : 'misc';
+  let binary;
+  try {
+    binary = atob(pdfBase64);
+  } catch {
+    console.error('Invoice archive: invalid base64 PDF for', invoiceNumber);
+    return;
+  }
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const res = await fetch(
+    `${env.SUPABASE_URL}/storage/v1/object/invoice-archive/${year}/${invoiceNumber}.pdf`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/pdf',
+      },
+      body: bytes,
+    }
+  );
+  if (!res.ok) {
+    console.error(`Invoice archive upload failed for ${invoiceNumber}:`, await res.text());
+  }
+}
+
 async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATES) {
   const inv = body.invoice || {};
   const basePayload = {
@@ -296,6 +325,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   await updateInvoiceStatus(env, invoiceRecord?.id, 'sent');
   if (invoiceRecord) invoiceRecord.status = 'sent';
+
+  await archiveInvoicePdf(env, body.invoice.invoice_number, body.pdf_base64).catch((err) => {
+    console.error('Invoice archive unexpected error:', err);
+  });
 
   return jsonResponse({ success: true, invoice: invoiceRecord });
 }, 'send-invoice');

@@ -67,6 +67,7 @@ import { authoriseTeacher, setOnAuthoriseComplete } from './features/teachers.js
 import { loadAvailability, onTeacherSelect } from './features/availability.js';
 import { trapFocus, releaseFocus } from './core/helpers.js';
 import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
+import { loadInvoiceArchive, switchArchiveYear } from './features/invoice-archive.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -139,6 +140,8 @@ const actions = {
   authoriseTeacher,
   // Availability
   onTeacherSelect,
+  // Invoice archive
+  switchArchiveYear,
   // Tab switching
   switchTab,
 };
@@ -264,6 +267,7 @@ async function switchTab(tab, options = {}) {
     }
   }
   if (tab === 'teachers') loadAvailability();
+  if (tab === 'invoices') loadInvoiceArchive();
 }
 
 document.addEventListener('admin:switchTab', (e) => {
