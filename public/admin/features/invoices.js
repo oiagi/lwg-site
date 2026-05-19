@@ -897,10 +897,10 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     margin + widths[0] + widths[1] + widths[2],
   ];
   const tableW = widths.reduce((a, b) => a + b, 0);
-  const headerH = 13;
+  const headerH = 7;
   const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
-  const itemH = Math.max(14, subjectLines.length * 5.2 + 6);
-  const totalH = 13;
+  const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
+  const totalH = 7;
 
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
@@ -908,7 +908,7 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   [s.colSubject, s.colLessons, priceUnitLabel(lang), s.colAmount].forEach((label, i) => {
     doc.rect(xs[i], tableTop, widths[i], headerH);
     const headerLines = doc.splitTextToSize(label, widths[i] - 4);
-    doc.text(headerLines, xs[i] + 2, tableTop + 5.2);
+    doc.text(headerLines, xs[i] + 2, tableTop + 4.5);
   });
 
   const itemTop = tableTop + headerH;
@@ -917,17 +917,17 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.line(xs[1], itemTop, xs[1], itemTop + itemH);
   doc.line(xs[2], itemTop, xs[2], itemTop + itemH);
   doc.line(xs[3], itemTop, xs[3], itemTop + itemH);
-  doc.text(subjectLines, xs[0] + 2, itemTop + 7);
-  textRight(data.quantity, xs[1] + widths[1] - 3, itemTop + 8);
-  textRight(money(data.unitPrice), xs[2] + widths[2] - 3, itemTop + 8);
-  textRight(money(data.totalAmount), xs[3] + widths[3] - 3, itemTop + 8);
+  doc.text(subjectLines, xs[0] + 2, itemTop + 5.5);
+  textRight(data.quantity, xs[1] + widths[1] - 3, itemTop + 5.5);
+  textRight(money(data.unitPrice), xs[2] + widths[2] - 3, itemTop + 5.5);
+  textRight(money(data.totalAmount), xs[3] + widths[3] - 3, itemTop + 5.5);
 
   const totalTop = itemTop + itemH;
   doc.rect(margin, totalTop, tableW, totalH);
   doc.line(xs[3], totalTop, xs[3], totalTop + totalH);
   setFont(9, 'bold');
-  doc.text('Total CHF', xs[0] + 2, totalTop + 8);
-  textRight(money(data.totalAmount), xs[3] + widths[3] - 3, totalTop + 8);
+  doc.text('Total CHF', xs[0] + 2, totalTop + 4.5);
+  textRight(money(data.totalAmount), xs[3] + widths[3] - 3, totalTop + 4.5);
 
   y = totalTop + totalH + 18;
   setFont(10.5);
