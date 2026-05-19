@@ -31,12 +31,9 @@ import {
   saveCourseAddress,
   togglePublicBooking,
   handleCourseBooking,
-} from './features/courses.js?v=invoice-address-20260512';
+} from './features/courses.js?v=separate-qr-20260519';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
-import {
-  closeInvoiceModal,
-  submitInvoice,
-} from './features/invoices.js?v=invoice-address-20260512';
+import { closeInvoiceModal, submitInvoice } from './features/invoices.js?v=separate-qr-20260519';
 import {
   loadStudents,
   getCurrentStudentFilter,

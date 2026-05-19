@@ -15,7 +15,7 @@ import { openCertificateModal as openCertificates } from './certificates.js';
 import {
   openBulkInvoiceModal as openBulkInvoices,
   openInvoiceModal as openInvoice,
-} from './invoices.js?v=invoice-address-20260512';
+} from './invoices.js?v=separate-qr-20260519';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
