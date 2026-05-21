@@ -2,7 +2,19 @@ import { supabaseHeaders } from './_utils.js';
 
 export const PUBLIC_COURSE_CAPACITY = 5;
 export const PUBLIC_BOOKING_STATUS = 'pending_course_booking';
+export const PUBLIC_SLOT_BOOKING_STATUS = 'pending_group_slot_booking';
 export const PUBLIC_BOOKING_LOCATIONS = ["teacher's home", 'classroom'];
+export const PUBLIC_SLOT_PREFERRED_LOCATIONS = [...PUBLIC_BOOKING_LOCATIONS, 'online', 'company'];
+export const PUBLIC_BOOKING_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+export const WEEKDAY_NAMES = {
+  1: 'Mondays',
+  2: 'Tuesdays',
+  3: 'Wednesdays',
+  4: 'Thursdays',
+  5: 'Fridays',
+  6: 'Saturdays',
+  7: 'Sundays',
+};
 
 function publicPricePerPerson(course) {
   if (
@@ -69,9 +81,11 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
       : Math.max(upcomingSessionCount, sessionsTotal - sessionsCompleted);
 
   return {
+    kind: 'existing_course',
     id: course.id,
     course_code: course.course_code,
     course_type: course.course_type,
+    service: course.course_type,
     subject: course.subject,
     level: course.level,
     group_type: course.group_type,
@@ -88,6 +102,66 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
     spots_remaining: spotsRemaining,
     capacity: PUBLIC_COURSE_CAPACITY,
   };
+}
+
+function timeText(value) {
+  return String(value || '').slice(0, 5);
+}
+
+export function reducedLessonCount(sessionsTotal, actualStudents, minimumStudents = 3) {
+  const total = Number(sessionsTotal);
+  const actual = Number(actualStudents);
+  const minimum = Number(minimumStudents) || 3;
+  if (!Number.isFinite(total) || total <= 0) return null;
+  if (!Number.isFinite(actual) || actual <= 0 || actual >= minimum) return total;
+  return Math.max(1, Math.floor((total * actual) / minimum));
+}
+
+export function publicSlotDto(slot, pendingCount = 0) {
+  const capacity = Math.max(1, Number(slot.capacity || PUBLIC_COURSE_CAPACITY));
+  const minimumStudents = Math.max(1, Number(slot.minimum_students || 3));
+  const reservedCount = Math.max(0, Number(pendingCount || 0));
+  const spotsRemaining = Math.max(0, capacity - reservedCount);
+  const weekday = WEEKDAY_NAMES[slot.weekday] || 'Weekly';
+  const scheduleText = `${weekday} ${timeText(slot.start_time)}-${timeText(slot.end_time)}`;
+
+  return {
+    kind: 'planned_slot',
+    id: slot.id,
+    course_code: null,
+    course_type: slot.course_type,
+    service: slot.course_type,
+    subject: slot.subject,
+    level: slot.level,
+    group_type: 'group',
+    session_length_minutes: slot.session_length_minutes,
+    price_per_session: null,
+    price_per_person_per_60min: slot.price_per_person_per_60min,
+    currency: slot.currency || 'CHF',
+    location: slot.location,
+    location_text: formatPublicLocation(slot),
+    first_session_at: null,
+    schedule_text: scheduleText,
+    weekday: slot.weekday,
+    start_time: timeText(slot.start_time),
+    end_time: timeText(slot.end_time),
+    timezone: slot.timezone || 'Europe/Zurich',
+    sessions_completed: 0,
+    sessions_remaining: Math.max(0, Number(slot.sessions_total || 0)),
+    sessions_total: Math.max(0, Number(slot.sessions_total || 0)),
+    spots_remaining: spotsRemaining,
+    capacity,
+    minimum_students: minimumStudents,
+    interested_count: reservedCount,
+    allow_reduced_lessons: slot.allow_reduced_lessons === true,
+    reduced_lessons_if_one: reducedLessonCount(slot.sessions_total, 1, minimumStudents),
+    reduced_lessons_if_two: reducedLessonCount(slot.sessions_total, 2, minimumStudents),
+    notes: slot.notes || null,
+  };
+}
+
+export function isPublicSlotEligible(slot, pendingCount = 0) {
+  return slot.public_booking_enabled === true && slot.status === 'active' && pendingCount >= 0;
 }
 
 export async function loadPublicCourseCandidates(env, courseId = null) {
@@ -149,5 +223,45 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
     sessions: sessionsByCourse[course.id] || [],
     enrolled_count: enrolledCountByCourse[course.id] || 0,
     pending_booking_count: pendingCountByCourse[course.id] || 0,
+  }));
+}
+
+export async function loadPublicGroupCourseSlots(env, slotId = null) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+  const idFilter = slotId ? `&id=eq.${encodeURIComponent(slotId)}` : '';
+
+  const slotsRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/public_group_course_slots?public_booking_enabled=is.true&status=eq.active${idFilter}&order=weekday.asc,start_time.asc&select=*`,
+    { headers: H }
+  );
+  if (!slotsRes.ok) {
+    const text = await slotsRes.text();
+    if (slotsRes.status === 400 || slotsRes.status === 404) {
+      console.warn('public group course slots unavailable:', text);
+      return [];
+    }
+    throw new Error(`Could not load public group course slots: ${text}`);
+  }
+
+  const slots = await slotsRes.json();
+  if (!slots.length) return [];
+
+  const slotIds = slots.map((slot) => slot.id);
+  const slotFilter = slotIds.map((id) => `public_group_course_slot_id.eq.${id}`).join(',');
+  const pendingRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/enquiries?or=(${slotFilter})&status=eq.${PUBLIC_SLOT_BOOKING_STATUS}&select=public_group_course_slot_id`,
+    { headers: H }
+  );
+  const pendingBookings = pendingRes.ok ? await pendingRes.json() : [];
+  const pendingCountBySlot = {};
+  for (const enquiry of pendingBookings) {
+    const id = enquiry.public_group_course_slot_id;
+    pendingCountBySlot[id] = (pendingCountBySlot[id] || 0) + 1;
+  }
+
+  return slots.map((slot) => ({
+    ...slot,
+    pending_booking_count: pendingCountBySlot[slot.id] || 0,
   }));
 }

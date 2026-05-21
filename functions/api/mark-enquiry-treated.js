@@ -50,7 +50,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (enquiry.status === 'pending_course_booking') {
     return errorResponse('Use booking approval or decline for course booking requests', 409);
   }
-  if (enquiry.status !== 'new') {
+  if (!['new', 'pending_group_slot_booking'].includes(enquiry.status)) {
     return jsonResponse({ success: true, status: enquiry.status, already_treated: true });
   }
 

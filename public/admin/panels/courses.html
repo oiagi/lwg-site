@@ -8,6 +8,28 @@
   </div>
   <a class="new-course-btn" href="/admin/pages/course-new.html">+ new course</a>
 </div>
+<section class="public-slots-panel" id="public-slots-panel">
+  <div class="public-slots-header">
+    <div>
+      <p class="detail-meta detail-meta--flush" id="public-slots-title">public group course slots</p>
+      <p class="detail-muted">Time slots for courses that start once enough people sign up.</p>
+    </div>
+    <div class="public-slots-header-actions">
+      <button
+        type="button"
+        class="public-slots-toggle"
+        id="public-slots-toggle"
+        data-action="togglePublicSlotsPanel"
+        aria-expanded="true"
+        aria-controls="group-slot-list"
+      >hide</button>
+      <button type="button" class="new-course-btn" data-action="openGroupSlotModal">+ new slot</button>
+    </div>
+  </div>
+  <div id="group-slot-list" class="group-slot-list">
+    <div class="loading-state">loading slots…</div>
+  </div>
+</section>
 <div class="list-toolbar" aria-label="Course list tools">
   <input type="search" id="course-search" class="list-search" placeholder="Search courses…" autocomplete="off">
   <div class="list-sort-controls">
@@ -26,6 +48,113 @@
 </div>
 <div id="course-list">
   <div class="loading-state">loading…</div>
+</div>
+
+<!-- ── Public group slot modal ─────────────────────────────────────────── -->
+<div class="modal-overlay" id="group-slot-modal">
+  <div class="modal modal-wide">
+    <h2>new public group slot</h2>
+    <div class="modal-grid">
+      <div class="modal-field">
+        <label>Course type</label>
+        <select id="slot-course-type">
+          <option value="language course">Language course</option>
+          <option value="exam preparation">Exam preparation</option>
+          <option value="tutoring">Tutoring</option>
+          <option value="gymivorbereitung">Gymivorbereitung</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Subject</label>
+        <select id="slot-subject">
+          <option value="German">German</option>
+          <option value="Swiss German">Swiss German</option>
+          <option value="English">English</option>
+          <option value="French">French</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Default level <span class="label-hint">(optional)</span></label>
+        <input type="text" id="slot-level" placeholder="leave blank to let students choose">
+      </div>
+      <div class="modal-field">
+        <label>Weekday</label>
+        <select id="slot-weekday">
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+          <option value="7">Sunday</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Start time</label>
+        <input type="time" id="slot-start-time" value="11:00">
+      </div>
+      <div class="modal-field">
+        <label>End time</label>
+        <input type="time" id="slot-end-time" value="12:00">
+      </div>
+      <div class="modal-field">
+        <label>Number of lessons</label>
+        <input type="number" id="slot-sessions-total" min="1" value="12">
+      </div>
+      <div class="modal-field">
+        <label>Session length (min)</label>
+        <input type="number" id="slot-session-length" min="15" step="5" value="60">
+      </div>
+      <div class="modal-field">
+        <label>Price/person/60min CHF</label>
+        <input type="number" id="slot-price-person" min="0" step="0.01" value="50">
+      </div>
+      <div class="modal-field">
+        <label>Capacity</label>
+        <input type="number" id="slot-capacity" min="1" value="5">
+      </div>
+      <div class="modal-field">
+        <label>Minimum students</label>
+        <input type="number" id="slot-minimum-students" min="1" value="3">
+      </div>
+      <div class="modal-field">
+        <label>Default location <span class="label-hint">(optional)</span></label>
+        <select id="slot-location">
+          <option value="">Students choose</option>
+          <option value="classroom">Classroom</option>
+          <option value="teacher's home">Teacher's home</option>
+        </select>
+      </div>
+      <div class="modal-field full">
+        <label>Location address</label>
+        <div class="modal-grid">
+          <div class="modal-field full"><input type="text" id="slot-loc-company" placeholder="Company name"></div>
+          <div class="modal-field"><input type="text" id="slot-loc-street" placeholder="Street"></div>
+          <div class="modal-field"><input type="text" id="slot-loc-number" placeholder="No."></div>
+          <div class="modal-field"><input type="text" id="slot-loc-postal" placeholder="Postal code"></div>
+          <div class="modal-field"><input type="text" id="slot-loc-city" placeholder="City"></div>
+        </div>
+      </div>
+      <div class="modal-field full">
+        <label class="checkbox-label">
+          <input type="checkbox" id="slot-allow-reduced" checked>
+          <span>Allow course to run with fewer than 3 people using reduced lesson count</span>
+        </label>
+      </div>
+      <div class="modal-field full">
+        <label>Internal/public note</label>
+        <textarea id="slot-notes" rows="3" placeholder="Optional note"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeGroupSlotModal">cancel</button>
+      <button class="modal-submit" id="slot-submit" data-action="submitGroupSlot">create slot</button>
+    </div>
+    <p class="modal-msg" id="slot-msg"></p>
+  </div>
 </div>
 
 <!-- ── Add participant modal ─────────────────────────────────────────── -->

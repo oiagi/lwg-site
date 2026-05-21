@@ -31,7 +31,11 @@ const DB_SORTS = {
 };
 
 const DERIVED_SORTS = new Set(['course_count']);
-const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
+const UNTREATED_ENQUIRY_STATUSES = new Set([
+  'new',
+  'pending_course_booking',
+  'pending_group_slot_booking',
+]);
 
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
@@ -110,7 +114,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const [enrolRes, enquiryRes, courseRes] = await Promise.all([
       fetch(`${SUPABASE_URL}/rest/v1/enrolments?select=student_id,course_id`, { headers: H }),
       fetch(
-        `${SUPABASE_URL}/rest/v1/enquiries?select=id,student_id,status,service,created_at,course_id,booking_data&student_id=not.is.null&order=created_at.desc`,
+        `${SUPABASE_URL}/rest/v1/enquiries?select=id,student_id,status,service,created_at,course_id,public_group_course_slot_id,booking_data&student_id=not.is.null&order=created_at.desc`,
         { headers: H }
       ),
       fetch(

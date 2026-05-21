@@ -63,6 +63,52 @@
       <form id="booking-form" novalidate>
         <input type="hidden" id="booking-course-id">
 
+        <div id="planned-slot-fields" hidden>
+          <p class="section-label" id="label-slot-preferences">course preferences</p>
+          <div class="field-row">
+            <div class="field">
+              <label for="bf-preferred-level">desired level *</label>
+              <select id="bf-preferred-level">
+                <option value="" disabled selected></option>
+                <option>A1</option>
+                <option>A2</option>
+                <option>B1</option>
+                <option>B2</option>
+                <option>C1</option>
+                <option>C2</option>
+              </select>
+              <div class="error" id="err-preferred-level">Please select your desired level.</div>
+            </div>
+            <div class="field">
+              <label for="bf-preferred-location">desired location *</label>
+              <select id="bf-preferred-location">
+                <option value="" disabled selected></option>
+                <option value="online">Online</option>
+                <option value="classroom">Classroom</option>
+                <option value="teacher's home">Teacher's home</option>
+                <option value="company">Company</option>
+              </select>
+              <div class="error" id="err-preferred-location">Please select your desired location.</div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="bf-preferred-start-date">preferred start date</label>
+            <input type="date" id="bf-preferred-start-date">
+          </div>
+          <div class="field" id="reduced-lessons-field">
+            <label for="bf-reduced-lessons-ok">reduced course length *</label>
+            <select id="bf-reduced-lessons-ok">
+              <option value="" disabled selected></option>
+              <option value="yes">Yes, I am okay with a reduced number of lessons if fewer than three people sign up.</option>
+              <option value="no">No, I only want to join if at least three people sign up.</option>
+            </select>
+            <p class="field-hint" id="reduced-lessons-hint">
+              Should fewer than three people sign up, the number of lessons will be reduced to match the monetary value of a course for a group of three. The adjusted lesson count is rounded down.
+            </p>
+            <div class="error" id="err-reduced-lessons-ok">Please select whether you are okay with a reduced course length.</div>
+          </div>
+        </div>
+
         <p class="section-label" id="label-personal">personal information</p>
         <div class="field-row">
           <div class="field">

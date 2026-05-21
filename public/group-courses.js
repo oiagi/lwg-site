@@ -18,6 +18,11 @@ renderAgbConsent();
   const bookingPanel = document.getElementById('booking-panel');
   const bookingForm = document.getElementById('booking-form');
   const successState = document.getElementById('success-state');
+  const plannedSlotFields = document.getElementById('planned-slot-fields');
+  const reducedLessonsField = document.getElementById('reduced-lessons-field');
+  const reducedLessonsHint = document.getElementById('reduced-lessons-hint');
+  const preferredLevelSelect = document.getElementById('bf-preferred-level');
+  const preferredLocationSelect = document.getElementById('bf-preferred-location');
   const billingCheckbox = document.getElementById('bf-billing-separate');
   const billingFields = document.getElementById('billing-fields');
   const genderSelect = document.getElementById('bf-gender');
@@ -32,9 +37,12 @@ renderAgbConsent();
     return window.LWG_I18N?.getLang() || 'en';
   }
 
-  function t(key) {
+  function t(key, ...args) {
     return (
-      window.LWG_I18N?.translateRuntime('groupCourses' + key[0].toUpperCase() + key.slice(1)) || key
+      window.LWG_I18N?.translateRuntime(
+        'groupCourses' + key[0].toUpperCase() + key.slice(1),
+        ...args
+      ) || key
     );
   }
 
@@ -57,6 +65,15 @@ renderAgbConsent();
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  function courseKind(course) {
+    return course.kind === 'planned_slot' ? 'planned_slot' : 'existing_course';
+  }
+
+  function scheduleText(course) {
+    if (courseKind(course) === 'planned_slot') return course.schedule_text || t('weeklySlot');
+    return fmtDate(course.first_session_at);
   }
 
   function fmtPrice(course) {
@@ -94,21 +111,28 @@ renderAgbConsent();
       .map((course) => {
         const spotsLabel = course.spots_remaining === 1 ? t('spot') : t('spots');
         const price = fmtPrice(course);
+        const isSlot = courseKind(course) === 'planned_slot';
+        const placeFact = isSlot
+          ? ''
+          : `<div><dt>${t('place')}</dt><dd>${esc(course.location_text || '-')}</dd></div>`;
+        const spotsFact = isSlot
+          ? ''
+          : `<div><dt>${t('spots')}</dt><dd>${course.spots_remaining} ${spotsLabel} ${t('available')}</dd></div>`;
         return `<article class="course-item">
           <div class="course-item__main">
-            <p class="course-meta">${esc(course.service || 'group course')}</p>
-            <h2>${esc(course.level || '-')}</h2>
+            <p class="course-meta">${esc(isSlot ? t('formingCourse') : course.service || 'group course')}</p>
+            <h2>${esc(course.level || (isSlot ? t('chooseLevel') : '-'))}</h2>
             <dl class="course-facts">
-              <div><dt>${t('nextLesson')}</dt><dd>${esc(fmtDate(course.first_session_at))}</dd></div>
+              <div><dt>${isSlot ? t('timeSlot') : t('nextLesson')}</dt><dd>${esc(scheduleText(course))}</dd></div>
               <div><dt>${t('lessons')}</dt><dd>${esc(lessonSummary(course))}</dd></div>
-              <div><dt>${t('place')}</dt><dd>${esc(course.location_text || '-')}</dd></div>
-              <div><dt>${t('spots')}</dt><dd>${course.spots_remaining} ${spotsLabel} ${t('available')}</dd></div>
+              ${placeFact}
+              ${spotsFact}
             </dl>
           </div>
           <div class="course-item__side">
             ${price ? `<p class="course-price">${esc(price)}</p>` : ''}
-            <p class="course-note">${t('maxPeople')}</p>
-            <button type="button" class="course-book-btn" data-course-id="${esc(course.id)}">${t('book')}</button>
+            <p class="course-note">${isSlot ? t('startsWhenReady') : t('maxPeople')}</p>
+            <button type="button" class="course-book-btn" data-course-id="${esc(course.id)}">${isSlot ? t('registerInterest') : t('book')}</button>
           </div>
         </article>`;
       })
@@ -136,10 +160,27 @@ renderAgbConsent();
   function setSelectedCourse(course) {
     selectedCourse = course;
     document.getElementById('booking-course-id').value = course.id;
+    const isSlot = courseKind(course) === 'planned_slot';
     document.getElementById('booking-title').textContent =
-      `${t('selected')}: ${course.level || ''}`;
-    document.getElementById('booking-note').textContent =
-      `${course.service || 'Group course'} - ${fmtDate(course.first_session_at)} - ${course.location_text}.`;
+      `${isSlot ? t('selectedSlot') : t('selected')}: ${course.level || t('chooseLevel')}`;
+    document.getElementById('booking-note').textContent = isSlot
+      ? `${course.service || 'Group course'} - ${scheduleText(course)} - ${t('chooseLevel')} / ${t('chooseLocation')}.`
+      : `${course.service || 'Group course'} - ${scheduleText(course)} - ${course.location_text}.`;
+    plannedSlotFields.hidden = !isSlot;
+    if (isSlot) {
+      preferredLevelSelect.value = '';
+      preferredLocationSelect.value = '';
+    }
+    reducedLessonsField.hidden = !(isSlot && course.allow_reduced_lessons);
+    if (isSlot && course.allow_reduced_lessons) {
+      const one = course.reduced_lessons_if_one;
+      const two = course.reduced_lessons_if_two;
+      const full = course.sessions_total;
+      reducedLessonsHint.textContent =
+        one && two && full
+          ? t('reducedLessonsHintDetail', full, two, one)
+          : t('reducedLessonsHint');
+    }
     bookingPanel.hidden = false;
     successState.hidden = true;
     bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -285,6 +326,24 @@ renderAgbConsent();
         showGeneratedError('bf-billing-gender-note', '', false);
       }
     }
+    if (courseKind(selectedCourse) === 'planned_slot') {
+      const missingLevel = !val('bf-preferred-level');
+      const missingLocation = !val('bf-preferred-location');
+      showErr('err-preferred-level', missingLevel);
+      showErr('err-preferred-location', missingLocation);
+      if (missingLevel || missingLocation) valid = false;
+      if (selectedCourse.allow_reduced_lessons) {
+        const missingReducedChoice = !val('bf-reduced-lessons-ok');
+        showErr('err-reduced-lessons-ok', missingReducedChoice);
+        if (missingReducedChoice) valid = false;
+      } else {
+        showErr('err-reduced-lessons-ok', false);
+      }
+    } else {
+      showErr('err-preferred-level', false);
+      showErr('err-preferred-location', false);
+      showErr('err-reduced-lessons-ok', false);
+    }
     showErr('err-consent', !consent);
     if (!consent) valid = false;
 
@@ -308,8 +367,26 @@ renderAgbConsent();
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          course_id: selectedCourse.id,
+          ...(courseKind(selectedCourse) === 'planned_slot'
+            ? { slot_id: selectedCourse.id }
+            : { course_id: selectedCourse.id }),
           language: lang(),
+          preferred_start_date:
+            courseKind(selectedCourse) === 'planned_slot'
+              ? val('bf-preferred-start-date') || null
+              : null,
+          preferred_level:
+            courseKind(selectedCourse) === 'planned_slot'
+              ? val('bf-preferred-level') || null
+              : null,
+          preferred_location:
+            courseKind(selectedCourse) === 'planned_slot'
+              ? val('bf-preferred-location') || null
+              : null,
+          reduced_lessons_ok:
+            courseKind(selectedCourse) === 'planned_slot' && selectedCourse.allow_reduced_lessons
+              ? val('bf-reduced-lessons-ok') === 'yes'
+              : null,
           student: buildStudentPayload(),
         }),
       });

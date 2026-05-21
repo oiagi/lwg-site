@@ -451,6 +451,7 @@ function renderStudentDetail(container, s) {
 
 function requestLabel(enquiry) {
   if (enquiry.status === 'pending_course_booking') return 'group booking request';
+  if (enquiry.status === 'pending_group_slot_booking') return 'forming group course request';
   return 'enquiry';
 }
 
@@ -460,11 +461,13 @@ function requestCourseLabel(enquiry) {
   return (
     [
       course.course_code || booking.course_code,
-      course.level || booking.level,
+      booking.preferred_level || course.level || booking.level,
+      booking.preferred_location || booking.location,
+      booking.schedule_text,
       course.course_type || booking.course_type,
     ]
       .filter(Boolean)
-      .join(' · ') || 'requested course'
+      .join(' · ') || 'requested course slot'
   );
 }
 
@@ -481,7 +484,7 @@ function renderRequestSection(s) {
             : '—';
           const courseLink = enquiry.course_id
             ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
-            : '<span class="detail-muted">no linked course</span>';
+            : `<span class="detail-muted">${esc(requestCourseLabel(enquiry))}</span>`;
           const actions =
             enquiry.untreated && enquiry.status === 'pending_course_booking' && enquiry.course_id
               ? `<div class="student-request-actions">
@@ -491,7 +494,11 @@ function renderRequestSection(s) {
                  </div>`
               : enquiry.untreated
                 ? `<div class="student-request-actions">
-                     <button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">enrol</button>
+                     ${
+                       enquiry.status === 'pending_group_slot_booking'
+                         ? `<a class="save-btn" href="/admin/pages/course-new.html?enquiry_id=${encodeURIComponent(enquiry.id)}">create course</a>`
+                         : `<button class="save-btn" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">enrol</button>`
+                     }
                      <button class="save-btn secondary-btn" data-action="markStudentEnquiryTreated" data-args="${esc(enquiry.id)},${esc(s.id)}">mark treated</button>
                      <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
                    </div>`
