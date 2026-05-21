@@ -6,6 +6,7 @@ import { esc } from '../core/helpers.js';
 let studentCache = [];
 let participantCount = 1;
 const prefillStudentId = new URLSearchParams(window.location.search).get('student_id');
+const prefillEnquiryId = new URLSearchParams(window.location.search).get('enquiry_id');
 
 const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
 const DEFAULT_PRICE_PER_PERSON = {
@@ -154,6 +155,83 @@ function applyStudentToParticipant(student, i = 0) {
   }
 }
 
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (el && value !== null && value !== undefined) el.value = value;
+}
+
+function splitLevel(value) {
+  const level = String(value || '');
+  if (level.endsWith('+')) return { base: level.slice(0, -1), plus: '+' };
+  return { base: level, plus: '' };
+}
+
+function applyEnquiryPrefill(enquiry) {
+  const booking = enquiry.booking_data || {};
+  const contact = enquiry.contact_data || {};
+  const participants = contact.participants?.length
+    ? contact.participants
+    : [
+        {
+          firstName: enquiry.lead_first,
+          lastName: enquiry.lead_last,
+          email: enquiry.lead_email,
+          phone: enquiry.lead_phone,
+          studentId: enquiry.student_id,
+        },
+      ];
+
+  setValue('nc-course-type', booking.course_type || enquiry.service || 'language course');
+  setValue('nc-subject', booking.subject || 'German');
+  const { base, plus } = splitLevel(booking.preferred_level || booking.level);
+  setValue('nc-level', base);
+  setValue('nc-level-plus', plus);
+  syncPlusEnabled('nc-level', 'nc-level-plus');
+  setValue('nc-group', 'group');
+  setValue('nc-sessions', booking.full_lesson_count || booking.sessions_total || '');
+  setValue('nc-session-length', booking.session_length_minutes || '');
+  setValue('nc-price-person', booking.price_per_person_per_60min || '');
+  setValue('nc-location', booking.preferred_location || booking.location || '');
+
+  const container = document.getElementById('nc-participants');
+  participantCount = 0;
+  container.innerHTML = '';
+  participants.forEach((participant, index) => {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = renderParticipantBlock(index, index > 0);
+    container.appendChild(wrapper.firstElementChild);
+    participantCount = index + 1;
+    const block = document.getElementById(`nc-p-${index}`);
+    if (block)
+      block.dataset.selectedStudentId =
+        participant.studentId || (index === 0 ? enquiry.student_id || '' : '');
+    setValue(`nc-p${index}-first`, participant.firstName || participant.first_name || '');
+    setValue(`nc-p${index}-last`, participant.lastName || participant.last_name || '');
+    setValue(`nc-p${index}-email`, participant.email || '');
+    setValue(`nc-p${index}-phone`, participant.phone || '');
+    setValue(
+      `nc-p${index}-search`,
+      [
+        participant.firstName || participant.first_name,
+        participant.lastName || participant.last_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+    );
+    attachSearchListeners(index);
+  });
+  if (!participants.length) {
+    container.innerHTML = renderParticipantBlock(0);
+    participantCount = 1;
+    attachSearchListeners(0);
+  }
+
+  const msgEl = document.getElementById('nc-msg');
+  msgEl.textContent =
+    'Prefilled from booking request. Set the first session date and teacher, then create the course.';
+  msgEl.className = 'modal-msg success is-visible-block';
+}
+
 function addParticipantBlock() {
   const container = document.getElementById('nc-participants');
   const i = participantCount++;
@@ -241,6 +319,7 @@ async function handleSubmit(e) {
         location_city: locationCity || null,
         public_booking_enabled: publicBookingEnabled,
         single_session: singleSession,
+        enquiry_id: prefillEnquiryId || null,
         booking_data: { course_type: courseType, subject, level, group: groupType },
         contact_data: { participants },
       },
@@ -314,6 +393,21 @@ async function handleSubmit(e) {
       .catch(() => {
         const msgEl = document.getElementById('nc-msg');
         msgEl.textContent = 'Could not prefill the selected student.';
+        msgEl.className = 'modal-msg err';
+        msgEl.classList.add('is-visible-block');
+      });
+  }
+
+  if (prefillEnquiryId) {
+    apiFetch('/api/get-enquiry?id=' + encodeURIComponent(prefillEnquiryId))
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
+      .then(applyEnquiryPrefill)
+      .catch(() => {
+        const msgEl = document.getElementById('nc-msg');
+        msgEl.textContent = 'Could not prefill the selected booking request.';
         msgEl.className = 'modal-msg err';
         msgEl.classList.add('is-visible-block');
       });

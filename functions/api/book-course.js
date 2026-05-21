@@ -1,9 +1,10 @@
 // functions/api/book-course.js
 // POST /api/book-course
-// Body: { course_id, student: { first_name, last_name, email, ...intake fields } }
+// Body: { course_id | slot_id, student: { first_name, last_name, email, ...intake fields } }
 //
-// Creates a pending direct-booking enquiry for an existing public group course.
-// It does not create an enrolment and does not trigger payment.
+// Creates a pending direct-booking enquiry for an existing public group course
+// or a forming public course slot. It does not create an enrolment or trigger
+// payment.
 
 import {
   supabaseHeaders,
@@ -20,9 +21,16 @@ import { validate } from './_validate.js';
 import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 import {
   isPublicCourseEligible,
+  isPublicSlotEligible,
   loadPublicCourseCandidates,
+  loadPublicGroupCourseSlots,
   publicCourseDto,
+  publicSlotDto,
   PUBLIC_BOOKING_STATUS,
+  PUBLIC_SLOT_BOOKING_STATUS,
+  PUBLIC_BOOKING_LEVELS,
+  PUBLIC_SLOT_PREFERRED_LOCATIONS,
+  reducedLessonCount,
 } from './_public-course-booking.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
@@ -121,6 +129,20 @@ function bookingTotal(course) {
   return pricePer60 * lessons * (sessionLength / 60);
 }
 
+function normalizeDateOnly(value) {
+  const cleaned = cleanString(value, 20);
+  if (!cleaned) return null;
+  return /^\d{4}-\d{2}-\d{2}$/.test(cleaned) ? cleaned : null;
+}
+
+function preferredLocationText(location) {
+  if (location === "teacher's home") return "Teacher's home";
+  if (location === 'classroom') return 'Classroom';
+  if (location === 'online') return 'Online';
+  if (location === 'company') return 'Company';
+  return location || 'to be confirmed';
+}
+
 function formatPrice(amount, currency) {
   if (amount === null || amount === undefined) return '—';
   return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
@@ -129,9 +151,11 @@ function formatPrice(amount, currency) {
 function buildCustomerEmail(course, student, language = 'en', intakeUrl = null) {
   const total = bookingTotal(course);
   const isGerman = language === 'de';
-  const starts = new Date(course.first_session_at).toLocaleString(isGerman ? 'de-CH' : 'en-GB', {
-    timeZone: 'Europe/Zurich',
-  });
+  const starts = course.first_session_at
+    ? new Date(course.first_session_at).toLocaleString(isGerman ? 'de-CH' : 'en-GB', {
+        timeZone: 'Europe/Zurich',
+      })
+    : course.schedule_text || 'to be confirmed';
   const copy = isGerman
     ? {
         subject: `Buchungsanfrage erhalten — ${course.level || course.course_type || 'Gruppenkurs'} · learning with gioia`,
@@ -289,7 +313,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const courseId = cleanString(body.course_id, 80);
-  if (!courseId) return errorResponse('course_id is required', 400);
+  const slotId = cleanString(body.slot_id, 80);
+  if (!courseId && !slotId) return errorResponse('course_id or slot_id is required', 400);
+  if (courseId && slotId) return errorResponse('Choose either course_id or slot_id', 400);
 
   const billingSeparate = body.student?.billing_separate === true;
   const student = normalizeStudent(body.student || {});
@@ -357,23 +383,80 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   const language = normalizePageLanguage(body.language);
+  const preferredStartDate = normalizeDateOnly(body.preferred_start_date);
+  const preferredLevel = cleanString(body.preferred_level, 20);
+  const preferredLocation = cleanString(body.preferred_location, 80);
+  const reducedLessonsOk =
+    body.reduced_lessons_ok === true ? true : body.reduced_lessons_ok === false ? false : null;
 
-  const candidates = await loadPublicCourseCandidates(env, courseId);
-  const course = candidates[0];
-  if (!course || !isPublicCourseEligible(course, course.pending_booking_count)) {
-    return errorResponse('This course is no longer available for direct booking.', 409);
+  let source;
+  let publicCourse;
+  let bookingStatus;
+  let enquiryCourseId = null;
+  let enquirySlotId = null;
+
+  if (slotId) {
+    const slots = await loadPublicGroupCourseSlots(env, slotId);
+    source = slots[0];
+    if (!source || !isPublicSlotEligible(source, source.pending_booking_count)) {
+      return errorResponse('This course slot is no longer available for direct booking.', 409);
+    }
+    publicCourse = publicSlotDto(source, source.pending_booking_count);
+    if (!preferredLevel || !PUBLIC_BOOKING_LEVELS.includes(preferredLevel)) {
+      return errorResponse('preferred_level is required for this course slot', 400);
+    }
+    if (!preferredLocation || !PUBLIC_SLOT_PREFERRED_LOCATIONS.includes(preferredLocation)) {
+      return errorResponse('preferred_location is required for this course slot', 400);
+    }
+    if (publicCourse.allow_reduced_lessons && reducedLessonsOk === null) {
+      return errorResponse('reduced_lessons_ok is required for this course slot', 400);
+    }
+    bookingStatus = PUBLIC_SLOT_BOOKING_STATUS;
+    enquirySlotId = source.id;
+  } else {
+    const candidates = await loadPublicCourseCandidates(env, courseId);
+    source = candidates[0];
+    if (!source || !isPublicCourseEligible(source, source.pending_booking_count)) {
+      return errorResponse('This course is no longer available for direct booking.', 409);
+    }
+    publicCourse = publicCourseDto(source, source.pending_booking_count);
+    bookingStatus = PUBLIC_BOOKING_STATUS;
+    enquiryCourseId = source.id;
   }
 
-  const publicCourse = publicCourseDto(course, course.pending_booking_count);
   const totalPrice = bookingTotal(publicCourse);
   const booking = {
-    type: 'direct_course_booking',
-    lessonType: `${course.course_type || 'Group course'} ${course.level || ''}`.trim(),
-    course_id: course.id,
-    course_code: course.course_code || null,
-    course_type: course.course_type || null,
-    level: course.level || null,
+    type: slotId ? 'planned_group_course_slot_booking' : 'direct_course_booking',
+    lessonType: `${source.course_type || 'Group course'} ${
+      slotId ? preferredLevel : source.level || ''
+    }`.trim(),
+    course_id: enquiryCourseId,
+    public_group_course_slot_id: enquirySlotId,
+    course_code: source.course_code || null,
+    course_type: source.course_type || null,
+    subject: source.subject || null,
+    level: slotId ? preferredLevel : source.level || null,
+    slot_level: slotId ? source.level || null : null,
+    group: 'group',
+    session_length_minutes: publicCourse.session_length_minutes || null,
+    price_per_person_per_60min: publicCourse.price_per_person_per_60min || null,
     first_session_at: publicCourse.first_session_at,
+    schedule_text: publicCourse.schedule_text || null,
+    preferred_start_date: slotId ? preferredStartDate : null,
+    preferred_level: slotId ? preferredLevel : null,
+    preferred_location: slotId ? preferredLocation : null,
+    location: slotId ? preferredLocation : publicCourse.location || null,
+    reduced_lessons_ok: slotId ? reducedLessonsOk : null,
+    full_lesson_count: slotId ? publicCourse.sessions_total : null,
+    reduced_lessons_if_two:
+      slotId && publicCourse.allow_reduced_lessons
+        ? reducedLessonCount(publicCourse.sessions_total, 2, publicCourse.minimum_students)
+        : null,
+    reduced_lessons_if_one:
+      slotId && publicCourse.allow_reduced_lessons
+        ? reducedLessonCount(publicCourse.sessions_total, 1, publicCourse.minimum_students)
+        : null,
+    minimum_students: publicCourse.minimum_students || null,
     location_text: publicCourse.location_text,
     spots_remaining_at_booking: publicCourse.spots_remaining,
     total_price: totalPrice,
@@ -413,15 +496,16 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       method: 'POST',
       headers: { ...H, Prefer: 'return=representation' },
       body: JSON.stringify({
-        service: course.course_type || null,
+        service: source.course_type || null,
         lead_first: student.first_name,
         lead_last: student.last_name,
         lead_email: student.email,
         lead_phone: student.phone || null,
         booking_data: booking,
         contact_data: contact,
-        course_id: course.id,
-        status: PUBLIC_BOOKING_STATUS,
+        course_id: enquiryCourseId,
+        public_group_course_slot_id: enquirySlotId,
+        status: bookingStatus,
       }),
     });
     if (!enquiryRes.ok) {
@@ -477,20 +561,29 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
+  const emailCourse = slotId
+    ? {
+        ...publicCourse,
+        level: preferredLevel,
+        location: preferredLocation,
+        location_text: preferredLocationText(preferredLocation),
+      }
+    : publicCourse;
+
   await Promise.allSettled([
     sendEmail(
       env,
       student.email,
-      buildCustomerEmail(publicCourse, student, language, intakeFormUrl)
+      buildCustomerEmail(emailCourse, student, language, intakeFormUrl)
     ),
     sendEmail(
       env,
       NOTIFY_EMAILS,
       buildNotificationEmail(
-        publicCourse,
+        emailCourse,
         student,
         enquiryId,
-        adminCourseUrl(request, env, course.id)
+        enquiryCourseId ? adminCourseUrl(request, env, enquiryCourseId) : null
       )
     ),
   ]);

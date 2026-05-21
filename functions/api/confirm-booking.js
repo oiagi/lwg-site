@@ -106,8 +106,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     });
     const rows = await r.json();
     if (!rows.length) return errorResponse('Enquiry not found', 404);
-    booking = rows[0].booking_data || {};
-    contact = rows[0].contact_data || {};
+    booking = { ...(rows[0].booking_data || {}), ...(booking_data || {}) };
+    contact = contact_data || rows[0].contact_data || {};
   }
 
   // ── Load teacher ────────────────────────────────────────────────────

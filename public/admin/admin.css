@@ -531,6 +531,102 @@ button.submit:hover {
   flex-wrap: wrap;
   align-items: center;
 }
+.public-slots-panel {
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 1rem 0;
+  margin-bottom: 1.2rem;
+}
+.public-slots-panel .detail-muted {
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.public-slots-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.public-slots-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.public-slots-toggle {
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--text-muted);
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.52rem 0.8rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.public-slots-toggle:hover {
+  border-color: var(--text);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.35);
+}
+.public-slots-panel.is-collapsed .group-slot-list {
+  display: none;
+}
+.detail-meta--flush {
+  margin-top: 0;
+}
+.group-slot-list {
+  display: grid;
+  gap: 0.7rem;
+}
+.group-slot-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-top: 1px solid #eef2f5;
+}
+.group-slot-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.group-slot-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.group-slot-requests {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.45rem;
+}
+.group-slot-request-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-top: 1px solid #eef2f5;
+}
+.group-slot-request-row .pending-booking-name {
+  font-size: 0.84rem;
+  margin-bottom: 0.18rem;
+}
+.group-slot-request-row .detail-muted {
+  font-size: 0.8rem;
+}
 .secondary-btn {
   font-family: inherit;
   font-size: 0.72rem;
@@ -719,7 +815,8 @@ button.course-status::after {
   margin-bottom: 0.4rem;
 }
 .modal-field input,
-.modal-field select {
+.modal-field select,
+.modal-field textarea {
   width: 100%;
   background: transparent;
   border: none;
@@ -733,11 +830,13 @@ button.course-status::after {
   transition: border-color 0.15s;
 }
 .modal-field input:focus,
-.modal-field select:focus {
+.modal-field select:focus,
+.modal-field textarea:focus {
   border-bottom-color: var(--text);
 }
 .modal-field input[aria-invalid='true'],
-.modal-field select[aria-invalid='true'] {
+.modal-field select[aria-invalid='true'],
+.modal-field textarea[aria-invalid='true'] {
   border-bottom-color: #c0392b;
 }
 .field-error {
@@ -747,13 +846,18 @@ button.course-status::after {
   font-size: 0.68rem;
   line-height: 1.35;
 }
-.modal-field input::placeholder {
+.modal-field input::placeholder,
+.modal-field textarea::placeholder {
   color: #aaa;
   font-weight: 400;
 }
 .modal-field select {
   appearance: none;
   cursor: pointer;
+}
+.modal-field textarea {
+  resize: vertical;
+  line-height: 1.5;
 }
 .modal input[type='checkbox'],
 .modal input[type='radio'] {
@@ -1188,6 +1292,7 @@ button.course-status::after {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-decoration: none;
   border: 1px solid #1a1a1a;
   background: #1a1a1a;
   color: #d6eaf8;

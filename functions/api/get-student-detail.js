@@ -16,7 +16,11 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
-const UNTREATED_ENQUIRY_STATUSES = new Set(['new', 'pending_course_booking']);
+const UNTREATED_ENQUIRY_STATUSES = new Set([
+  'new',
+  'pending_course_booking',
+  'pending_group_slot_booking',
+]);
 const STUDENT_DETAIL_FIELD_LIST = [
   'id',
   'first_name',
@@ -139,7 +143,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           })
         : Promise.resolve(null),
       fetch(
-        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at,course_id,booking_data,lead_first,lead_last,lead_email`,
+        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at,course_id,public_group_course_slot_id,booking_data,lead_first,lead_last,lead_email`,
         { headers: H }
       ),
       fetch(

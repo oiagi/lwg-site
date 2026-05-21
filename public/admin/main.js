@@ -31,6 +31,11 @@ import {
   saveCourseAddress,
   togglePublicBooking,
   handleCourseBooking,
+  openGroupSlotModal,
+  closeGroupSlotModal,
+  submitGroupSlot,
+  setGroupSlotStatus,
+  togglePublicSlotsPanel,
 } from './features/courses.js?v=separate-qr-20260519';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
 import { closeInvoiceModal, submitInvoice } from './features/invoices.js?v=separate-qr-20260519';
@@ -110,6 +115,11 @@ const actions = {
   saveCourseAddress,
   togglePublicBooking,
   handleCourseBooking,
+  openGroupSlotModal,
+  closeGroupSlotModal,
+  submitGroupSlot,
+  setGroupSlotStatus,
+  togglePublicSlotsPanel,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,
   submitConfirmSend,

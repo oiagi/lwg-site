@@ -270,6 +270,51 @@
         '#booking-title': { en: 'your details', de: 'Deine Angaben' },
         '#booking-cancel': { en: 'cancel', de: 'Abbrechen' },
         '#label-booking-request': { en: 'booking request', de: 'Buchungsanfrage' },
+        '#label-slot-preferences': { en: 'course preferences', de: 'Kurspräferenzen' },
+        'label[for="bf-preferred-level"]': {
+          en: 'desired level *',
+          de: 'gewünschtes Niveau *',
+        },
+        'label[for="bf-preferred-location"]': {
+          en: 'desired location *',
+          de: 'gewünschter Ort *',
+        },
+        '#bf-preferred-location option[value="online"]': {
+          en: 'Online',
+          de: 'Online',
+        },
+        '#bf-preferred-location option[value="classroom"]': {
+          en: 'Classroom',
+          de: 'Kursraum',
+        },
+        '#bf-preferred-location option[value="teacher\'s home"]': {
+          en: "Teacher's home",
+          de: 'Bei der Lehrperson',
+        },
+        '#bf-preferred-location option[value="company"]': {
+          en: 'Company',
+          de: 'Firma',
+        },
+        'label[for="bf-preferred-start-date"]': {
+          en: 'preferred start date',
+          de: 'gewünschtes Startdatum',
+        },
+        'label[for="bf-reduced-lessons-ok"]': {
+          en: 'reduced course length *',
+          de: 'reduzierte Kursdauer *',
+        },
+        '#bf-reduced-lessons-ok option[value="yes"]': {
+          en: 'Yes, I am okay with a reduced number of lessons if fewer than three people sign up.',
+          de: 'Ja, ich bin mit weniger Lektionen einverstanden, falls sich weniger als drei Personen anmelden.',
+        },
+        '#bf-reduced-lessons-ok option[value="no"]': {
+          en: 'No, I only want to join if at least three people sign up.',
+          de: 'Nein, ich möchte nur teilnehmen, wenn sich mindestens drei Personen anmelden.',
+        },
+        '#reduced-lessons-hint': {
+          en: 'Should fewer than three people sign up, the number of lessons will be reduced to match the monetary value of a course for a group of three. The adjusted lesson count is rounded down.',
+          de: 'Falls sich weniger als drei Personen anmelden, wird die Anzahl Lektionen so reduziert, dass sie dem monetären Wert eines Kurses für drei Personen entspricht. Die angepasste Lektionenzahl wird abgerundet.',
+        },
         '#label-personal': { en: 'personal information', de: 'Persönliche Angaben' },
         '#label-emergency': { en: 'emergency contact', de: 'Notfallkontakt' },
         '#label-billing': { en: 'billing', de: 'Rechnung' },
@@ -336,6 +381,18 @@
         '#err-consent': {
           en: 'Please accept the terms to continue.',
           de: 'Bitte akzeptiere die AGB, um fortzufahren.',
+        },
+        '#err-reduced-lessons-ok': {
+          en: 'Please select whether you are okay with a reduced course length.',
+          de: 'Bitte wähle aus, ob du mit einer reduzierten Kursdauer einverstanden bist.',
+        },
+        '#err-preferred-level': {
+          en: 'Please select your desired level.',
+          de: 'Bitte wähle dein gewünschtes Niveau aus.',
+        },
+        '#err-preferred-location': {
+          en: 'Please select your desired location.',
+          de: 'Bitte wähle deinen gewünschten Ort aus.',
         },
         '#booking-submit': { en: 'request spot ->', de: 'Platz anfragen ->' },
         '#success-state h2': { en: 'thank you.', de: 'Danke.' },
@@ -598,6 +655,20 @@
     groupCoursesEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
     groupCoursesStarts: { en: 'starts', de: 'Start' },
     groupCoursesNextLesson: { en: 'next', de: 'Nächste' },
+    groupCoursesTimeSlot: { en: 'time', de: 'Zeit' },
+    groupCoursesWeeklySlot: { en: 'weekly slot', de: 'wöchentlicher Termin' },
+    groupCoursesFormingCourse: {
+      en: 'group course interest',
+      de: 'Interesse an Gruppenkurs',
+    },
+    groupCoursesChooseLevel: { en: 'choose your level', de: 'Niveau wählen' },
+    groupCoursesChooseLocation: { en: 'choose location', de: 'Ort wählen' },
+    groupCoursesStartsWhenReady: {
+      en: 'tell us your preferred level and location',
+      de: 'Teile uns dein gewünschtes Niveau und deinen gewünschten Ort mit',
+    },
+    groupCoursesInterest: { en: 'interest', de: 'Interesse' },
+    groupCoursesNeeded: { en: 'needed', de: 'benötigt' },
     groupCoursesLessons: { en: 'lessons', de: 'Lektionen' },
     groupCoursesCompleted: { en: 'completed', de: 'abgeschlossen' },
     groupCoursesRemaining: { en: 'remaining', de: 'verbleibend' },
@@ -609,7 +680,19 @@
     groupCoursesMaxPeople: { en: 'max. 5 people', de: 'max. 5 Personen' },
     groupCoursesPerPerson: { en: 'per person / 60min', de: 'pro Person / 60 Min.' },
     groupCoursesBook: { en: 'request spot ->', de: 'Platz anfragen ->' },
+    groupCoursesRegisterInterest: { en: 'register interest ->', de: 'Interesse anmelden ->' },
     groupCoursesSelected: { en: 'selected course', de: 'Ausgewählter Kurs' },
+    groupCoursesSelectedSlot: { en: 'selected time slot', de: 'Ausgewählter Termin' },
+    groupCoursesReducedLessonsHint: {
+      en: 'Should fewer than three people sign up, the number of lessons will be reduced to match the monetary value of a course for a group of three. The adjusted lesson count is rounded down.',
+      de: 'Falls sich weniger als drei Personen anmelden, wird die Anzahl Lektionen so reduziert, dass sie dem monetären Wert eines Kurses für drei Personen entspricht. Die angepasste Lektionenzahl wird abgerundet.',
+    },
+    groupCoursesReducedLessonsHintDetail: {
+      en: (full, two, one) =>
+        `This slot is planned as ${full} lessons with at least three people. If only two people join, it will be reduced to ${two} lessons; if only one person joins, to ${one} lessons. The adjusted count is rounded down.`,
+      de: (full, two, one) =>
+        `Dieser Termin ist mit ${full} Lektionen ab drei Personen geplant. Bei nur zwei Personen wird auf ${two} Lektionen reduziert, bei nur einer Person auf ${one} Lektionen. Die angepasste Anzahl wird abgerundet.`,
+    },
     groupCoursesSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
     groupCoursesServerError: {
       en: 'Something went wrong. Please try again or email info@learningwithgioia.ch.',
