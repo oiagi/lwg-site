@@ -20,8 +20,10 @@ import {
 import { validate } from './_validate.js';
 import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
 import {
+  isCompanyCodeCourseEligible,
   isPublicCourseEligible,
   isPublicSlotEligible,
+  loadCompanyCodeCourseCandidates,
   loadPublicCourseCandidates,
   loadPublicGroupCourseSlots,
   publicCourseDto,
@@ -31,6 +33,9 @@ import {
   PUBLIC_BOOKING_LEVELS,
   PUBLIC_SLOT_PREFERRED_LOCATIONS,
   reducedLessonCount,
+  normalizeAccessCode,
+  slotAccessCodeMatches,
+  slotRequiresAccessCode,
 } from './_public-course-booking.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
@@ -314,6 +319,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const courseId = cleanString(body.course_id, 80);
   const slotId = cleanString(body.slot_id, 80);
+  const accessCode = normalizeAccessCode(body.access_code);
   if (!courseId && !slotId) return errorResponse('course_id or slot_id is required', 400);
   if (courseId && slotId) return errorResponse('Choose either course_id or slot_id', 400);
 
@@ -396,9 +402,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   let enquirySlotId = null;
 
   if (slotId) {
-    const slots = await loadPublicGroupCourseSlots(env, slotId);
+    const slots = await loadPublicGroupCourseSlots(env, slotId, { includeProtected: true });
     source = slots[0];
-    if (!source || !isPublicSlotEligible(source, source.pending_booking_count)) {
+    if (
+      !source ||
+      !isPublicSlotEligible(source, source.pending_booking_count) ||
+      !slotAccessCodeMatches(source, accessCode)
+    ) {
       return errorResponse('This course slot is no longer available for direct booking.', 409);
     }
     publicCourse = publicSlotDto(source, source.pending_booking_count);
@@ -416,7 +426,16 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   } else {
     const candidates = await loadPublicCourseCandidates(env, courseId);
     source = candidates[0];
-    if (!source || !isPublicCourseEligible(source, source.pending_booking_count)) {
+    let courseIsBookable = source && isPublicCourseEligible(source, source.pending_booking_count);
+
+    if (!courseIsBookable && accessCode) {
+      const protectedCandidates = await loadCompanyCodeCourseCandidates(env, accessCode, courseId);
+      source = protectedCandidates[0];
+      courseIsBookable =
+        source && isCompanyCodeCourseEligible(source, source.pending_booking_count);
+    }
+
+    if (!courseIsBookable) {
       return errorResponse('This course is no longer available for direct booking.', 409);
     }
     publicCourse = publicCourseDto(source, source.pending_booking_count);
@@ -458,6 +477,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         : null,
     minimum_students: publicCourse.minimum_students || null,
     location_text: publicCourse.location_text,
+    access_label: slotRequiresAccessCode(source) ? source.access_label || null : null,
     spots_remaining_at_booking: publicCourse.spots_remaining,
     total_price: totalPrice,
     currency: publicCourse.currency,

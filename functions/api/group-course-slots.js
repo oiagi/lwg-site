@@ -10,7 +10,7 @@ import {
   parseJsonBody,
   pickDefined,
 } from './_utils.js';
-import { PUBLIC_SLOT_BOOKING_STATUS } from './_public-course-booking.js';
+import { PUBLIC_SLOT_BOOKING_STATUS, normalizeAccessCode } from './_public-course-booking.js';
 
 const ALLOWED_FIELDS = [
   'status',
@@ -35,6 +35,8 @@ const ALLOWED_FIELDS = [
   'location_postal_code',
   'location_city',
   'allow_reduced_lessons',
+  'access_code',
+  'access_label',
   'notes',
 ];
 
@@ -85,6 +87,8 @@ function normalizeSlot(input, { partial = false } = {}) {
       slot[key] = value === true;
     } else if (key === 'start_time' || key === 'end_time') {
       slot[key] = normalizeTime(value);
+    } else if (key === 'access_code') {
+      slot[key] = normalizeAccessCode(value);
     } else {
       slot[key] = cleanString(value, key === 'notes' ? 1000 : 200);
     }

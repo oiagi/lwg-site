@@ -11,8 +11,8 @@
 <section class="public-slots-panel" id="public-slots-panel">
   <div class="public-slots-header">
     <div>
-      <p class="detail-meta detail-meta--flush" id="public-slots-title">public group course slots</p>
-      <p class="detail-muted">Time slots for courses that start once enough people sign up.</p>
+      <p class="detail-meta detail-meta--flush" id="public-slots-title">group course booking slots</p>
+      <p class="detail-muted">Public or code-protected time slots for courses that start once enough people sign up.</p>
     </div>
     <div class="public-slots-header-actions">
       <button
@@ -50,10 +50,10 @@
   <div class="loading-state">loading…</div>
 </div>
 
-<!-- ── Public group slot modal ─────────────────────────────────────────── -->
+<!-- ── Public / protected group slot modal ─────────────────────────────── -->
 <div class="modal-overlay" id="group-slot-modal">
   <div class="modal modal-wide">
-    <h2>new public group slot</h2>
+    <h2>new group booking slot</h2>
     <div class="modal-grid">
       <div class="modal-field">
         <label>Course type</label>
@@ -126,7 +126,17 @@
           <option value="">Students choose</option>
           <option value="classroom">Classroom</option>
           <option value="teacher's home">Teacher's home</option>
+          <option value="company">Company</option>
+          <option value="online">Online</option>
         </select>
+      </div>
+      <div class="modal-field">
+        <label>Access code <span class="label-hint">(optional)</span></label>
+        <input type="text" id="slot-access-code" placeholder="leave blank for public">
+      </div>
+      <div class="modal-field">
+        <label>Access label <span class="label-hint">(optional)</span></label>
+        <input type="text" id="slot-access-label" placeholder="Company or cohort name">
       </div>
       <div class="modal-field full">
         <label>Location address</label>

@@ -38,6 +38,22 @@
       </p>
     </header>
 
+    <details class="access-code-panel" id="access-code-panel">
+      <summary class="access-code-toggle" id="access-code-toggle" aria-expanded="false" aria-controls="access-code-body">
+        <span class="section-label" id="access-code-title">company booking code</span>
+        <span class="access-code-toggle__icon" aria-hidden="true">+</span>
+      </summary>
+      <div class="access-code-body" id="access-code-body">
+        <p class="access-code-copy" id="access-code-copy">Have a code from your company? Enter it here to see your group booking options.</p>
+        <form class="access-code-form" id="access-code-form" novalidate>
+          <label class="sr-only" for="access-code-input">booking code</label>
+          <input type="text" id="access-code-input" autocomplete="off" inputmode="text" placeholder="booking code">
+          <button type="submit" class="access-code-submit" id="access-code-submit">unlock</button>
+        </form>
+        <p class="access-code-status" id="access-code-status" aria-live="polite"></p>
+      </div>
+    </details>
+
     <div class="courses-status" id="courses-status">loading courses...</div>
     <div class="courses-list" id="courses-list" aria-live="polite"></div>
 

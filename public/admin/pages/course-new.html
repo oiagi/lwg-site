@@ -145,6 +145,23 @@
         </div>
         <div class="modal-field full">
           <label class="checkbox-label">
+            <input type="checkbox" id="nc-company-code-booking">
+            <span>Show in company code booking</span>
+          </label>
+          <p class="label-hint checkbox-label-hint">
+            Requires the booking code below. Suitable for active group courses with open spots.
+          </p>
+        </div>
+        <div class="modal-field">
+          <label>Company booking code <span class="label-hint">(optional)</span></label>
+          <input type="text" id="nc-access-code" placeholder="e.g. ACME2026" maxlength="80">
+        </div>
+        <div class="modal-field">
+          <label>Company booking label <span class="label-hint">(optional)</span></label>
+          <input type="text" id="nc-access-label" placeholder="Company or cohort name" maxlength="200">
+        </div>
+        <div class="modal-field full">
+          <label class="checkbox-label">
             <input type="checkbox" id="nc-single-session">
             <span>Only create the first session — I'll plan the rest manually in Google Calendar</span>
           </label>

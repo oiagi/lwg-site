@@ -38,6 +38,7 @@ import {
   findOrCreateStudent,
   setStudentStatus,
 } from './_student-utils.js';
+import { normalizeAccessCode } from './_public-course-booking.js';
 
 // ── Course code helpers ──────────────────────────────────────────────
 
@@ -87,6 +88,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     location_postal_code,
     location_city,
     public_booking_enabled,
+    company_code_booking_enabled,
+    access_code,
+    access_label,
     course_code_override,
     single_session = false,
     booking_data,
@@ -95,6 +99,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   if (!teacher_id || !first_session_at) {
     return errorResponse('Missing teacher_id or first_session_at', 400);
+  }
+  if (company_code_booking_enabled && !normalizeAccessCode(access_code)) {
+    return errorResponse('access_code is required for company code booking', 400);
   }
 
   // ── Load enquiry or use inline booking/contact data ─────────────────
@@ -213,6 +220,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         location_postal_code: location_postal_code || null,
         location_city: location_city || null,
         public_booking_enabled: !!public_booking_enabled,
+        company_code_booking_enabled: !!company_code_booking_enabled,
+        access_code: normalizeAccessCode(access_code),
+        access_label: access_label || null,
         recurrence_rule: recurrenceRule,
         calendar_event_id: calendarEventId,
         enquiry_id: enquiry_id || null,
