@@ -1826,6 +1826,12 @@ function upcomingSessions(course) {
     .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
 }
 
+function fmtScheduleSession(session, course) {
+  const duration = session.duration_minutes ?? course.session_length_minutes ?? null;
+  const label = fmtDateWithEnd(session.scheduled_at, duration);
+  return duration ? `${label} (${duration} min)` : label;
+}
+
 export async function sendCourseConfirmation(courseId) {
   const course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
@@ -1928,7 +1934,7 @@ export async function openScheduleModal(courseId) {
   const sessions = upcomingSessions(course);
   const sessionListHtml = sessions.length
     ? `<ol class="cs-session-list">${sessions
-        .map((s) => `<li>${esc(fmtDate(s.scheduled_at))}</li>`)
+        .map((s) => `<li>${esc(fmtScheduleSession(s, course))}</li>`)
         .join('')}</ol>`
     : '<p class="cs-empty">No upcoming lessons currently scheduled.</p>';
 

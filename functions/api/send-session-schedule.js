@@ -40,6 +40,7 @@ function fmtDate(iso, language = 'de', durationMinutes = null) {
   const locale = language === 'en' ? 'en-GB' : 'de-CH';
   const tz = 'Europe/Zurich';
   const start = new Date(iso);
+  const duration = Number(durationMinutes);
   const base = start.toLocaleString(locale, {
     timeZone: tz,
     weekday: 'long',
@@ -49,13 +50,17 @@ function fmtDate(iso, language = 'de', durationMinutes = null) {
     hour: '2-digit',
     minute: '2-digit',
   });
-  if (!durationMinutes) return base;
-  const end = new Date(start.getTime() + durationMinutes * 60000);
+  if (!Number.isFinite(duration) || duration <= 0) return base;
+  const end = new Date(start.getTime() + duration * 60000);
   const endTime = end.toLocaleString(locale, { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-  return `${base}–${endTime}`;
+  return `${base} - ${endTime} (${duration} min)`;
 }
 
-function sessionRows(sessions, language = 'de') {
+function sessionDuration(session, course) {
+  return session.duration_minutes ?? course.session_length_minutes ?? null;
+}
+
+function sessionRows(sessions, course, language = 'de') {
   if (!sessions.length) {
     const empty =
       language === 'en'
@@ -68,7 +73,7 @@ function sessionRows(sessions, language = 'de') {
       (s, i) => `
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, s.duration_minutes))}</td>
+        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, sessionDuration(s, course)))}</td>
       </tr>`
     )
     .join('');
@@ -131,7 +136,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
           <td style="padding:0 40px 24px;">
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionRows(sessions, language)}
+              ${sessionRows(sessions, course, language)}
             </table>
           </td>
         </tr>
@@ -198,7 +203,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const [cr, sr, er] = await Promise.all([
     fetch(
-      `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level,group_type`,
+      `${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}&select=id,course_code,level,group_type,session_length_minutes`,
       {
         headers: H,
       }

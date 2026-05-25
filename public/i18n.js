@@ -320,7 +320,7 @@
         '#label-billing': { en: 'billing', de: 'Rechnung' },
         '#booking-payment-note': {
           en: "What happens after your booking? We will review your request and confirm your spot. Then we will send you the invoice for your booking. Once we receive your payment you're all booked in.",
-          de: 'Was passiert nach deiner Buchungsanfrage? Wir prüfen deine Anfrage und bestätigen deinen Platz. Dann schicken wir dir die Rechnung für deine Buchung. Sobald deine Zahlung eingegangen ist, bist du fix dabei.',
+          de: 'Was passiert nach deiner Buchungsanfrage? Wir prüfen deine Anfrage und bestätigen deinen Platz. Dann schicken wir dir die Rechnung für deine Buchung. Sobald deine Zahlung eingegangen ist, ist dein Platz gebucht.',
         },
         'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
