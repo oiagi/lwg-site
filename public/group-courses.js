@@ -40,17 +40,30 @@ renderAgbConsent();
   let statusMessageKey = 'loading';
   let accessStatus = null;
 
+  const fallbackText = {
+    codeTitle: 'company booking code',
+    codeCopy: 'Have a code from your company? Enter it here to see your group booking options.',
+    codePlaceholder: 'booking code',
+    unlock: 'unlock',
+    unlocking: 'unlocking...',
+    codeRequired: 'Please enter your booking code.',
+    codeInvalid: 'No group booking options were found for this code.',
+    codeUnlocked: (count) => `${count} company booking option${count === 1 ? '' : 's'} unlocked.`,
+    codeUnlockedLabel: (label, count) =>
+      `${count} booking option${count === 1 ? '' : 's'} unlocked for ${label}.`,
+    companyOption: 'company booking option',
+  };
+
   function lang() {
     return window.LWG_I18N?.getLang() || 'en';
   }
 
   function t(key, ...args) {
-    return (
-      window.LWG_I18N?.translateRuntime(
-        'groupCourses' + key[0].toUpperCase() + key.slice(1),
-        ...args
-      ) || key
-    );
+    const runtimeKey = 'groupCourses' + key[0].toUpperCase() + key.slice(1);
+    const translated = window.LWG_I18N?.translateRuntime(runtimeKey, ...args);
+    if (translated && translated !== runtimeKey) return translated;
+    const fallback = fallbackText[key];
+    return typeof fallback === 'function' ? fallback(...args) : fallback || key;
   }
 
   function esc(value) {
