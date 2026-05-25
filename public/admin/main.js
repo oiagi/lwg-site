@@ -37,7 +37,7 @@ import {
   submitGroupSlot,
   setGroupSlotStatus,
   togglePublicSlotsPanel,
-} from './features/courses.js?v=separate-qr-20260519';
+} from './features/courses.js?v=company-code-booking-20260525';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
 import { closeInvoiceModal, submitInvoice } from './features/invoices.js?v=separate-qr-20260519';
 import {
