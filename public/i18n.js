@@ -670,6 +670,7 @@
     groupCoursesInterest: { en: 'interest', de: 'Interesse' },
     groupCoursesNeeded: { en: 'needed', de: 'benötigt' },
     groupCoursesLessons: { en: 'lessons', de: 'Lektionen' },
+    groupCoursesNumberOfLessons: { en: 'number of lessons', de: 'Anzahl Lektionen' },
     groupCoursesCompleted: { en: 'completed', de: 'abgeschlossen' },
     groupCoursesRemaining: { en: 'remaining', de: 'verbleibend' },
     groupCoursesOpenEnded: { en: 'open-ended', de: 'offen' },
@@ -683,6 +684,33 @@
     groupCoursesRegisterInterest: { en: 'register interest ->', de: 'Interesse anmelden ->' },
     groupCoursesSelected: { en: 'selected course', de: 'Ausgewählter Kurs' },
     groupCoursesSelectedSlot: { en: 'selected time slot', de: 'Ausgewählter Termin' },
+    groupCoursesCodeTitle: { en: 'company booking code', de: 'Buchungscode der Firma' },
+    groupCoursesCodeCopy: {
+      en: 'Have a code from your company? Enter it here to see your group booking options.',
+      de: 'Hast du einen Code von deiner Firma? Gib ihn hier ein, um deine Buchungsoptionen zu sehen.',
+    },
+    groupCoursesCodePlaceholder: { en: 'booking code', de: 'Buchungscode' },
+    groupCoursesUnlock: { en: 'unlock', de: 'freischalten' },
+    groupCoursesUnlocking: { en: 'unlocking...', de: 'Wird freigeschaltet...' },
+    groupCoursesCodeRequired: {
+      en: 'Please enter your booking code.',
+      de: 'Bitte gib deinen Buchungscode ein.',
+    },
+    groupCoursesCodeInvalid: {
+      en: 'No group booking options were found for this code.',
+      de: 'Für diesen Code wurden keine Gruppenkursoptionen gefunden.',
+    },
+    groupCoursesCodeUnlocked: {
+      en: (count) => `${count} company booking option${count === 1 ? '' : 's'} unlocked.`,
+      de: (count) => `${count} Firmen-Buchungsoption${count === 1 ? '' : 'en'} freigeschaltet.`,
+    },
+    groupCoursesCodeUnlockedLabel: {
+      en: (label, count) =>
+        `${count} booking option${count === 1 ? '' : 's'} unlocked for ${label}.`,
+      de: (label, count) =>
+        `${count} Buchungsoption${count === 1 ? '' : 'en'} für ${label} freigeschaltet.`,
+    },
+    groupCoursesCompanyOption: { en: 'company option', de: 'Firmenoption' },
     groupCoursesReducedLessonsHint: {
       en: 'Should fewer than three people sign up, the number of lessons will be reduced to match the monetary value of a course for a group of three. The adjusted lesson count is rounded down.',
       de: 'Falls sich weniger als drei Personen anmelden, wird die Anzahl Lektionen so reduziert, dass sie dem monetären Wert eines Kurses für drei Personen entspricht. Die angepasste Lektionenzahl wird abgerundet.',

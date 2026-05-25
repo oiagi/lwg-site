@@ -92,6 +92,11 @@ function populate(course) {
   setVal('ec-loc-number', course.location_street_number || '');
   setVal('ec-loc-postal', course.location_postal_code || '');
   setVal('ec-loc-city', course.location_city || '');
+  document.getElementById('ec-public-booking').checked = course.public_booking_enabled === true;
+  document.getElementById('ec-company-code-booking').checked =
+    course.company_code_booking_enabled === true;
+  setVal('ec-access-code', course.access_code || '');
+  setVal('ec-access-label', course.access_label || '');
   setAddressFieldsOpen(hasLocationAddress());
 }
 
@@ -108,6 +113,15 @@ async function handleSubmit(e) {
   const lengthVal = document.getElementById('ec-session-length').value;
   const priceVal = document.getElementById('ec-price').value;
   const pricePersonVal = document.getElementById('ec-price-person').value;
+  const companyCodeBookingEnabled =
+    document.getElementById('ec-company-code-booking')?.checked || false;
+  const accessCode = document.getElementById('ec-access-code').value.trim();
+  if (companyCodeBookingEnabled && !accessCode) {
+    msgEl.textContent = 'Please enter a company booking code.';
+    msgEl.className = 'modal-msg err';
+    msgEl.classList.add('is-visible-block');
+    return;
+  }
 
   const body = {
     course_id: courseId,
@@ -129,6 +143,10 @@ async function handleSubmit(e) {
     location_street_number: document.getElementById('ec-loc-number').value.trim() || null,
     location_postal_code: document.getElementById('ec-loc-postal').value.trim() || null,
     location_city: document.getElementById('ec-loc-city').value.trim() || null,
+    public_booking_enabled: document.getElementById('ec-public-booking')?.checked || false,
+    company_code_booking_enabled: companyCodeBookingEnabled,
+    access_code: accessCode || null,
+    access_label: document.getElementById('ec-access-label').value.trim() || null,
   };
 
   btn.textContent = 'saving…';

@@ -207,6 +207,44 @@ export async function togglePublicBooking(courseId) {
   }
 }
 
+export async function toggleCompanyCodeBooking(courseId) {
+  const input = document.getElementById('company-code-booking-' + courseId);
+  const msg = document.getElementById('company-code-booking-msg-' + courseId);
+  if (!input) return;
+  const cached = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (input.checked && !cached?.access_code) {
+    input.checked = false;
+    showErrorMessage(msg, 'Add a company booking code on the edit page first.');
+    return;
+  }
+  input.disabled = true;
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: {
+        course_id: courseId,
+        company_code_booking_enabled: input.checked,
+      },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Save failed');
+    }
+    const updated = await res.json();
+    if (cached) {
+      cached.company_code_booking_enabled = !!updated.company_code_booking_enabled;
+    }
+    showMessage(msg, 'saved');
+  } catch (err) {
+    input.checked = !input.checked;
+    if (msg) {
+      showErrorMessage(msg, 'Error: ' + err.message);
+    }
+  } finally {
+    input.disabled = false;
+  }
+}
+
 export async function markInvoicePaid(invoiceId, courseId) {
   if (!confirm('Mark this invoice as paid?')) return;
   try {
@@ -435,7 +473,7 @@ function updatePublicSlotsPanel(slots = groupSlotsCache) {
 
   const requestCount = slotRequestCount(slots);
   if (title) {
-    title.textContent = `public group course slots · ${requestCount} request${requestCount === 1 ? '' : 's'}`;
+    title.textContent = `group course booking slots · ${requestCount} request${requestCount === 1 ? '' : 's'}`;
   }
 
   if (publicSlotsCollapsed === null) {
@@ -514,6 +552,9 @@ function renderGroupSlots(slots) {
           ? ` · reduced: 2 people ${two}, 1 person ${one} lessons`
           : '';
       const requestSummary = slotRequestSummary(slot.pending_bookings || []);
+      const accessText = slot.access_code
+        ? `protected: ${slot.access_label ? slot.access_label + ' · ' : ''}${slot.access_code}`
+        : 'public';
       return `
         <div class="group-slot-row" id="group-slot-${esc(slot.id)}">
           <div>
@@ -528,6 +569,7 @@ function renderGroupSlots(slots) {
               ${esc(String(slot.sessions_total || '—'))} lessons ·
               ${formatMoney(slot.price_per_person_per_60min, slot.currency)} / person / 60min${esc(reduced)}
             </p>
+            <p class="detail-muted">visibility: ${esc(accessText)}</p>
             ${requestSummary ? `<p class="detail-muted">requests: ${esc(requestSummary)}</p>` : ''}
             ${slotRequestRows(slot)}
           </div>
@@ -599,6 +641,8 @@ function groupSlotPayload() {
     location_postal_code: slotVal('slot-loc-postal') || null,
     location_city: slotVal('slot-loc-city') || null,
     allow_reduced_lessons: document.getElementById('slot-allow-reduced')?.checked === true,
+    access_code: slotVal('slot-access-code') || null,
+    access_label: slotVal('slot-access-label') || null,
     notes: slotVal('slot-notes') || null,
   };
 }
@@ -803,6 +847,17 @@ function renderCourses(courses) {
                   <span>show on public booking page</span>
                 </label>
                 <span class="saved-msg" id="public-booking-msg-${c.id}">saved</span><br>
+                Company code booking:
+                <label class="course-inline-check">
+                  <input type="checkbox" id="company-code-booking-${c.id}"
+                    ${c.company_code_booking_enabled ? 'checked' : ''}
+                    data-action-change="toggleCompanyCodeBooking" data-args="${c.id}">
+                  <span>show after company booking code</span>
+                </label>
+                <span class="saved-msg" id="company-code-booking-msg-${c.id}">saved</span><br>
+                Company booking code: ${esc(c.access_code || '—')}${
+                  c.access_label ? ' · ' + esc(c.access_label) : ''
+                }<br>
                 Location: ${locationSummaryHtml(c)}
               </p>
               ${locationEditorHtml(c)}

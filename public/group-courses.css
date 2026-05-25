@@ -46,6 +46,86 @@ h1 {
   margin: 0 auto;
 }
 
+.access-code-panel {
+  border-top: 1px solid var(--rule);
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+.access-code-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.2rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.access-code-toggle,
+.access-code-toggle::-webkit-details-marker {
+  appearance: none;
+  -webkit-appearance: none;
+  list-style: none;
+  list-style-type: none;
+}
+.access-code-toggle::marker {
+  content: none;
+}
+.access-code-toggle::-webkit-details-marker {
+  display: none;
+}
+.access-code-toggle:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 4px;
+}
+.access-code-panel .section-label {
+  border-bottom: 0;
+  margin: 0;
+  padding-bottom: 0;
+}
+.access-code-toggle__icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--ink-mute);
+  transition: transform 0.2s ease;
+}
+.access-code-panel[open] .access-code-toggle__icon,
+.access-code-panel.is-expanded .access-code-toggle__icon {
+  transform: rotate(45deg);
+}
+.access-code-body {
+  padding-bottom: 1.4rem;
+}
+.access-code-copy {
+  margin: 0 0 1rem;
+  color: var(--ink-mute);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+.access-code-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.8rem;
+  align-items: end;
+}
+.access-code-status {
+  min-height: 1.4rem;
+  margin: 0.7rem 0 0;
+  color: var(--ink-mute);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+}
+.access-code-status.is-error {
+  color: #9c2f24;
+}
+.access-code-status.is-success {
+  color: var(--ink);
+}
+
 .courses-status,
 .empty-state {
   text-align: center;
@@ -66,6 +146,10 @@ h1 {
   border-top: 1px solid var(--rule);
   padding: 1.4rem 0;
 }
+.course-item--access-highlight {
+  border-top: 0;
+  padding-top: 0;
+}
 .course-meta,
 .section-label {
   font-size: 0.68rem;
@@ -85,6 +169,15 @@ h1 {
   margin: 0 0 1rem;
   color: var(--ink);
 }
+.course-access-badge {
+  display: inline-block;
+  margin-left: 0.55rem;
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
 .course-facts {
   display: grid;
   gap: 0.5rem;
@@ -92,7 +185,7 @@ h1 {
 }
 .course-facts div {
   display: grid;
-  grid-template-columns: 6rem 1fr;
+  grid-template-columns: 8.4rem 1fr;
   gap: 1.15rem;
   align-items: baseline;
 }
@@ -131,6 +224,7 @@ h1 {
 }
 .course-book-btn,
 .submit,
+.access-code-submit,
 .enquiry-link {
   display: block;
   background: var(--ink);
@@ -154,6 +248,7 @@ h1 {
 }
 .course-book-btn:hover,
 .submit:hover,
+.access-code-submit:hover,
 .enquiry-link:hover {
   background: var(--paper);
   color: var(--ink);
@@ -332,6 +427,7 @@ input::placeholder {
 
 html[data-touch='true'] .course-book-btn:hover,
 html[data-touch='true'] .submit:hover,
+html[data-touch='true'] .access-code-submit:hover,
 html[data-touch='true'] .enquiry-link:hover {
   background: var(--ink);
   color: var(--paper);
@@ -357,8 +453,12 @@ html[data-device='mobile'] .course-note {
 }
 html[data-device='mobile'] .course-book-btn,
 html[data-device='mobile'] .submit,
+html[data-device='mobile'] .access-code-submit,
 html[data-device='mobile'] .enquiry-link {
   min-height: 48px;
+}
+html[data-device='mobile'] .access-code-form {
+  grid-template-columns: 1fr;
 }
 html[data-device='mobile'] .course-facts div {
   grid-template-columns: 1fr;

@@ -15,6 +15,12 @@ renderAgbConsent();
   const coursesList = document.getElementById('courses-list');
   const statusEl = document.getElementById('courses-status');
   const emptyState = document.getElementById('empty-state');
+  const accessCodePanel = document.getElementById('access-code-panel');
+  const accessCodeToggle = document.getElementById('access-code-toggle');
+  const accessCodeForm = document.getElementById('access-code-form');
+  const accessCodeInput = document.getElementById('access-code-input');
+  const accessCodeSubmit = document.getElementById('access-code-submit');
+  const accessCodeStatus = document.getElementById('access-code-status');
   const bookingPanel = document.getElementById('booking-panel');
   const bookingForm = document.getElementById('booking-form');
   const successState = document.getElementById('success-state');
@@ -32,6 +38,7 @@ renderAgbConsent();
   let courses = [];
   let selectedCourse = null;
   let statusMessageKey = 'loading';
+  let accessStatus = null;
 
   function lang() {
     return window.LWG_I18N?.getLang() || 'en';
@@ -71,6 +78,10 @@ renderAgbConsent();
     return course.kind === 'planned_slot' ? 'planned_slot' : 'existing_course';
   }
 
+  function isProtectedCourse(course) {
+    return course.access_code_required === true;
+  }
+
   function scheduleText(course) {
     if (courseKind(course) === 'planned_slot') return course.schedule_text || t('weeklySlot');
     return fmtDate(course.first_session_at);
@@ -87,6 +98,14 @@ renderAgbConsent();
   }
 
   function lessonSummary(course) {
+    if (courseKind(course) === 'planned_slot') {
+      const total =
+        course.sessions_total === null || course.sessions_total === undefined
+          ? null
+          : Math.max(0, Number(course.sessions_total));
+      return total === null ? t('openEnded') : String(total);
+    }
+
     const completed = Math.max(0, Number(course.sessions_completed || 0));
     const total =
       course.sessions_total === null || course.sessions_total === undefined
@@ -103,28 +122,39 @@ renderAgbConsent();
     return `${completedText} · ${remainingText}`;
   }
 
+  function lessonLabel(course) {
+    return courseKind(course) === 'planned_slot' ? t('numberOfLessons') : t('lessons');
+  }
+
   function renderCourses() {
     statusEl.textContent = '';
     statusEl.hidden = true;
     emptyState.hidden = courses.length > 0;
     coursesList.innerHTML = courses
-      .map((course) => {
+      .map((course, index) => {
         const spotsLabel = course.spots_remaining === 1 ? t('spot') : t('spots');
         const price = fmtPrice(course);
         const isSlot = courseKind(course) === 'planned_slot';
+        const isUnlocked = !!course.unlocked_access_code;
+        const itemClasses = ['course-item'];
+        if (isUnlocked) itemClasses.push('course-item--unlocked');
+        if (isUnlocked && index === 0) itemClasses.push('course-item--access-highlight');
+        const accessBadge = isProtectedCourse(course)
+          ? `<span class="course-access-badge">${esc(course.access_label || t('companyOption'))}</span>`
+          : '';
         const placeFact = isSlot
           ? ''
           : `<div><dt>${t('place')}</dt><dd>${esc(course.location_text || '-')}</dd></div>`;
         const spotsFact = isSlot
           ? ''
           : `<div><dt>${t('spots')}</dt><dd>${course.spots_remaining} ${spotsLabel} ${t('available')}</dd></div>`;
-        return `<article class="course-item">
+        return `<article class="${itemClasses.join(' ')}">
           <div class="course-item__main">
             <p class="course-meta">${esc(isSlot ? t('formingCourse') : course.service || 'group course')}</p>
-            <h2>${esc(course.level || (isSlot ? t('chooseLevel') : '-'))}</h2>
+            <h2>${esc(course.level || (isSlot ? t('chooseLevel') : '-'))}${accessBadge}</h2>
             <dl class="course-facts">
               <div><dt>${isSlot ? t('timeSlot') : t('nextLesson')}</dt><dd>${esc(scheduleText(course))}</dd></div>
-              <div><dt>${t('lessons')}</dt><dd>${esc(lessonSummary(course))}</dd></div>
+              <div><dt>${lessonLabel(course)}</dt><dd>${esc(lessonSummary(course))}</dd></div>
               ${placeFact}
               ${spotsFact}
             </dl>
@@ -157,6 +187,51 @@ renderAgbConsent();
     }
   }
 
+  function renderAccessStatus() {
+    if (!accessCodeStatus) return;
+    accessCodeStatus.classList.toggle('is-error', accessStatus?.type === 'error');
+    accessCodeStatus.classList.toggle('is-success', accessStatus?.type === 'success');
+    accessCodeStatus.textContent = accessStatus?.message || '';
+  }
+
+  function syncAccessCodeExpanded(shouldFocus = false) {
+    if (!accessCodePanel || !accessCodeToggle) return;
+    const isExpanded = accessCodePanel.open === true;
+    accessCodeToggle.setAttribute('aria-expanded', String(isExpanded));
+    accessCodePanel?.classList.toggle('is-expanded', isExpanded);
+    if (isExpanded && shouldFocus) requestAnimationFrame(() => accessCodeInput?.focus());
+  }
+
+  async function unlockAccessCode(code) {
+    const res = await fetch('/api/group-course-access-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || t('codeInvalid'));
+    return body;
+  }
+
+  function mergeUnlockedCourses(unlocked) {
+    const accessCode = unlocked.access_code;
+    const unlockedCourses = (unlocked.courses || []).map((course) => ({
+      ...course,
+      unlocked_access_code: accessCode,
+    }));
+    const unlockedIds = new Set(unlockedCourses.map((course) => course.id));
+    courses = [...unlockedCourses, ...courses.filter((course) => !unlockedIds.has(course.id))];
+    renderCourses();
+    return unlockedCourses.length;
+  }
+
+  function applyAccessCodeText() {
+    document.getElementById('access-code-title').textContent = t('codeTitle');
+    document.getElementById('access-code-copy').textContent = t('codeCopy');
+    document.getElementById('access-code-input').placeholder = t('codePlaceholder');
+    document.getElementById('access-code-submit').textContent = t('unlock');
+  }
+
   function setSelectedCourse(course) {
     selectedCourse = course;
     document.getElementById('booking-course-id').value = course.id;
@@ -169,7 +244,11 @@ renderAgbConsent();
     plannedSlotFields.hidden = !isSlot;
     if (isSlot) {
       preferredLevelSelect.value = '';
-      preferredLocationSelect.value = '';
+      preferredLocationSelect.value = [...preferredLocationSelect.options].some(
+        (option) => option.value === course.location
+      )
+        ? course.location
+        : '';
     }
     reducedLessonsField.hidden = !(isSlot && course.allow_reduced_lessons);
     if (isSlot && course.allow_reduced_lessons) {
@@ -370,6 +449,9 @@ renderAgbConsent();
           ...(courseKind(selectedCourse) === 'planned_slot'
             ? { slot_id: selectedCourse.id }
             : { course_id: selectedCourse.id }),
+          access_code: selectedCourse.access_code_required
+            ? selectedCourse.unlocked_access_code || null
+            : null,
           language: lang(),
           preferred_start_date:
             courseKind(selectedCourse) === 'planned_slot'
@@ -417,6 +499,52 @@ renderAgbConsent();
     if (course) setSelectedCourse(course);
   });
 
+  accessCodePanel?.addEventListener('toggle', () => {
+    syncAccessCodeExpanded();
+  });
+
+  accessCodeToggle?.addEventListener('click', () => {
+    if (accessCodePanel?.open === false) {
+      requestAnimationFrame(() => syncAccessCodeExpanded(true));
+    }
+  });
+
+  accessCodeForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const code = accessCodeInput.value.trim();
+    if (!code) {
+      accessStatus = { type: 'error', message: t('codeRequired') };
+      renderAccessStatus();
+      return;
+    }
+
+    accessCodeSubmit.disabled = true;
+    accessCodeSubmit.dataset.loading = '';
+    accessCodeSubmit.textContent = t('unlocking');
+    accessStatus = null;
+    renderAccessStatus();
+
+    try {
+      const unlocked = await unlockAccessCode(code);
+      const count = mergeUnlockedCourses(unlocked);
+      accessCodeInput.value = '';
+      accessStatus = {
+        type: 'success',
+        message:
+          unlocked.access_label && count
+            ? t('codeUnlockedLabel', unlocked.access_label, count)
+            : t('codeUnlocked', count),
+      };
+    } catch (err) {
+      accessStatus = { type: 'error', message: err.message || t('codeInvalid') };
+    } finally {
+      delete accessCodeSubmit.dataset.loading;
+      accessCodeSubmit.disabled = false;
+      accessCodeSubmit.textContent = t('unlock');
+      renderAccessStatus();
+    }
+  });
+
   billingCheckbox.addEventListener('change', () => {
     billingFields.hidden = !billingCheckbox.checked;
     if (!billingCheckbox.checked) {
@@ -456,9 +584,13 @@ renderAgbConsent();
     emptyState.querySelector('p').textContent = t('noSpots');
     emptyState.querySelector('a').textContent = t('enquiry');
     document.getElementById('booking-submit').textContent = t('book');
+    applyAccessCodeText();
+    renderAccessStatus();
     if (selectedCourse) setSelectedCourse(selectedCourse);
     if (courses.length) renderCourses();
   });
 
+  applyAccessCodeText();
+  syncAccessCodeExpanded();
   loadCourses();
 })();

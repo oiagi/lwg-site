@@ -146,6 +146,32 @@
             </div>
           </div>
         </div>
+        <div class="modal-field full">
+          <label class="checkbox-label">
+            <input type="checkbox" id="ec-public-booking">
+            <span>Show on public group course booking page</span>
+          </label>
+          <p class="label-hint checkbox-label-hint">
+            Only suitable for group courses at teacher's home or classroom with open spots.
+          </p>
+        </div>
+        <div class="modal-field full">
+          <label class="checkbox-label">
+            <input type="checkbox" id="ec-company-code-booking">
+            <span>Show in company code booking</span>
+          </label>
+          <p class="label-hint checkbox-label-hint">
+            Requires the booking code below. Suitable for active group courses with open spots.
+          </p>
+        </div>
+        <div class="modal-field">
+          <label>Company booking code <span class="label-hint">(optional)</span></label>
+          <input type="text" id="ec-access-code" placeholder="e.g. ACME2026" maxlength="80">
+        </div>
+        <div class="modal-field">
+          <label>Company booking label <span class="label-hint">(optional)</span></label>
+          <input type="text" id="ec-access-label" placeholder="Company or cohort name" maxlength="200">
+        </div>
       </div>
 
       <div class="page-form-actions">

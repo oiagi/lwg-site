@@ -274,7 +274,17 @@ async function handleSubmit(e) {
   const locationPostal = document.getElementById('nc-loc-postal').value.trim();
   const locationCity = document.getElementById('nc-loc-city').value.trim();
   const publicBookingEnabled = document.getElementById('nc-public-booking')?.checked || false;
+  const companyCodeBookingEnabled =
+    document.getElementById('nc-company-code-booking')?.checked || false;
+  const accessCode = document.getElementById('nc-access-code')?.value.trim() || '';
+  const accessLabel = document.getElementById('nc-access-label')?.value.trim() || '';
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
+  if (companyCodeBookingEnabled && !accessCode) {
+    msgEl.textContent = 'Please enter a company booking code.';
+    msgEl.className = 'modal-msg err';
+    msgEl.classList.add('is-visible-block');
+    return;
+  }
 
   const participants = [];
   document.querySelectorAll('#nc-participants .participant-block').forEach((block) => {
@@ -318,6 +328,9 @@ async function handleSubmit(e) {
         location_postal_code: locationPostal || null,
         location_city: locationCity || null,
         public_booking_enabled: publicBookingEnabled,
+        company_code_booking_enabled: companyCodeBookingEnabled,
+        access_code: accessCode || null,
+        access_label: accessLabel || null,
         single_session: singleSession,
         enquiry_id: prefillEnquiryId || null,
         booking_data: { course_type: courseType, subject, level, group: groupType },

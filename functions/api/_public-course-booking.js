@@ -64,6 +64,18 @@ export function isPublicCourseEligible(course, pendingCount = 0, now = new Date(
   );
 }
 
+export function isCompanyCodeCourseEligible(course, pendingCount = 0, now = new Date()) {
+  const enrolledCount = course.enrolled_count || 0;
+  return (
+    course.company_code_booking_enabled === true &&
+    slotRequiresAccessCode(course) &&
+    course.status === 'active' &&
+    course.group_type === 'group' &&
+    !!firstUpcomingSession(course, now) &&
+    enrolledCount + pendingCount < PUBLIC_COURSE_CAPACITY
+  );
+}
+
 export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
   const firstSession = firstUpcomingSession(course, now);
   const upcomingSessionCount = (course.sessions || []).length;
@@ -101,6 +113,8 @@ export function publicCourseDto(course, pendingCount = 0, now = new Date()) {
     sessions_total: sessionsTotal,
     spots_remaining: spotsRemaining,
     capacity: PUBLIC_COURSE_CAPACITY,
+    access_code_required: slotRequiresAccessCode(course),
+    access_label: course.access_label || null,
   };
 }
 
@@ -115,6 +129,22 @@ export function reducedLessonCount(sessionsTotal, actualStudents, minimumStudent
   if (!Number.isFinite(total) || total <= 0) return null;
   if (!Number.isFinite(actual) || actual <= 0 || actual >= minimum) return total;
   return Math.max(1, Math.floor((total * actual) / minimum));
+}
+
+export function normalizeAccessCode(value) {
+  if (value === null || value === undefined) return null;
+  const cleaned = String(value).replace(/\s+/g, '').trim().toUpperCase();
+  return cleaned ? cleaned.slice(0, 80) : null;
+}
+
+export function slotRequiresAccessCode(slot) {
+  return !!normalizeAccessCode(slot?.access_code);
+}
+
+export function slotAccessCodeMatches(slot, value) {
+  const slotCode = normalizeAccessCode(slot?.access_code);
+  if (!slotCode) return true;
+  return slotCode === normalizeAccessCode(value);
 }
 
 export function publicSlotDto(slot, pendingCount = 0) {
@@ -157,6 +187,8 @@ export function publicSlotDto(slot, pendingCount = 0) {
     reduced_lessons_if_one: reducedLessonCount(slot.sessions_total, 1, minimumStudents),
     reduced_lessons_if_two: reducedLessonCount(slot.sessions_total, 2, minimumStudents),
     notes: slot.notes || null,
+    access_code_required: slotRequiresAccessCode(slot),
+    access_label: slot.access_label || null,
   };
 }
 
@@ -226,13 +258,84 @@ export async function loadPublicCourseCandidates(env, courseId = null) {
   }));
 }
 
-export async function loadPublicGroupCourseSlots(env, slotId = null) {
+export async function loadCompanyCodeCourseCandidates(env, accessCode, courseId = null) {
+  const normalizedCode = normalizeAccessCode(accessCode);
+  if (!normalizedCode) return [];
+
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+  const nowISO = new Date().toISOString();
+  const idFilter = courseId ? `&id=eq.${encodeURIComponent(courseId)}` : '';
+
+  const coursesRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/courses?company_code_booking_enabled=is.true&access_code=eq.${encodeURIComponent(normalizedCode)}&status=eq.active&group_type=eq.group${idFilter}&order=course_code.asc&select=id,course_code,course_type,subject,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location,location_company,location_street,location_street_number,location_postal_code,location_city,company_code_booking_enabled,access_code,access_label`,
+    { headers: H }
+  );
+  if (!coursesRes.ok) {
+    throw new Error(`Could not load company code courses: ${await coursesRes.text()}`);
+  }
+
+  const courses = await coursesRes.json();
+  if (!courses.length) return [];
+
+  const courseIds = courses.map((course) => course.id);
+  const courseFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
+
+  const [sessionsRes, enrolmentsRes, pendingRes] = await Promise.all([
+    fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&scheduled_at=gt.${encodeURIComponent(nowISO)}&status=neq.cancelled&order=scheduled_at.asc&select=course_id,scheduled_at,status`,
+      { headers: H }
+    ),
+    fetch(`${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=course_id`, {
+      headers: H,
+    }),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/enquiries?or=(${courseFilter})&status=eq.${PUBLIC_BOOKING_STATUS}&select=course_id`,
+      { headers: H }
+    ),
+  ]);
+
+  const sessions = sessionsRes.ok ? await sessionsRes.json() : [];
+  const enrolments = enrolmentsRes.ok ? await enrolmentsRes.json() : [];
+  const pendingBookings = pendingRes.ok ? await pendingRes.json() : [];
+
+  const sessionsByCourse = {};
+  for (const session of sessions) {
+    (sessionsByCourse[session.course_id] ||= []).push(session);
+  }
+
+  const enrolledCountByCourse = {};
+  for (const enrolment of enrolments) {
+    enrolledCountByCourse[enrolment.course_id] =
+      (enrolledCountByCourse[enrolment.course_id] || 0) + 1;
+  }
+
+  const pendingCountByCourse = {};
+  for (const enquiry of pendingBookings) {
+    pendingCountByCourse[enquiry.course_id] = (pendingCountByCourse[enquiry.course_id] || 0) + 1;
+  }
+
+  return courses.map((course) => ({
+    ...course,
+    sessions: sessionsByCourse[course.id] || [],
+    enrolled_count: enrolledCountByCourse[course.id] || 0,
+    pending_booking_count: pendingCountByCourse[course.id] || 0,
+  }));
+}
+
+export async function loadPublicGroupCourseSlots(env, slotId = null, options = {}) {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
   const idFilter = slotId ? `&id=eq.${encodeURIComponent(slotId)}` : '';
+  const accessCode = normalizeAccessCode(options.accessCode);
+  const accessFilter = accessCode
+    ? `&access_code=eq.${encodeURIComponent(accessCode)}`
+    : options.includeProtected
+      ? ''
+      : '&access_code=is.null';
 
   const slotsRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/public_group_course_slots?public_booking_enabled=is.true&status=eq.active${idFilter}&order=weekday.asc,start_time.asc&select=*`,
+    `${SUPABASE_URL}/rest/v1/public_group_course_slots?public_booking_enabled=is.true&status=eq.active${idFilter}${accessFilter}&order=weekday.asc,start_time.asc&select=*`,
     { headers: H }
   );
   if (!slotsRes.ok) {
