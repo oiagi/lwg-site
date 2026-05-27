@@ -1854,7 +1854,7 @@ export async function sendCourseConfirmation(courseId) {
   const sessions = upcomingSessions(course);
   const sessionListHtml = sessions.length
     ? `<ol class="cs-session-list">${sessions
-        .map((s) => `<li>${esc(fmtDate(s.scheduled_at))}</li>`)
+        .map((s) => `<li>${esc(fmtScheduleSession(s, course))}</li>`)
         .join('')}</ol>`
     : '<p class="cs-empty">No lessons scheduled yet.</p>';
 
@@ -1866,6 +1866,7 @@ export async function sendCourseConfirmation(courseId) {
       <li>Subject: ${esc(course.subject || '—')}</li>
       <li>Level: ${esc(course.level || '—')}</li>
       <li>Sessions: ${course.sessions_total ? esc(String(course.sessions_total)) : 'open-ended'}</li>
+      <li>Lesson duration: ${course.session_length_minutes ? esc(`${course.session_length_minutes} min`) : '—'}</li>
       <li>Location: ${esc(course.location || '—')}</li>
     </ul>
     <p class="cs-section-label">scheduled lessons (${sessions.length})</p>

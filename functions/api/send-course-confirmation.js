@@ -34,9 +34,13 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function fmtDate(iso, language = 'de') {
-  return new Date(iso).toLocaleString(language === 'en' ? 'en-GB' : 'de-CH', {
-    timeZone: 'Europe/Zurich',
+function fmtDate(iso, language = 'de', durationMinutes = null) {
+  const locale = language === 'en' ? 'en-GB' : 'de-CH';
+  const tz = 'Europe/Zurich';
+  const start = new Date(iso);
+  const duration = Number(durationMinutes);
+  const base = start.toLocaleString(locale, {
+    timeZone: tz,
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
@@ -44,6 +48,10 @@ function fmtDate(iso, language = 'de') {
     hour: '2-digit',
     minute: '2-digit',
   });
+  if (!Number.isFinite(duration) || duration <= 0) return base;
+  const end = new Date(start.getTime() + duration * 60000);
+  const endTime = end.toLocaleString(locale, { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+  return `${base} - ${endTime} (${duration} min)`;
 }
 
 function formatPrice(amount, currency) {
@@ -129,7 +137,11 @@ function courseDetailRows(course, sessions, language = 'de') {
     .join('');
 }
 
-function sessionListRows(sessions, language = 'de') {
+function sessionDuration(session, course) {
+  return session.duration_minutes ?? course.session_length_minutes ?? null;
+}
+
+function sessionListRows(sessions, course, language = 'de') {
   if (!sessions.length) {
     const empty =
       language === 'en' ? 'No lessons have been scheduled yet.' : 'Noch keine Lektionen geplant.';
@@ -140,7 +152,7 @@ function sessionListRows(sessions, language = 'de') {
       (s, i) => `
       <tr>
         <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language))}</td>
+        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, sessionDuration(s, course)))}</td>
       </tr>`
     )
     .join('');
@@ -206,7 +218,7 @@ function buildConfirmationEmail({ course, sessions, studentFirstName, language }
           <td style="padding:0 40px 24px;">
             <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionListRows(sessions, language)}
+              ${sessionListRows(sessions, course, language)}
             </table>
           </td>
         </tr>
@@ -250,7 +262,7 @@ async function loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, courseId) {
   const [cr, sr, er] = await Promise.all([
     fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${courseId}&select=*`, { headers: H }),
     fetch(
-      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${courseId}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,status`,
+      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${courseId}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,duration_minutes,status`,
       { headers: H }
     ),
     fetch(`${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${courseId}&select=student_id`, {

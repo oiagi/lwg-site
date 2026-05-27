@@ -140,14 +140,14 @@ function buildEmails(to) {
     ['Ort', 'Wildbachstrasse 65, 8008 Zürich'],
   ]);
   const scheduleRows = rows([
-    ['1.', 'Wednesday, 13.05.2026, 18:30'],
-    ['2.', 'Wednesday, 20.05.2026, 18:30'],
-    ['3.', 'Wednesday, 27.05.2026, 18:30'],
+    ['1.', 'Wednesday, 13.05.2026, 18:30 - 19:30 (60 min)'],
+    ['2.', 'Wednesday, 20.05.2026, 18:30 - 19:30 (60 min)'],
+    ['3.', 'Wednesday, 27.05.2026, 18:30 - 19:30 (60 min)'],
   ]);
   const scheduleRowsDE = rows([
-    ['1.', 'Mittwoch, 13.05.2026, 18:30'],
-    ['2.', 'Mittwoch, 20.05.2026, 18:30'],
-    ['3.', 'Mittwoch, 27.05.2026, 18:30'],
+    ['1.', 'Mittwoch, 13.05.2026, 18:30 - 19:30 (60 min)'],
+    ['2.', 'Mittwoch, 20.05.2026, 18:30 - 19:30 (60 min)'],
+    ['3.', 'Mittwoch, 27.05.2026, 18:30 - 19:30 (60 min)'],
   ]);
 
   return [
