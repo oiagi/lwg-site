@@ -15,7 +15,7 @@ import { openCertificateModal as openCertificates } from './certificates.js';
 import {
   openBulkInvoiceModal as openBulkInvoices,
   openInvoiceModal as openInvoice,
-} from './invoices.js?v=separate-qr-20260519';
+} from './invoices.js?v=individual-lesson-counts-20260530';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -122,6 +122,26 @@ function locationEditorHtml(course) {
 function formatMoney(amount, currency = 'CHF') {
   if (amount === null || amount === undefined) return '—';
   return `${Number(amount).toFixed(2)} ${esc(currency || 'CHF')}`;
+}
+
+function dateInputValue(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+}
+
+function todayInputValue() {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
+
+function studentStartsBySession(student, session) {
+  if (!student?.joined_at || !session?.scheduled_at) return true;
+  const joined = new Date(student.joined_at + 'T00:00:00');
+  const scheduled = new Date(session.scheduled_at);
+  if (Number.isNaN(joined.getTime()) || Number.isNaN(scheduled.getTime())) return true;
+  return scheduled >= joined;
 }
 
 export function toggleCourseAddressEditor(courseId) {
@@ -782,6 +802,7 @@ function renderCourses(courses) {
             ]
               .filter(Boolean)
               .join('');
+            const joinedInputId = `joined-${c.id}-${s.id}`;
             return `
       <div class="progress-block">
         <p class="progress-name">
@@ -798,6 +819,13 @@ function renderCourses(courses) {
           <button class="remove-enrolment-btn" data-action="removeStudentFromCourse"
             data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
+        </div>
+        <div class="enrolment-settings-row">
+          <label for="${joinedInputId}">Joined</label>
+          <input id="${joinedInputId}" type="date" value="${esc(dateInputValue(s.joined_at))}">
+          <button class="save-btn secondary-btn" data-action="saveEnrolmentSettings"
+            data-args="${c.id},${s.id}">save</button>
+          <span class="saved-msg" id="enrolment-saved-${c.id}-${s.id}">saved</span>
         </div>
         ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
         ${invoiceBlock}
@@ -977,6 +1005,41 @@ export async function saveStudent(studentId) {
     }
   } catch (err) {
     console.error('Save student error:', err);
+  }
+}
+
+export async function saveEnrolmentSettings(courseId, studentId, btn) {
+  const joinedEl = document.getElementById(`joined-${courseId}-${studentId}`);
+  const msg = document.getElementById(`enrolment-saved-${courseId}-${studentId}`);
+  const joinedAt = joinedEl?.value || null;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'saving...';
+  }
+
+  try {
+    const res = await apiFetch('/api/update-enrolment', {
+      method: 'PATCH',
+      body: {
+        course_id: courseId,
+        student_id: studentId,
+        joined_at: joinedAt,
+      },
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not save enrolment.');
+    await loadCourses(currentCourseFilter);
+    document.getElementById('course-detail-' + courseId)?.classList.add('open');
+    const updatedMsg = document.getElementById(`enrolment-saved-${courseId}-${studentId}`);
+    if (updatedMsg) showMessage(updatedMsg, 'saved');
+  } catch (err) {
+    if (msg) showErrorMessage(msg, 'Error: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'save';
+    }
   }
 }
 
@@ -1520,7 +1583,10 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
     const coursesRes = await apiFetch('/api/get-courses?status=all');
     const courses = await coursesRes.json();
     const course = courses.find((c) => c.id === courseId);
-    attendanceStudents = course?.students || [];
+    const session = course?.sessions?.find((s) => String(s.id) === String(sessionId));
+    attendanceStudents = (course?.students || []).filter((student) =>
+      studentStartsBySession(student, session)
+    );
 
     let existingAttendance = [];
     try {
@@ -1647,6 +1713,7 @@ export function openAddParticipantModal(courseId) {
   document.getElementById('ap-last').value = '';
   document.getElementById('ap-email').value = '';
   document.getElementById('ap-phone').value = '';
+  document.getElementById('ap-joined-at').value = todayInputValue();
   const msgEl = document.getElementById('ap-msg');
   msgEl.classList.remove('is-visible-block');
   msgEl.textContent = '';
@@ -1794,6 +1861,7 @@ export async function submitAddParticipant() {
         email: document.getElementById('ap-email').value.trim() || null,
         phone: document.getElementById('ap-phone').value.trim() || null,
       };
+  body.joined_at = document.getElementById('ap-joined-at')?.value || null;
 
   try {
     const res = await apiFetch('/api/add-enrolment', { method: 'POST', body });

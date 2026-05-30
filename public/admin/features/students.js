@@ -832,6 +832,12 @@ export function editStudent(studentId) {
 
 let enrolStudentId = null;
 
+function todayInputValue() {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 10);
+}
+
 export async function openEnrolStudentModal(studentId) {
   enrolStudentId = studentId;
   const modal = document.getElementById('enrol-student-modal');
@@ -844,6 +850,7 @@ export async function openEnrolStudentModal(studentId) {
   msg.textContent = '';
   btn.textContent = 'enrol';
   btn.disabled = true;
+  document.getElementById('es-joined-at').value = todayInputValue();
   sel.innerHTML = '<option value="">loading courses…</option>';
   if (createLink) {
     createLink.href = `/admin/pages/course-new.html?student_id=${encodeURIComponent(studentId)}`;
@@ -901,6 +908,7 @@ export async function submitEnrolStudent() {
   const btn = document.getElementById('es-submit');
   const msg = document.getElementById('es-msg');
   const courseId = document.getElementById('es-course').value;
+  const joinedAt = document.getElementById('es-joined-at')?.value || null;
   if (!courseId || !enrolStudentId) return;
 
   btn.disabled = true;
@@ -910,7 +918,7 @@ export async function submitEnrolStudent() {
   try {
     const res = await apiFetch('/api/add-enrolment', {
       method: 'POST',
-      body: { course_id: courseId, student_id: enrolStudentId },
+      body: { course_id: courseId, student_id: enrolStudentId, joined_at: joinedAt },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

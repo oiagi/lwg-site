@@ -2494,6 +2494,34 @@ html[data-device='mobile'] .avail-day {
   gap: 0.5rem;
   align-items: center;
 }
+.enrolment-settings-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.6rem;
+  margin-top: 0.55rem;
+}
+.enrolment-settings-row label {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.enrolment-settings-row input {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.35rem;
+}
+.enrolment-settings-row input[type='number'] {
+  width: 4.4rem;
+}
+.enrolment-settings-row input[type='date'] {
+  width: 9rem;
+}
 .level-input {
   background: transparent;
   border: none;
@@ -2875,9 +2903,43 @@ html[data-device='mobile'] .avail-day {
 .invoice-preview {
   background: #f4f8fb;
   border: 1px solid var(--border-soft);
-  padding: 0.8rem;
-  max-height: 32rem;
+  max-height: 36rem;
   overflow-y: auto;
+  padding: 0;
+}
+.invoice-preview > .inv-prev-page,
+.invoice-preview > .inv-prev-pdf-page {
+  margin: 0.8rem;
+}
+.invoice-carousel-nav {
+  align-items: center;
+  background: #edf2f7;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.invoice-carousel-btn {
+  background: none;
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0.1rem 0.45rem;
+}
+.invoice-carousel-btn:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+.invoice-carousel-counter {
+  flex: 1;
+  font-size: 0.78rem;
+  text-align: center;
 }
 .inv-prev-page {
   background: #fff;
@@ -3041,6 +3103,18 @@ html[data-device='mobile'] .avail-day {
   color: var(--text-muted);
   display: block;
   font-size: 0.78rem;
+}
+.invoice-recipient-lessons {
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  color: var(--text);
+  display: block;
+  font-family: inherit;
+  font-size: 0.72rem;
+  margin-top: 0.2rem;
+  padding: 0.15rem 0.3rem;
+  width: 4rem;
 }
 .invoice-recipient-qr {
   font-size: 0.74rem;

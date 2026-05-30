@@ -16,6 +16,24 @@ import {
   setStudentStatus,
 } from './_student-utils.js';
 
+function cleanDate(value) {
+  if (!value) return null;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const date = new Date(value + 'T12:00:00Z');
+  return Number.isNaN(date.getTime()) ? undefined : value;
+}
+
+function zurichDate() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Zurich',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${byType.year}-${byType.month}-${byType.day}`;
+}
+
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authError = await requireAdminAuth(request, env);
   if (authError) return authError;
@@ -28,6 +46,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!student_id && !email && !first_name) {
     return errorResponse('Provide student_id, or email, or first name', 400);
   }
+  const joinedAt = body.joined_at ? cleanDate(body.joined_at) : zurichDate();
+  if (joinedAt === undefined) return errorResponse('joined_at must use YYYY-MM-DD', 400);
 
   const H = supabaseHeaders(env.SUPABASE_SERVICE_KEY);
   const { SUPABASE_URL } = env;
@@ -56,7 +76,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const enrolRes = await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
     method: 'POST',
     headers: { ...H, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-    body: JSON.stringify({ student_id: sid, course_id }),
+    body: JSON.stringify({ student_id: sid, course_id, joined_at: joinedAt }),
   });
   if (!enrolRes.ok) {
     const txt = await enrolRes.text();

@@ -11,6 +11,7 @@ import {
   toggleStatusDropdown,
   setCourseStatus,
   saveStudent,
+  saveEnrolmentSettings,
   logSession,
   deleteCourse,
   removeStudentFromCourse,
@@ -37,9 +38,14 @@ import {
   submitGroupSlot,
   setGroupSlotStatus,
   togglePublicSlotsPanel,
-} from './features/courses.js?v=course-confirmation-duration-20260527';
+} from './features/courses.js?v=individual-lesson-counts-20260530';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
-import { closeInvoiceModal, submitInvoice } from './features/invoices.js?v=separate-qr-20260519';
+import {
+  closeInvoiceModal,
+  submitInvoice,
+  prevBulkPreview,
+  nextBulkPreview,
+} from './features/invoices.js?v=individual-lesson-counts-20260530';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -93,6 +99,7 @@ const actions = {
   toggleStatusDropdown,
   setCourseStatus,
   saveStudent,
+  saveEnrolmentSettings,
   logSession,
   deleteCourse,
   removeStudentFromCourse,
@@ -112,6 +119,8 @@ const actions = {
   markInvoicePaid,
   closeInvoiceModal,
   submitInvoice,
+  prevBulkPreview,
+  nextBulkPreview,
   toggleCourseAddressEditor,
   saveCourseAddress,
   togglePublicBooking,

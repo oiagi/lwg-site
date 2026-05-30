@@ -135,6 +135,17 @@ function getLead(enquiry) {
   };
 }
 
+function todayDate() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Zurich',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${byType.year}-${byType.month}-${byType.day}`;
+}
+
 async function patchEnquiry(SUPABASE_URL, H, enquiryId, fields) {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/enquiries?id=eq.${encodeURIComponent(enquiryId)}`,
@@ -223,7 +234,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const enrolRes = await fetch(`${SUPABASE_URL}/rest/v1/enrolments`, {
     method: 'POST',
     headers: { ...H, Prefer: 'resolution=ignore-duplicates,return=minimal' },
-    body: JSON.stringify({ student_id: studentId, course_id: courseId }),
+    body: JSON.stringify({ student_id: studentId, course_id: courseId, joined_at: todayDate() }),
   });
   if (!enrolRes.ok) {
     console.error('handle-course-booking enrolment error:', await enrolRes.text());
