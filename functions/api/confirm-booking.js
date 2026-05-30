@@ -61,6 +61,11 @@ function generateCourseCode() {
   return String(10000 + Math.floor(Math.random() * 90000));
 }
 
+function dateOnly(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
 // ── Main handler ─────────────────────────────────────────────────────
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
@@ -310,7 +315,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           ...supabaseHeaders(SUPABASE_SERVICE_KEY),
           Prefer: 'resolution=ignore-duplicates',
         },
-        body: JSON.stringify({ student_id: sid, course_id: courseId }),
+        body: JSON.stringify({
+          student_id: sid,
+          course_id: courseId,
+          joined_at: dateOnly(first_session_at),
+        }),
       });
       await setStudentStatus(SUPABASE_URL, SUPABASE_SERVICE_KEY, sid, 'active');
       if (!enquiry_id) {
