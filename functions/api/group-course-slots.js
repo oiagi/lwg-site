@@ -217,6 +217,31 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   return jsonResponse(rows[0]);
 }, 'group-course-slots');
 
+export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
+  const authErr = await requireAdminAuth(request, env);
+  if (authErr) return authErr;
+
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+
+  const slotId = cleanString(body.id, 80);
+  if (!slotId) return errorResponse('Missing id', 400);
+
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/public_group_course_slots?id=eq.${encodeURIComponent(slotId)}`,
+    {
+      method: 'DELETE',
+      headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' },
+    }
+  );
+  if (!res.ok) {
+    console.error('group-course-slots delete error:', await res.text());
+    return errorResponse('Could not delete group course slot');
+  }
+  return jsonResponse({ deleted: true });
+}, 'group-course-slots');
+
 export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;

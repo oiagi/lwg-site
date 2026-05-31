@@ -497,7 +497,7 @@ function updatePublicSlotsPanel(slots = groupSlotsCache) {
   }
 
   if (publicSlotsCollapsed === null) {
-    publicSlotsCollapsed = requestCount === 0;
+    publicSlotsCollapsed = true;
   }
 
   panel.classList.toggle('is-collapsed', publicSlotsCollapsed);
@@ -564,7 +564,9 @@ function renderGroupSlots(slots) {
 
   list.innerHTML = slots
     .map((slot) => {
-      const statusAction = slot.status === 'active' ? 'paused' : 'active';
+      const isActive = slot.status === 'active';
+      const toggleStatus = isActive ? 'paused' : 'active';
+      const toggleLabel = isActive ? 'pause' : 'activate';
       const two = reducedLessonCount(slot.sessions_total, 2, slot.minimum_students);
       const one = reducedLessonCount(slot.sessions_total, 1, slot.minimum_students);
       const reduced =
@@ -595,8 +597,9 @@ function renderGroupSlots(slots) {
           </div>
           <div class="group-slot-actions">
             <span class="enq-status ${esc(slot.status || '')}">${esc(slot.status || '—')}</span>
-            <button class="save-btn secondary-btn" data-action="setGroupSlotStatus" data-args="${esc(slot.id)},${esc(statusAction)}">${statusAction}</button>
-            <button class="delete-btn" data-action="setGroupSlotStatus" data-args="${esc(slot.id)},cancelled">cancel</button>
+            <button class="save-btn secondary-btn" data-action="setGroupSlotStatus" data-args="${esc(slot.id)},${esc(toggleStatus)}">${toggleLabel}</button>
+            <button class="save-btn secondary-btn" data-action="openEditGroupSlotModal" data-args="${esc(slot.id)}">edit</button>
+            <button class="delete-btn" data-action="deleteGroupSlot" data-args="${esc(slot.id)}">delete</button>
             <span class="saved-msg" id="group-slot-msg-${esc(slot.id)}">saved</span>
           </div>
         </div>`;
@@ -628,6 +631,57 @@ export function openGroupSlotModal() {
     msg.textContent = '';
     msg.className = 'modal-msg';
   }
+  const idInput = document.getElementById('slot-id');
+  if (idInput) idInput.value = '';
+  const title = modal?.querySelector('h2');
+  if (title) title.textContent = 'new group booking slot';
+  const submit = document.getElementById('slot-submit');
+  if (submit) submit.textContent = 'create slot';
+  modal?.classList.add('open');
+}
+
+export function openEditGroupSlotModal(slotId) {
+  const slot = groupSlotsCache.find((s) => String(s.id) === String(slotId));
+  if (!slot) {
+    alert('Could not find slot.');
+    return;
+  }
+
+  const modal = document.getElementById('group-slot-modal');
+  const msg = document.getElementById('slot-msg');
+  if (msg) {
+    msg.textContent = '';
+    msg.className = 'modal-msg';
+  }
+
+  document.getElementById('slot-id').value = slot.id;
+  document.getElementById('slot-course-type').value = slot.course_type || 'language course';
+  document.getElementById('slot-subject').value = slot.subject || 'German';
+  document.getElementById('slot-level').value = slot.level || '';
+  document.getElementById('slot-weekday').value = String(slot.weekday || 1);
+  document.getElementById('slot-start-time').value = slotTime(slot.start_time);
+  document.getElementById('slot-end-time').value = slotTime(slot.end_time);
+  document.getElementById('slot-sessions-total').value = slot.sessions_total ?? '';
+  document.getElementById('slot-session-length').value = slot.session_length_minutes ?? '';
+  document.getElementById('slot-price-person').value = slot.price_per_person_per_60min ?? '';
+  document.getElementById('slot-capacity').value = slot.capacity ?? '';
+  document.getElementById('slot-minimum-students').value = slot.minimum_students ?? '';
+  document.getElementById('slot-location').value = slot.location || '';
+  document.getElementById('slot-loc-company').value = slot.location_company || '';
+  document.getElementById('slot-loc-street').value = slot.location_street || '';
+  document.getElementById('slot-loc-number').value = slot.location_street_number || '';
+  document.getElementById('slot-loc-postal').value = slot.location_postal_code || '';
+  document.getElementById('slot-loc-city').value = slot.location_city || '';
+  document.getElementById('slot-allow-reduced').checked = !!slot.allow_reduced_lessons;
+  document.getElementById('slot-access-code').value = slot.access_code || '';
+  document.getElementById('slot-access-label').value = slot.access_label || '';
+  document.getElementById('slot-notes').value = slot.notes || '';
+
+  const title = modal?.querySelector('h2');
+  if (title) title.textContent = 'edit group booking slot';
+  const submit = document.getElementById('slot-submit');
+  if (submit) submit.textContent = 'save changes';
+
   modal?.classList.add('open');
 }
 
@@ -674,19 +728,25 @@ export async function submitGroupSlot(btn) {
     msg.textContent = '';
     msg.className = 'modal-msg';
   }
+
+  const slotId = document.getElementById('slot-id')?.value?.trim();
+  const isEdit = !!slotId;
+
   submit.disabled = true;
   submit.dataset.loading = '';
-  submit.textContent = 'creating…';
+  submit.textContent = isEdit ? 'saving…' : 'creating…';
 
   try {
+    const payload = isEdit ? { id: slotId, ...groupSlotPayload() } : groupSlotPayload();
     const res = await apiFetch('/api/group-course-slots', {
-      method: 'POST',
-      body: groupSlotPayload(),
+      method: isEdit ? 'PATCH' : 'POST',
+      body: payload,
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || 'Could not create slot');
+    if (!res.ok)
+      throw new Error(body.error || (isEdit ? 'Could not update slot' : 'Could not create slot'));
     if (msg) {
-      msg.textContent = 'created';
+      msg.textContent = isEdit ? 'saved' : 'created';
       msg.className = 'modal-msg success';
       msg.classList.add('is-visible-block');
     }
@@ -694,14 +754,30 @@ export async function submitGroupSlot(btn) {
     await loadGroupSlots();
   } catch (err) {
     if (msg) {
-      msg.textContent = err.message || 'Could not create slot';
+      msg.textContent = err.message || (isEdit ? 'Could not update slot' : 'Could not create slot');
       msg.className = 'modal-msg err';
       msg.classList.add('is-visible-block');
     }
   } finally {
     delete submit.dataset.loading;
     submit.disabled = false;
-    submit.textContent = 'create slot';
+    submit.textContent = isEdit ? 'save changes' : 'create slot';
+  }
+}
+
+export async function deleteGroupSlot(slotId) {
+  if (!confirm('Delete this slot? This cannot be undone.')) return;
+  const msg = document.getElementById('group-slot-msg-' + slotId);
+  try {
+    const res = await apiFetch('/api/group-course-slots', {
+      method: 'DELETE',
+      body: { id: slotId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'Could not delete slot');
+    await loadGroupSlots();
+  } catch (err) {
+    if (msg) showErrorMessage(msg, 'Error: ' + err.message);
   }
 }
 
