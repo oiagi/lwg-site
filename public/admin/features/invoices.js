@@ -470,7 +470,17 @@ function courseQuantity(course) {
 
 function studentLessonCount(student, course = currentCourse) {
   const override = Number(student?.invoice_lesson_count);
-  return Number.isFinite(override) && override > 0 ? override : courseQuantity(course);
+  if (Number.isFinite(override) && override > 0) return override;
+  if (student?.joined_at && course?.sessions?.length) {
+    const joined = new Date(student.joined_at + 'T00:00:00');
+    if (!Number.isNaN(joined.getTime())) {
+      const count = course.sessions.filter(
+        (s) => s.status !== 'cancelled' && new Date(s.scheduled_at) >= joined
+      ).length;
+      if (count > 0) return count;
+    }
+  }
+  return courseQuantity(course);
 }
 
 function isSharedCourse(course) {
