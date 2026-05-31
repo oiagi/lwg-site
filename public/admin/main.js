@@ -38,7 +38,9 @@ import {
   submitGroupSlot,
   setGroupSlotStatus,
   togglePublicSlotsPanel,
-} from './features/courses.js?v=individual-lesson-counts-20260530';
+  openEditGroupSlotModal,
+  deleteGroupSlot,
+} from './features/courses.js?v=group-slot-ux-20260531';
 import { closeCertificateModal, submitCertificates } from './features/certificates.js';
 import {
   closeInvoiceModal,
@@ -131,6 +133,8 @@ const actions = {
   submitGroupSlot,
   setGroupSlotStatus,
   togglePublicSlotsPanel,
+  openEditGroupSlotModal,
+  deleteGroupSlot,
   // Confirm-send modal
   closeConfirmSendModal: closeConfirmSend,
   submitConfirmSend,
