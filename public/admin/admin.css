@@ -2844,6 +2844,7 @@ html[data-device='mobile'] .avail-day {
   color: #1a1a1a;
   text-align: center;
   position: relative;
+  overflow: hidden;
 }
 .cert-prev-logo {
   display: block;
@@ -2897,6 +2898,32 @@ html[data-device='mobile'] .avail-day {
   font-size: 0.82rem;
   color: #555;
   margin: 0.6rem 0 0.4rem;
+}
+.cert-prev-address {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0 0 0.4rem;
+}
+
+.cert-prev-sig-col {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.cert-prev-closing-block {
+  text-align: left;
+}
+
+.cert-prev-closing-text {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0 0 0.25rem;
+}
+
+.cert-prev-closing-salutation {
+  margin-top: 0.5rem;
 }
 
 /* ── Invoice modal ──────────────────────────────────────────────── */
@@ -3129,7 +3156,7 @@ html[data-device='mobile'] .avail-day {
 .cert-prev-footer {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start;
   margin-top: 1.4rem;
   padding-top: 0.6rem;
   border-top: 1px solid #eee;

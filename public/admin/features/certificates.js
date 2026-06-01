@@ -30,14 +30,23 @@ export async function openCertificateModal(courseId, coursesCache) {
   }
 
   currentCourse = course;
-  currentRecipients = studentsWithEmail.map((s) => ({
-    student_id: s.id,
-    first_name: s.first_name || '',
-    last_name: s.last_name || '',
-    email: s.email,
-    subjects: s.subjects || '',
-    selected: true,
-  }));
+  currentRecipients = studentsWithEmail.map((s) => {
+    const paidInv = (s.paid_invoices || [])[0] || null;
+    return {
+      student_id: s.id,
+      first_name: s.first_name || '',
+      last_name: s.last_name || '',
+      email: s.email,
+      subjects: s.subjects || '',
+      street: s.street || '',
+      street_number: s.street_number || '',
+      postcode: s.postcode || '',
+      city: s.city || '',
+      selected: true,
+      paid_invoice_amount: paidInv ? paidInv.total_amount : null,
+      paid_invoice_currency: paidInv ? paidInv.currency || 'CHF' : 'CHF',
+    };
+  });
 
   document.getElementById('cert-course-id').value = course.id;
   const titleEl = document.getElementById('cert-title');
@@ -193,24 +202,36 @@ function buildCertificateData(recipient, course, opts) {
   const isGroup = isGroupClass(course);
   const classTypeDisplay = isGroup
     ? isEN
-      ? 'Group class'
-      : 'Gruppenunterricht'
+      ? 'Group class (max. five persons)'
+      : 'Gruppenunterricht (max. fünf Personen)'
     : isEN
       ? 'Individual class'
       : 'Einzelunterricht';
 
+  const teacher = isEN
+    ? 'Specialist with a university background in linguistics'
+    : 'Spezialist*in mit universitärem Hintergrund in Linguistik';
+
+  const addrLine1 = [recipient.street, recipient.street_number].filter(Boolean).join(' ');
+  const addrLine2 = [recipient.postcode, recipient.city].filter(Boolean).join(' ');
+  const addressLines = [addrLine1, addrLine2].filter(Boolean);
+
   return {
     fullName,
+    addressLines,
     courseCode: course.course_code || '',
     subject: translateSubject(certificateSubject(course), opts.language),
     level: isTutoring ? '' : course.level || '',
     location: locationDisplay,
     classType: classTypeDisplay,
+    teacher,
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
     sessionCount: sessions.length,
     sessionsDisplay,
     attendedSessions: recipient.attended_sessions,
     totalSessions: recipient.total_sessions,
+    paidAmount: recipient.paid_invoice_amount ?? null,
+    paidCurrency: recipient.paid_invoice_currency || 'CHF',
     issueDate: new Date().toLocaleDateString(dateLocale, {
       day: '2-digit',
       month: 'long',
@@ -242,7 +263,12 @@ function strings(isEN) {
         sessionsLabel: 'Lessons',
         locationLabel: 'Location',
         classTypeLabel: 'Class type',
+        teacherLabel: 'Teacher',
         attendance: (att, tot) => `Attended ${att} of ${tot} sessions.`,
+        paymentLine: (amount, currency) =>
+          `The course fee of ${currency} ${amount} has already been paid in full.`,
+        contactLine: 'Please feel free to contact me if you have any questions.',
+        closingLine: 'Best regards,',
         certId: 'Certificate ID',
         signatureTitle: SIGNATURE_TITLE_EN,
       }
@@ -257,7 +283,12 @@ function strings(isEN) {
         sessionsLabel: 'Lektionen',
         locationLabel: 'Ort',
         classTypeLabel: 'Unterrichtsart',
+        teacherLabel: 'Lehrperson',
         attendance: (att, tot) => `Anwesend in ${att} von ${tot} Lektionen.`,
+        paymentLine: (amount, currency) =>
+          `Die Vorauszahlung des Kursgeldes in Höhe von ${currency} ${amount} wurde bereits beglichen.`,
+        contactLine: 'Bei Rückfragen stehe ich Ihnen jederzeit gerne zur Verfügung.',
+        closingLine: 'Mit freundlichen Grüssen,',
         certId: 'Bestätigungsnummer',
         signatureTitle: SIGNATURE_TITLE_DE,
       };
@@ -272,17 +303,24 @@ function buildPreviewHtml(data) {
       ? `<p class="cert-prev-attendance">${esc(t.attendance(data.attendedSessions, data.totalSessions || data.sessionCount))}</p>`
       : '';
 
+  const paymentText =
+    data.paidAmount != null
+      ? `<p class="cert-prev-closing-text">${esc(t.paymentLine(Number(data.paidAmount).toFixed(2), data.paidCurrency))}</p>`
+      : '';
+
   return `
     <div class="cert-prev-page">
       ${logoDataUrl ? `<img class="cert-prev-logo" src="${logoDataUrl}" alt="">` : ''}
       <h3 class="cert-prev-title">${esc(t.title)}</h3>
       <p class="cert-prev-intro">${esc(t.intro)}</p>
       <p class="cert-prev-name">${esc(data.fullName)}</p>
+      ${data.addressLines.length ? `<p class="cert-prev-address">${data.addressLines.map((l) => esc(l)).join('<br>')}</p>` : ''}
       <p class="cert-prev-body">${esc(t.body)}</p>
       <div class="cert-prev-details">
         ${detailRow(t.subjectLabel, data.subject)}
         ${detailRow(t.levelLabel, data.level)}
         ${detailRow(t.classTypeLabel, data.classType)}
+        ${detailRow(t.teacherLabel, data.teacher)}
         ${detailRow(t.codeLabel, data.courseCode)}
         ${detailRow(t.periodLabel, data.dateRange)}
         ${detailRow(t.sessionsLabel, data.sessionsDisplay)}
@@ -294,11 +332,18 @@ function buildPreviewHtml(data) {
           <span class="cert-prev-meta-label">${esc(t.certId)}</span>
           <span class="cert-prev-meta-val">${esc(data.certificateId)}</span>
         </div>
-        <div class="cert-prev-signature">
-          ${signatureDataUrl ? `<img src="${signatureDataUrl}" alt="">` : '<div class="cert-prev-sig-placeholder">[signature]</div>'}
-          <p class="cert-prev-sig-name">${esc(SIGNATURE_NAME)}</p>
-          <p class="cert-prev-sig-title">${esc(t.signatureTitle)}</p>
-          <p class="cert-prev-place">${esc(ISSUE_LOCATION)}, ${esc(data.issueDate)}</p>
+        <div class="cert-prev-sig-col">
+          <div class="cert-prev-closing-block">
+            ${paymentText}
+            <p class="cert-prev-closing-text">${esc(t.contactLine)}</p>
+            <p class="cert-prev-closing-text cert-prev-closing-salutation">${esc(t.closingLine)}</p>
+          </div>
+          <div class="cert-prev-signature">
+            ${signatureDataUrl ? `<img src="${signatureDataUrl}" alt="">` : '<div class="cert-prev-sig-placeholder">[signature]</div>'}
+            <p class="cert-prev-sig-name">${esc(SIGNATURE_NAME)}</p>
+            <p class="cert-prev-sig-title">${esc(t.signatureTitle)}</p>
+            <p class="cert-prev-place">${esc(ISSUE_LOCATION)}, ${esc(data.issueDate)}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -442,35 +487,47 @@ function buildCertificatePdf(data) {
   doc.setFont('times', 'normal');
   doc.setFontSize(28);
   doc.setTextColor(26, 26, 26);
-  doc.text(t.title, pageW / 2, 60, { align: 'center' });
+  doc.text(t.title, pageW / 2, 40, { align: 'center' });
 
   // Decorative underline
   doc.setDrawColor(150, 150, 150);
   doc.setLineWidth(0.3);
-  doc.line(pageW / 2 - 35, 65, pageW / 2 + 35, 65);
+  doc.line(pageW / 2 - 35, 45, pageW / 2 + 35, 45);
 
   // Intro line
   doc.setFontSize(13);
   doc.setTextColor(80, 80, 80);
-  doc.text(t.intro, pageW / 2, 78, { align: 'center' });
+  doc.text(t.intro, pageW / 2, 58, { align: 'center' });
 
   // Student name
   doc.setFont('times', 'italic');
   doc.setFontSize(24);
   doc.setTextColor(26, 26, 26);
-  doc.text(data.fullName, pageW / 2, 92, { align: 'center' });
+  doc.text(data.fullName, pageW / 2, 72, { align: 'center' });
+
+  // Student address (if available)
+  const addrOffset = data.addressLines.length * 4;
+  if (data.addressLines.length) {
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    data.addressLines.forEach((line, i) => {
+      doc.text(line, pageW / 2, 79 + i * 4, { align: 'center' });
+    });
+  }
 
   // Body
   doc.setFont('times', 'normal');
   doc.setFontSize(13);
   doc.setTextColor(80, 80, 80);
-  doc.text(t.body, pageW / 2, 104, { align: 'center' });
+  doc.text(t.body, pageW / 2, 84 + addrOffset, { align: 'center' });
 
   // Course details (two-column table, centered)
   const rows = [
     [t.subjectLabel, data.subject],
     [t.levelLabel, data.level],
     [t.classTypeLabel, data.classType],
+    [t.teacherLabel, data.teacher],
     [t.codeLabel, data.courseCode],
     [t.periodLabel, data.dateRange],
     [t.sessionsLabel, data.sessionsDisplay],
@@ -479,8 +536,8 @@ function buildCertificatePdf(data) {
 
   doc.setFontSize(11);
   doc.setTextColor(60, 60, 60);
-  const rowHeight = 6;
-  const tableTop = 114;
+  const rowHeight = 5;
+  const tableTop = 94 + addrOffset;
   const labelX = pageW / 2 - 8;
   const valueX = pageW / 2 + 4;
   rows.forEach(([k, v], i) => {
@@ -504,35 +561,45 @@ function buildCertificatePdf(data) {
     );
   }
 
-  // Signature block (right side, bottom)
+  // Closing text block (left) and signature block (right), both top-aligned
+  const closingBlockStartY =
+    (data.includeAttendance && typeof data.attendedSessions === 'number'
+      ? attendanceY
+      : tableTop + rows.length * rowHeight) + 8;
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  let closingY = closingBlockStartY;
+  if (data.paidAmount != null) {
+    doc.text(t.paymentLine(Number(data.paidAmount).toFixed(2), data.paidCurrency), 22, closingY);
+    closingY += 6;
+  }
+  doc.text(t.contactLine, 22, closingY);
+  closingY += 6;
+  doc.text(t.closingLine, 22, closingY);
+
+  // Signature block (right side, top-aligned with closing text block)
   const sigCenterX = pageW - 70;
-  const sigBottomY = pageH - 30;
+  const sigTopY = closingBlockStartY;
+  const sigW = 38;
+  const sigH = 15;
   if (signatureDataUrl) {
     try {
-      const sigW = 38;
-      const sigH = 18;
-      doc.addImage(
-        signatureDataUrl,
-        'PNG',
-        sigCenterX - sigW / 2,
-        sigBottomY - sigH - 10,
-        sigW,
-        sigH
-      );
+      doc.addImage(signatureDataUrl, 'PNG', sigCenterX - sigW / 2, sigTopY, sigW, sigH);
     } catch (err) {
       console.error('addImage signature failed:', err);
     }
   }
+  const lineY = sigTopY + sigH + 1;
   doc.setDrawColor(150, 150, 150);
   doc.setLineWidth(0.3);
-  doc.line(sigCenterX - 25, sigBottomY - 8, sigCenterX + 25, sigBottomY - 8);
+  doc.line(sigCenterX - 25, lineY, sigCenterX + 25, lineY);
   doc.setFontSize(11);
   doc.setTextColor(40, 40, 40);
-  doc.text(SIGNATURE_NAME, sigCenterX, sigBottomY - 4, { align: 'center' });
+  doc.text(SIGNATURE_NAME, sigCenterX, lineY + 5, { align: 'center' });
   doc.setFontSize(9);
   doc.setTextColor(120, 120, 120);
-  doc.text(t.signatureTitle, sigCenterX, sigBottomY, { align: 'center' });
-  doc.text(`${ISSUE_LOCATION}, ${data.issueDate}`, sigCenterX, sigBottomY + 5, { align: 'center' });
+  doc.text(t.signatureTitle, sigCenterX, lineY + 10, { align: 'center' });
+  doc.text(`${ISSUE_LOCATION}, ${data.issueDate}`, sigCenterX, lineY + 15, { align: 'center' });
 
   // Certificate ID (bottom-left, small)
   doc.setFontSize(8);
