@@ -164,18 +164,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       });
     }
 
-    // ── Batch fetch open invoices for these courses ───────────────────
-    // "Open" = anything not marked paid. Attached to the specific
-    // (student_id, course_id) pair so the course overview can list
-    // unpaid charges next to each enrolled student.
-    let openInvoices = [];
+    // ── Batch fetch all invoices for these courses ───────────────────
+    // Includes paid invoices so the certificate can show the amount paid.
+    let allInvoices = [];
     if (courseIds.length) {
       const invFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
       const invRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&status=neq.paid&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
+        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
         { headers: H }
       );
-      openInvoices = invRes.ok ? await invRes.json() : [];
+      allInvoices = invRes.ok ? await invRes.json() : [];
     }
 
     // ── Index data by course_id for fast lookup ───────────────────────
@@ -207,11 +205,17 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       studentsById[s.id] = s;
     }
 
-    // invoicesByCourseStudent[course_id][student_id] = [invoice, …]
-    const invoicesByCourseStudent = {};
-    for (const inv of openInvoices) {
-      const byStudent = (invoicesByCourseStudent[inv.course_id] ||= {});
-      (byStudent[inv.student_id] ||= []).push(inv);
+    // openInvoicesByCourseStudent / paidInvoicesByCourseStudent
+    const openInvoicesByCourseStudent = {};
+    const paidInvoicesByCourseStudent = {};
+    for (const inv of allInvoices) {
+      if (inv.status === 'paid') {
+        const byStudent = (paidInvoicesByCourseStudent[inv.course_id] ||= {});
+        (byStudent[inv.student_id] ||= []).push(inv);
+      } else {
+        const byStudent = (openInvoicesByCourseStudent[inv.course_id] ||= {});
+        (byStudent[inv.student_id] ||= []).push(inv);
+      }
     }
 
     const pendingBookingsByCourse = {};
@@ -221,7 +225,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     // ── Enrich courses ────────────────────────────────────────────────
     const enriched = courses.map((course) => {
-      const invByStudent = invoicesByCourseStudent[course.id] || {};
+      const invByStudent = openInvoicesByCourseStudent[course.id] || {};
+      const paidInvByStudent = paidInvoicesByCourseStudent[course.id] || {};
       const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
@@ -238,6 +243,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
               invoice_lesson_count: enrolmentByStudent[id]?.invoice_lesson_count ?? null,
               joined_at: enrolmentByStudent[id]?.joined_at ?? null,
               open_invoices: invByStudent[id] || [],
+              paid_invoices: paidInvByStudent[id] || [],
               schedule_sent_at: schedSentByStudent[id] || null,
               certificate_sent_at: certSentByStudent[id] || null,
             };
