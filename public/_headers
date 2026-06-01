@@ -1,7 +1,7 @@
-/**/*.css
+/*.css
   Cache-Control: no-cache
 
-/**/*.js
+/*.js
   Cache-Control: no-cache
 
 /*.png
