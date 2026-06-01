@@ -44,7 +44,7 @@ import {
 import {
   closeCertificateModal,
   submitCertificates,
-} from './features/certificates.js?v=cert-cache-20260601';
+} from './features/certificates.js?v=cert-submit-20260601';
 import {
   closeInvoiceModal,
   submitInvoice,

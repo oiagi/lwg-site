@@ -15,6 +15,7 @@ let currentCourse = null;
 let currentRecipients = [];
 let logoDataUrl = null;
 let signatureDataUrl = null;
+let submitButtonBound = false;
 
 /* ── Public: open from course-row "send certificates" button ────── */
 export async function openCertificateModal(courseId, coursesCache) {
@@ -70,6 +71,7 @@ export async function openCertificateModal(courseId, coursesCache) {
   const btn = document.getElementById('cert-submit');
   btn.textContent = 'send certificates';
   btn.disabled = false;
+  bindSubmitButton(btn);
 
   document.getElementById('certificates-modal').classList.add('open');
   bindOptionListeners();
@@ -130,6 +132,16 @@ function bindOptionListeners() {
   });
   document.getElementById('cert-include-attendance')?.addEventListener('change', updatePreview);
   document.getElementById('cert-preview-all')?.addEventListener('change', updatePreview);
+}
+
+function bindSubmitButton(btn) {
+  if (!btn || submitButtonBound) return;
+  submitButtonBound = true;
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    submitCertificates();
+  });
 }
 
 /* ── Attendance counts (per-student) ────────────────────────────── */
