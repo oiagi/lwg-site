@@ -41,10 +41,7 @@ import {
   openEditGroupSlotModal,
   deleteGroupSlot,
 } from './features/courses.js?v=group-slot-ux-20260531';
-import {
-  closeCertificateModal,
-  submitCertificates,
-} from './features/certificates.js?v=cert-submit-20260601';
+import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
 import {
   closeInvoiceModal,
   submitInvoice,
@@ -118,7 +115,6 @@ const actions = {
   openScheduleModal,
   openCertificateModal,
   closeCertificateModal,
-  submitCertificates,
   openInvoiceModal,
   openBulkInvoiceModal,
   markInvoicePaid,
