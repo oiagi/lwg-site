@@ -304,7 +304,7 @@ function buildPreviewHtml(data) {
       : '';
 
   const paymentText =
-    data.paidAmount != null
+    data.paidAmount !== null && data.paidAmount !== undefined
       ? `<p class="cert-prev-closing-text">${esc(t.paymentLine(Number(data.paidAmount).toFixed(2), data.paidCurrency))}</p>`
       : '';
 
@@ -569,7 +569,7 @@ function buildCertificatePdf(data) {
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   let closingY = closingBlockStartY;
-  if (data.paidAmount != null) {
+  if (data.paidAmount !== null && data.paidAmount !== undefined) {
     doc.text(t.paymentLine(Number(data.paidAmount).toFixed(2), data.paidCurrency), 22, closingY);
     closingY += 6;
   }
