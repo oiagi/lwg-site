@@ -36,6 +36,10 @@ function renderFiles(files) {
     .map((f) => {
       const name = esc(f.name.replace(/\.pdf$/i, ''));
       const date = esc(formatDate(f.created_at));
+      const dueDate = f.due_date ? `due ${formatDate(f.due_date)}` : '';
+      const student = esc(f.student_name || '—');
+      const courseParts = [f.course_code, f.course_subject, f.course_level].filter(Boolean);
+      const course = esc(courseParts.join(' - ') || '—');
       const amount =
         f.total_amount !== null && f.total_amount !== undefined
           ? esc(`${Number(f.total_amount).toFixed(2)} ${f.currency || 'CHF'}`)
@@ -51,11 +55,12 @@ function renderFiles(files) {
         <div class="invoice-row">
           <div class="invoice-summary">
             <span class="inv-number">${name}</span>
+            <span class="inv-student">${student}</span>
+            <span class="inv-course">${course}</span>
             <span class="inv-amount">${amount}</span>
-            <span class="inv-date">${date}</span>
-            <span class="inv-status ${statusClass}">${statusLabel}</span>
-            ${overdueFlag}
-            <span style="text-align:right">${action}</span>
+            <span class="inv-date"><span>${date}</span>${dueDate ? `<span>${esc(dueDate)}</span>` : ''}</span>
+            <span class="inv-status-wrap"><span class="inv-status ${statusClass}">${statusLabel}</span>${overdueFlag}</span>
+            <span class="inv-action">${action}</span>
           </div>
         </div>`;
     })

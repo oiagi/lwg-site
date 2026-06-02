@@ -1905,7 +1905,10 @@ html[data-device='mobile'] .student-detail-pane {
 }
 .invoice-summary {
   display: grid;
-  grid-template-columns: 140px 1fr 100px 80px 90px;
+  grid-template-columns: minmax(130px, 0.9fr) minmax(130px, 1fr) minmax(
+      150px,
+      1.2fr
+    ) 90px 96px 76px 86px;
   gap: 0 1rem;
   align-items: center;
   padding-right: 1rem;
@@ -1919,15 +1922,34 @@ html[data-device='mobile'] .student-detail-pane {
   font-size: 0.85rem;
   color: #555;
 }
+.inv-student,
+.inv-course {
+  min-width: 0;
+  font-size: 0.84rem;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inv-course {
+  color: #555;
+}
 .inv-amount {
   font-size: 0.88rem;
   color: #1a1a1a;
   text-align: right;
 }
 .inv-date {
+  display: grid;
+  gap: 0.15rem;
   font-size: 0.72rem;
   color: #999;
   text-align: right;
+}
+.inv-status-wrap {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: end;
 }
 .inv-status {
   font-size: 0.68rem;
@@ -1950,6 +1972,9 @@ html[data-device='mobile'] .student-detail-pane {
 .inv-status.overdue {
   color: #c0392b;
   font-weight: 600;
+}
+.inv-action {
+  text-align: right;
 }
 .inv-session-check {
   display: flex;
@@ -1975,10 +2000,22 @@ html[data-device='mobile'] .student-detail-pane {
   accent-color: var(--text);
 }
 html[data-device='mobile'] .invoice-summary {
-  grid-template-columns: 1fr 80px 70px;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
 }
-html[data-device='mobile'] .inv-company,
-html[data-device='mobile'] .inv-date {
+html[data-device='mobile'] .inv-student,
+html[data-device='mobile'] .inv-course {
+  grid-column: 1 / -1;
+}
+html[data-device='mobile'] .inv-amount,
+html[data-device='mobile'] .inv-date,
+html[data-device='mobile'] .inv-status-wrap,
+html[data-device='mobile'] .inv-action {
+  text-align: left;
+  justify-items: start;
+}
+html[data-device='mobile'] .inv-date,
+html[data-device='mobile'] .inv-status-wrap {
   display: none;
 }
 html[data-device='mobile'] .modal-wide {
