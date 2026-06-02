@@ -5,3 +5,5 @@ if [ -n "$STAGED" ]; then
   echo "$STAGED" | xargs npx prettier --write --log-level warn
   echo "$STAGED" | xargs git add
 fi
+
+npm run format:check

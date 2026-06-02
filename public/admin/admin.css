@@ -1905,10 +1905,9 @@ html[data-device='mobile'] .student-detail-pane {
 }
 .invoice-summary {
   display: grid;
-  grid-template-columns: minmax(130px, 0.9fr) minmax(130px, 1fr) minmax(
-      150px,
-      1.2fr
-    ) 90px 96px 76px 86px;
+  grid-template-columns:
+    minmax(130px, 0.9fr) minmax(130px, 1fr) minmax(150px, 1.2fr)
+    90px 96px 76px 86px;
   gap: 0 1rem;
   align-items: center;
   padding-right: 1rem;
