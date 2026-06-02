@@ -42,7 +42,7 @@ async function fetchInvoiceRecords(env, invoiceNumbers) {
   if (invoiceNumbers.length === 0) return [];
   const list = invoiceNumbers.map((n) => encodeURIComponent(n)).join(',');
   const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})&select=invoice_number,status,total_amount,currency,due_date`,
+    `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})&select=invoice_number,status,total_amount,currency,due_date,student_id,course_id`,
     { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
   );
   if (!res.ok) {
@@ -50,6 +50,21 @@ async function fetchInvoiceRecords(env, invoiceNumbers) {
     return [];
   }
   return res.json();
+}
+
+async function fetchRelatedRecords(env, table, ids, select) {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (uniqueIds.length === 0) return {};
+  const list = uniqueIds.map((id) => encodeURIComponent(id)).join(',');
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?id=in.(${list})&select=${select}`, {
+    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+  });
+  if (!res.ok) {
+    console.error(`invoice-archive ${table} fetch failed:`, await res.text());
+    return {};
+  }
+  const rows = await res.json();
+  return Object.fromEntries(rows.map((row) => [row.id, row]));
 }
 
 async function signPaths(env, paths) {
@@ -101,12 +116,28 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const signedMap = Object.fromEntries(
     signed.map((s) => [s.path, s.signedURL ? `${env.SUPABASE_URL}/storage/v1${s.signedURL}` : null])
   );
+  const [studentMap, courseMap] = await Promise.all([
+    fetchRelatedRecords(
+      env,
+      'students',
+      records.map((r) => r.student_id),
+      'id,first_name,last_name'
+    ),
+    fetchRelatedRecords(
+      env,
+      'courses',
+      records.map((r) => r.course_id),
+      'id,course_code,subject,level'
+    ),
+  ]);
   const recordMap = Object.fromEntries(records.map((r) => [r.invoice_number, r]));
 
   const result = files.map((f) => {
     const path = `${year}/${f.name}`;
     const invoiceNumber = f.name.replace(/\.pdf$/i, '');
     const record = recordMap[invoiceNumber] || {};
+    const student = studentMap[record.student_id] || null;
+    const course = courseMap[record.course_id] || null;
     return {
       name: f.name,
       path,
@@ -117,6 +148,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       due_date: record.due_date ?? null,
       total_amount: record.total_amount ?? null,
       currency: record.currency ?? 'CHF',
+      student_name: student
+        ? [student.first_name, student.last_name].filter(Boolean).join(' ').trim() || null
+        : null,
+      course_code: course?.course_code ?? null,
+      course_subject: course?.subject ?? null,
+      course_level: course?.level ?? null,
     };
   });
 
