@@ -12,8 +12,25 @@ function ui(key) {
 }
 
 function localizedField(item, field) {
+  if (currentLang() === 'en' && item[field + 'En']) return item[field + 'En'];
   if (currentLang() === 'de' && item[field + 'De']) return item[field + 'De'];
   return item[field];
+}
+
+const exampleTypeLabels = {
+  Aufforderung: { en: 'Request', de: 'Aufforderung' },
+  Aufforderungssatz: { en: 'Request', de: 'Aufforderungssatz' },
+  Aussagesatz: { en: 'Statement', de: 'Aussagesatz' },
+  Ausrufesatz: { en: 'Exclamation', de: 'Ausrufesatz' },
+  Frage: { en: 'Question', de: 'Frage' },
+  'Ja-Nein-Frage': { en: 'Yes/no question', de: 'Ja-Nein-Frage' },
+  'W-Frage': { en: 'W-question', de: 'W-Frage' },
+  Wunschsatz: { en: 'Wish', de: 'Wunschsatz' },
+};
+
+function localizedExampleType(type) {
+  if (!type) return '';
+  return exampleTypeLabels[type]?.[currentLang()] || type;
 }
 
 // ========== TAB SWITCHING ==========
@@ -69,7 +86,9 @@ function renderReference() {
       const exHtml = p.examples
         .map((ex) => {
           const deHtml = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '<span class="highlight">$1</span>');
-          const typeHtml = ex.type ? `<div class="example-type">${ex.type}</div>` : '';
+          const typeHtml = ex.type
+            ? `<div class="example-type">${localizedExampleType(ex.type)}</div>`
+            : '';
           return `<div class="example-box">
     ${typeHtml}
     <div class="de">${deHtml}</div>
@@ -77,11 +96,12 @@ function renderReference() {
   </div>`;
         })
         .join('');
-      const contextsHtml = p.contexts ? `<div class="particle-contexts">${p.contexts}</div>` : '';
+      const contexts = localizedField(p, 'contexts');
+      const contextsHtml = contexts ? `<div class="particle-contexts">${contexts}</div>` : '';
 
       return `<div class="particle-card" role="button" tabindex="0" aria-expanded="false" data-expand-card>
   <div class="particle-name">${p.name}</div>
-  <div class="particle-function">${p.function}</div>
+  <div class="particle-function">${localizedField(p, 'function')}</div>
   ${contextsHtml}
   <div class="particle-meaning">${localizedField(p, 'meaning')}</div>
   ${exHtml}
@@ -360,7 +380,7 @@ function renderCheatSheet() {
       const exText = ex.de.replace(/\{([\wäöüÄÖÜß ]+)\}/g, '$1');
       html += `<div class="cs-row">
     <div class="cs-particle">${p.name}</div>
-    <div class="cs-function">${p.function}</div>
+    <div class="cs-function">${localizedField(p, 'function')}</div>
     <div class="cs-example">${exText}</div>
   </div>`;
     });

@@ -1,4 +1,4 @@
-// Each entry: { name, function, contexts, meaning, meaningDe, examples[{type, de, en}], tip, tipDe, category }
+// Each entry: { name, function, functionEn, contexts, contextsEn, meaning, meaningDe, examples[{type, de, en}], tip, tipDe, category }
 (function () {
   'use strict';
 
@@ -6,7 +6,9 @@
     {
       name: 'mal',
       function: 'Abschwächung / Höflichkeit',
+      functionEn: 'Softening / Politeness',
       contexts: 'Aufforderungen · Aussagesätze',
+      contextsEn: 'Requests · Statements',
       meaning:
         'Makes requests softer and friendlier. Turns a command into a casual suggestion; in statements signals a brief, tentative action.',
       meaningDe:
@@ -37,7 +39,9 @@
     {
       name: 'doch',
       function: 'Widerspruch / Nachdruck',
+      functionEn: 'Contradiction / Emphasis',
       contexts: 'Aussagesätze · Aufforderungen (doch mal) · Ausrufesätze · Wunschsätze',
+      contextsEn: 'Statements · Requests (doch mal) · Exclamations · Wishes',
       meaning:
         'Expresses contradiction, urges action, intensifies exclamations, or conveys longing in wishes. Very versatile!',
       meaningDe:
@@ -60,7 +64,9 @@
     {
       name: 'denn',
       function: 'Interesse / Neugier',
+      functionEn: 'Interest / Curiosity',
       contexts: 'Fragen (W-Fragen und Ja-Nein-Fragen)',
+      contextsEn: 'Questions (W-questions and yes/no questions)',
       meaning:
         'Shows genuine curiosity or interest in questions. Makes questions warmer and less interrogative.',
       meaningDe:
@@ -86,7 +92,9 @@
     {
       name: 'eigentlich',
       function: 'Themenwechsel / echtes Interesse',
+      functionEn: 'Topic shift / Genuine interest',
       contexts: 'Fragen (W-Fragen und Ja-Nein-Fragen)',
+      contextsEn: 'Questions (W-questions and yes/no questions)',
       meaning:
         "Signals a change of topic or deeper curiosity: 'by the way...' / 'when you think about it...'",
       meaningDe:
@@ -112,7 +120,9 @@
     {
       name: 'ja',
       function: 'Bestätigung / gemeinsames Wissen',
+      functionEn: 'Confirmation / Shared knowledge',
       contexts: 'Aussagesätze · Aufforderungssätze · Ausrufesätze',
+      contextsEn: 'Statements · Requests · Exclamations',
       meaning:
         'Signals shared knowledge in statements, urgent warnings in imperatives, and strong surprise in exclamations.',
       meaningDe:
@@ -144,7 +154,9 @@
     {
       name: 'aber',
       function: 'Überraschung / Verstärkung',
+      functionEn: 'Surprise / Intensification',
       contexts: 'Ausrufesätze',
+      contextsEn: 'Exclamations',
       meaning: "Expresses surprise or intensifies an exclamation. Similar to 'really' or 'wow'.",
       meaningDe:
         "Drückt Überraschung aus oder verstärkt einen Ausruf. Es klingt ähnlich wie 'wirklich' oder 'wow'.",
@@ -169,7 +181,9 @@
     {
       name: 'auch',
       function: 'Vergewisserung / Bedenken',
+      functionEn: 'Reassurance / Concern',
       contexts: 'Ja-Nein-Fragen · W-Fragen',
+      contextsEn: 'Yes/no questions · W-questions',
       meaning:
         'In questions: expresses doubt, concern, or the need for reassurance. In W-questions it can also signal frustration.',
       meaningDe:
@@ -200,7 +214,9 @@
     {
       name: 'ruhig',
       function: 'Ermutigung / Erlaubnis',
+      functionEn: 'Encouragement / Permission',
       contexts: 'Aussagesätze · Aufforderungen',
+      contextsEn: 'Statements · Requests',
       meaning: "Encourages someone to do something freely, without worry. 'Go ahead, feel free!'",
       meaningDe:
         "Ermutigt jemanden, etwas ohne Sorge zu tun. Der Ton ist: 'Nur zu, kein Problem!'.",
@@ -221,7 +237,9 @@
     {
       name: 'bloß',
       function: 'Warnung / Verzweiflung',
+      functionEn: 'Warning / Desperation',
       contexts: 'Aufforderungen · W-Fragen',
+      contextsEn: 'Requests · W-questions',
       meaning:
         'Adds urgency to warnings and intensifies W-questions with desperation or bewilderment.',
       meaningDe: 'Verstärkt Warnungen und macht W-Fragen verzweifelter oder ratloser.',
@@ -247,7 +265,9 @@
     {
       name: 'halt',
       function: 'Resignation / Unabänderlichkeit',
+      functionEn: 'Resignation / Inevitability',
       contexts: 'Aussagesätze',
+      contextsEn: 'Statements',
       meaning:
         "Signals acceptance: 'that's just how it is.' Similar to 'eben' but more colloquial (southern German).",
       meaningDe:
@@ -273,7 +293,9 @@
     {
       name: 'eben',
       function: 'Bestätigung / Unvermeidlichkeit',
+      functionEn: 'Confirmation / Inevitability',
       contexts: 'Aussagesätze',
+      contextsEn: 'Statements',
       meaning: "Confirms something as inevitable or obvious. 'That's precisely it / exactly.'",
       meaningDe:
         "Bestätigt etwas als unvermeidlich, naheliegend oder genau zutreffend: 'Genau das ist es.'",
@@ -302,7 +324,9 @@
     {
       name: 'nun einmal',
       function: 'Unabänderlichkeit / Akzeptanz',
+      functionEn: 'Inevitability / Acceptance',
       contexts: 'Aussagesätze',
+      contextsEn: 'Statements',
       meaning:
         "Expresses 'that's just how it is' — a resigned acceptance. Synonym of 'eben' and 'halt'. Very often shortened to 'nun mal'.",
       meaningDe:
@@ -328,7 +352,9 @@
     {
       name: 'wohl',
       function: 'Vermutung / Unsicherheit',
+      functionEn: 'Assumption / Uncertainty',
       contexts: 'Aussagesätze',
+      contextsEn: 'Statements',
       meaning: "Expresses assumption or probability. 'Probably / I suppose / presumably.'",
       meaningDe:
         "Drückt eine Vermutung oder Wahrscheinlichkeit aus: 'wahrscheinlich', 'vermutlich', 'ich nehme an'.",
@@ -345,7 +371,9 @@
     {
       name: 'schon',
       function: 'Zuversicht / Einschränkung',
+      functionEn: 'Confidence / Concession',
       contexts: 'Aussagesätze · W-Fragen (rhetorisch)',
+      contextsEn: 'Statements · W-questions (rhetorical)',
       meaning:
         "In statements: reassuring confidence ('don't worry, it'll be fine') or concession. In rhetorical W-questions: implies 'nobody'.",
       meaningDe:
@@ -376,7 +404,9 @@
     {
       name: 'nur',
       function: 'Warnung / Verzweiflung / Wunsch',
+      functionEn: 'Warning / Desperation / Wish',
       contexts: 'Aufforderungen · Fragen · Wunschsätze',
+      contextsEn: 'Requests · Questions · Wishes',
       meaning:
         "Adds urgency to warnings (like 'bloß'). In W-questions expresses helplessness. In 'wenn'-wishes means 'if only'.",
       meaningDe:
@@ -398,7 +428,9 @@
     {
       name: 'etwa',
       function: 'Unglaube / rhetorische Frage',
+      functionEn: 'Disbelief / Rhetorical question',
       contexts: 'Ja-Nein-Fragen',
+      contextsEn: 'Yes/no questions',
       meaning: "Signals disbelief in yes/no questions. The speaker hopes the answer is 'no'.",
       meaningDe:
         "Signalisiert Unglauben in Ja-Nein-Fragen. Die sprechende Person hofft meistens auf die Antwort 'nein'.",
@@ -423,7 +455,9 @@
     {
       name: 'vielleicht',
       function: 'Überraschung / Ausruf',
+      functionEn: 'Surprise / Exclamation',
       contexts: 'Ausrufesätze',
+      contextsEn: 'Exclamations',
       meaning: "In exclamations: expresses strong surprise or disbelief. Not 'maybe'!",
       meaningDe:
         "In Ausrufen drückt es starke Überraschung oder Unglauben aus. Es bedeutet hier nicht 'maybe'!",
