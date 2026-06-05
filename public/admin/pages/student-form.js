@@ -2,6 +2,23 @@
 import { initAuth, getSession } from '../core/auth.js';
 import { apiFetch } from '../core/api.js';
 
+async function loadCompanyOptions(selectedId) {
+  const select = document.getElementById('sm-company-id');
+  if (!select) return;
+  try {
+    const res = await apiFetch('/api/get-companies');
+    if (!res.ok) return;
+    const companies = await res.json();
+    const options = companies.map(
+      (c) =>
+        `<option value="${c.id}"${String(c.id) === String(selectedId) ? ' selected' : ''}>${c.name}</option>`
+    );
+    select.innerHTML = '<option value="">— no company —</option>' + options.join('');
+  } catch {
+    /* silently leave as empty */
+  }
+}
+
 const BILLING_FIELDS = [
   'sm-billing-name',
   'sm-billing-gender',
@@ -117,6 +134,7 @@ function populate(data) {
   setValue('sm-vat', data.vat_number);
   setValue('sm-payment-method', data.payment_method);
   setValue('sm-notes', data.progress_notes);
+  loadCompanyOptions(data.company_id);
   document.getElementById('sm-status').value =
     data.status || (data.active !== false ? 'active' : 'inactive');
 
@@ -257,6 +275,7 @@ function buildBody() {
     payment_method: document.getElementById('sm-payment-method').value || null,
     progress_notes: document.getElementById('sm-notes').value.trim() || null,
     status: document.getElementById('sm-status').value,
+    company_id: document.getElementById('sm-company-id').value || null,
   };
 
   if (document.getElementById('sm-billing-separate').checked) {
@@ -362,6 +381,7 @@ async function handleSubmit(e) {
     setBilling(false);
     setGenderNote(false);
     setBillingGenderNote(false);
+    loadCompanyOptions(null);
   }
 
   wireGenderToggle();

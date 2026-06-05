@@ -82,6 +82,23 @@ import { loadAvailability, onTeacherSelect } from './features/availability.js';
 import { trapFocus, releaseFocus } from './core/helpers.js';
 import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
 import { loadInvoiceArchive, switchArchiveYear } from './features/invoice-archive.js';
+import {
+  loadCompanies,
+  selectCompany,
+  saveCompanyName,
+  saveCompanyCode,
+  openSendBookingCode,
+  openNewCompanyModal,
+  closeNewCompanyModal,
+  submitNewCompany,
+  openAddStudentModal,
+  closeAddStudentModal,
+  pickAddStudent,
+  confirmAddStudent,
+  toggleCreateStudentForm,
+  submitCreateAndAddStudent,
+  removeStudentFromCompany,
+} from './features/companies.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -166,6 +183,21 @@ const actions = {
   onTeacherSelect,
   // Invoice archive
   switchArchiveYear,
+  // Companies
+  selectCompany,
+  saveCompanyName,
+  saveCompanyCode,
+  openSendBookingCode,
+  openNewCompanyModal,
+  closeNewCompanyModal,
+  submitNewCompany,
+  openAddStudentModal,
+  closeAddStudentModal,
+  pickAddStudent,
+  confirmAddStudent,
+  toggleCreateStudentForm,
+  submitCreateAndAddStudent,
+  removeStudentFromCompany,
   // Tab switching
   switchTab,
 };
@@ -292,6 +324,7 @@ async function switchTab(tab, options = {}) {
   }
   if (tab === 'teachers') loadAvailability();
   if (tab === 'invoices') loadInvoiceArchive();
+  if (tab === 'companies') loadCompanies();
 }
 
 document.addEventListener('admin:switchTab', (e) => {

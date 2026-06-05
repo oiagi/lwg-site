@@ -1,0 +1,66 @@
+<div class="dashboard-header">
+  <div class="course-filter-row">
+    <!-- spacer -->
+  </div>
+  <div class="students-header-actions">
+    <button class="new-course-btn" data-action="openNewCompanyModal">+ new company</button>
+  </div>
+</div>
+
+<div class="students-layout">
+  <div class="students-sidebar">
+    <div id="company-list" role="listbox" aria-label="Companies">
+      <div class="loading-state">loading…</div>
+    </div>
+  </div>
+  <div class="student-detail-pane">
+    <div id="company-detail-panel" class="student-detail-empty">
+      <p>select a company to view details</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add student to company modal ──────────────────────────────── -->
+<div class="modal-overlay" id="add-company-student-modal">
+  <div class="modal">
+    <h2>add student to company</h2>
+    <div class="modal-field">
+      <label>Search student</label>
+      <input type="search" id="acs-search" class="list-search" placeholder="Name or email…" autocomplete="off">
+    </div>
+    <div id="acs-results" class="acs-results"></div>
+    <div class="acs-create-toggle">
+      <button class="inline-link-btn" data-action="toggleCreateStudentForm">+ create new student</button>
+    </div>
+    <div id="acs-create-form" class="acs-create-form" hidden>
+      <div class="acs-create-fields">
+        <input type="text" id="acs-first-name" class="list-search" placeholder="First name *">
+        <input type="text" id="acs-last-name" class="list-search" placeholder="Last name *">
+        <input type="email" id="acs-email" class="list-search" placeholder="Email (optional)">
+      </div>
+      <button class="modal-submit" id="acs-create-submit" data-action="submitCreateAndAddStudent">create &amp; add</button>
+      <p class="modal-msg" id="acs-create-msg"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeAddStudentModal">cancel</button>
+      <button class="modal-submit" id="acs-submit" data-action="confirmAddStudent" disabled>add</button>
+    </div>
+    <p class="modal-msg" id="acs-msg"></p>
+  </div>
+</div>
+
+<!-- ── New company modal ──────────────────────────────────────────── -->
+<div class="modal-overlay" id="new-company-modal">
+  <div class="modal">
+    <h2>new company</h2>
+    <div class="modal-field">
+      <label>Company name *</label>
+      <input type="text" id="nc-name" placeholder="e.g. Acme AG">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeNewCompanyModal">cancel</button>
+      <button class="modal-submit" id="nc-submit" data-action="submitNewCompany">create</button>
+    </div>
+    <p class="modal-msg" id="nc-msg"></p>
+  </div>
+</div>
