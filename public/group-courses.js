@@ -605,5 +605,32 @@ renderAgbConsent();
 
   applyAccessCodeText();
   syncAccessCodeExpanded();
-  loadCourses();
+
+  const prefilledCode = new URLSearchParams(window.location.search).get('code');
+  if (prefilledCode && accessCodeInput) {
+    accessCodeInput.value = prefilledCode;
+  }
+
+  loadCourses().then(async () => {
+    if (!prefilledCode) return;
+    try {
+      const unlocked = await unlockAccessCode(prefilledCode);
+      const count = mergeUnlockedCourses(unlocked);
+      accessStatus = {
+        type: 'success',
+        message:
+          unlocked.access_label && count
+            ? t('codeUnlockedLabel', unlocked.access_label, count)
+            : t('codeUnlocked', count),
+      };
+      if (accessCodePanel) {
+        accessCodePanel.open = true;
+        syncAccessCodeExpanded();
+      }
+    } catch (err) {
+      accessStatus = { type: 'error', message: err.message || t('codeInvalid') };
+    } finally {
+      renderAccessStatus();
+    }
+  });
 })();

@@ -3271,3 +3271,117 @@ html[data-device='mobile'] .cert-prev-footer {
   flex-direction: column;
   align-items: flex-start;
 }
+
+/* ── Companies tab ─────────────────────────────────────────────────── */
+.company-inline-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.company-student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.company-student-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+.company-student-row input[type='checkbox'] {
+  flex-shrink: 0;
+}
+.company-select-all-label {
+  margin-left: 0.75rem;
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.company-add-student-btn {
+  margin-left: auto;
+  font-size: 11px;
+  float: right;
+}
+.company-student-row-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+.company-student-row-wrap .company-student-row {
+  flex: 1;
+  border-bottom: none;
+}
+.company-remove-student-btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #999;
+}
+.company-remove-student-btn:hover {
+  color: #c00;
+}
+.acs-results {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+.acs-result-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.acs-result-row:hover,
+.acs-result-row:focus {
+  background: #eef4fa;
+  outline: none;
+}
+.acs-result-row.selected {
+  background: #d4e8f8;
+}
+.acs-result-name {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.acs-result-email {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.acs-searching {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  padding: 0.5rem 0;
+}
+.acs-create-toggle {
+  margin-top: 0.75rem;
+}
+.acs-create-form {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f4f8fb;
+  border-radius: 6px;
+  border: 1px solid var(--border-soft);
+}
+.acs-create-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.acs-create-fields .list-search {
+  width: 100%;
+}
