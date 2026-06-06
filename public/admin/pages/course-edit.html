@@ -161,16 +161,23 @@
             <span>Show in company code booking</span>
           </label>
           <p class="label-hint checkbox-label-hint">
-            Requires the booking code below. Suitable for active group courses with open spots.
+            Requires a linked company or custom code below. Suitable for active group courses with open spots.
           </p>
         </div>
-        <div class="modal-field">
-          <label>Company booking code <span class="label-hint">(optional)</span></label>
+        <div class="modal-field full">
+          <label>Linked company <span class="label-hint">(optional)</span></label>
+          <select id="ec-company-id">
+            <option value="">— none —</option>
+          </select>
+          <p class="label-hint" id="ec-company-code-hint" style="margin-top:0.4rem;font-family:monospace;min-height:1.2em;"></p>
+        </div>
+        <div class="modal-field" id="ec-custom-code-field">
+          <label>Custom booking code <span class="label-hint">(optional, for non-company courses)</span></label>
           <input type="text" id="ec-access-code" placeholder="e.g. ACME2026" maxlength="80">
         </div>
-        <div class="modal-field">
-          <label>Company booking label <span class="label-hint">(optional)</span></label>
-          <input type="text" id="ec-access-label" placeholder="Company or cohort name" maxlength="200">
+        <div class="modal-field" id="ec-custom-label-field">
+          <label>Custom booking label <span class="label-hint">(optional)</span></label>
+          <input type="text" id="ec-access-label" placeholder="Cohort name" maxlength="200">
         </div>
       </div>
 

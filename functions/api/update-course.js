@@ -5,7 +5,10 @@
 //         price_per_person_per_60min?, currency?, location?,
 //         location_company?, location_street?, location_street_number?,
 //         location_postal_code?, location_city?, public_booking_enabled?,
-//         company_code_booking_enabled?, access_code?, access_label? }
+//         company_code_booking_enabled?, company_id?, access_code?, access_label? }
+//
+// When company_id is provided (non-null), access_code is auto-derived from the
+// company's booking_code and any manually supplied access_code is ignored.
 //
 // Updates mutable fields on an existing course.
 
@@ -65,6 +68,29 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
   const patch = pickDefined(body, ALLOWED_FIELDS);
   if ('access_code' in patch) patch.access_code = normalizeAccessCode(patch.access_code);
   if ('access_label' in patch) patch.access_label = cleanString(patch.access_label, 200);
+
+  // Handle company linkage — auto-syncs access_code from company's booking_code
+  if ('company_id' in body) {
+    const companyId = body.company_id || null;
+    patch.company_id = companyId;
+    if (companyId) {
+      const compRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${encodeURIComponent(companyId)}&select=booking_code`,
+        { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
+      );
+      if (compRes.ok) {
+        const [comp] = await compRes.json();
+        patch.access_code = normalizeAccessCode(comp?.booking_code) || null;
+      }
+      if (!('company_code_booking_enabled' in body)) {
+        patch.company_code_booking_enabled = true;
+      }
+    } else {
+      // Unlinking — clear access_code unless caller explicitly provides one
+      if (!('access_code' in body)) patch.access_code = null;
+    }
+  }
+
   if (!hasFields(patch)) return errorResponse('Nothing to update', 400);
 
   try {

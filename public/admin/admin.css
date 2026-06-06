@@ -1306,6 +1306,11 @@ button.course-status::after {
   background: transparent;
   color: #1a1a1a;
 }
+.save-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .delete-btn {
   font-family: inherit;
   font-size: 0.72rem;
@@ -3384,4 +3389,20 @@ html[data-device='mobile'] .cert-prev-footer {
 }
 .acs-create-fields .list-search {
   width: 100%;
+}
+.company-course-info {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+.company-course-link {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+}
+.company-course-link:hover {
+  text-decoration: underline;
 }

@@ -232,9 +232,9 @@ export async function toggleCompanyCodeBooking(courseId) {
   const msg = document.getElementById('company-code-booking-msg-' + courseId);
   if (!input) return;
   const cached = coursesCache.find((c) => String(c.id) === String(courseId));
-  if (input.checked && !cached?.access_code) {
+  if (input.checked && !cached?.company_id && !cached?.access_code) {
     input.checked = false;
-    showErrorMessage(msg, 'Add a company booking code on the edit page first.');
+    showErrorMessage(msg, 'Link a company or add a custom booking code on the edit page first.');
     return;
   }
   input.disabled = true;
@@ -959,8 +959,12 @@ function renderCourses(courses) {
                   <span>show after company booking code</span>
                 </label>
                 <span class="saved-msg" id="company-code-booking-msg-${c.id}">saved</span><br>
-                Company booking code: ${esc(c.access_code || '—')}${
-                  c.access_label ? ' · ' + esc(c.access_label) : ''
+                ${
+                  c.company_name
+                    ? `Company: ${esc(c.company_name)}${c.access_code ? ' · ' + esc(c.access_code) : ''}`
+                    : c.access_code
+                      ? `Custom booking code: ${esc(c.access_code)}${c.access_label ? ' · ' + esc(c.access_label) : ''}`
+                      : 'Booking: —'
                 }<br>
                 Location: ${locationSummaryHtml(c)}
               </p>

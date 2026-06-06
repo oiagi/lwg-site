@@ -23,12 +23,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
-  const [compRes, studRes] = await Promise.all([
+  const [compRes, studRes, coursesRes] = await Promise.all([
     fetch(`${SUPABASE_URL}/rest/v1/companies?select=id,name,booking_code&order=name.asc`, {
       headers: H,
     }),
     fetch(
       `${SUPABASE_URL}/rest/v1/students?select=id,first_name,last_name,email,company_id&company_id=not.is.null&order=last_name.asc,first_name.asc`,
+      { headers: H }
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/courses?company_id=not.is.null&select=id,course_code,subject,level,status,company_id,company_code_booking_enabled&order=course_code.asc`,
       { headers: H }
     ),
   ]);
@@ -37,6 +41,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const companies = await compRes.json();
   const students = studRes.ok ? await studRes.json() : [];
+  const allCourses = coursesRes.ok ? await coursesRes.json() : [];
 
   const studentsByCompany = {};
   for (const s of students) {
@@ -48,9 +53,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     });
   }
 
+  const coursesByCompany = {};
+  for (const c of allCourses) {
+    (coursesByCompany[c.company_id] ||= []).push(c);
+  }
+
   const result = companies.map((c) => ({
     ...c,
     students: studentsByCompany[c.id] || [],
+    courses: coursesByCompany[c.id] || [],
   }));
 
   return jsonResponse(result);
