@@ -12,6 +12,12 @@ let selectedAddStudentId = null;
 let addStudentResults = [];
 let addStudentSearchTimeout = null;
 
+let linkCourseCompanyId = null;
+let selectedLinkCourseId = null;
+let allCoursesForLink = [];
+let linkCourseSearchTimeout = null;
+let linkCourseStatusFilter = 'active';
+
 /* ── Load + render list ────────────────────────────────────────────── */
 
 export async function loadCompanies() {
@@ -98,6 +104,25 @@ function renderCompanyDetail(c) {
         .join('')
     : '<p class="detail-muted">No students linked to this company yet.</p>';
 
+  const courseRows = (c.courses || []).length
+    ? (c.courses || [])
+        .map(
+          (cr) => `
+        <div class="company-student-row-wrap">
+          <span class="company-course-info">
+            <a href="/admin/pages/course-edit.html?id=${esc(cr.id)}" class="company-course-link">
+              ${esc(cr.course_code || '—')}${cr.subject ? ' · ' + esc(cr.subject) : ''}${cr.level ? ' ' + esc(cr.level) : ''}
+            </a>
+            <span class="detail-muted"> · ${esc(cr.status || '')}</span>
+          </span>
+          <button class="inline-link-btn company-remove-student-btn"
+                  data-action="unlinkCourseFromCompany"
+                  data-args="${esc(String(cr.id))},${esc(String(c.id))}">unlink</button>
+        </div>`
+        )
+        .join('')
+    : '<p class="detail-muted">No courses linked to this company yet.</p>';
+
   pane.innerHTML = `
     <div class="detail-header">
       <span class="detail-header-name" id="company-detail-name">${esc(c.name)}</span>
@@ -134,11 +159,20 @@ function renderCompanyDetail(c) {
       <div class="company-student-list">${studentRows}</div>
     </div>
 
+    <div class="detail-section">
+      <p class="detail-meta">Courses
+        <button class="inline-link-btn company-add-student-btn"
+                data-action="openLinkCourseModal" data-args="${esc(String(c.id))}">+ link course</button>
+      </p>
+      <div class="company-student-list">${courseRows}</div>
+    </div>
+
     <div class="detail-actions">
       <button class="save-btn" data-action="openSendBookingCode" data-args="${esc(c.id)}"
-              ${c.booking_code ? '' : 'disabled title="Set a booking code first"'}>
+              ${c.booking_code ? '' : 'disabled'}>
         send booking code email
       </button>
+      ${!c.booking_code ? '<p class="detail-muted" style="font-size:0.78rem;margin-top:0.3rem;">Save a booking code above to enable this.</p>' : ''}
     </div>
   `;
 
@@ -261,29 +295,34 @@ export function openSendBookingCode(id) {
   const code = company.booking_code;
   const previewUrl = `/group-courses?code=${encodeURIComponent(code)}`;
 
-  openConfirmSend({
-    title: 'send booking code email',
-    recipients: selected,
-    subject: `Your company booking code · learning with gioia`,
-    contentHtml: `
-      <p>Hello [first name] :)<br>
-      Here is the link to courses currently happening at your company.<br>
-      <a href="${esc(previewUrl)}" target="_blank" rel="noopener">${esc(previewUrl)}</a><br><br>
-      <strong>Booking code: ${esc(code)}</strong></p>
-      <p style="color:#888;font-size:12px;margin-top:8px;">Each recipient receives a personalised email with their first name.</p>`,
-    languageOptions: [{ value: 'de' }, { value: 'en' }],
-    defaultLanguage: 'de',
-    selectableRecipients: true,
-    onConfirm: async ({ language, recipients }) => {
-      const studentIds = recipients.map((r) => r.id);
-      const res = await apiFetch('/api/send-company-booking-code', {
-        method: 'POST',
-        body: { company_id: id, student_ids: studentIds, language },
-      });
-      const result = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
-    },
-  });
+  try {
+    openConfirmSend({
+      title: 'send booking code email',
+      recipients: selected,
+      subject: `Your company booking code · learning with gioia`,
+      contentHtml: `
+        <p>Hello [first name] :)<br>
+        Here is the link to courses currently happening at your company.<br>
+        <a href="${esc(previewUrl)}" target="_blank" rel="noopener">${esc(previewUrl)}</a><br><br>
+        <strong>Booking code: ${esc(code)}</strong></p>
+        <p style="color:#888;font-size:12px;margin-top:8px;">Each recipient receives a personalised email with their first name.</p>`,
+      languageOptions: [{ value: 'de' }, { value: 'en' }],
+      defaultLanguage: 'de',
+      selectableRecipients: true,
+      onConfirm: async ({ language, recipients }) => {
+        const studentIds = recipients.map((r) => r.id);
+        const res = await apiFetch('/api/send-company-booking-code', {
+          method: 'POST',
+          body: { company_id: id, student_ids: studentIds, language },
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+      },
+    });
+  } catch (err) {
+    console.error('openSendBookingCode failed:', err);
+    alert('Could not open send dialog. Please try again.');
+  }
 }
 
 /* ── New company modal ─────────────────────────────────────────────── */
@@ -558,6 +597,195 @@ export async function removeStudentFromCompany(studentId, companyId) {
   }
 }
 
+/* ── Unlink course from company ────────────────────────────────────── */
+
+export async function unlinkCourseFromCompany(courseId, companyId) {
+  if (!confirm('Unlink this course from the company? Its booking code will be cleared.')) return;
+
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: courseId, company_id: null },
+    });
+    if (!res.ok) throw new Error();
+
+    const idx = companies.findIndex((c) => String(c.id) === String(companyId));
+    if (idx !== -1) {
+      companies[idx].courses = (companies[idx].courses || []).filter(
+        (cr) => String(cr.id) !== String(courseId)
+      );
+      renderCompanyList();
+      renderCompanyDetail(companies[idx]);
+    }
+  } catch {
+    alert('Could not unlink course. Please try again.');
+  }
+}
+
+/* ── Link course to company modal ──────────────────────────────────── */
+
+export function openLinkCourseModal(id) {
+  linkCourseCompanyId = String(id);
+  selectedLinkCourseId = null;
+  allCoursesForLink = [];
+  clearTimeout(linkCourseSearchTimeout);
+
+  const modal = document.getElementById('link-company-course-modal');
+  const search = document.getElementById('lcc-search');
+  const submit = document.getElementById('lcc-submit');
+  const results = document.getElementById('lcc-results');
+  const msg = document.getElementById('lcc-msg');
+  if (!modal || !search) return;
+
+  linkCourseStatusFilter = 'active';
+  search.value = '';
+  results.innerHTML = '';
+  if (submit) submit.disabled = true;
+  if (msg) {
+    msg.textContent = '';
+    msg.className = 'modal-msg';
+  }
+
+  document.querySelectorAll('#lcc-filter-row [data-lcc-status]').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.lccStatus === linkCourseStatusFilter);
+    btn.onclick = () => {
+      linkCourseStatusFilter = btn.dataset.lccStatus;
+      document.querySelectorAll('#lcc-filter-row [data-lcc-status]').forEach((b) => {
+        b.classList.toggle('active', b.dataset.lccStatus === linkCourseStatusFilter);
+      });
+      renderLinkCourseResults(search.value);
+    };
+  });
+
+  modal.classList.add('open');
+  requestAnimationFrame(() => search.focus());
+
+  // Fetch all courses once, then filter client-side on input and status
+  apiFetch('/api/get-courses?status=all').then(async (res) => {
+    if (!res.ok) return;
+    allCoursesForLink = await res.json();
+    renderLinkCourseResults(search.value);
+  });
+
+  search.oninput = () => {
+    clearTimeout(linkCourseSearchTimeout);
+    linkCourseSearchTimeout = setTimeout(() => renderLinkCourseResults(search.value), 200);
+  };
+}
+
+function renderLinkCourseResults(q) {
+  const resultsEl = document.getElementById('lcc-results');
+  if (!resultsEl) return;
+
+  const company = companies.find((c) => String(c.id) === String(linkCourseCompanyId));
+  const linkedIds = new Set((company?.courses || []).map((cr) => String(cr.id)));
+
+  const term = q.trim().toLowerCase();
+  const filtered = allCoursesForLink
+    .filter((cr) => !linkedIds.has(String(cr.id)))
+    .filter((cr) => linkCourseStatusFilter === 'all' || cr.status === linkCourseStatusFilter)
+    .filter(
+      (cr) =>
+        !term ||
+        (cr.course_code || '').toLowerCase().includes(term) ||
+        (cr.subject || '').toLowerCase().includes(term) ||
+        (cr.level || '').toLowerCase().includes(term)
+    )
+    .slice(0, 30);
+
+  if (!filtered.length) {
+    resultsEl.innerHTML = '<div class="acs-searching">no matching courses</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = filtered
+    .map((cr) => {
+      const label = [cr.course_code, cr.subject, cr.level].filter(Boolean).join(' · ');
+      const companyTag = cr.company_name
+        ? `<span class="acs-result-email">(already linked to ${esc(cr.company_name)})</span>`
+        : '';
+      return `<div class="acs-result-row" role="option" tabindex="0"
+                   data-action="pickLinkCourse" data-args="${esc(String(cr.id))}">
+        <span class="acs-result-name">${esc(label)}</span>
+        <span class="acs-result-email detail-muted">${esc(cr.status || '')}</span>
+        ${companyTag}
+      </div>`;
+    })
+    .join('');
+}
+
+export function pickLinkCourse(courseId) {
+  selectedLinkCourseId = courseId;
+  document.querySelectorAll('#lcc-results .acs-result-row').forEach((row) => {
+    row.classList.toggle('selected', row.dataset.args === courseId);
+  });
+  const submit = document.getElementById('lcc-submit');
+  if (submit) submit.disabled = false;
+}
+
+export function closeLinkCourseModal() {
+  document.getElementById('link-company-course-modal')?.classList.remove('open');
+  clearTimeout(linkCourseSearchTimeout);
+}
+
+export async function confirmLinkCourse() {
+  if (!selectedLinkCourseId || !linkCourseCompanyId) return;
+  const submit = document.getElementById('lcc-submit');
+  const msg = document.getElementById('lcc-msg');
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = 'linking…';
+  }
+  if (msg) {
+    msg.textContent = '';
+    msg.className = 'modal-msg';
+  }
+
+  try {
+    const res = await apiFetch('/api/update-course', {
+      method: 'PATCH',
+      body: { course_id: selectedLinkCourseId, company_id: linkCourseCompanyId },
+    });
+    if (!res.ok) throw new Error();
+    const updated = await res.json();
+
+    const idx = companies.findIndex((c) => String(c.id) === String(linkCourseCompanyId));
+    if (idx !== -1) {
+      const course = allCoursesForLink.find((cr) => String(cr.id) === selectedLinkCourseId);
+      if (course) {
+        companies[idx].courses = companies[idx].courses || [];
+        companies[idx].courses = companies[idx].courses.filter(
+          (cr) => String(cr.id) !== String(selectedLinkCourseId)
+        );
+        companies[idx].courses.push({
+          id: updated.id,
+          course_code: updated.course_code,
+          subject: updated.subject,
+          level: updated.level,
+          status: updated.status,
+          company_id: updated.company_id,
+          company_code_booking_enabled: updated.company_code_booking_enabled,
+        });
+        companies[idx].courses.sort((a, b) =>
+          (a.course_code || '').localeCompare(b.course_code || '')
+        );
+      }
+      renderCompanyList();
+      renderCompanyDetail(companies[idx]);
+    }
+    closeLinkCourseModal();
+  } catch {
+    if (msg) {
+      msg.textContent = 'Could not link course. Please try again.';
+      msg.className = 'modal-msg err is-visible-block';
+    }
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = 'link';
+    }
+  }
+}
+
 export async function submitNewCompany() {
   const input = document.getElementById('nc-name');
   const msg = document.getElementById('nc-msg');
@@ -577,6 +805,7 @@ export async function submitNewCompany() {
     if (!res.ok) throw new Error();
     const newCompany = await res.json();
     newCompany.students = [];
+    newCompany.courses = [];
     companies.push(newCompany);
     companies.sort((a, b) => a.name.localeCompare(b.name));
     renderCompanyList();

@@ -98,6 +98,11 @@ import {
   toggleCreateStudentForm,
   submitCreateAndAddStudent,
   removeStudentFromCompany,
+  openLinkCourseModal,
+  closeLinkCourseModal,
+  pickLinkCourse,
+  confirmLinkCourse,
+  unlinkCourseFromCompany,
 } from './features/companies.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
@@ -198,6 +203,11 @@ const actions = {
   toggleCreateStudentForm,
   submitCreateAndAddStudent,
   removeStudentFromCompany,
+  openLinkCourseModal,
+  closeLinkCourseModal,
+  pickLinkCourse,
+  confirmLinkCourse,
+  unlinkCourseFromCompany,
   // Tab switching
   switchTab,
 };

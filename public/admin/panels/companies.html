@@ -49,6 +49,30 @@
   </div>
 </div>
 
+<!-- ── Link course to company modal ──────────────────────────────── -->
+<div class="modal-overlay" id="link-company-course-modal">
+  <div class="modal">
+    <h2>link course to company</h2>
+    <div class="modal-field">
+      <label>Search course</label>
+      <input type="search" id="lcc-search" class="list-search" placeholder="Course code, subject or level…" autocomplete="off">
+    </div>
+    <div class="course-filter-row" id="lcc-filter-row" style="margin-bottom:0.6rem;">
+      <button class="filter-btn active" data-lcc-status="active">active</button>
+      <button class="filter-btn" data-lcc-status="all">all</button>
+      <button class="filter-btn" data-lcc-status="completed">completed</button>
+      <button class="filter-btn" data-lcc-status="paused">paused</button>
+      <button class="filter-btn" data-lcc-status="cancelled">cancelled</button>
+    </div>
+    <div id="lcc-results" class="acs-results"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeLinkCourseModal">cancel</button>
+      <button class="modal-submit" id="lcc-submit" data-action="confirmLinkCourse" disabled>link</button>
+    </div>
+    <p class="modal-msg" id="lcc-msg"></p>
+  </div>
+</div>
+
 <!-- ── New company modal ──────────────────────────────────────────── -->
 <div class="modal-overlay" id="new-company-modal">
   <div class="modal">

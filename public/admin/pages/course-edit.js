@@ -53,6 +53,48 @@ function setAddressFieldsOpen(open) {
   toggle.textContent = open ? '− hide address' : '+ add address';
 }
 
+let companiesData = [];
+
+function populateCompanyDropdown(companies, selectedCompanyId) {
+  const select = document.getElementById('ec-company-id');
+  if (!select) return;
+  companiesData = companies;
+  select.innerHTML =
+    `<option value="">— none —</option>` +
+    companies
+      .map((c) => {
+        const label = c.name + (c.booking_code ? ' · ' + c.booking_code : ' (no code)');
+        return `<option value="${c.id}"${String(c.id) === String(selectedCompanyId) ? ' selected' : ''}>${label}</option>`;
+      })
+      .join('');
+  syncCompanyFields();
+}
+
+function syncCompanyFields() {
+  const select = document.getElementById('ec-company-id');
+  const hint = document.getElementById('ec-company-code-hint');
+  const customCode = document.getElementById('ec-custom-code-field');
+  const customLabel = document.getElementById('ec-custom-label-field');
+  if (!select) return;
+
+  const companyId = select.value;
+  const company = companiesData.find((c) => String(c.id) === companyId);
+  const hasCompany = !!company;
+
+  if (customCode) customCode.classList.toggle('is-hidden', hasCompany);
+  if (customLabel) customLabel.classList.toggle('is-hidden', hasCompany);
+
+  if (hint) {
+    if (hasCompany) {
+      hint.textContent = company.booking_code
+        ? `Booking code: ${company.booking_code} (auto-synced from company)`
+        : 'No booking code set for this company yet — add one in the Companies tab.';
+    } else {
+      hint.textContent = '';
+    }
+  }
+}
+
 function populate(course) {
   document.getElementById('ec-id').value = course.id;
   document.getElementById('ec-code-label').textContent = course.course_code
@@ -95,8 +137,18 @@ function populate(course) {
   document.getElementById('ec-public-booking').checked = course.public_booking_enabled === true;
   document.getElementById('ec-company-code-booking').checked =
     course.company_code_booking_enabled === true;
+
+  // Company dropdown — populated separately; just set the custom code fallback values
   setVal('ec-access-code', course.access_code || '');
   setVal('ec-access-label', course.access_label || '');
+
+  // Pre-select company in dropdown if already set
+  const companySelect = document.getElementById('ec-company-id');
+  if (companySelect && course.company_id) {
+    companySelect.value = String(course.company_id);
+  }
+  syncCompanyFields();
+
   setAddressFieldsOpen(hasLocationAddress());
 }
 
@@ -115,9 +167,14 @@ async function handleSubmit(e) {
   const pricePersonVal = document.getElementById('ec-price-person').value;
   const companyCodeBookingEnabled =
     document.getElementById('ec-company-code-booking')?.checked || false;
-  const accessCode = document.getElementById('ec-access-code').value.trim();
-  if (companyCodeBookingEnabled && !accessCode) {
-    msgEl.textContent = 'Please enter a company booking code.';
+
+  const companyId = document.getElementById('ec-company-id')?.value || null;
+  const accessCode = companyId
+    ? null
+    : document.getElementById('ec-access-code').value.trim() || null;
+
+  if (companyCodeBookingEnabled && !companyId && !accessCode) {
+    msgEl.textContent = 'Please link a company or enter a custom booking code.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     return;
@@ -145,9 +202,14 @@ async function handleSubmit(e) {
     location_city: document.getElementById('ec-loc-city').value.trim() || null,
     public_booking_enabled: document.getElementById('ec-public-booking')?.checked || false,
     company_code_booking_enabled: companyCodeBookingEnabled,
-    access_code: accessCode || null,
-    access_label: document.getElementById('ec-access-label').value.trim() || null,
+    company_id: companyId || null,
   };
+
+  // Only send manual access_code/label when no company is linked
+  if (!companyId) {
+    body.access_code = accessCode;
+    body.access_label = document.getElementById('ec-access-label').value.trim() || null;
+  }
 
   btn.textContent = 'saving…';
   btn.disabled = true;
@@ -195,11 +257,17 @@ async function handleSubmit(e) {
   }
 
   try {
-    const res = await apiFetch('/api/get-courses?status=all');
-    if (!res.ok) throw new Error();
-    const courses = await res.json();
+    const [coursesRes, companiesRes] = await Promise.all([
+      apiFetch('/api/get-courses?status=all'),
+      apiFetch('/api/get-companies'),
+    ]);
+    if (!coursesRes.ok) throw new Error();
+    const courses = await coursesRes.json();
     const course = courses.find((c) => c.id === id);
     if (!course) throw new Error('Course not found');
+
+    const companies = companiesRes.ok ? await companiesRes.json() : [];
+    populateCompanyDropdown(companies, course.company_id);
     populate(course);
   } catch {
     document.getElementById('page-loading').innerHTML =
@@ -216,6 +284,7 @@ async function handleSubmit(e) {
     const fields = document.getElementById('ec-address-fields');
     setAddressFieldsOpen(fields?.classList.contains('is-hidden'));
   });
+  document.getElementById('ec-company-id')?.addEventListener('change', syncCompanyFields);
 
   document.getElementById('page-loading').classList.add('is-hidden');
   document.getElementById('page-content').classList.remove('is-hidden');

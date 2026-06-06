@@ -58,7 +58,18 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
 
     const rows = await res.json();
-    return jsonResponse(rows[0] || {});
+    const saved = rows[0] || {};
+
+    // Cascade booking_code change to all courses linked to this company
+    if (body.id && 'booking_code' in body) {
+      await fetch(`${SUPABASE_URL}/rest/v1/courses?company_id=eq.${encodeURIComponent(body.id)}`, {
+        method: 'PATCH',
+        headers: { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=minimal' },
+        body: JSON.stringify({ access_code: saved.booking_code || null }),
+      });
+    }
+
+    return jsonResponse(saved);
   } catch (err) {
     console.error('Error:', err);
     return errorResponse('Connection error');

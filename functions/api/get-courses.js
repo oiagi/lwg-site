@@ -112,7 +112,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const courseIds = courses.map((c) => c.id);
     const courseFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
 
-    const [sessRes, initialEnrolRes, certRes, pendingRes] = await Promise.all([
+    const companyIds = [...new Set(courses.map((c) => c.company_id).filter(Boolean))];
+
+    const [sessRes, initialEnrolRes, certRes, pendingRes, companyRes] = await Promise.all([
       fetch(
         `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
         { headers: H }
@@ -128,9 +130,20 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         `${SUPABASE_URL}/rest/v1/enquiries?or=(${courseFilter})&status=eq.pending_course_booking&order=created_at.asc&select=id,created_at,course_id,student_id,lead_first,lead_last,lead_email,lead_phone,booking_data,contact_data`,
         { headers: H }
       ),
+      companyIds.length
+        ? fetch(
+            `${SUPABASE_URL}/rest/v1/companies?or=(${companyIds.map((id) => `id.eq.${id}`).join(',')})&select=id,name`,
+            { headers: H }
+          )
+        : Promise.resolve(null),
     ]);
 
     const allSessions = sessRes.ok ? await sessRes.json() : [];
+    const companyNameMap = {};
+    if (companyRes?.ok) {
+      const comps = await companyRes.json();
+      for (const c of comps) companyNameMap[c.id] = c.name;
+    }
     let enrolRes = initialEnrolRes;
     if (!enrolRes.ok && enrolRes.status === 400) {
       enrolRes = await fetch(
@@ -232,6 +245,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
       return {
         ...course,
+        company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
         sessions: sessionsByCourse[course.id] || [],
         pending_bookings: pendingBookingsByCourse[course.id] || [],
         students: [...(studentIdsByCourse[course.id] || [])]
