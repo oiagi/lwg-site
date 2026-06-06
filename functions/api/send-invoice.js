@@ -59,6 +59,7 @@ function fullNameFromParts(firstName, lastName, fallbackName = '') {
 
 function invoiceGreeting({ language, name, first_name, last_name, gender }) {
   if (language === 'en') return `Hello ${first_name || name || 'there'},`;
+  if (first_name) return `Liebe ${first_name}`;
   const surname = last_name || surnameFromName(name);
   if (gender === 'female' && surname) return `Liebe Frau ${surname}`;
   if (gender === 'male' && surname) return `Lieber Herr ${surname}`;
@@ -232,11 +233,13 @@ async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATE
     total_amount: Number(inv.total_amount),
     currency: inv.currency || 'CHF',
     issued_date: inv.invoice_date || new Date().toISOString().slice(0, 10),
+    due_date: inv.due_date || null,
+    invoice_language: body.language,
   };
 
   let lastError = '';
   for (const status of statusCandidates) {
-    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
+    let res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
       method: 'POST',
       headers: {
         ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
@@ -244,6 +247,21 @@ async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATE
       },
       body: JSON.stringify({ ...basePayload, status }),
     });
+
+    if (!res.ok) {
+      lastError = await res.text();
+      if (lastError.includes('invoice_language')) {
+        delete basePayload.invoice_language;
+        res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
+          method: 'POST',
+          headers: {
+            ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({ ...basePayload, status }),
+        });
+      }
+    }
 
     if (res.ok) {
       const rows = await res.json().catch(() => []);

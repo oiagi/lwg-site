@@ -41,10 +41,22 @@ async function listYearFiles(env, year) {
 async function fetchInvoiceRecords(env, invoiceNumbers) {
   if (invoiceNumbers.length === 0) return [];
   const list = invoiceNumbers.map((n) => encodeURIComponent(n)).join(',');
-  const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})&select=invoice_number,status,total_amount,currency,due_date,student_id,course_id`,
+  const url = `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})`;
+  let res = await fetch(
+    `${url}&select=id,invoice_number,status,total_amount,currency,due_date,reminder_sent_at,student_id,course_id`,
     { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
   );
+  if (!res.ok) {
+    const errorText = await res.text();
+    if (!errorText.includes('reminder_sent_at')) {
+      console.error('invoice-archive DB fetch failed:', errorText);
+      return [];
+    }
+    res = await fetch(
+      `${url}&select=id,invoice_number,status,total_amount,currency,due_date,student_id,course_id`,
+      { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
+    );
+  }
   if (!res.ok) {
     console.error('invoice-archive DB fetch failed:', await res.text());
     return [];
@@ -145,7 +157,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       created_at: f.created_at,
       signed_url: signedMap[path] ?? null,
       status: record.status ?? null,
+      invoice_id: record.id ?? null,
       due_date: record.due_date ?? null,
+      reminder_sent_at: record.reminder_sent_at ?? null,
       total_amount: record.total_amount ?? null,
       currency: record.currency ?? 'CHF',
       student_name: student

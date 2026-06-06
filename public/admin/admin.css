@@ -1912,7 +1912,7 @@ html[data-device='mobile'] .student-detail-pane {
   display: grid;
   grid-template-columns:
     minmax(130px, 0.9fr) minmax(130px, 1fr) minmax(150px, 1.2fr)
-    90px 96px 76px 86px;
+    90px 96px 86px 68px;
   gap: 0 1rem;
   align-items: center;
   padding-right: 1rem;
@@ -1977,8 +1977,51 @@ html[data-device='mobile'] .student-detail-pane {
   color: #c0392b;
   font-weight: 600;
 }
+.inv-status.reminder {
+  color: #888;
+}
 .inv-action {
   text-align: right;
+}
+.invoice-action-wrap {
+  position: relative;
+  display: inline-block;
+}
+.invoice-action-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0;
+  color: #2980b9;
+}
+.invoice-action-toggle::after {
+  content: ' ▾';
+  font-size: 0.65em;
+  opacity: 0.6;
+}
+.invoice-action-dropdown {
+  left: auto;
+  right: 0;
+  text-align: left;
+}
+.status-opt-btn--view {
+  color: #2980b9;
+  text-decoration: none;
+}
+.status-opt-btn--remind {
+  color: #e67e22;
+}
+.status-opt-btn--disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+.invoice-action-dropdown .status-opt-btn:disabled {
+  opacity: 0.45;
+  cursor: wait;
 }
 .inv-session-check {
   display: flex;
