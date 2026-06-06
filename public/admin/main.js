@@ -81,7 +81,13 @@ import { authoriseTeacher, setOnAuthoriseComplete } from './features/teachers.js
 import { loadAvailability, onTeacherSelect } from './features/availability.js';
 import { trapFocus, releaseFocus } from './core/helpers.js';
 import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
-import { loadInvoiceArchive, switchArchiveYear } from './features/invoice-archive.js';
+import {
+  loadInvoiceArchive,
+  switchArchiveYear,
+  toggleInvoiceActions,
+  sendInvoiceReminder,
+  deleteInvoice,
+} from './features/invoice-archive.js';
 import {
   loadCompanies,
   selectCompany,
@@ -188,6 +194,9 @@ const actions = {
   onTeacherSelect,
   // Invoice archive
   switchArchiveYear,
+  toggleInvoiceActions,
+  sendInvoiceReminder,
+  deleteInvoice,
   // Companies
   selectCompany,
   saveCompanyName,
