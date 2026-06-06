@@ -82,6 +82,9 @@ export const onRequestPatch = withErrorHandling(async ({ request, env }) => {
         const [comp] = await compRes.json();
         patch.access_code = normalizeAccessCode(comp?.booking_code) || null;
       }
+      if (!('company_code_booking_enabled' in body)) {
+        patch.company_code_booking_enabled = true;
+      }
     } else {
       // Unlinking — clear access_code unless caller explicitly provides one
       if (!('access_code' in body)) patch.access_code = null;
