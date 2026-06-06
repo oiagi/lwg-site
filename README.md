@@ -35,9 +35,6 @@ Language courses, exam preparation, and tutoring in Zurich.
 │   ├── _public-course-booking.js
 │   ├── _student-utils.js
 │   └── *.js                 # ~37 endpoint handlers (see API below)
-├── scripts/                 # Dev utilities (not deployed)
-│   ├── seed-test-data.mjs   # Populate Supabase with test data
-│   └── send-test-emails.mjs # Smoke-test email delivery
 └── supabase/migrations/     # SQL migration files — applied manually via Supabase dashboard
 ```
 
