@@ -16,6 +16,16 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
+const HIDDEN_TEACHER_NAMES = new Set(['test teacher']);
+
+function isVisibleTeacher(teacher) {
+  return !HIDDEN_TEACHER_NAMES.has(
+    String(teacher.name || '')
+      .trim()
+      .toLowerCase()
+  );
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -31,7 +41,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     if (!res.ok) return errorResponse('Database error');
 
-    const teachers = await res.json();
+    const teachers = (await res.json()).filter(isVisibleTeacher);
 
     // Return teachers with a simple 'authorised' flag instead of raw tokens
     const sanitised = teachers.map((t) => ({

@@ -260,6 +260,7 @@ async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATE
           },
           body: JSON.stringify({ ...basePayload, status }),
         });
+        if (!res.ok) lastError = await res.text();
       }
     }
 
@@ -268,7 +269,6 @@ async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATE
       return rows[0] || null;
     }
 
-    lastError = await res.text();
     if (!lastError.includes('invoices_status_check')) break;
   }
 

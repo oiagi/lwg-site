@@ -19,10 +19,14 @@ export function getCurrentStudentFilter() {
 
 export function filterStudents(active) {
   currentStudentFilter = active;
-  document.querySelectorAll('[data-student-status]').forEach((b) => {
-    b.classList.toggle('active', b.dataset.studentStatus === active);
-  });
+  setStudentFilterButtonState(active);
   loadStudents(active);
+}
+
+function setStudentFilterButtonState(status) {
+  document.querySelectorAll('[data-student-status]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.studentStatus === status);
+  });
 }
 
 function buildStudentQuery(status) {
@@ -230,7 +234,7 @@ function renderStudents(students, totalRequests = null) {
 }
 
 export async function selectStudent(id, { updateUrl = true } = {}) {
-  if (selectedStudentId === id) return;
+  if (selectedStudentId === id && currentStudentDetail) return;
   selectedStudentId = id;
   fromCourseContext = null;
   if (updateUrl) history.pushState({}, '', '#students/' + id);
@@ -245,18 +249,45 @@ async function fetchAndRenderStudent(id) {
   });
 
   const pane = document.getElementById('student-detail-panel');
+  if (!pane) return;
   pane.className = '';
   pane.innerHTML = '<div class="loading-state">loading…</div>';
 
   try {
-    const res = await apiFetch('/api/get-student-detail?id=' + id);
-    if (!res.ok) throw new Error();
+    const res = await apiFetch('/api/get-student-detail?id=' + encodeURIComponent(id));
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || 'Could not load student details.');
+    }
     const s = await res.json();
     currentStudentDetail = s;
     renderStudentDetail(pane, s);
-  } catch {
-    pane.innerHTML = '<p class="detail-error">Could not load student details.</p>';
+  } catch (err) {
+    pane.innerHTML = `<p class="detail-error">${esc(err.message || 'Could not load student details.')}</p>`;
   }
+}
+
+function waitForStudentPanel() {
+  if (document.getElementById('student-list') && document.getElementById('student-detail-panel')) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    let attempts = 0;
+    const tick = () => {
+      attempts += 1;
+      if (
+        document.getElementById('student-list') &&
+        document.getElementById('student-detail-panel')
+      ) {
+        resolve();
+      } else if (attempts > 60) {
+        resolve();
+      } else {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
+  });
 }
 
 export async function selectStudentFromCourse(studentId, courseId, courseCode) {
@@ -266,15 +297,22 @@ export async function selectStudentFromCourse(studentId, courseId, courseCode) {
     detail: { tab: 'students', skipReload: true },
   });
   document.dispatchEvent(ev);
+  await waitForStudentPanel();
   selectedStudentId = studentId;
+  const detailPromise = fetchAndRenderStudent(studentId);
   await loadStudentsKeepingContext(currentStudentFilter, studentId);
-  await fetchAndRenderStudent(studentId);
+  await detailPromise;
   history.replaceState({}, '', '#students/' + studentId);
 }
 
-async function loadStudentsKeepingContext(status, keepSelectedId) {
+async function loadStudentsKeepingContext(
+  status,
+  keepSelectedId,
+  { allowAllFallback = true } = {}
+) {
   attachStudentListControls();
   const list = document.getElementById('student-list');
+  if (!list) return;
   if (!list.querySelector('.student-row')) {
     list.innerHTML = '<div class="loading-state">loading…</div>';
   }
@@ -290,7 +328,15 @@ async function loadStudentsKeepingContext(status, keepSelectedId) {
     renderStudents(students, totalRequests);
     if (keepSelectedId) {
       const row = document.getElementById('student-' + keepSelectedId);
-      if (row) row.scrollIntoView({ block: 'nearest' });
+      if (row) {
+        row.classList.add('selected');
+        row.setAttribute('aria-selected', 'true');
+        row.scrollIntoView({ block: 'nearest' });
+      } else if (allowAllFallback && status !== 'all') {
+        currentStudentFilter = 'all';
+        setStudentFilterButtonState('all');
+        await loadStudentsKeepingContext('all', keepSelectedId, { allowAllFallback: false });
+      }
     }
   } catch {
     list.innerHTML =
