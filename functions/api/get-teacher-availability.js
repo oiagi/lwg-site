@@ -15,6 +15,19 @@ import {
   withErrorHandling,
 } from './_utils.js';
 
+const HIDDEN_TEACHER_NAMES = new Set(['test teacher']);
+
+function visibleTeachers(teachers) {
+  return teachers.filter(
+    (teacher) =>
+      !HIDDEN_TEACHER_NAMES.has(
+        String(teacher.name || '')
+          .trim()
+          .toLowerCase()
+      )
+  );
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -35,7 +48,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         { headers: H }
       );
       if (!teachRes.ok) return errorResponse('Database error');
-      const teachers = await teachRes.json();
+      const teachers = visibleTeachers(await teachRes.json());
       return jsonResponse(teachers);
     }
 
