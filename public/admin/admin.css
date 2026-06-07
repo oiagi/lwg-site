@@ -2601,7 +2601,7 @@ html[data-device='mobile'] .avail-day {
 /* ── Student progress block (inside course detail) ────────────────── */
 .progress-block {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 0.9fr);
+  grid-template-columns: minmax(440px, 1.25fr) minmax(220px, 0.8fr) minmax(300px, 0.95fr);
   gap: 1rem 2rem;
   align-items: start;
   margin-bottom: 1rem;
@@ -2609,21 +2609,23 @@ html[data-device='mobile'] .avail-day {
   border-bottom: 1px solid var(--border-soft);
 }
 .progress-main,
-.progress-side {
+.progress-communication,
+.progress-invoices {
   min-width: 0;
 }
-.progress-side {
+.progress-communication,
+.progress-invoices {
   display: grid;
   gap: 0.55rem;
   justify-items: end;
   color: var(--text-muted);
   text-align: right;
 }
-.progress-side .sent-tag-row {
+.progress-communication .sent-tag-row {
   justify-content: flex-end;
   margin-top: 0;
 }
-.progress-side .course-invoice-list {
+.progress-invoices .course-invoice-list {
   width: min(100%, 430px);
   margin-top: 0;
 }
@@ -2655,23 +2657,25 @@ html[data-device='mobile'] .avail-day {
 .progress-row {
   margin-top: 0.3rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
-.enrolment-settings-row {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.6rem;
-  margin-top: 0.55rem;
+.participant-controls {
+  gap: 0.55rem 0.7rem;
 }
-.enrolment-settings-row label {
+.participant-inline-field {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+.participant-inline-field > span {
   color: var(--text-muted);
   font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.enrolment-settings-row input {
+.participant-inline-field input {
   background: transparent;
   border: 1px solid var(--border-soft);
   border-radius: 3px;
@@ -2680,21 +2684,31 @@ html[data-device='mobile'] .avail-day {
   font-size: 0.75rem;
   padding: 0.25rem 0.35rem;
 }
-.enrolment-settings-row input[type='number'] {
-  width: 4.4rem;
-}
-.enrolment-settings-row input[type='date'] {
+.participant-inline-field input[type='date'] {
   width: 9rem;
 }
 .level-input {
   background: transparent;
-  border: none;
-  border-bottom: 1px solid #ddd;
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
   font-family: inherit;
   font-size: 0.75rem;
   color: #555;
   outline: none;
   width: 60px;
+  padding: 0.25rem 0.35rem;
+}
+.autosave-msg {
+  background: #e8f5ec;
+  border-radius: 2px;
+  color: #1a8754;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.45rem;
+}
+.autosave-msg.error-text {
+  background: #fdecea;
+  color: #c0392b;
 }
 .level-row {
   display: flex;
@@ -3560,12 +3574,13 @@ html[data-device='mobile'] .cert-prev-footer {
     gap: 0.65rem;
   }
 
-  .progress-side {
+  .progress-communication,
+  .progress-invoices {
     justify-items: start;
     text-align: left;
   }
 
-  .progress-side .sent-tag-row {
+  .progress-communication .sent-tag-row {
     justify-content: flex-start;
   }
 
