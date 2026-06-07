@@ -934,7 +934,6 @@ function renderCourses(courses) {
               s.certificate_sent_at
                 ? `<span class="sent-tag">certificate sent · ${esc(fmtDate(s.certificate_sent_at))}</span>`
                 : '',
-              paidInvoiceTags,
             ]
               .filter(Boolean)
               .join('');
@@ -978,6 +977,7 @@ function renderCourses(courses) {
         </div>
         <div class="progress-invoices">
           ${invoiceBlock || '<p class="detail-muted">no open invoices</p>'}
+          ${paidInvoiceTags ? `<div class="sent-tag-row">${paidInvoiceTags}</div>` : ''}
         </div>
       </div>
     `;
