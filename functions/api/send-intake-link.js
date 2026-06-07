@@ -96,8 +96,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
+  const studentId = encodeURIComponent(body.student_id);
   const stuRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(body.student_id)}&select=first_name,last_name,email`,
+    `${SUPABASE_URL}/rest/v1/students?id=eq.${studentId}&select=first_name,last_name,email`,
     { headers: H }
   );
   if (!stuRes.ok) return errorResponse('Database error');
@@ -135,5 +136,22 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Could not send email', 502);
   }
 
-  return jsonResponse({ success: true });
+  const sentAt = new Date().toISOString();
+  try {
+    const trackRes = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${studentId}`, {
+      method: 'PATCH',
+      headers: H,
+      body: JSON.stringify({ intake_link_sent_at: sentAt }),
+    });
+    if (!trackRes.ok) {
+      const errorText = await trackRes.text();
+      if (!errorText.includes('intake_link_sent_at')) {
+        console.error('Failed to record intake_link_sent_at:', errorText);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to record intake_link_sent_at:', err?.message || err);
+  }
+
+  return jsonResponse({ success: true, intake_link_sent_at: sentAt });
 }, 'send-intake-link');

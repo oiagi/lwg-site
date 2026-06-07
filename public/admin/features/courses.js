@@ -286,10 +286,20 @@ function sentCommunicationsBlock(course) {
   const total = students.length;
 
   const confirmedAt = course.course_confirmation_sent_at;
+  const confirmationSent = students.filter((s) => s.confirmation_sent_at);
   const scheduleSent = students.filter((s) => s.schedule_sent_at);
   const certSent = students.filter((s) => s.certificate_sent_at);
+  const invoiceSent = students.filter((s) => s.invoice_sent_at);
 
-  if (!confirmedAt && !scheduleSent.length && !certSent.length) return '';
+  if (
+    !confirmedAt &&
+    !confirmationSent.length &&
+    !scheduleSent.length &&
+    !certSent.length &&
+    !invoiceSent.length
+  ) {
+    return '';
+  }
 
   const latest = (rows, key) =>
     rows
@@ -299,7 +309,14 @@ function sentCommunicationsBlock(course) {
       .pop();
 
   const items = [];
-  if (confirmedAt) {
+  if (confirmationSent.length) {
+    const last = latest(confirmationSent, 'confirmation_sent_at');
+    items.push(
+      `<li>confirmation sent to ${confirmationSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
+    );
+  } else if (confirmedAt) {
     items.push(
       `<li>confirmation sent · <span class="detail-muted">${esc(fmtDate(confirmedAt))}</span></li>`
     );
@@ -307,13 +324,25 @@ function sentCommunicationsBlock(course) {
   if (scheduleSent.length) {
     const last = latest(scheduleSent, 'schedule_sent_at');
     items.push(
-      `<li>schedule sent to ${scheduleSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+      `<li>schedule sent to ${scheduleSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
     );
   }
   if (certSent.length) {
     const last = latest(certSent, 'certificate_sent_at');
     items.push(
-      `<li>certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(fmtDate(last))}</span></li>`
+      `<li>certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
+    );
+  }
+  if (invoiceSent.length) {
+    const last = latest(invoiceSent, 'invoice_sent_at');
+    items.push(
+      `<li>invoice sent to ${invoiceSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
     );
   }
 

@@ -40,7 +40,10 @@ const STUDENT_SELECT =
   'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_gender,billing_gender_note,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
 const STUDENT_SELECT_COMPAT =
   'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
-const ENROLMENT_SELECT = 'student_id,course_id,schedule_sent_at,invoice_lesson_count,joined_at';
+const ENROLMENT_SELECT =
+  'student_id,course_id,confirmation_sent_at,schedule_sent_at,invoice_lesson_count,joined_at';
+const ENROLMENT_SELECT_WITHOUT_CONFIRMATION =
+  'student_id,course_id,schedule_sent_at,invoice_lesson_count,joined_at';
 const ENROLMENT_SELECT_COMPAT = 'student_id,course_id,schedule_sent_at';
 
 function cleanSearchTerm(value) {
@@ -147,9 +150,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     let enrolRes = initialEnrolRes;
     if (!enrolRes.ok && enrolRes.status === 400) {
       enrolRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT_COMPAT}`,
+        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT_WITHOUT_CONFIRMATION}`,
         { headers: H }
       );
+      if (!enrolRes.ok && enrolRes.status === 400) {
+        enrolRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT_COMPAT}`,
+          { headers: H }
+        );
+      }
     }
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
     const allCertificates = certRes.ok ? await certRes.json() : [];
@@ -183,10 +192,18 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (courseIds.length) {
       const invFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
       const invRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
+        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,sent_at,student_id,course_id`,
         { headers: H }
       );
-      allInvoices = invRes.ok ? await invRes.json() : [];
+      if (!invRes.ok && invRes.status === 400) {
+        const compatInvRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
+          { headers: H }
+        );
+        allInvoices = compatInvRes.ok ? await compatInvRes.json() : [];
+      } else {
+        allInvoices = invRes.ok ? await invRes.json() : [];
+      }
     }
 
     // ── Index data by course_id for fast lookup ───────────────────────
@@ -196,11 +213,16 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     }
 
     const studentIdsByCourse = {};
+    const confirmationSentByCourseStudent = {};
     const scheduleSentByCourseStudent = {};
     const enrolmentByCourseStudent = {};
     for (const e of allEnrolments) {
       (studentIdsByCourse[e.course_id] ||= new Set()).add(e.student_id);
       (enrolmentByCourseStudent[e.course_id] ||= {})[e.student_id] = e;
+      if (e.confirmation_sent_at) {
+        (confirmationSentByCourseStudent[e.course_id] ||= {})[e.student_id] =
+          e.confirmation_sent_at;
+      }
       if (e.schedule_sent_at) {
         (scheduleSentByCourseStudent[e.course_id] ||= {})[e.student_id] = e.schedule_sent_at;
       }
@@ -221,7 +243,18 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     // openInvoicesByCourseStudent / paidInvoicesByCourseStudent
     const openInvoicesByCourseStudent = {};
     const paidInvoicesByCourseStudent = {};
+    const invoiceSentByCourseStudent = {};
     for (const inv of allInvoices) {
+      if (['sent', 'paid'].includes(inv.status)) {
+        const byStudent = (invoiceSentByCourseStudent[inv.course_id] ||= {});
+        const sentAt = inv.sent_at || inv.issued_date;
+        if (
+          sentAt &&
+          (!byStudent[inv.student_id] || String(sentAt) > String(byStudent[inv.student_id]))
+        ) {
+          byStudent[inv.student_id] = sentAt;
+        }
+      }
       if (inv.status === 'paid') {
         const byStudent = (paidInvoicesByCourseStudent[inv.course_id] ||= {});
         (byStudent[inv.student_id] ||= []).push(inv);
@@ -240,8 +273,10 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const enriched = courses.map((course) => {
       const invByStudent = openInvoicesByCourseStudent[course.id] || {};
       const paidInvByStudent = paidInvoicesByCourseStudent[course.id] || {};
+      const confSentByStudent = confirmationSentByCourseStudent[course.id] || {};
       const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
+      const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
       return {
         ...course,
@@ -258,8 +293,10 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
               joined_at: enrolmentByStudent[id]?.joined_at ?? null,
               open_invoices: invByStudent[id] || [],
               paid_invoices: paidInvByStudent[id] || [],
+              confirmation_sent_at: confSentByStudent[id] || null,
               schedule_sent_at: schedSentByStudent[id] || null,
               certificate_sent_at: certSentByStudent[id] || null,
+              invoice_sent_at: invoiceSentByStudent[id] || null,
             };
           })
           .filter(Boolean),
