@@ -184,13 +184,25 @@ async function invoiceNumberExists(env, invoiceNumber) {
 
 async function updateInvoiceStatus(env, invoiceId, status) {
   if (!invoiceId) return;
+  const payload = status === 'sent' ? { status, sent_at: new Date().toISOString() } : { status };
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
     method: 'PATCH',
     headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    console.error(`Invoice status update failed for ${invoiceId}:`, await res.text());
+    const errorText = await res.text();
+    if (status === 'sent' && errorText.includes('sent_at')) {
+      const compatRes = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
+        method: 'PATCH',
+        headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+        body: JSON.stringify({ status }),
+      });
+      if (compatRes.ok) return;
+      console.error(`Invoice status update failed for ${invoiceId}:`, await compatRes.text());
+      return;
+    }
+    console.error(`Invoice status update failed for ${invoiceId}:`, errorText);
   }
 }
 

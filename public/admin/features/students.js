@@ -348,6 +348,7 @@ async function loadStudentsKeepingContext(
 }
 
 function renderStudentDetail(container, s) {
+  const fmtDate = (value) => new Date(value).toLocaleDateString('de-CH');
   const coursesHtml =
     s.courses && s.courses.length
       ? s.courses
@@ -439,6 +440,9 @@ function renderStudentDetail(container, s) {
   const requestFlag = s.pending_request_count
     ? `<span class="detail-request-flag">${esc(String(s.pending_request_count))} untreated request${s.pending_request_count === 1 ? '' : 's'}</span>`
     : '';
+  const intakeSentTag = s.intake_link_sent_at
+    ? `<span class="sent-tag">intake link sent · ${esc(fmtDate(s.intake_link_sent_at))}</span>`
+    : '';
 
   container.innerHTML = `
     ${breadcrumb}
@@ -474,7 +478,7 @@ function renderStudentDetail(container, s) {
         ? `<div class="detail-section">
              <p class="detail-meta">intake</p>
              <div class="intake-flag">
-               <span class="intake-flag-label">Form completed ${new Date(s.intake_completed_at).toLocaleDateString('de-CH')}</span>
+               <span class="intake-flag-label">Form completed ${fmtDate(s.intake_completed_at)}</span>
                <button class="save-btn" data-action="markIntakeSeen" data-args="${s.id}">mark as seen</button>
                <span class="detail-action-msg" id="intake-seen-msg-${s.id}"></span>
              </div>
@@ -489,6 +493,7 @@ function renderStudentDetail(container, s) {
           ? `<button class="save-btn" data-action="copyIntakeLink" data-args="${esc(s.access_token)}">copy intake link</button>`
           : ''
       }
+      ${intakeSentTag}
       <span class="detail-action-msg" id="intake-msg-${s.id}"></span>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
@@ -700,6 +705,14 @@ export async function sendIntakeLink(studentId, _btn) {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      if (body.intake_link_sent_at) {
+        currentStudentDetail = {
+          ...currentStudentDetail,
+          intake_link_sent_at: body.intake_link_sent_at,
+        };
+        const pane = document.getElementById('student-detail-panel');
+        if (pane) renderStudentDetail(pane, currentStudentDetail);
+      }
       const msgEl = document.getElementById('intake-msg-' + studentId);
       if (msgEl) {
         msgEl.textContent = 'sent';

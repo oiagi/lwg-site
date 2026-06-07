@@ -361,10 +361,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         if (!res.ok) {
           console.error(`Confirmation email failed for ${student.email}:`, await res.text());
         }
-        return { email: student.email, ok: res.ok };
+        return { email: student.email, student_id: student.id, ok: res.ok };
       } catch (err) {
         console.error(`Confirmation email error for ${student.email}:`, err?.message || err);
-        return { email: student.email, ok: false };
+        return { email: student.email, student_id: student.id, ok: false };
       }
     })
   );
@@ -373,6 +373,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const failed = results.length - sent;
 
   if (sent > 0) {
+    const sentAt = new Date().toISOString();
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
         method: 'PATCH',
@@ -380,10 +381,36 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           ...supabaseHeaders(SUPABASE_SERVICE_KEY),
           Prefer: 'return=minimal',
         },
-        body: JSON.stringify({ course_confirmation_sent_at: new Date().toISOString() }),
+        body: JSON.stringify({ course_confirmation_sent_at: sentAt }),
       });
     } catch (err) {
       console.error('Failed to record confirmation_sent_at:', err?.message || err);
+    }
+
+    const sentStudentIds = results.filter((r) => r.ok).map((r) => r.student_id);
+    if (sentStudentIds.length) {
+      const idFilter = sentStudentIds.map((id) => `student_id.eq.${id}`).join(',');
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${course_id}&or=(${idFilter})`,
+          {
+            method: 'PATCH',
+            headers: {
+              ...supabaseHeaders(SUPABASE_SERVICE_KEY),
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify({ confirmation_sent_at: sentAt }),
+          }
+        );
+        if (!res.ok) {
+          const errorText = await res.text();
+          if (!errorText.includes('confirmation_sent_at')) {
+            console.error('Failed to record enrolment confirmation_sent_at:', errorText);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to record enrolment confirmation_sent_at:', err?.message || err);
+      }
     }
   }
 
