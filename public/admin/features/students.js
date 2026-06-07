@@ -51,7 +51,7 @@ function attachStudentListControls() {
     sortEl,
     directionEl: dirEl,
     state: studentListState,
-    defaults: { sort: 'name', descendingSort: 'created_at' },
+    defaults: { sort: 'name' },
     onSearch: () => loadStudents(currentStudentFilter),
     onChange: () => loadStudents(currentStudentFilter),
   });
