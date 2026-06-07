@@ -60,6 +60,16 @@ function showErrorMessage(el, text) {
   el.classList.add('error-text', 'is-visible-inline');
 }
 
+function showAutosaveMessage(el, text, { error = false, hold = false } = {}) {
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('error-text', error);
+  el.classList.add('is-visible-inline');
+  if (!hold) {
+    setTimeout(() => el.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS);
+  }
+}
+
 export function getCurrentCourseFilter() {
   return currentCourseFilter;
 }
@@ -944,23 +954,29 @@ function renderCourses(courses) {
             </button>
             ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
           </p>
-          <div class="progress-row">
-            <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
-              class="level-input" placeholder="level" />
-            <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
+          <div class="progress-row participant-controls">
+            <label class="participant-inline-field">
+              <span>level</span>
+              <input id="level-${s.id}" type="text" value="${esc(s.current_level || '')}"
+                class="level-input" placeholder="level" data-autosave-level
+                data-course-id="${c.id}" data-student-id="${s.id}"
+                data-last-value="${esc(s.current_level || '')}" />
+            </label>
+            <label class="participant-inline-field participant-inline-field--date" for="${joinedInputId}">
+              <span>joined</span>
+              <input id="${joinedInputId}" type="date" value="${esc(dateInputValue(s.joined_at))}"
+                data-autosave-joined data-course-id="${c.id}" data-student-id="${s.id}"
+                data-last-value="${esc(dateInputValue(s.joined_at))}">
+            </label>
             ${removeAction}
-            <span class="saved-msg" id="student-saved-${s.id}">saved</span>
-          </div>
-          <div class="enrolment-settings-row">
-            <label for="${joinedInputId}">Joined</label>
-            <input id="${joinedInputId}" type="date" value="${esc(dateInputValue(s.joined_at))}">
-            <button class="save-btn secondary-btn" data-action="saveEnrolmentSettings"
-              data-args="${c.id},${s.id}">save</button>
-            <span class="saved-msg" id="enrolment-saved-${c.id}-${s.id}">saved</span>
+            <span class="saved-msg autosave-msg" id="student-saved-${c.id}-${s.id}">saved</span>
+            <span class="saved-msg autosave-msg" id="enrolment-saved-${c.id}-${s.id}">saved</span>
           </div>
         </div>
-        <div class="progress-side">
+        <div class="progress-communication">
           ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : '<p class="detail-muted">no course emails sent yet</p>'}
+        </div>
+        <div class="progress-invoices">
           ${invoiceBlock || '<p class="detail-muted">no open invoices</p>'}
         </div>
       </div>
@@ -1132,19 +1148,28 @@ export async function cancelSession(sessionId, courseId) {
   }
 }
 
-export async function saveStudent(studentId) {
-  const level = document.getElementById('level-' + studentId)?.value || '';
+export async function saveStudent(studentId, sourceEl) {
+  const levelInput = sourceEl?.matches?.('[data-autosave-level]')
+    ? sourceEl
+    : document.getElementById('level-' + studentId);
+  const level = levelInput?.value || '';
+  const courseId = levelInput?.dataset.courseId;
+  const msg =
+    (courseId && document.getElementById(`student-saved-${courseId}-${studentId}`)) ||
+    document.getElementById('student-saved-' + studentId);
+  if (msg) showAutosaveMessage(msg, 'saving...', { hold: true });
   try {
     const res = await apiFetch('/api/update-student', {
       method: 'PATCH',
       body: { student_id: studentId, current_level: level },
     });
-    if (res.ok) {
-      const msg = document.getElementById('student-saved-' + studentId);
-      if (msg) showMessage(msg, 'saved');
-    }
+    if (!res.ok) throw new Error('Could not save student.');
+    if (msg) showMessage(msg, 'saved');
+    return true;
   } catch (err) {
     console.error('Save student error:', err);
+    if (msg) showAutosaveMessage(msg, 'Error: ' + err.message, { error: true });
+    return false;
   }
 }
 
@@ -1156,6 +1181,8 @@ export async function saveEnrolmentSettings(courseId, studentId, btn) {
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'saving...';
+  } else if (msg) {
+    showAutosaveMessage(msg, 'saving...', { hold: true });
   }
 
   try {
@@ -1173,8 +1200,10 @@ export async function saveEnrolmentSettings(courseId, studentId, btn) {
     document.getElementById('course-detail-' + courseId)?.classList.add('open');
     const updatedMsg = document.getElementById(`enrolment-saved-${courseId}-${studentId}`);
     if (updatedMsg) showMessage(updatedMsg, 'saved');
+    return true;
   } catch (err) {
     if (msg) showErrorMessage(msg, 'Error: ' + err.message);
+    return false;
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -1182,6 +1211,49 @@ export async function saveEnrolmentSettings(courseId, studentId, btn) {
     }
   }
 }
+
+async function autosaveParticipantField(input) {
+  if (!input || input.dataset.saving === 'true') return;
+  const value = input.value || '';
+  if (value === (input.dataset.lastValue || '')) return;
+
+  input.dataset.saving = 'true';
+  input.disabled = true;
+  try {
+    let saved = false;
+    if (input.matches('[data-autosave-level]')) {
+      saved = await saveStudent(input.dataset.studentId, input);
+    } else if (input.matches('[data-autosave-joined]')) {
+      saved = await saveEnrolmentSettings(input.dataset.courseId, input.dataset.studentId);
+    }
+    if (saved) input.dataset.lastValue = value;
+  } finally {
+    input.disabled = false;
+    delete input.dataset.saving;
+  }
+}
+
+document.addEventListener(
+  'blur',
+  (e) => {
+    const input = e.target.closest('[data-autosave-level], [data-autosave-joined]');
+    if (input) autosaveParticipantField(input);
+  },
+  true
+);
+
+document.addEventListener('change', (e) => {
+  const input = e.target.closest('[data-autosave-joined]');
+  if (input) autosaveParticipantField(input);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const input = e.target.closest('[data-autosave-level], [data-autosave-joined]');
+  if (!input) return;
+  e.preventDefault();
+  autosaveParticipantField(input);
+});
 
 export async function logSession(sessionId, courseId) {
   try {
