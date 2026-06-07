@@ -18,6 +18,15 @@ let allCoursesForLink = [];
 let linkCourseSearchTimeout = null;
 let linkCourseStatusFilter = 'active';
 
+function getSiteOrigin() {
+  return window.location.origin || 'https://learningwithgioia.ch';
+}
+
+function buildCompanyIntakeUrl(company) {
+  if (!company?.intake_code) return '';
+  return `${getSiteOrigin()}/intake.html?company=${encodeURIComponent(company.intake_code)}`;
+}
+
 /* ── Load + render list ────────────────────────────────────────────── */
 
 export async function loadCompanies() {
@@ -82,11 +91,18 @@ function renderCompanyDetail(c) {
   const pane = document.getElementById('company-detail-panel');
   if (!pane) return;
   pane.className = '';
+  const fmtDate = (value) => new Date(value).toLocaleDateString('de-CH');
 
   const studentRows = c.students.length
     ? c.students
-        .map(
-          (s) => `
+        .map((s) => {
+          const bookingCodeSentTag = s.booking_code_sent_at
+            ? `<span class="sent-tag">booking code sent · ${esc(fmtDate(s.booking_code_sent_at))}</span>`
+            : '';
+          const intakeLinkSentTag = s.intake_link_sent_at
+            ? `<span class="sent-tag">intake sent · ${esc(fmtDate(s.intake_link_sent_at))}</span>`
+            : '';
+          return `
         <div class="company-student-row-wrap">
           <label class="cs-recipient-row company-student-row">
             <input type="checkbox" class="company-student-cb" data-student-id="${esc(s.id)}"
@@ -95,17 +111,20 @@ function renderCompanyDetail(c) {
                    ${s.email ? 'checked' : 'disabled'}>
             <span class="cs-recipient-name">${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}</span>
             <span class="cs-recipient-email">${s.email ? '&lt;' + esc(s.email) + '&gt;' : '<span class="detail-muted">no email</span>'}</span>
+            ${bookingCodeSentTag}
+            ${intakeLinkSentTag}
           </label>
           <button class="inline-link-btn company-remove-student-btn"
                   data-action="removeStudentFromCompany"
                   data-args="${esc(String(s.id))},${esc(String(c.id))}">remove</button>
-        </div>`
-        )
+        </div>`;
+        })
         .join('')
     : '<p class="detail-muted">No students linked to this company yet.</p>';
 
-  const courseRows = (c.courses || []).length
-    ? (c.courses || [])
+  const visibleCourses = (c.courses || []).filter((cr) => cr.status === 'active');
+  const courseRows = visibleCourses.length
+    ? visibleCourses
         .map(
           (cr) => `
         <div class="company-student-row-wrap">
@@ -121,7 +140,7 @@ function renderCompanyDetail(c) {
         </div>`
         )
         .join('')
-    : '<p class="detail-muted">No courses linked to this company yet.</p>';
+    : '<p class="detail-muted">No active courses linked to this company yet.</p>';
 
   pane.innerHTML = `
     <div class="detail-header">
@@ -146,6 +165,23 @@ function renderCompanyDetail(c) {
         <span class="detail-action-msg" id="company-code-msg"></span>
       </div>
       ${c.booking_code ? `<p class="label-hint mt-small">Deep-link: /group-courses?code=${esc(c.booking_code)}</p>` : ''}
+    </div>
+
+    <div class="detail-section">
+      <p class="detail-meta">Company intake link</p>
+      ${
+        c.intake_code
+          ? `<div class="company-link-tools">
+              <input type="text" id="company-intake-link" class="list-search company-link-input"
+                     value="${esc(buildCompanyIntakeUrl(c))}" readonly>
+              <button class="save-btn" data-action="copyCompanyIntakeLink" data-args="${esc(c.id)}">copy</button>
+              <button class="secondary-btn" data-action="openSendCompanyIntakeLink" data-args="${esc(c.id)}">send to students</button>
+              <a class="inline-link-btn" href="${esc(buildCompanyIntakeUrl(c))}" target="_blank" rel="noopener">open</a>
+              <span class="detail-action-msg" id="company-intake-msg"></span>
+            </div>
+            <p class="label-hint mt-small">New students can use this link to create their own student record under ${esc(c.name)}.</p>`
+          : '<p class="detail-muted">Run the company intake-code migration to enable this link.</p>'
+      }
     </div>
 
     <div class="detail-section">
@@ -317,10 +353,104 @@ export function openSendBookingCode(id) {
         });
         const result = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+        const sentAt = result.sent_at || new Date().toISOString();
+        const sentIds = new Set(
+          (result.recipients || []).filter((r) => r.ok).map((r) => String(r.id))
+        );
+        const idx = companies.findIndex((c) => String(c.id) === String(id));
+        if (idx !== -1) {
+          companies[idx].students = (companies[idx].students || []).map((student) =>
+            sentIds.has(String(student.id)) ? { ...student, booking_code_sent_at: sentAt } : student
+          );
+          renderCompanyDetail(companies[idx]);
+        }
       },
     });
   } catch (err) {
     console.error('openSendBookingCode failed:', err);
+    alert('Could not open send dialog. Please try again.');
+  }
+}
+
+export async function copyCompanyIntakeLink(id) {
+  const company = companies.find((c) => String(c.id) === String(id));
+  const url = buildCompanyIntakeUrl(company);
+  const msg = document.getElementById('company-intake-msg');
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    if (msg) {
+      msg.textContent = 'copied';
+      msg.classList.add('is-visible-inline');
+      setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS);
+    }
+  } catch {
+    const input = document.getElementById('company-intake-link');
+    input?.select();
+    document.execCommand('copy');
+    if (msg) {
+      msg.textContent = 'copied';
+      msg.classList.add('is-visible-inline');
+      setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS);
+    }
+  }
+}
+
+export function openSendCompanyIntakeLink(id) {
+  const company = companies.find((c) => String(c.id) === String(id));
+  const url = buildCompanyIntakeUrl(company);
+  if (!url) return;
+
+  const recipients = (company.students || [])
+    .filter((student) => student.email)
+    .map((student) => ({
+      id: student.id,
+      name: [student.first_name, student.last_name].filter(Boolean).join(' '),
+      email: student.email,
+      selected: true,
+    }));
+
+  if (!recipients.length) {
+    alert('No linked students with email addresses.');
+    return;
+  }
+
+  try {
+    openConfirmSend({
+      title: 'send company intake link',
+      recipients,
+      subject: 'Please complete your student intake form · learning with gioia',
+      contentHtml: `
+        <p>Hello [first name] :)<br>
+        Please fill in your details so we can create or update your student record for ${esc(company.name)}.<br>
+        <a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
+        <p style="color:#888;font-size:12px;margin-top:8px;">Each recipient receives the same company intake link.</p>`,
+      languageOptions: [{ value: 'de' }, { value: 'en' }],
+      defaultLanguage: 'de',
+      selectableRecipients: true,
+      onConfirm: async ({ language, recipients }) => {
+        const studentIds = recipients.map((r) => r.id);
+        const res = await apiFetch('/api/send-company-intake-link', {
+          method: 'POST',
+          body: { company_id: id, student_ids: studentIds, language },
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+        const sentAt = result.sent_at || new Date().toISOString();
+        const sentIds = new Set(
+          (result.recipients || []).filter((r) => r.ok).map((r) => String(r.id))
+        );
+        const idx = companies.findIndex((c) => String(c.id) === String(id));
+        if (idx !== -1) {
+          companies[idx].students = (companies[idx].students || []).map((student) =>
+            sentIds.has(String(student.id)) ? { ...student, intake_link_sent_at: sentAt } : student
+          );
+          renderCompanyDetail(companies[idx]);
+        }
+      },
+    });
+  } catch (err) {
+    console.error('openSendCompanyIntakeLink failed:', err);
     alert('Could not open send dialog. Please try again.');
   }
 }
@@ -683,6 +813,7 @@ function renderLinkCourseResults(q) {
   const term = q.trim().toLowerCase();
   const filtered = allCoursesForLink
     .filter((cr) => !linkedIds.has(String(cr.id)))
+    .filter((cr) => !['cancelled', 'completed'].includes(cr.status))
     .filter((cr) => linkCourseStatusFilter === 'all' || cr.status === linkCourseStatusFilter)
     .filter(
       (cr) =>

@@ -835,7 +835,13 @@ function renderCourses(courses) {
 
   list.innerHTML = courses
     .map((c) => {
-      const names = (c.participant_names || []).map((n) => esc(n)).join(', ') || '—';
+      const enrolledNames = (c.students || [])
+        .map((s) => [s.first_name, s.last_name].filter(Boolean).join(' ') || s.email)
+        .filter(Boolean);
+      const names =
+        (enrolledNames.length ? enrolledNames : c.participant_names || [])
+          .map((n) => esc(n))
+          .join(', ') || '—';
       const done = c.sessions_completed || 0;
       const total = c.sessions_total;
       const remaining = total ? total - done : null;
@@ -908,6 +914,11 @@ function renderCourses(courses) {
               .filter(Boolean)
               .join('');
             const joinedInputId = `joined-${c.id}-${s.id}`;
+            const removeAction =
+              c.status === 'completed'
+                ? '<span class="detail-muted remove-enrolment-note">retained for completed course</span>'
+                : `<button class="remove-enrolment-btn" data-action="removeStudentFromCourse"
+            data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>`;
             return `
       <div class="progress-block">
         <p class="progress-name">
@@ -921,8 +932,7 @@ function renderCourses(courses) {
           <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
             class="level-input" placeholder="level" />
           <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
-          <button class="remove-enrolment-btn" data-action="removeStudentFromCourse"
-            data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>
+          ${removeAction}
           <span class="saved-msg" id="student-saved-${s.id}">saved</span>
         </div>
         <div class="enrolment-settings-row">
@@ -1979,10 +1989,10 @@ export async function submitAddParticipant() {
       throw new Error(e.error || 'Failed');
     }
     btn.textContent = 'added';
-    setTimeout(() => {
-      closeAddParticipantModal();
-      loadCourses(currentCourseFilter);
-    }, 1000);
+    const courseId = addParticipantCourseId;
+    closeAddParticipantModal();
+    await loadCourses(currentCourseFilter);
+    document.getElementById('course-detail-' + courseId)?.classList.add('open');
   } catch (err) {
     msgEl.textContent = 'Error: ' + err.message;
     msgEl.classList.add('is-visible-block');
@@ -1994,6 +2004,18 @@ export async function submitAddParticipant() {
 /* ── Email: course confirmation + schedule updates ───────────────── */
 function studentDisplayName(s) {
   return [s.first_name, s.last_name].filter(Boolean).join(' ') || '—';
+}
+
+async function refreshCourseInCache(courseId) {
+  const res = await apiFetch('/api/get-courses?status=all');
+  if (!res.ok) throw new Error('Could not refresh course data.');
+  const courses = await res.json();
+  const fresh = courses.find((c) => String(c.id) === String(courseId));
+  if (!fresh) throw new Error('Course not found. Please reload and try again.');
+  const idx = coursesCache.findIndex((c) => String(c.id) === String(courseId));
+  if (idx >= 0) coursesCache[idx] = fresh;
+  else coursesCache.push(fresh);
+  return fresh;
 }
 
 function upcomingSessions(course) {
@@ -2010,9 +2032,15 @@ function fmtScheduleSession(session, course) {
 }
 
 export async function sendCourseConfirmation(courseId) {
-  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  let course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
     alert('Course not found. Please reload and try again.');
+    return;
+  }
+  try {
+    course = await refreshCourseInCache(courseId);
+  } catch (err) {
+    alert(err.message || 'Could not refresh course data.');
     return;
   }
   const recipients = (course.students || [])
@@ -2091,9 +2119,15 @@ export function openCertificateModal(courseId) {
 }
 
 export async function openScheduleModal(courseId) {
-  const course = coursesCache.find((c) => String(c.id) === String(courseId));
+  let course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
     alert('Course not found. Please reload and try again.');
+    return;
+  }
+  try {
+    course = await refreshCourseInCache(courseId);
+  } catch (err) {
+    alert(err.message || 'Could not refresh course data.');
     return;
   }
   const recipients = (course.students || [])

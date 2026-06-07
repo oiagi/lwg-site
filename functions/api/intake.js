@@ -146,7 +146,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       'billing_name',
       'billing_gender',
       'billing_email',
-      'billing_phone',
       'billing_street',
       'billing_street_number',
       'billing_postcode',

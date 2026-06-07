@@ -23,12 +23,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
-  const [compRes, studRes, coursesRes] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/companies?select=id,name,booking_code&order=name.asc`, {
-      headers: H,
-    }),
+  const [initialCompRes, initialStudRes, coursesRes] = await Promise.all([
     fetch(
-      `${SUPABASE_URL}/rest/v1/students?select=id,first_name,last_name,email,company_id&company_id=not.is.null&order=last_name.asc,first_name.asc`,
+      `${SUPABASE_URL}/rest/v1/companies?select=id,name,booking_code,intake_code&order=name.asc`,
+      {
+        headers: H,
+      }
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/students?select=id,first_name,last_name,email,company_id,booking_code_sent_at,intake_link_sent_at&company_id=not.is.null&order=last_name.asc,first_name.asc`,
       { headers: H }
     ),
     fetch(
@@ -37,9 +40,26 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     ),
   ]);
 
+  let compRes = initialCompRes;
+  if (!compRes.ok && compRes.status === 400) {
+    compRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/companies?select=id,name,booking_code&order=name.asc`,
+      {
+        headers: H,
+      }
+    );
+  }
+
   if (!compRes.ok) return errorResponse('Database error loading companies');
 
   const companies = await compRes.json();
+  let studRes = initialStudRes;
+  if (!studRes.ok && studRes.status === 400) {
+    studRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/students?select=id,first_name,last_name,email,company_id&company_id=not.is.null&order=last_name.asc,first_name.asc`,
+      { headers: H }
+    );
+  }
   const students = studRes.ok ? await studRes.json() : [];
   const allCourses = coursesRes.ok ? await coursesRes.json() : [];
 
@@ -50,6 +70,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       first_name: s.first_name,
       last_name: s.last_name,
       email: s.email,
+      booking_code_sent_at: s.booking_code_sent_at || null,
+      intake_link_sent_at: s.intake_link_sent_at || null,
     });
   }
 

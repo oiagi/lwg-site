@@ -39,6 +39,17 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const enrolments = await enrolmentRes.json();
   if (!enrolments.length) return errorResponse('Enrolment not found', 404);
 
+  const courseRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/courses?id=eq.${eq(course_id)}&select=id,status`,
+    { headers: H }
+  );
+  if (!courseRes.ok) return errorResponse('Could not verify course');
+  const courses = await courseRes.json();
+  if (!courses.length) return errorResponse('Course not found', 404);
+  if (courses[0].status === 'completed') {
+    return errorResponse('Students cannot be removed from completed courses', 409);
+  }
+
   const sessionsRes = await fetch(
     `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${eq(course_id)}&select=id`,
     { headers: H }

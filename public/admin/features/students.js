@@ -135,14 +135,12 @@ function courseSubLine(s) {
     const extra = s.pending_request_count > 1 ? ` +${s.pending_request_count - 1}` : '';
     return `<span class="request-subline">${esc(label)}${esc(extra)}</span>`;
   }
-  const activeCourses = (s.courses || []).filter(
-    (c) => c.status !== 'cancelled' && c.status !== 'completed'
-  );
-  const primary = activeCourses[0] || (s.courses && s.courses[0]);
+  const activeCourses = (s.courses || []).filter((c) => c.status === 'active');
+  const primary = activeCourses[0];
   if (primary) {
     const parts = [primary.course_code, primary.level, primary.course_type].filter(Boolean);
     const label = parts.join(' · ');
-    const extra = s.courses.length - 1 > 0 ? ` +${s.courses.length - 1}` : '';
+    const extra = activeCourses.length - 1 > 0 ? ` +${activeCourses.length - 1}` : '';
     return esc(label) + esc(extra);
   }
   const subject = esc(subjectLabel(s));
@@ -349,15 +347,17 @@ async function loadStudentsKeepingContext(
 
 function renderStudentDetail(container, s) {
   const fmtDate = (value) => new Date(value).toLocaleDateString('de-CH');
-  const coursesHtml =
-    s.courses && s.courses.length
-      ? s.courses
-          .map(
-            (c) =>
-              `<span class="course-tag">${esc(c.course_code) || '—'} · ${esc(c.course_type)} · <em>${esc(c.status)}</em></span>`
-          )
-          .join('')
-      : '<span class="detail-muted">no courses</span>';
+  const visibleCourses = (s.courses || []).filter((c) =>
+    ['active', 'completed'].includes(c.status)
+  );
+  const coursesHtml = visibleCourses.length
+    ? visibleCourses
+        .map(
+          (c) =>
+            `<button class="course-tag course-tag-link" data-action="openRequestCourse" data-args="${esc(c.id)}">${esc(c.course_code) || '—'} · ${esc(c.course_type)} · <em>${esc(c.status)}</em></button>`
+        )
+        .join('')
+    : '<span class="detail-muted">no courses</span>';
 
   const enrolButton = `<button class="save-btn mt-medium" data-action="openEnrolStudentModal" data-args="${esc(s.id)}">+ enrol in course</button>`;
 
@@ -443,6 +443,9 @@ function renderStudentDetail(container, s) {
   const intakeSentTag = s.intake_link_sent_at
     ? `<span class="sent-tag">intake link sent · ${esc(fmtDate(s.intake_link_sent_at))}</span>`
     : '';
+  const bookingCodeSentTag = s.booking_code_sent_at
+    ? `<span class="sent-tag">booking code sent · ${esc(fmtDate(s.booking_code_sent_at))}</span>`
+    : '';
 
   container.innerHTML = `
     ${breadcrumb}
@@ -494,6 +497,7 @@ function renderStudentDetail(container, s) {
           : ''
       }
       ${intakeSentTag}
+      ${bookingCodeSentTag}
       <span class="detail-action-msg" id="intake-msg-${s.id}"></span>
       <button class="delete-btn" data-action="deleteStudent" data-args="${s.id}">delete</button>
     </div>
@@ -785,7 +789,7 @@ export function copyIntakeLink(token, btn) {
 // from the course record; open charges are the sum of the student's unpaid
 // invoices linked to that course.
 function renderAdminSection(s) {
-  const courses = s.courses || [];
+  const courses = (s.courses || []).filter((c) => c.status === 'active');
   const invoices = s.invoices || [];
 
   const openByCourse = {};
