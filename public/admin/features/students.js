@@ -526,29 +526,42 @@ function requestCourseLabel(enquiry) {
   );
 }
 
+function requestAgeDays(enquiry) {
+  if (!enquiry.created_at) return null;
+  const created = new Date(enquiry.created_at);
+  if (Number.isNaN(created.getTime())) return null;
+  return Math.floor((Date.now() - created.getTime()) / (24 * 60 * 60 * 1000));
+}
+
 function renderRequestSection(s) {
   const enquiries = s.enquiries || [];
   if (!enquiries.length) return '<p class="detail-muted">No enquiries or booking requests yet.</p>';
 
-  return `
-    <div class="student-request-list">
-      ${enquiries
-        .map((enquiry) => {
-          const created = enquiry.created_at
-            ? new Date(enquiry.created_at).toLocaleDateString('de-CH')
-            : '—';
-          const courseLink = enquiry.course_id
-            ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
-            : `<span class="detail-muted">${esc(requestCourseLabel(enquiry))}</span>`;
-          const actions =
-            enquiry.untreated && enquiry.status === 'pending_course_booking' && enquiry.course_id
-              ? `<div class="student-request-actions">
+  const untreated = enquiries.filter((enquiry) => enquiry.untreated);
+  const history = enquiries.filter((enquiry) => !enquiry.untreated);
+  const renderRows = (rows) =>
+    rows
+      .map((enquiry) => {
+        const created = enquiry.created_at
+          ? new Date(enquiry.created_at).toLocaleDateString('de-CH')
+          : '—';
+        const ageDays = requestAgeDays(enquiry);
+        const isStale = enquiry.untreated && ageDays !== null && ageDays >= 14;
+        const staleBadge = isStale
+          ? `<span class="request-stale-badge">${esc(String(ageDays))}d open</span>`
+          : '';
+        const courseLink = enquiry.course_id
+          ? `<button class="student-request-course" data-action="openRequestCourse" data-args="${esc(enquiry.course_id)}">${esc(requestCourseLabel(enquiry))}</button>`
+          : `<span class="detail-muted">${esc(requestCourseLabel(enquiry))}</span>`;
+        const actions =
+          enquiry.untreated && enquiry.status === 'pending_course_booking' && enquiry.course_id
+            ? `<div class="student-request-actions">
                    <button class="save-btn" data-action="handleStudentRequestBooking" data-args="${esc(enquiry.id)},approve,${esc(enquiry.course_id)},${esc(s.id)}">approve</button>
                    <button class="delete-btn" data-action="handleStudentRequestBooking" data-args="${esc(enquiry.id)},decline,${esc(enquiry.course_id)},${esc(s.id)}">decline</button>
                    <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
                  </div>`
-              : enquiry.untreated
-                ? `<div class="student-request-actions">
+            : enquiry.untreated
+              ? `<div class="student-request-actions">
                      ${
                        enquiry.status === 'pending_group_slot_booking'
                          ? `<a class="save-btn" href="/admin/pages/course-new.html?enquiry_id=${encodeURIComponent(enquiry.id)}">create course</a>`
@@ -557,18 +570,32 @@ function renderRequestSection(s) {
                      <button class="save-btn secondary-btn" data-action="markStudentEnquiryTreated" data-args="${esc(enquiry.id)},${esc(s.id)}">mark treated</button>
                      <span class="saved-msg" id="student-request-msg-${esc(enquiry.id)}">saved</span>
                    </div>`
-                : '';
-          return `
-            <div class="student-request-row${enquiry.untreated ? ' untreated' : ''}">
+              : '';
+        return `
+            <div class="student-request-row${enquiry.untreated ? ' untreated' : ' treated'}${isStale ? ' stale' : ''}">
               <span class="request-dot ${esc(enquiry.status || '')}"></span>
               <div>
-                <p class="student-request-title">${esc(requestLabel(enquiry))}</p>
+                <p class="student-request-title">${esc(requestLabel(enquiry))}${staleBadge}</p>
                 <p class="student-request-meta">${esc(created)} · <span class="enq-status ${esc(enquiry.status || '')}">${esc(enquiry.status || '—')}</span></p>
               </div>
               <div class="student-request-target">${courseLink}${actions}</div>
             </div>`;
-        })
-        .join('')}
+      })
+      .join('');
+
+  return `
+    ${
+      untreated.length
+        ? `<p class="student-request-hint">Resolve open requests by enrolling, creating a course, approving/declining bookings, or marking stale enquiries treated.</p>`
+        : ''
+    }
+    <div class="student-request-list">
+      ${renderRows(untreated)}
+      ${
+        history.length
+          ? `<p class="student-request-history-label">history</p>${renderRows(history)}`
+          : ''
+      }
     </div>`;
 }
 

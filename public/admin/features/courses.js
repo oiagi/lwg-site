@@ -903,6 +903,20 @@ function renderCourses(courses) {
             const invoiceBlock = openInvoices
               ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
               : '';
+            const paidInvoiceTags = (s.paid_invoices || [])
+              .slice()
+              .sort((a, b) =>
+                String(b.issued_date || '').localeCompare(String(a.issued_date || ''))
+              )
+              .map((inv) => {
+                const label = inv.invoice_number
+                  ? `invoice paid · ${esc(inv.invoice_number)}`
+                  : inv.issued_date
+                    ? `invoice paid · ${esc(fmtDate(inv.issued_date))}`
+                    : 'invoice paid';
+                return `<span class="sent-tag paid-tag">${label}</span>`;
+              })
+              .join('');
             const sentTags = [
               s.schedule_sent_at
                 ? `<span class="sent-tag">schedule sent · ${esc(fmtDate(s.schedule_sent_at))}</span>`
@@ -910,6 +924,7 @@ function renderCourses(courses) {
               s.certificate_sent_at
                 ? `<span class="sent-tag">certificate sent · ${esc(fmtDate(s.certificate_sent_at))}</span>`
                 : '',
+              paidInvoiceTags,
             ]
               .filter(Boolean)
               .join('');
@@ -921,29 +936,33 @@ function renderCourses(courses) {
             data-args="${c.id},${s.id}" data-student-name="${esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'this student')}">remove from course</button>`;
             return `
       <div class="progress-block">
-        <p class="progress-name">
-          <button class="student-link" data-action="selectStudentFromCourse"
-            data-args="${s.id},${c.id},${esc(c.course_code || '')}">
-            ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
-          </button>
-          ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
-        </p>
-        <div class="progress-row">
-          <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
-            class="level-input" placeholder="level" />
-          <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
-          ${removeAction}
-          <span class="saved-msg" id="student-saved-${s.id}">saved</span>
+        <div class="progress-main">
+          <p class="progress-name">
+            <button class="student-link" data-action="selectStudentFromCourse"
+              data-args="${s.id},${c.id},${esc(c.course_code || '')}">
+              ${esc([s.first_name, s.last_name].filter(Boolean).join(' ')) || '—'}
+            </button>
+            ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
+          </p>
+          <div class="progress-row">
+            <input id="level-${s.id}" type="text" value="${s.current_level || ''}"
+              class="level-input" placeholder="level" />
+            <button class="save-btn" data-action="saveStudent" data-args="${s.id}">save</button>
+            ${removeAction}
+            <span class="saved-msg" id="student-saved-${s.id}">saved</span>
+          </div>
+          <div class="enrolment-settings-row">
+            <label for="${joinedInputId}">Joined</label>
+            <input id="${joinedInputId}" type="date" value="${esc(dateInputValue(s.joined_at))}">
+            <button class="save-btn secondary-btn" data-action="saveEnrolmentSettings"
+              data-args="${c.id},${s.id}">save</button>
+            <span class="saved-msg" id="enrolment-saved-${c.id}-${s.id}">saved</span>
+          </div>
         </div>
-        <div class="enrolment-settings-row">
-          <label for="${joinedInputId}">Joined</label>
-          <input id="${joinedInputId}" type="date" value="${esc(dateInputValue(s.joined_at))}">
-          <button class="save-btn secondary-btn" data-action="saveEnrolmentSettings"
-            data-args="${c.id},${s.id}">save</button>
-          <span class="saved-msg" id="enrolment-saved-${c.id}-${s.id}">saved</span>
+        <div class="progress-side">
+          ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : '<p class="detail-muted">no course emails sent yet</p>'}
+          ${invoiceBlock || '<p class="detail-muted">no open invoices</p>'}
         </div>
-        ${sentTags ? `<div class="sent-tag-row">${sentTags}</div>` : ''}
-        ${invoiceBlock}
       </div>
     `;
           })
@@ -965,9 +984,11 @@ function renderCourses(courses) {
         <div class="course-summary" data-action="toggleCourse" data-args="${c.id}">
           <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
-          <span class="course-sessions">${sessLine}${rebookFlag}</span>
-          <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown is-hidden" id="status-drop-${c.id}">${dropItems}</ul></div>
-          <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
+          <div class="course-summary-actions">
+            <span class="course-sessions">${sessLine}${rebookFlag}</span>
+            <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown is-hidden" id="status-drop-${c.id}">${dropItems}</ul></div>
+            <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
+          </div>
         </div>
         <div class="course-detail" id="course-detail-${c.id}">
           <div class="detail-grid detail-grid--gap-lg">

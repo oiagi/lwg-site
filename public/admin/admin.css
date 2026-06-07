@@ -380,21 +380,27 @@ button.submit:hover {
   background: rgba(255, 255, 255, 0.5);
 }
 .course-summary {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(86px, auto) minmax(0, 1fr) auto;
   align-items: baseline;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 .course-code {
   font-size: 0.9rem;
   letter-spacing: 0.08em;
   color: #1a1a1a;
-  min-width: 100px;
 }
 .course-participants {
   font-size: 0.85rem;
   color: #555;
-  flex: 1;
+  min-width: 0;
+}
+.course-summary-actions {
+  display: grid;
+  grid-template-columns: auto minmax(78px, auto) auto;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: end;
 }
 .course-sessions {
   font-size: 0.78rem;
@@ -660,7 +666,6 @@ button.submit:hover {
   color: #1a1a1a;
   padding: 0.2rem 0.6rem;
   cursor: pointer;
-  margin-left: auto;
   transition:
     background 0.15s,
     color 0.15s;
@@ -2317,6 +2322,20 @@ html[data-device='mobile'] .avail-day {
   flex-direction: column;
   border-top: 1px solid var(--border-soft);
 }
+.student-request-hint {
+  margin: -0.2rem 0 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.student-request-history-label {
+  padding: 0.7rem 0 0.35rem;
+  color: var(--text-faint);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
 .student-request-row {
   display: grid;
   grid-template-columns: 12px 1fr minmax(150px, auto);
@@ -2327,6 +2346,12 @@ html[data-device='mobile'] .avail-day {
 }
 .student-request-row.untreated {
   background: rgba(192, 57, 43, 0.04);
+}
+.student-request-row.stale {
+  background: rgba(230, 126, 34, 0.08);
+}
+.student-request-row.treated {
+  opacity: 0.68;
 }
 .request-dot {
   width: 8px;
@@ -2349,6 +2374,18 @@ html[data-device='mobile'] .avail-day {
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--text);
+}
+.request-stale-badge {
+  display: inline-flex;
+  margin-left: 0.45rem;
+  padding: 0.08rem 0.35rem;
+  background: rgba(230, 126, 34, 0.14);
+  color: #b65d0c;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.08rem;
 }
 .student-request-meta {
   margin-top: 0.15rem;
@@ -2513,6 +2550,11 @@ html[data-device='mobile'] .avail-day {
   border-radius: 2px;
   letter-spacing: 0.02em;
 }
+.paid-tag {
+  color: #146c43;
+  background: #dff3e7;
+  font-weight: 600;
+}
 
 /* ── Open invoices list inside student progress block ─────────────── */
 .course-invoice-list {
@@ -2558,9 +2600,32 @@ html[data-device='mobile'] .avail-day {
 
 /* ── Student progress block (inside course detail) ────────────────── */
 .progress-block {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(300px, 0.9fr);
+  gap: 1rem 2rem;
+  align-items: start;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-soft);
+}
+.progress-main,
+.progress-side {
+  min-width: 0;
+}
+.progress-side {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: end;
+  color: var(--text-muted);
+  text-align: right;
+}
+.progress-side .sent-tag-row {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+.progress-side .course-invoice-list {
+  width: min(100%, 430px);
+  margin-top: 0;
 }
 .progress-name {
   font-size: 0.88rem;
@@ -3475,4 +3540,47 @@ html[data-device='mobile'] .cert-prev-footer {
 }
 .company-course-link:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 820px) {
+  .course-summary {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .course-summary-actions {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    justify-content: start;
+    justify-items: start;
+  }
+
+  .progress-block {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .progress-side {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .progress-side .sent-tag-row {
+    justify-content: flex-start;
+  }
+
+  .student-request-row {
+    grid-template-columns: 12px 1fr;
+  }
+
+  .student-request-target {
+    grid-column: 2;
+    justify-self: start;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .student-request-course {
+    text-align: left;
+  }
 }
