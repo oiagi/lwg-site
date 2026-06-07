@@ -13,20 +13,20 @@ import { supabaseHeaders, requireAdminAuth, errorResponse, withErrorHandling } f
 
 const DB_SORTS = {
   name: {
-    asc: 'last_name.asc,first_name.asc',
-    desc: 'last_name.desc,first_name.desc',
+    asc: 'first_name.asc,last_name.asc',
+    desc: 'first_name.desc,last_name.desc',
   },
   created_at: {
     asc: 'created_at.asc',
     desc: 'created_at.desc',
   },
   status: {
-    asc: 'status.asc,last_name.asc,first_name.asc',
-    desc: 'status.desc,last_name.asc,first_name.asc',
+    asc: 'status.asc,first_name.asc,last_name.asc',
+    desc: 'status.desc,first_name.asc,last_name.asc',
   },
   customer_reference: {
-    asc: 'customer_reference.asc,last_name.asc,first_name.asc',
-    desc: 'customer_reference.desc,last_name.asc,first_name.asc',
+    asc: 'customer_reference.asc,first_name.asc,last_name.asc',
+    desc: 'customer_reference.desc,first_name.asc,last_name.asc',
   },
 };
 
@@ -49,22 +49,68 @@ function getSort(searchParams) {
 }
 
 function compareText(a, b, dir) {
+  const aText = String(a || '').trim();
+  const bText = String(b || '').trim();
+  if (!aText && !bText) return 0;
+  if (!aText) return 1;
+  if (!bText) return -1;
   return (
-    String(a || '').localeCompare(String(b || ''), undefined, {
+    aText.localeCompare(bText, undefined, {
       sensitivity: 'base',
       numeric: true,
     }) * (dir === 'desc' ? -1 : 1)
   );
 }
 
+function displayName(student) {
+  return [student.first_name, student.last_name].filter(Boolean).join(' ');
+}
+
+function compareStudentName(a, b, dir = 'asc') {
+  return (
+    compareText(displayName(a), displayName(b), dir) ||
+    compareText(a.first_name, b.first_name, dir) ||
+    compareText(a.last_name, b.last_name, dir)
+  );
+}
+
+function compareNumber(a, b, dir) {
+  const aNum = Number(a);
+  const bNum = Number(b);
+  const aValid = Number.isFinite(aNum);
+  const bValid = Number.isFinite(bNum);
+  if (!aValid && !bValid) return 0;
+  if (!aValid) return 1;
+  if (!bValid) return -1;
+  const delta = aNum - bNum;
+  return dir === 'desc' ? -delta : delta;
+}
+
+function compareDate(a, b, dir) {
+  const aTime = a ? new Date(a).getTime() : NaN;
+  const bTime = b ? new Date(b).getTime() : NaN;
+  return compareNumber(aTime, bTime, dir);
+}
+
 function sortEnrichedStudents(students, sort, dir) {
-  if (sort !== 'course_count') return students;
   return [...students].sort((a, b) => {
-    const delta = (a.course_count || 0) - (b.course_count || 0);
-    if (delta) return dir === 'desc' ? -delta : delta;
-    return (
-      compareText(a.last_name, b.last_name, 'asc') || compareText(a.first_name, b.first_name, 'asc')
-    );
+    if (sort === 'created_at') {
+      return compareDate(a.created_at, b.created_at, dir) || compareStudentName(a, b);
+    }
+    if (sort === 'status') {
+      const aStatus = a.status || (a.active === false ? 'inactive' : 'active');
+      const bStatus = b.status || (b.active === false ? 'inactive' : 'active');
+      return compareText(aStatus, bStatus, dir) || compareStudentName(a, b);
+    }
+    if (sort === 'customer_reference') {
+      return (
+        compareText(a.customer_reference, b.customer_reference, dir) || compareStudentName(a, b)
+      );
+    }
+    if (sort === 'course_count') {
+      return compareNumber(a.course_count, b.course_count, dir) || compareStudentName(a, b);
+    }
+    return compareStudentName(a, b, dir);
   });
 }
 
