@@ -359,7 +359,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (RESEND_API_KEY && body.email) {
     const lang = body.language === 'en' ? 'en' : 'de';
     const { subject, html } = buildIntakeConfirmationEmail(data, lang);
-    fetch('https://api.resend.com/emails', {
+    const confirmRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
@@ -369,7 +369,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         subject,
         html,
       }),
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error('[company-intake] confirmation fetch error:', err?.message);
+      return null;
+    });
+    if (confirmRes && !confirmRes.ok) {
+      console.error('[company-intake] confirmation email failed:', await confirmRes.text());
+    }
   }
 
   return jsonResponse({ student: rows[0] || null, company_name: company.name });

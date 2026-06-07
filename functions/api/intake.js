@@ -416,7 +416,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   </table>
 </body>
 </html>`;
-    fetch('https://api.resend.com/emails', {
+    await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
@@ -438,7 +438,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         last_name: update.last_name || student.last_name,
       };
       const { subject, html: confirmHtml } = buildIntakeConfirmationEmail(confirmData, lang);
-      fetch('https://api.resend.com/emails', {
+      const confirmRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
@@ -448,7 +448,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           subject,
           html: confirmHtml,
         }),
-      }).catch(() => {});
+      }).catch((err) => {
+        console.error('[intake] student confirmation fetch error:', err?.message);
+        return null;
+      });
+      if (confirmRes && !confirmRes.ok) {
+        console.error('[intake] student confirmation email failed:', await confirmRes.text());
+      }
     }
   }
 
