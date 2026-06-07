@@ -355,6 +355,56 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const rows = await res.json();
 
+  // Best-effort: notify admin of new company intake submission
+  if (RESEND_API_KEY) {
+    const studentName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'unknown';
+    const adminHtml = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
+        <tr><td style="background:#1a1a1a;padding:24px 40px;">
+          <p style="margin:0;color:#d6eaf8;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;">company intake form completed</p>
+        </td></tr>
+        <tr><td style="padding:32px 40px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;">Student</td>
+              <td style="padding:6px 0 6px 20px;font-size:13px;">${esc(studentName)}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;">Email</td>
+              <td style="padding:6px 0 6px 20px;font-size:13px;">${esc(body.email)}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#888;font-size:13px;">Company</td>
+              <td style="padding:6px 0 6px 20px;font-size:13px;">${esc(company.name)}</td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:16px 40px 28px;border-top:1px solid #eee;">
+          <a href="https://learningwithgioia.ch/admin/" style="font-size:12px;color:#888;">View in admin dashboard →</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [ADMIN_EMAIL],
+        reply_to: [ADMIN_EMAIL],
+        subject: `Company intake form completed — ${studentName} (${company.name})`,
+        html: adminHtml,
+      }),
+    }).catch(() => {});
+  }
+
   // Best-effort: send confirmation to student
   if (RESEND_API_KEY && body.email) {
     const lang = body.language === 'en' ? 'en' : 'de';
