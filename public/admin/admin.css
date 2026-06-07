@@ -937,17 +937,17 @@ button.course-status::after {
   background: #f4f8fb;
   border: 1px solid var(--border-soft);
   font-size: 0.85rem;
-  max-height: 9rem;
+  max-height: min(18rem, 34vh);
   overflow-y: auto;
 }
 .cs-recipients li {
-  padding: 0.22rem 0;
+  padding: 0.28rem 0;
   line-height: 1.4;
 }
 .cs-recipient-row {
   display: grid;
-  grid-template-columns: 2.2rem minmax(0, 1fr) minmax(0, 1.2fr);
-  column-gap: 1rem;
+  grid-template-columns: 1.25rem minmax(0, auto) minmax(0, 1fr);
+  column-gap: 0.45rem;
   align-items: center;
   cursor: pointer;
   color: var(--text);
@@ -965,11 +965,13 @@ button.course-status::after {
 }
 .cs-recipient-name {
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 .cs-recipient-email {
   color: var(--text-muted);
   font-size: 0.8rem;
   margin-left: 0;
+  overflow-wrap: anywhere;
 }
 .cs-subject {
   margin: 0;
@@ -1353,6 +1355,10 @@ button.course-status::after {
 .remove-enrolment-btn:disabled {
   cursor: progress;
   opacity: 0.65;
+}
+.remove-enrolment-note {
+  font-size: 0.72rem;
+  margin-left: auto;
 }
 .detail-action-msg {
   display: none;
@@ -2425,12 +2431,21 @@ html[data-device='mobile'] .avail-day {
 .course-tag {
   display: inline-block;
   background: rgba(26, 26, 26, 0.06);
+  border: 0;
   padding: 0.25rem 0.6rem;
   border-radius: 3px;
+  font-family: inherit;
   font-size: 0.78rem;
   font-weight: 500;
   color: var(--text);
   margin: 0.15rem 0.2rem 0.15rem 0;
+}
+.course-tag-link {
+  cursor: pointer;
+}
+.course-tag-link:hover {
+  background: rgba(26, 26, 26, 0.12);
+  text-decoration: underline;
 }
 
 /* ── Modal success message ────────────────────────────────────────── */
@@ -3326,6 +3341,18 @@ html[data-device='mobile'] .cert-prev-footer {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+.company-link-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.company-link-input {
+  flex: 1 1 340px;
+  min-width: 220px;
+  max-width: 620px;
+  font-family: monospace;
 }
 .company-student-list {
   display: flex;

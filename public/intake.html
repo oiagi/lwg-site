@@ -29,7 +29,7 @@
         Fields marked * are required.
       </p>
 
-      <p class="section-label">personal information</p>
+      <p class="section-label">student information</p>
 
       <div class="field-row">
         <div class="field">
@@ -127,16 +127,20 @@
       <div id="if-billing-section" class="is-hidden">
         <div class="field-row">
           <div class="field">
-            <label for="if-billing-name">billing name *</label>
-            <input type="text" id="if-billing-name" />
+            <label for="if-billing-first-name">billing first name *</label>
+            <input type="text" id="if-billing-first-name" />
           </div>
           <div class="field">
-            <label for="if-billing-email">billing email *</label>
-            <input type="email" id="if-billing-email" />
+            <label for="if-billing-last-name">billing last name *</label>
+            <input type="text" id="if-billing-last-name" />
           </div>
         </div>
 
         <div class="field-row">
+          <div class="field">
+            <label for="if-billing-email">billing email *</label>
+            <input type="email" id="if-billing-email" />
+          </div>
           <div class="field">
             <label for="if-billing-gender">billing salutation *</label>
             <select id="if-billing-gender" aria-describedby="err-if-billing-gender">
@@ -146,15 +150,13 @@
               <option value="other">Other</option>
             </select>
           </div>
+        </div>
+
+        <div class="field-row">
           <div class="field is-hidden" id="if-billing-gender-note-wrap">
             <label for="if-billing-gender-note">please specify *</label>
             <input type="text" id="if-billing-gender-note" autocomplete="off" />
           </div>
-        </div>
-
-        <div class="field">
-          <label for="if-billing-phone">billing phone *</label>
-          <input type="tel" id="if-billing-phone" />
         </div>
 
         <div class="field-row">

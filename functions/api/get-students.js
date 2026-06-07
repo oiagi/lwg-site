@@ -179,6 +179,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     enrolments.forEach((e) => {
       const c = coursesById[e.course_id];
       if (!c) return;
+      if (c.status !== 'active') return;
       (coursesByStudent[e.student_id] ||= []).push(c);
     });
 

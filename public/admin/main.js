@@ -40,7 +40,7 @@ import {
   togglePublicSlotsPanel,
   openEditGroupSlotModal,
   deleteGroupSlot,
-} from './features/courses.js?v=group-slot-ux-20260531';
+} from './features/courses.js?v=course-recipient-list-20260607';
 import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
 import {
   closeInvoiceModal,
@@ -94,6 +94,8 @@ import {
   saveCompanyName,
   saveCompanyCode,
   openSendBookingCode,
+  copyCompanyIntakeLink,
+  openSendCompanyIntakeLink,
   openNewCompanyModal,
   closeNewCompanyModal,
   submitNewCompany,
@@ -202,6 +204,8 @@ const actions = {
   saveCompanyName,
   saveCompanyCode,
   openSendBookingCode,
+  copyCompanyIntakeLink,
+  openSendCompanyIntakeLink,
   openNewCompanyModal,
   closeNewCompanyModal,
   submitNewCompany,

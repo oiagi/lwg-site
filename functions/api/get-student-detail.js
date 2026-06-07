@@ -73,6 +73,7 @@ const STUDENT_DETAIL_FIELD_LIST = [
   'consent_given',
   'consent_date',
   'intake_link_sent_at',
+  'booking_code_sent_at',
   'intake_completed_at',
   'intake_token',
   'intake_token_created_at',
@@ -81,7 +82,13 @@ const STUDENT_DETAIL_FIELD_LIST = [
 ];
 const STUDENT_DETAIL_FIELDS = STUDENT_DETAIL_FIELD_LIST.join(',');
 const STUDENT_DETAIL_FIELDS_COMPAT = STUDENT_DETAIL_FIELD_LIST.filter(
-  (field) => !['billing_gender', 'billing_gender_note', 'intake_link_sent_at'].includes(field)
+  (field) =>
+    ![
+      'billing_gender',
+      'billing_gender_note',
+      'intake_link_sent_at',
+      'booking_code_sent_at',
+    ].includes(field)
 ).join(',');
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
@@ -118,6 +125,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     student.billing_gender ??= null;
     student.billing_gender_note ??= null;
     student.intake_link_sent_at ??= null;
+    student.booking_code_sent_at ??= null;
 
     // ── Load enrolments + courses ───────────────────────────────────────
     const enrolRes = await fetch(

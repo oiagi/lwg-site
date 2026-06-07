@@ -545,8 +545,8 @@
           de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
         },
         '#intake-content > .section-label:nth-of-type(2)': {
-          en: 'personal information',
-          de: 'Persönliche Angaben',
+          en: 'student information',
+          de: 'Schülerangaben',
         },
         'label[for="if-first-name"]': { en: 'first name *', de: 'Vorname *' },
         'label[for="if-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -574,17 +574,26 @@
         },
         'label[for="if-ec-phone"]': { en: 'phone *', de: 'Telefon *' },
         'label[for="if-ec-email"]': { en: 'email *', de: 'E-Mail *' },
-        '#intake-content > .section-label:nth-of-type(4)': { en: 'billing', de: 'Rechnung' },
+        '#intake-content > .section-label:nth-of-type(4)': {
+          en: 'billing',
+          de: 'Rechnung',
+        },
         '.intake-checkbox span': {
           en: 'billing address differs from personal address',
           de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
         },
-        'label[for="if-billing-name"]': { en: 'billing name *', de: 'Rechnungsname *' },
+        'label[for="if-billing-first-name"]': {
+          en: 'billing first name *',
+          de: 'Rechnungsvorname *',
+        },
+        'label[for="if-billing-last-name"]': {
+          en: 'billing last name *',
+          de: 'Rechnungsnachname *',
+        },
         'label[for="if-billing-email"]': {
           en: 'billing email *',
           de: 'Rechnungs-E-Mail *',
         },
-        'label[for="if-billing-phone"]': { en: 'billing phone *', de: 'Rechnungstelefon *' },
         'label[for="if-billing-street"]': { en: 'street *', de: 'Strasse *' },
         'label[for="if-billing-street-number"]': { en: 'number *', de: 'Nummer *' },
         'label[for="if-billing-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },

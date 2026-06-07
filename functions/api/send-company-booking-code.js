@@ -180,15 +180,38 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         });
         if (!res.ok)
           console.error(`Booking code email failed for ${student.email}:`, await res.text());
-        return { email: student.email, ok: res.ok };
+        return { id: student.id, email: student.email, ok: res.ok };
       } catch (err) {
         console.error(`Booking code email error for ${student.email}:`, err?.message || err);
-        return { email: student.email, ok: false };
+        return { id: student.id, email: student.email, ok: false };
       }
     })
   );
 
   const sent = results.filter((r) => r.ok).length;
   const failed = results.length - sent;
-  return jsonResponse({ success: failed === 0, sent, failed, recipients: results });
+  const sentAt = sent ? new Date().toISOString() : null;
+  let tagSaved = false;
+  const sentIds = results.filter((r) => r.ok).map((r) => r.id);
+  if (sentAt && sentIds.length) {
+    const sentFilter = sentIds.map((id) => `id.eq.${id}`).join(',');
+    const tagRes = await fetch(`${SUPABASE_URL}/rest/v1/students?or=(${sentFilter})`, {
+      method: 'PATCH',
+      headers: { ...H, Prefer: 'return=minimal' },
+      body: JSON.stringify({ booking_code_sent_at: sentAt }),
+    });
+    tagSaved = tagRes.ok;
+    if (!tagRes.ok) {
+      console.error('Booking code sent tag update failed:', await tagRes.text());
+    }
+  }
+
+  return jsonResponse({
+    success: failed === 0,
+    sent,
+    failed,
+    sent_at: sentAt,
+    tag_saved: tagSaved,
+    recipients: results,
+  });
 }, 'send-company-booking-code');

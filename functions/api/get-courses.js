@@ -84,6 +84,10 @@ function sortEnrichedCourses(courses, sort, dir) {
   });
 }
 
+function enrolmentDisplayName(student) {
+  return [student.first_name, student.last_name].filter(Boolean).join(' ') || student.email || '';
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
 
@@ -278,28 +282,30 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
       const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
+      const students = [...(studentIdsByCourse[course.id] || [])]
+        .map((id) => {
+          const s = studentsById[id];
+          if (!s) return null;
+          return {
+            ...s,
+            invoice_lesson_count: enrolmentByStudent[id]?.invoice_lesson_count ?? null,
+            joined_at: enrolmentByStudent[id]?.joined_at ?? null,
+            open_invoices: invByStudent[id] || [],
+            paid_invoices: paidInvByStudent[id] || [],
+            confirmation_sent_at: confSentByStudent[id] || null,
+            schedule_sent_at: schedSentByStudent[id] || null,
+            certificate_sent_at: certSentByStudent[id] || null,
+            invoice_sent_at: invoiceSentByStudent[id] || null,
+          };
+        })
+        .filter(Boolean);
       return {
         ...course,
         company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
         sessions: sessionsByCourse[course.id] || [],
         pending_bookings: pendingBookingsByCourse[course.id] || [],
-        students: [...(studentIdsByCourse[course.id] || [])]
-          .map((id) => {
-            const s = studentsById[id];
-            if (!s) return null;
-            return {
-              ...s,
-              invoice_lesson_count: enrolmentByStudent[id]?.invoice_lesson_count ?? null,
-              joined_at: enrolmentByStudent[id]?.joined_at ?? null,
-              open_invoices: invByStudent[id] || [],
-              paid_invoices: paidInvByStudent[id] || [],
-              confirmation_sent_at: confSentByStudent[id] || null,
-              schedule_sent_at: schedSentByStudent[id] || null,
-              certificate_sent_at: certSentByStudent[id] || null,
-              invoice_sent_at: invoiceSentByStudent[id] || null,
-            };
-          })
-          .filter(Boolean),
+        participant_names: students.map(enrolmentDisplayName).filter(Boolean),
+        students,
       };
     });
 
