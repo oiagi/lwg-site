@@ -111,6 +111,7 @@ import {
   pickLinkCourse,
   confirmLinkCourse,
   unlinkCourseFromCompany,
+  navigateToCourse,
 } from './features/companies.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
@@ -221,6 +222,7 @@ const actions = {
   pickLinkCourse,
   confirmLinkCourse,
   unlinkCourseFromCompany,
+  navigateToCourse,
   // Tab switching
   switchTab,
 };

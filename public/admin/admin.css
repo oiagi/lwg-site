@@ -3415,6 +3415,16 @@ html[data-device='mobile'] .cert-prev-footer {
 }
 
 /* ── Companies tab ─────────────────────────────────────────────────── */
+#company-detail-panel .detail-section + .detail-section {
+  border-top: 1px solid var(--border-soft);
+  padding-top: 1.2rem;
+}
+.company-code-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
 .company-inline-edit {
   display: flex;
   align-items: center;
