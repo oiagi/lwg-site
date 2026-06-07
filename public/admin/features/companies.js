@@ -6,6 +6,8 @@ import { openConfirmSend } from './confirm-send.js';
 
 let companies = [];
 let selectedCompanyId = null;
+let nameAutosaveTimer = null;
+let codeAutosaveTimer = null;
 
 let addStudentCompanyId = null;
 let selectedAddStudentId = null;
@@ -129,7 +131,8 @@ function renderCompanyDetail(c) {
           (cr) => `
         <div class="company-student-row-wrap">
           <span class="company-course-info">
-            <a href="/admin/pages/course-edit.html?id=${esc(cr.id)}" class="company-course-link">
+            <a href="#" class="company-course-link"
+               data-action="navigateToCourse" data-args="${esc(String(cr.id))}">
               ${esc(cr.course_code || '—')}${cr.subject ? ' · ' + esc(cr.subject) : ''}${cr.level ? ' ' + esc(cr.level) : ''}
             </a>
             <span class="detail-muted"> · ${esc(cr.status || '')}</span>
@@ -150,9 +153,8 @@ function renderCompanyDetail(c) {
     <div class="detail-section">
       <p class="detail-meta">Company name</p>
       <div class="company-inline-edit">
-        <input type="text" id="company-name-input" class="list-search" value="${esc(c.name)}" placeholder="Company name" style="flex:1;max-width:280px;">
-        <button class="save-btn" data-action="saveCompanyName" data-args="${esc(c.id)}">save</button>
-        <span class="detail-action-msg" id="company-name-msg"></span>
+        <input type="text" id="company-name-input" class="list-search" value="${esc(c.name)}" placeholder="Company name" style="flex:1;max-width:280px;" data-company-id="${esc(c.id)}">
+        <span class="saved-msg autosave-msg" id="company-name-msg">saved</span>
       </div>
     </div>
 
@@ -160,11 +162,15 @@ function renderCompanyDetail(c) {
       <p class="detail-meta">Booking code</p>
       <div class="company-inline-edit">
         <input type="text" id="company-code-input" class="list-search" value="${esc(c.booking_code || '')}"
-               placeholder="e.g. ACME2025" style="flex:1;max-width:280px;font-family:monospace;text-transform:uppercase;">
-        <button class="save-btn" data-action="saveCompanyCode" data-args="${esc(c.id)}">save</button>
-        <span class="detail-action-msg" id="company-code-msg"></span>
+               placeholder="e.g. ACME2025" style="flex:1;max-width:280px;font-family:monospace;text-transform:uppercase;"
+               data-company-id="${esc(c.id)}">
+        <span class="saved-msg autosave-msg" id="company-code-msg">saved</span>
+        <button class="secondary-btn" data-action="openSendBookingCode" data-args="${esc(c.id)}"
+                ${c.booking_code ? '' : 'disabled'}>
+          send booking code email
+        </button>
       </div>
-      ${c.booking_code ? `<p class="label-hint mt-small">Deep-link: /group-courses?code=${esc(c.booking_code)}</p>` : ''}
+      ${c.booking_code ? `<p class="label-hint mt-small" style="text-align:right;">Deep-link: /group-courses?code=${esc(c.booking_code)}</p>` : ''}
     </div>
 
     <div class="detail-section">
@@ -176,7 +182,6 @@ function renderCompanyDetail(c) {
                      value="${esc(buildCompanyIntakeUrl(c))}" readonly>
               <button class="save-btn" data-action="copyCompanyIntakeLink" data-args="${esc(c.id)}">copy</button>
               <button class="secondary-btn" data-action="openSendCompanyIntakeLink" data-args="${esc(c.id)}">send to students</button>
-              <a class="inline-link-btn" href="${esc(buildCompanyIntakeUrl(c))}" target="_blank" rel="noopener">open</a>
               <span class="detail-action-msg" id="company-intake-msg"></span>
             </div>
             <p class="label-hint mt-small">New students can use this link to create their own student record under ${esc(c.name)}.</p>`
@@ -203,16 +208,10 @@ function renderCompanyDetail(c) {
       <div class="company-student-list">${courseRows}</div>
     </div>
 
-    <div class="detail-actions">
-      <button class="save-btn" data-action="openSendBookingCode" data-args="${esc(c.id)}"
-              ${c.booking_code ? '' : 'disabled'}>
-        send booking code email
-      </button>
-      ${!c.booking_code ? '<p class="detail-muted" style="font-size:0.78rem;margin-top:0.3rem;">Save a booking code above to enable this.</p>' : ''}
-    </div>
   `;
 
   wireSelectAll();
+  wireNameInput();
   wireCodeInputUppercase();
 }
 
@@ -233,12 +232,36 @@ function wireSelectAll() {
   });
 }
 
+function wireNameInput() {
+  const input = document.getElementById('company-name-input');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    clearTimeout(nameAutosaveTimer);
+    const msg = document.getElementById('company-name-msg');
+    if (msg) {
+      msg.textContent = 'saving…';
+      msg.classList.remove('error-text');
+      msg.classList.add('is-visible-inline');
+    }
+    nameAutosaveTimer = setTimeout(() => saveCompanyName(input.dataset.companyId), 700);
+  });
+}
+
 function wireCodeInputUppercase() {
   const input = document.getElementById('company-code-input');
-  input?.addEventListener('input', () => {
+  if (!input) return;
+  input.addEventListener('input', () => {
     const pos = input.selectionStart;
     input.value = input.value.toUpperCase().replace(/\s/g, '');
     input.setSelectionRange(pos, pos);
+    clearTimeout(codeAutosaveTimer);
+    const msg = document.getElementById('company-code-msg');
+    if (msg) {
+      msg.textContent = 'saving…';
+      msg.classList.remove('error-text');
+      msg.classList.add('is-visible-inline');
+    }
+    codeAutosaveTimer = setTimeout(() => saveCompanyCode(input.dataset.companyId), 700);
   });
 }
 
@@ -261,13 +284,15 @@ export async function saveCompanyName(id) {
     document.getElementById('company-detail-name').textContent = updated.name;
     if (msg) {
       msg.textContent = 'saved';
+      msg.classList.remove('error-text');
       msg.classList.add('is-visible-inline');
       setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS);
     }
   } catch {
     if (msg) {
       msg.textContent = 'error';
-      msg.classList.add('is-visible-inline', 'error-text');
+      msg.classList.add('error-text');
+      setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS * 2);
     }
   }
 }
@@ -294,15 +319,12 @@ export async function saveCompanyCode(id) {
     const company = companies[idx];
     renderCompanyList();
     renderCompanyDetail(company);
-    if (msg) {
-      msg.textContent = 'saved';
-      msg.classList.add('is-visible-inline');
-      setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS);
-    }
+    // re-render replaces the DOM, so msg is stale — updated deeplink is the visual feedback
   } catch {
     if (msg) {
       msg.textContent = 'error';
-      msg.classList.add('is-visible-inline', 'error-text');
+      msg.classList.add('error-text');
+      setTimeout(() => msg.classList.remove('is-visible-inline'), MESSAGE_TIMEOUT_MS * 2);
     }
   }
 }
@@ -915,6 +937,12 @@ export async function confirmLinkCourse() {
       submit.textContent = 'link';
     }
   }
+}
+
+export function navigateToCourse(courseId) {
+  document.dispatchEvent(
+    new CustomEvent('admin:switchTab', { detail: { tab: 'courses', openCourseId: courseId } })
+  );
 }
 
 export async function submitNewCompany() {
