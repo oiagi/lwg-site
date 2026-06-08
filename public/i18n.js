@@ -14,6 +14,8 @@
     '/datenschutzerklaerung.html': 'datenschutzerklaerung',
     '/agb.html': 'agb',
     '/modalpartikeln.html': 'modalpartikeln',
+    '/subjunktionen.html': 'subjunktionen',
+    '/konjunktionen.html': 'konjunktionen',
     '/intake.html': 'intake',
   };
   const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
@@ -28,6 +30,8 @@
     '/datenschutzerklaerung.html': 'de',
     '/agb.html': 'de',
     '/modalpartikeln.html': 'de',
+    '/subjunktionen.html': 'de',
+    '/konjunktionen.html': 'de',
   };
 
   function splitPath(pathname) {
@@ -83,6 +87,8 @@
     enquiry: { en: 'enquiry', de: 'Anfrage' },
     materials: { en: 'materials', de: 'Materialien' },
     modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
+    subjunktionen: { en: 'subjunctions', de: 'Subjunktionen' },
+    konjunktionen: { en: 'conjunctions', de: 'Konjunktionen' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
     impressum: { en: 'Imprint', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -646,6 +652,50 @@
         '.position-note p': {
           en: 'Modal particles always stand in the <strong>middle field</strong> of the sentence - usually before <em>auch</em> or <em>nicht</em>, before modal and local details, and before words or information that belong directly to the verb.',
           de: 'Modalpartikeln stehen immer im <strong>Mittelfeld</strong> des Satzes - meist vor <em>auch</em> oder <em>nicht</em>, bzw. vor Modal- und Lokalangaben und vor den <em>Verbgefährten</em> (Wörter und Informationen, die direkt zum Verb gehören oder direkt mit ihm verbunden sind).',
+        },
+      },
+    },
+    '/subjunktionen.html': {
+      title: { en: 'Subjunctions', de: 'Subjunktionen' },
+      description: {
+        en: 'Learn German subjunctions interactively: meaning, subordinate-clause word order, examples, quiz and cheat sheet.',
+        de: 'Lerne deutsche Subjunktionen interaktiv: Bedeutung, Nebensatzstellung, Beispiele, Quiz und Spickzettel.',
+      },
+      text: {
+        '.page-header h1': { en: 'Subjunctions', de: 'Subjunktionen' },
+        '.page-header p': {
+          en: 'The words that open subordinate clauses and connect thoughts.',
+          de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
+        },
+        '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
+        '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
+        '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
+        '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
+        '.position-note p': {
+          en: 'Subjunctions introduce <strong>subordinate clauses</strong>. The finite verb normally goes <strong>to the end</strong> of the subordinate clause: <em>Ich bleibe, weil ich lernen muss.</em> When the subordinate clause comes first, the finite verb follows directly in the main clause: <em>Weil ich lernen muss, bleibe ich.</em>',
+          de: 'Subjunktionen leiten <strong>Nebensätze</strong> ein. Das finite Verb steht im Nebensatz normalerweise <strong>am Ende</strong>: <em>Ich bleibe, weil ich lernen muss.</em> Wenn der Nebensatz vorne steht, folgt im Hauptsatz direkt das finite Verb: <em>Weil ich lernen muss, bleibe ich.</em>',
+        },
+      },
+    },
+    '/konjunktionen.html': {
+      title: { en: 'Conjunctions', de: 'Konjunktionen' },
+      description: {
+        en: 'Learn the five German conjunctions aber, denn, und, sondern and oder interactively: meaning, word order, examples, quiz and cheat sheet.',
+        de: 'Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel.',
+      },
+      text: {
+        '.page-header h1': { en: 'Conjunctions', de: 'Konjunktionen' },
+        '.page-header p': {
+          en: 'The five words that connect equal parts.',
+          de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
+        },
+        '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
+        '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
+        '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
+        '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
+        '.position-note p': {
+          en: 'These five conjunctions usually connect <strong>equal</strong> words, phrases, or main clauses. Unlike subjunctions, they normally do <strong>not</strong> introduce subordinate clauses and do <strong>not</strong> send the finite verb to the end: <em>Ich lerne, und sie liest.</em> Compare: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
+          de: 'Diese fünf Konjunktionen verbinden meist <strong>gleichrangige</strong> Wörter, Satzteile oder Hauptsätze. Anders als Subjunktionen leiten sie normalerweise <strong>keinen Nebensatz</strong> ein und schicken das finite Verb <strong>nicht ans Ende</strong>: <em>Ich lerne, und sie liest.</em> Vergleiche: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
         },
       },
     },

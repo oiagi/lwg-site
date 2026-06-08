@@ -1,0 +1,59 @@
+.connector-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.connector-grid .particle-card .particle-name {
+  font-size: clamp(1.55rem, 5vw, 2rem);
+  line-height: 1.08;
+}
+
+.connector-grid .particle-card .particle-function {
+  line-height: 1.35;
+}
+
+.connector-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.85rem;
+}
+
+.connector-pill {
+  border: 1px solid rgba(26, 22, 20, 0.16);
+  border-radius: 999px;
+  color: var(--ink-mute);
+  font-size: 0.7rem;
+  font-weight: 300;
+  line-height: 1;
+  padding: 0.32rem 0.55rem;
+}
+
+.connector-warning {
+  background: var(--paper-deep);
+  border-radius: 6px;
+  color: var(--ink);
+  display: none;
+  font-size: 0.88rem;
+  font-weight: 300;
+  line-height: 1.55;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.9rem;
+}
+
+.particle-card.expanded .connector-warning {
+  display: block;
+}
+
+.cs-row.subjunktion-row {
+  grid-template-columns: 115px 1fr 1.4fr;
+}
+
+@media (max-width: 600px) {
+  .cs-row.subjunktion-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cs-row.subjunktion-row .cs-example {
+    grid-column: auto;
+  }
+}

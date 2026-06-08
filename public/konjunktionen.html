@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konjunktionen — Deutsch lernen | Learning with Gioia</title>
+  <meta name="description" content="Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://learningwithgioia.ch/de/konjunktionen" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="learning with gioia" />
+  <meta property="og:title" content="Konjunktionen — Deutsch lernen | Learning with Gioia" />
+  <meta property="og:description" content="Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv." />
+  <meta property="og:url" content="https://learningwithgioia.ch/de/konjunktionen" />
+  <meta property="og:image" content="https://learningwithgioia.ch/gioia_logo.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Konjunktionen — Deutsch lernen | Learning with Gioia" />
+  <meta name="twitter:description" content="Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv." />
+  <meta name="twitter:image" content="https://learningwithgioia.ch/gioia_logo.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/shared.css" />
+  <link rel="stylesheet" href="/modalpartikeln.css" />
+  <link rel="stylesheet" href="/konjunktionen.css" />
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <main id="content">
+    <header class="page-header">
+      <h1>Konjunktionen</h1>
+      <p>Die fünf Wörter, die Gleichrangiges verbinden.</p>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Lernbereiche">
+      <button class="tab active" role="tab" data-tab="reference"
+              aria-selected="true" aria-controls="tab-reference" tabindex="0">Übersicht</button>
+      <button class="tab" role="tab" data-tab="quiz"
+              aria-selected="false" aria-controls="tab-quiz" tabindex="-1">Quiz</button>
+      <button class="tab" role="tab" data-tab="cheatsheet"
+              aria-selected="false" aria-controls="tab-cheatsheet" tabindex="-1">Spickzettel</button>
+    </div>
+
+    <div class="main">
+      <div id="tab-reference" class="tab-content" role="tabpanel">
+        <aside class="position-note" aria-label="Stellung im Satz">
+          <h2>Stellung im Satz</h2>
+          <p>
+            Diese fünf Konjunktionen verbinden meist <strong>gleichrangige</strong> Wörter, Satzteile oder Hauptsätze.
+            Anders als Subjunktionen leiten sie normalerweise <strong>keinen Nebensatz</strong> ein und
+            schicken das finite Verb <strong>nicht ans Ende</strong>: <em>Ich lerne, und sie liest.</em>
+            Vergleiche: <em>Ich lerne, weil ich morgen Prüfung habe.</em>
+          </p>
+        </aside>
+        <div class="particle-grid connector-grid" id="connectorGrid"></div>
+      </div>
+
+      <div id="tab-quiz" class="tab-content" role="tabpanel" hidden>
+        <div class="quiz-area" id="quizArea"></div>
+      </div>
+
+      <div id="tab-cheatsheet" class="tab-content" role="tabpanel" hidden>
+        <div class="cheat-sheet" id="cheatSheet"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/konjunktionen-data.js"></script>
+  <script src="/konjunktionen.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>

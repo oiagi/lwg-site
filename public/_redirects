@@ -19,6 +19,8 @@
 /datenschutzerklaerung.html  /de/datenschutzerklaerung  301
 /agb.html  /de/agb  301
 /modalpartikeln.html  /de/modalpartikeln  301
+/subjunktionen.html  /de/subjunktionen  301
+/konjunktionen.html  /de/konjunktionen  301
 
 # Language-prefixed public pages. These serve the same static HTML files;
 # i18n.js reads /en or /de from the URL and applies the matching language.
