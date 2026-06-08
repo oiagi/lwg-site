@@ -48,6 +48,8 @@ Language courses, exam preparation, and tutoring in Zurich.
 | Enquiry              | `enquiry.html`               | Contact form                                                     |
 | Thank you            | `thankyou.html`              | Post-submission landing page                                     |
 | Modal particles      | `modalpartikeln.html`        | Interactive German grammar tool                                  |
+| Subjunctions         | `subjunktionen.html`         | Interactive German grammar tool                                  |
+| Conjunctions         | `konjunktionen.html`         | Interactive German grammar tool                                  |
 | AGB                  | `agb.html`                   | Terms and conditions (DE default)                                |
 | Impressum            | `impressum.html`             | Legal notice (DE default)                                        |
 | Datenschutzerklärung | `datenschutzerklaerung.html` | Privacy policy (DE default)                                      |

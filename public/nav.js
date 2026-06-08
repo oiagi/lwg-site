@@ -61,9 +61,19 @@
     '</span>' +
     '<div class="nav-submenu">' +
     '<a href="' +
+    href('/konjunktionen.html') +
+    '" data-page="/konjunktionen.html" data-nav-key="konjunktionen">' +
+    tr('konjunktionen') +
+    '</a>' +
+    '<a href="' +
     href('/modalpartikeln.html') +
     '" data-page="/modalpartikeln.html" data-nav-key="modalpartikeln">' +
     tr('modalpartikeln') +
+    '</a>' +
+    '<a href="' +
+    href('/subjunktionen.html') +
+    '" data-page="/subjunktionen.html" data-nav-key="subjunktionen">' +
+    tr('subjunktionen') +
     '</a>' +
     '</div>' +
     '</div>' +
