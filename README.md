@@ -15,7 +15,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 ```
 .
 ├── public/                  # Static files served by Cloudflare Pages
-│   ├── *.html               # 10 pages (see Pages below)
+│   ├── *.html               # 13 pages (see Pages below)
 │   ├── shared.css           # Global styles, navigation, animations
 │   ├── nav.js               # Navigation component injected into all pages
 │   ├── i18n.js              # EN/DE language switching for public pages
@@ -26,7 +26,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 │       ├── core/            # api.js, auth.js, constants.js, helpers.js
 │       ├── features/        # One module per domain (courses, students, teachers, invoices, …)
 │       ├── pages/           # Full-page views: course-edit, course-new, student-form
-│       └── panels/          # Tab panel HTML: courses, students, teachers
+│       └── panels/          # Tab panel HTML: courses, students, teachers, invoices, companies
 ├── functions/api/           # Cloudflare Pages Functions
 │   ├── _utils.js            # Auth, CORS, rate limiting, error handling
 │   ├── _validate.js         # Request body validation schemas
@@ -34,7 +34,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 │   ├── _agb.js              # AGB/terms generation
 │   ├── _public-course-booking.js
 │   ├── _student-utils.js
-│   └── *.js                 # ~37 endpoint handlers (see API below)
+│   └── *.js                 # 49 endpoint handlers (see API below)
 └── supabase/migrations/     # SQL migration files — applied manually via Supabase dashboard
 ```
 
@@ -50,6 +50,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 | Modal particles      | `modalpartikeln.html`        | Interactive German grammar tool                                  |
 | Subjunctions         | `subjunktionen.html`         | Interactive German grammar tool                                  |
 | Conjunctions         | `konjunktionen.html`         | Interactive German grammar tool                                  |
+| Language levels      | `niveaus.html`               | CEFR levels (A1–C2) overview                                     |
 | AGB                  | `agb.html`                   | Terms and conditions (DE default)                                |
 | Impressum            | `impressum.html`             | Legal notice (DE default)                                        |
 | Datenschutzerklärung | `datenschutzerklaerung.html` | Privacy policy (DE default)                                      |
@@ -59,28 +60,29 @@ Language courses, exam preparation, and tutoring in Zurich.
 
 Single-page app at `/admin/`. Login via Supabase Auth (email/password — users are managed in the Supabase dashboard, not in env vars).
 
-Covers: students, courses, enrolments, sessions, attendance, invoices, teacher availability, certificates, and course confirmations.
+Covers: students, courses, enrolments, sessions, attendance, invoices, companies, teacher availability, certificates, and course confirmations.
 
 ## API endpoints
 
 All endpoints live at `/api/*`. Shared helpers are prefixed with `_` and not routable.
 
-| Domain        | Endpoints                                                                                                   |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| Auth          | `auth-login`, `auth-callback`                                                                               |
-| Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                           |
-| Enrolments    | `add-enrolment`, `remove-enrolment`, `cancel-course`                                                        |
-| Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students` |
-| Sessions      | `log-session`, `cancel-session`, `get-attendance`, `save-attendance`, `send-session-schedule`               |
-| Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`                                                   |
-| Teachers      | `get-teachers`, `get-teacher-availability`                                                                  |
-| Invoices      | `get-next-invoice-number`, `mark-invoice-paid`, `send-invoice`                                              |
-| Intake        | `intake`, `mark-intake-seen`, `send-intake-link`                                                            |
-| Enquiry       | `submit-enquiry`                                                                                            |
-| Calendar      | `sync-calendar`                                                                                             |
-| Certificates  | `send-certificates`                                                                                         |
-| Confirmations | `send-course-confirmation`                                                                                  |
-| Config        | `config`                                                                                                    |
+| Domain        | Endpoints                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Auth          | `auth-login`, `auth-callback`                                                                                                |
+| Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                                            |
+| Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`                                                     |
+| Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students`                  |
+| Sessions      | `log-session`, `cancel-session`, `get-attendance`, `save-attendance`, `send-session-schedule`                                |
+| Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`, `group-course-slots`, `group-course-access-code`                  |
+| Companies     | `get-companies`, `save-company`, `send-company-booking-code`, `company-intake`, `send-company-intake-link`                   |
+| Teachers      | `get-teachers`, `get-teacher-availability`                                                                                   |
+| Invoices      | `get-next-invoice-number`, `mark-invoice-paid`, `send-invoice`, `send-invoice-reminder`, `delete-invoice`, `invoice-archive` |
+| Intake        | `intake`, `mark-intake-seen`, `send-intake-link`                                                                             |
+| Enquiry       | `submit-enquiry`, `get-enquiry`, `mark-enquiry-treated`                                                                      |
+| Calendar      | `sync-calendar`                                                                                                              |
+| Certificates  | `send-certificates`                                                                                                          |
+| Confirmations | `send-course-confirmation`                                                                                                   |
+| Config        | `config`                                                                                                                     |
 
 ## Local development
 

@@ -7,5 +7,4 @@ export const TABS = ['students', 'courses', 'teachers', 'invoices', 'companies']
 export const MESSAGE_TIMEOUT_MS = 1500;
 
 /* Locale settings */
-export const LOCALE_DATE = 'en-GB';
 export const LOCALE_DATETIME = 'de-CH';
