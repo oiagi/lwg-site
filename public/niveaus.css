@@ -1,0 +1,398 @@
+/* ── Overview: level card grid ──────────────────────────────────── */
+.niveau-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.niveau-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.6rem 1.5rem;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--rule);
+  border-top: 3px solid transparent;
+}
+
+.niveau-card[data-group='basic'] {
+  border-top-color: rgba(26, 22, 20, 0.18);
+}
+
+.niveau-card[data-group='independent'] {
+  border-top-color: rgba(26, 22, 20, 0.38);
+}
+
+.niveau-card[data-group='proficient'] {
+  border-top-color: rgba(26, 22, 20, 0.65);
+}
+
+.niveau-badge {
+  font-size: 2.4rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.niveau-group-label {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.9rem;
+}
+
+.niveau-desc {
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* ── Assessment area ────────────────────────────────────────────── */
+.assessment-area {
+  max-width: 720px;
+  margin: 0 auto;
+  animation: fadeUp 0.5s ease both;
+}
+
+.assessment-intro {
+  margin-bottom: 2rem;
+}
+
+/* ── Skill section ──────────────────────────────────────────────── */
+.skill-section {
+  margin-bottom: 2rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+}
+
+.skill-header {
+  padding: 1rem 1.4rem 0.85rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.skill-name {
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0;
+}
+
+/* ── Level option rows ──────────────────────────────────────────── */
+.level-option {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 0;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(26, 22, 20, 0.07);
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.level-option:last-child {
+  border-bottom: none;
+}
+
+.level-option:hover {
+  background: rgba(26, 22, 20, 0.03);
+}
+
+.level-option.selected {
+  background: rgba(26, 22, 20, 0.04);
+}
+
+.level-option-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink-mute);
+  border-right: 1px solid rgba(26, 22, 20, 0.07);
+  padding: 1rem 0;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.level-option.selected .level-option-badge {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.level-option-content {
+  padding: 0.85rem 1.1rem;
+}
+
+.level-option-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(26, 22, 20, 0.28);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.level-option.selected .level-option-indicator {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.level-option-text {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  display: inline;
+}
+
+.level-option.selected .level-option-text {
+  color: var(--ink);
+}
+
+/* ── Assessment footer ──────────────────────────────────────────── */
+.assessment-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 2rem;
+}
+
+.assessment-footer .action-btn {
+  margin-top: 0;
+}
+
+.assessment-footer .action-btn:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.assessment-hint {
+  font-size: 0.82rem;
+  font-weight: 300;
+  color: var(--ink-mute);
+  text-align: center;
+  margin: 0;
+  transition: opacity 0.3s;
+}
+
+.assessment-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Result card ────────────────────────────────────────────────── */
+.result-card {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+  animation: fadeUp 0.4s ease both;
+}
+
+.result-card h2 {
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 1.6rem;
+}
+
+/* ── Skill bars ─────────────────────────────────────────────────── */
+.result-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.8rem;
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 170px 1fr 32px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-skill-label {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-bar-track {
+  height: 6px;
+  background: rgba(26, 22, 20, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.result-bar-fill {
+  height: 100%;
+  background: var(--ink);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.result-level-badge {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ── Overall result ─────────────────────────────────────────────── */
+.result-overall {
+  text-align: center;
+  padding: 1.4rem;
+  background: var(--paper-deep);
+  border-radius: 6px;
+  margin-bottom: 1.8rem;
+}
+
+.result-overall-level {
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+}
+
+.result-overall-label {
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.8rem;
+}
+
+.result-overall-note {
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ── Result CTA ─────────────────────────────────────────────────── */
+.result-cta {
+  text-align: center;
+  border-top: 1px solid var(--rule);
+  padding-top: 1.6rem;
+}
+
+.result-cta p {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+  line-height: 1.55;
+}
+
+.result-enquiry-btn {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* ── Sources block ──────────────────────────────────────────────── */
+.cefr-sources {
+  margin-top: 2rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+}
+
+.cefr-sources h2 {
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 0.65rem;
+}
+
+.cefr-sources ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cefr-sources a {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.cefr-sources a:hover {
+  color: var(--ink);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .niveau-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .niveau-card {
+    padding: 1.2rem 1rem;
+  }
+
+  .niveau-badge {
+    font-size: 1.8rem;
+  }
+
+  .result-row {
+    grid-template-columns: 120px 1fr 28px;
+    gap: 0.5rem;
+  }
+
+  .result-skill-label {
+    font-size: 0.75rem;
+  }
+
+  .result-card {
+    padding: 1.75rem 1.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .niveau-grid {
+    grid-template-columns: 1fr;
+  }
+}
