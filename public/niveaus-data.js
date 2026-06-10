@@ -2,10 +2,10 @@
 // Source: Council of Europe Common European Framework of Reference (CEFR)
 // © Council of Europe / Conseil de l'Europe
 
-var NIVEAUS_DATA = (function () {
+(function () {
   'use strict';
 
-  var LEVELS = [
+  const LEVELS = [
     {
       id: 'A1',
       group: 'basic',
@@ -62,7 +62,7 @@ var NIVEAUS_DATA = (function () {
     },
   ];
 
-  var SKILLS = [
+  const SKILLS = [
     {
       id: 'listening',
       label: { en: 'Listening', de: 'Hören' },
@@ -215,5 +215,5 @@ var NIVEAUS_DATA = (function () {
     },
   ];
 
-  return { LEVELS: LEVELS, SKILLS: SKILLS };
+  window.LWG_NIVEAUS_DATA = { LEVELS, SKILLS };
 })();
