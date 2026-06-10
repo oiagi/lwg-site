@@ -17,7 +17,7 @@ import { getStudentLanguage } from './_student-utils.js';
 const BUCKET = 'invoice-archive';
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const REMINDABLE_STATUSES = new Set(['sent', 'pending', 'unpaid', 'open', 'overdue']);
+const REMINDABLE_STATUSES = new Set(['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded']);
 const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
 
 function esc(str) {

@@ -262,6 +262,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       if (inv.status === 'paid') {
         const byStudent = (paidInvoicesByCourseStudent[inv.course_id] ||= {});
         (byStudent[inv.student_id] ||= []).push(inv);
+      } else if (inv.status === 'sent' && !inv.sent_at) {
+        // Pre-archive invoices: sent before the PDF archive existed, so they have
+        // no archived file and no sent_at. Skip them — they only clutter the
+        // overview and link to nothing in the invoice archive. The "invoice sent"
+        // communications summary above still counts them as genuinely sent.
+        continue;
       } else {
         const byStudent = (openInvoicesByCourseStudent[inv.course_id] ||= {});
         (byStudent[inv.student_id] ||= []).push(inv);
