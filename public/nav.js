@@ -55,6 +55,11 @@
     '" data-page="/enquiry.html" data-nav-key="enquiry">' +
     tr('enquiry') +
     '</a>' +
+    '<a href="' +
+    href('/niveaus.html') +
+    '" data-page="/niveaus.html" data-nav-key="niveaus">' +
+    tr('niveaus') +
+    '</a>' +
     '<div class="nav-section" aria-labelledby="nav-materials-label">' +
     '<span class="nav-section-label" id="nav-materials-label" data-nav-key="materials">' +
     tr('materials') +

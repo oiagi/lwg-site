@@ -16,6 +16,7 @@
     '/modalpartikeln.html': 'modalpartikeln',
     '/subjunktionen.html': 'subjunktionen',
     '/konjunktionen.html': 'konjunktionen',
+    '/niveaus.html': 'niveaus',
     '/intake.html': 'intake',
   };
   const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
@@ -32,6 +33,7 @@
     '/modalpartikeln.html': 'de',
     '/subjunktionen.html': 'de',
     '/konjunktionen.html': 'de',
+    '/niveaus.html': 'de',
   };
 
   function splitPath(pathname) {
@@ -89,6 +91,7 @@
     modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
     subjunktionen: { en: 'subjunctions', de: 'Subjunktionen' },
     konjunktionen: { en: 'conjunctions', de: 'Konjunktionen' },
+    niveaus: { en: 'language levels', de: 'Sprachniveaus' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
     impressum: { en: 'Imprint', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -675,6 +678,16 @@
           en: 'Subjunctions introduce <strong>subordinate clauses</strong>. The finite verb normally goes <strong>to the end</strong> of the subordinate clause: <em>Ich bleibe, weil ich lernen muss.</em> When the subordinate clause comes first, the finite verb follows directly in the main clause: <em>Weil ich lernen muss, bleibe ich.</em>',
           de: 'Subjunktionen leiten <strong>Nebensätze</strong> ein. Das finite Verb steht im Nebensatz normalerweise <strong>am Ende</strong>: <em>Ich bleibe, weil ich lernen muss.</em> Wenn der Nebensatz vorne steht, folgt im Hauptsatz direkt das finite Verb: <em>Weil ich lernen muss, bleibe ich.</em>',
         },
+      },
+    },
+    '/niveaus.html': {
+      title: {
+        en: 'German Language Levels (CEFR) | Learning with Gioia',
+        de: 'Sprachniveaus (GER) — Deutsch lernen | Learning with Gioia',
+      },
+      description: {
+        en: 'The six CEFR levels A1 to C2 explained — plus an interactive self-assessment checklist to find your German level.',
+        de: 'Die sechs Sprachniveaus A1 bis C2 des GER erklärt – mit interaktivem Selbsteinschätzungsraster für Deutsch.',
       },
     },
     '/konjunktionen.html': {

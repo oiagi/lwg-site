@@ -537,6 +537,18 @@ function currentLang() {
   return document.querySelector('input[name="inv-language"]:checked')?.value || 'de';
 }
 
+function orderDate(student) {
+  if (student?.joined_at) {
+    const d = new Date(student.joined_at + 'T00:00:00');
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  if (currentCourse?.created_at) {
+    const d = new Date(currentCourse.created_at);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+
 function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   const today = new Date();
   const due = firstCourseDate(currentCourse) || addDays(today, 14);
@@ -548,7 +560,7 @@ function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   return {
     invoiceNumber,
     customerReference: student?.customer_reference || '',
-    invoiceDate: formatDateInput(today),
+    invoiceDate: formatDateInput(orderDate(student)),
     dueDate: formatDateInput(due),
     subject: formalCourseLabel(currentCourse, currentLang()) || courseCode,
     quantity,
@@ -722,10 +734,10 @@ function invoiceStrings(lang, isGroup = false) {
     colSubject: isEN ? 'Subject' : 'Fach',
     colLessons: isEN ? 'No. of lessons' : 'Anzahl Lektionen',
     colAmount: isEN ? 'Amount CHF' : 'Betrag CHF',
-    paymentText: (dueDate) =>
+    paymentText: () =>
       isEN
-        ? `Please transfer the amount before the start of the course, at the latest by ${longDate(dueDate, 'en')}.`
-        : `Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch bis zum ${chDate(dueDate, 'de')}.`,
+        ? 'Please transfer the amount before the start of the course, at the latest within 30 days.'
+        : 'Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch innerhalb von 30 Tagen.',
     closing: isEN ? 'Kind regards,' : 'Herzliche Grüsse',
     footnote: isGroup
       ? isEN
@@ -809,7 +821,7 @@ function buildPreviewHtml(data) {
           </tr>
         </tbody>
       </table>
-      <p>${esc(s.paymentText(data.dueDate))}</p>
+      <p>${esc(s.paymentText())}</p>
       <p>${esc(s.closing)}<br>Gioia Birukoff</p>
       <div class="inv-prev-qr">
         ${qrPreview}
@@ -1010,7 +1022,7 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
 
   y = totalTop + totalH + 18;
   setFont(10.5);
-  y = addWrappedText(doc, s.paymentText(data.dueDate), margin, y, contentW, 5.5);
+  y = addWrappedText(doc, s.paymentText(), margin, y, contentW, 5.5);
   y += 10;
   doc.text(s.closing, margin, y);
   doc.text('Gioia Birukoff', margin, y + 6);

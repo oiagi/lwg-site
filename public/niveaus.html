@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprachniveaus — Deutsch lernen | Learning with Gioia</title>
+  <meta name="description" content="Die sechs Sprachniveaus A1 bis C2 des Gemeinsamen Europäischen Referenzrahmens (GER) erklärt – und ein interaktives Selbsteinschätzungsraster für Deutsch." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://learningwithgioia.ch/de/niveaus" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="learning with gioia" />
+  <meta property="og:title" content="Sprachniveaus — Deutsch lernen | Learning with Gioia" />
+  <meta property="og:description" content="Die sechs Sprachniveaus A1 bis C2 des GER erklärt – mit interaktivem Selbsteinschätzungsraster für Deutsch." />
+  <meta property="og:url" content="https://learningwithgioia.ch/de/niveaus" />
+  <meta property="og:image" content="https://learningwithgioia.ch/gioia_logo.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Sprachniveaus — Deutsch lernen | Learning with Gioia" />
+  <meta name="twitter:description" content="Die sechs Sprachniveaus A1 bis C2 des GER erklärt – mit interaktivem Selbsteinschätzungsraster für Deutsch." />
+  <meta name="twitter:image" content="https://learningwithgioia.ch/gioia_logo.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/shared.css" />
+  <link rel="stylesheet" href="/modalpartikeln.css" />
+  <link rel="stylesheet" href="/niveaus.css" />
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <main id="content">
+    <header class="page-header">
+      <h1 data-i18n="niveaus-title">Sprachniveaus</h1>
+      <p data-i18n="niveaus-subtitle">Die sechs Stufen des Gemeinsamen Europäischen Referenzrahmens.</p>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Bereiche">
+      <button class="tab active" role="tab" data-tab="overview"
+              aria-selected="true" aria-controls="tab-overview" tabindex="0"
+              data-i18n="niveaus-tab-overview">Übersicht</button>
+      <button class="tab" role="tab" data-tab="assessment"
+              aria-selected="false" aria-controls="tab-assessment" tabindex="-1"
+              data-i18n="niveaus-tab-assessment">Selbsteinschätzung</button>
+    </div>
+
+    <div class="main">
+
+      <!-- ── Tab 1: Overview ─────────────────────────────────────── -->
+      <div id="tab-overview" class="tab-content" role="tabpanel">
+        <div class="niveau-grid" id="niveauGrid"></div>
+        <aside class="cefr-sources">
+          <h2 data-i18n="niveaus-sources-heading">Quellen</h2>
+          <ul>
+            <li><a href="https://www.coe.int/en/web/common-european-framework-reference-languages" target="_blank" rel="noopener">Common European Framework of Reference for Languages (CEFR) — Council of Europe</a></li>
+            <li><a href="https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors" target="_blank" rel="noopener">CEFR Descriptors</a></li>
+            <li><a href="https://www.coe.int/en/web/common-european-framework-reference-languages/table-1-cefr-3.3-common-reference-levels-global-scale" target="_blank" rel="noopener">Table 1 — Common Reference Levels: Global Scale</a></li>
+            <li><a href="https://www.coe.int/en/web/common-european-framework-reference-languages/table-2-cefr-3.3-common-reference-levels-self-assessment-grid" target="_blank" rel="noopener">Table 2 — Common Reference Levels: Self-Assessment Grid</a></li>
+          </ul>
+        </aside>
+      </div>
+
+      <!-- ── Tab 2: Self-assessment ──────────────────────────────── -->
+      <div id="tab-assessment" class="tab-content" role="tabpanel" hidden>
+        <div class="assessment-area" id="assessmentArea">
+          <div class="assessment-intro position-note">
+            <h2 data-i18n="niveaus-assessment-intro-heading">So funktioniert die Selbsteinschätzung</h2>
+            <p data-i18n="niveaus-assessment-intro-body">Wähle für jede der fünf Fertigkeiten das Niveau, das dich am besten beschreibt. Klicke auf eine Stufe, um die Beschreibung zu lesen, und wähle die höchste, auf die du dich erkennst. Am Ende siehst du dein Sprachprofil.</p>
+          </div>
+          <div id="skillSections"></div>
+          <div class="assessment-footer">
+            <button class="action-btn visible" id="assessmentSubmit" disabled>
+              <span data-i18n="niveaus-see-result">Ergebnis anzeigen →</span>
+            </button>
+            <p class="assessment-hint" id="assessmentHint" data-i18n="niveaus-hint">Bitte wähle für jede Fertigkeit ein Niveau.</p>
+          </div>
+          <div class="result-card" id="resultCard" hidden>
+            <h2 data-i18n="niveaus-result-heading">Dein Sprachprofil</h2>
+            <div class="result-profile" id="resultProfile"></div>
+            <div class="result-overall" id="resultOverall"></div>
+            <div class="result-cta">
+              <p data-i18n="niveaus-result-cta-text">Unsicher über dein Niveau? Wir helfen dir gerne dabei, den richtigen Kurs zu finden.</p>
+              <a class="action-btn visible result-enquiry-btn" href="/enquiry.html" data-page="/enquiry.html" data-i18n="niveaus-result-cta-btn">Beratungsgespräch anfragen →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/niveaus-data.js"></script>
+  <script src="/niveaus.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>
