@@ -30,53 +30,30 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function formatDate(value, language) {
-  if (!value) return '';
-  const date = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(language === 'en' ? 'en-GB' : 'de-CH', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-function fullName(student) {
-  return [student.first_name, student.last_name].filter(Boolean).join(' ').trim();
-}
-
 function greeting(student, language) {
-  if (language === 'en') return `Hello ${student.first_name || 'there'},`;
-  const name = fullName(student);
-  return name ? `Guten Tag ${name}` : 'Guten Tag';
+  const name = student.first_name || '';
+  if (language === 'en') return name ? `Dear ${name},` : 'Dear customer,';
+  return name ? `Liebe/r ${name}` : 'Liebe/r Kunde/in';
 }
 
 function buildReminderEmail({ invoice, student, language }) {
   const isEN = language === 'en';
   const invoiceNo = invoice.invoice_number || '';
   const amount = `${Number(invoice.total_amount || 0).toFixed(2)} ${invoice.currency || 'CHF'}`;
-  const dueDate = formatDate(invoice.due_date, language);
-  const dueLine = dueDate
-    ? isEN
-      ? `The invoice was due on ${dueDate}.`
-      : `Die Rechnung war am ${dueDate} fällig.`
-    : isEN
-      ? 'The payment deadline has passed.'
-      : 'Die Zahlungsfrist ist inzwischen abgelaufen.';
   const subject = isEN
     ? `Payment reminder for invoice ${invoiceNo} · learning with gioia`
     : `Zahlungserinnerung Rechnung ${invoiceNo} · learning with gioia`;
 
   const body = isEN
     ? [
-        'It may simply have slipped your attention that the attached invoice has not yet been paid.',
-        `${dueLine} The open amount is ${amount}.`,
-        'Please settle the invoice within the next few days. If you have already made the payment, please disregard this reminder.',
+        'While reviewing our invoices, we noticed that the attached invoice is still outstanding.',
+        `The open amount is ${amount}.`,
+        "We'd be glad to receive your payment soon.",
       ]
     : [
-        'Sicherlich ist es Ihnen entgangen, dass die beiliegende Rechnung noch nicht bezahlt wurde.',
-        `${dueLine} Der offene Betrag beträgt ${amount}.`,
-        'Bitte begleichen Sie die Rechnung in den nächsten Tagen. Falls Sie die Zahlung bereits veranlasst haben, betrachten Sie diese Erinnerung bitte als gegenstandslos.',
+        'Wir haben bei der Durchsicht unserer Rechnungen bemerkt, dass die beiliegende Rechnung noch offen ist.',
+        `Der offene Betrag beträgt ${amount}.`,
+        'Wir freuen uns über eine baldige Begleichung.',
       ];
 
   return {
@@ -105,7 +82,7 @@ function buildReminderEmail({ invoice, student, language }) {
                   `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">${esc(line)}</p>`
               )
               .join('')}
-            <p style="margin:0 0 4px;font-size:15px;line-height:1.7;color:#333;">${isEN ? 'Warm regards,' : 'Herzliche Grüsse'}</p>
+            <p style="margin:0 0 4px;font-size:15px;line-height:1.7;color:#333;">${isEN ? 'Warm regards,' : 'Liebe Grüsse'}</p>
             <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Gioia</p>
           </td>
         </tr>
