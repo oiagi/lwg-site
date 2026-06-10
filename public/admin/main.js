@@ -27,7 +27,6 @@ import {
   openCertificateModal,
   openInvoiceModal,
   openBulkInvoiceModal,
-  markInvoicePaid,
   toggleCourseAddressEditor,
   saveCourseAddress,
   togglePublicBooking,
@@ -40,14 +39,15 @@ import {
   togglePublicSlotsPanel,
   openEditGroupSlotModal,
   deleteGroupSlot,
-} from './features/courses.js?v=course-recipient-list-20260607';
+} from './features/courses.js?v=invoice-overview-cleanup-20260610';
 import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
 import {
   closeInvoiceModal,
   submitInvoice,
+  downloadInvoice,
   prevBulkPreview,
   nextBulkPreview,
-} from './features/invoices.js?v=individual-lesson-counts-20260530';
+} from './features/invoices.js?v=invoice-overview-cleanup-20260610';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -86,8 +86,9 @@ import {
   switchArchiveYear,
   toggleInvoiceActions,
   sendInvoiceReminder,
+  markArchivedInvoicePaid,
   deleteInvoice,
-} from './features/invoice-archive.js';
+} from './features/invoice-archive.js?v=invoice-overview-cleanup-20260610';
 import {
   loadCompanies,
   selectCompany,
@@ -148,9 +149,9 @@ const actions = {
   closeCertificateModal,
   openInvoiceModal,
   openBulkInvoiceModal,
-  markInvoicePaid,
   closeInvoiceModal,
   submitInvoice,
+  downloadInvoice,
   prevBulkPreview,
   nextBulkPreview,
   toggleCourseAddressEditor,
@@ -199,6 +200,7 @@ const actions = {
   switchArchiveYear,
   toggleInvoiceActions,
   sendInvoiceReminder,
+  markArchivedInvoicePaid,
   deleteInvoice,
   // Companies
   selectCompany,

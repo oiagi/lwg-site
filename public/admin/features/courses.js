@@ -15,7 +15,7 @@ import { openCertificateModal as openCertificates } from './certificates.js';
 import {
   openBulkInvoiceModal as openBulkInvoices,
   openInvoiceModal as openInvoice,
-} from './invoices.js?v=individual-lesson-counts-20260530';
+} from './invoices.js?v=invoice-overview-cleanup-20260610';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -272,22 +272,6 @@ export async function toggleCompanyCodeBooking(courseId) {
     }
   } finally {
     input.disabled = false;
-  }
-}
-
-export async function markInvoicePaid(invoiceId, courseId) {
-  if (!confirm('Mark this invoice as paid?')) return;
-  try {
-    const res = await apiFetch('/api/mark-invoice-paid', {
-      method: 'POST',
-      body: { invoice_id: invoiceId },
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body.error || 'Could not mark invoice paid');
-    await loadCourses(currentCourseFilter);
-    document.getElementById('course-detail-' + courseId)?.classList.add('open');
-  } catch (err) {
-    alert('Error: ' + (err.message || err));
   }
 }
 
@@ -907,7 +891,7 @@ function renderCourses(courses) {
                     : '—';
                 const num = esc(inv.invoice_number || '—');
                 const status = esc(inv.status || 'open');
-                return `<li class="course-invoice-row"><span><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></span><button class="inline-link-btn" data-action="markInvoicePaid" data-args="${inv.id},${c.id}">mark paid</button></li>`;
+                return `<li class="course-invoice-row"><span><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></span></li>`;
               })
               .join('');
             const invoiceBlock = openInvoices

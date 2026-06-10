@@ -56,12 +56,18 @@ function renderFiles(files) {
       const reminderFlag = f.reminder_sent_at
         ? `<span class="inv-status reminder">reminded</span>`
         : '';
-      const canRemind = ['sent', 'pending', 'unpaid', 'open', 'overdue'].includes(f.status);
+      const canRemind = ['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded'].includes(
+        f.status
+      );
+      const canMarkPaid = f.invoice_id && f.status !== 'paid';
       const view = f.signed_url
         ? `<li><a class="status-opt-btn status-opt-btn--view" href="${esc(f.signed_url)}" target="_blank" rel="noopener noreferrer">view</a></li>`
         : `<li><span class="status-opt-btn status-opt-btn--disabled">unavailable</span></li>`;
       const remind = canRemind
         ? `<li><button class="status-opt-btn status-opt-btn--remind" data-action="sendInvoiceReminder" data-args="${name}">remind</button></li>`
+        : '';
+      const markPaid = canMarkPaid
+        ? `<li><button class="status-opt-btn status-opt-btn--paid" data-action="markArchivedInvoicePaid" data-args="${esc(f.invoice_id)}">mark paid</button></li>`
         : '';
       const remove = `<li class="status-dropdown-divider"></li><li><button class="status-opt-btn status-opt-btn--delete" data-action="deleteInvoice" data-args="${name}">delete</button></li>`;
       return `
@@ -77,7 +83,7 @@ function renderFiles(files) {
               <span class="invoice-action-wrap">
                 <button class="invoice-action-toggle" data-action="toggleInvoiceActions" data-args="${name}">view</button>
                 <ul class="status-dropdown invoice-action-dropdown is-hidden" id="invoice-actions-${name}">
-                  ${view}${remind}${remove}
+                  ${view}${remind}${markPaid}${remove}
                 </ul>
               </span>
             </span>
@@ -146,6 +152,32 @@ export async function sendInvoiceReminder(invoiceNumber, btn) {
     if (btn) {
       btn.disabled = false;
       btn.textContent = originalText;
+    }
+  }
+}
+
+export async function markArchivedInvoicePaid(invoiceId, btn) {
+  if (!invoiceId) return;
+  if (!confirm('Mark this invoice as paid? This sends the payment-received email to the student.'))
+    return;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'saving...';
+  }
+  try {
+    const res = await apiFetch('/api/mark-invoice-paid', {
+      method: 'POST',
+      body: { invoice_id: invoiceId },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || 'Could not mark invoice paid');
+    await loadInvoiceArchive(activeYear);
+  } catch (err) {
+    console.error('Mark invoice paid error:', err);
+    alert(err.message || 'Could not mark invoice paid.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'mark paid';
     }
   }
 }

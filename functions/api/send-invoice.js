@@ -12,20 +12,25 @@
 // the client-side PDF before this endpoint is called.
 
 import {
-  supabaseHeaders,
   requireAdminAuth,
   jsonResponse,
   errorResponse,
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
+import {
+  INVOICE_NUMBER_RE,
+  PENDING_STATUS_CANDIDATES,
+  FINALISED_STATUSES,
+  findInvoiceByNumber,
+  updateInvoiceStatus,
+  archiveInvoicePdf,
+  logInvoice,
+} from './_invoices.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ALLOWED_LANGUAGES = ['de', 'en'];
-const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
-const INVOICE_STATUS_CANDIDATES = ['sent', 'pending', 'unpaid', 'open'];
-const PENDING_STATUS_CANDIDATES = ['pending', 'unpaid', 'open', 'sent'];
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -169,128 +174,6 @@ function validate(body) {
   return null;
 }
 
-async function invoiceNumberExists(env, invoiceNumber) {
-  const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=eq.${encodeURIComponent(invoiceNumber)}&select=id&limit=1`,
-    { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-  );
-  if (!res.ok) {
-    console.error('Invoice number lookup failed:', await res.text());
-    return false;
-  }
-  const rows = await res.json();
-  return rows.length > 0;
-}
-
-async function updateInvoiceStatus(env, invoiceId, status) {
-  if (!invoiceId) return;
-  const payload = status === 'sent' ? { status, sent_at: new Date().toISOString() } : { status };
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
-    method: 'PATCH',
-    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const errorText = await res.text();
-    if (status === 'sent' && errorText.includes('sent_at')) {
-      const compatRes = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
-        method: 'PATCH',
-        headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-        body: JSON.stringify({ status }),
-      });
-      if (compatRes.ok) return;
-      console.error(`Invoice status update failed for ${invoiceId}:`, await compatRes.text());
-      return;
-    }
-    console.error(`Invoice status update failed for ${invoiceId}:`, errorText);
-  }
-}
-
-async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return;
-  const yearMatch = invoiceNumber.match(/^LWG-(\d{4})-/);
-  const year = yearMatch ? yearMatch[1] : 'misc';
-  let binary;
-  try {
-    binary = atob(pdfBase64);
-  } catch {
-    console.error('Invoice archive: invalid base64 PDF for', invoiceNumber);
-    return;
-  }
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const res = await fetch(
-    `${env.SUPABASE_URL}/storage/v1/object/invoice-archive/${year}/${invoiceNumber}.pdf`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-        'Content-Type': 'application/pdf',
-      },
-      body: bytes,
-    }
-  );
-  if (!res.ok) {
-    console.error(`Invoice archive upload failed for ${invoiceNumber}:`, await res.text());
-  }
-}
-
-async function logInvoice(env, body, statusCandidates = INVOICE_STATUS_CANDIDATES) {
-  const inv = body.invoice || {};
-  const basePayload = {
-    student_id: body.student_id,
-    course_id: body.course_id,
-    company_id: null,
-    invoice_number: inv.invoice_number,
-    total_amount: Number(inv.total_amount),
-    currency: inv.currency || 'CHF',
-    issued_date: inv.invoice_date || new Date().toISOString().slice(0, 10),
-    due_date: inv.due_date || null,
-    invoice_language: body.language,
-  };
-
-  let lastError = '';
-  for (const status of statusCandidates) {
-    let res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
-      method: 'POST',
-      headers: {
-        ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-        Prefer: 'return=representation',
-      },
-      body: JSON.stringify({ ...basePayload, status }),
-    });
-
-    if (!res.ok) {
-      lastError = await res.text();
-      if (lastError.includes('invoice_language')) {
-        delete basePayload.invoice_language;
-        res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
-          method: 'POST',
-          headers: {
-            ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-            Prefer: 'return=representation',
-          },
-          body: JSON.stringify({ ...basePayload, status }),
-        });
-        if (!res.ok) lastError = await res.text();
-      }
-    }
-
-    if (res.ok) {
-      const rows = await res.json().catch(() => []);
-      return rows[0] || null;
-    }
-
-    if (!lastError.includes('invoices_status_check')) break;
-  }
-
-  console.error('Invoice log failed:', lastError);
-  const err = new Error('Invoice could not be recorded. Email was not sent.');
-  err.statusCode = 400;
-  err.userMessage = 'Invoice could not be recorded. Email was not sent.';
-  throw err;
-}
-
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { RESEND_API_KEY } = env;
 
@@ -308,11 +191,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const invalid = validate(body || {});
   if (invalid) return errorResponse(invalid, 400);
 
-  if (await invoiceNumberExists(env, body.invoice.invoice_number)) {
+  // Reuse a record that was previously logged when the PDF was downloaded, so
+  // downloading and then sending the same invoice does not create a duplicate.
+  // A genuine duplicate (already emailed/paid) is still refused.
+  const existing = await findInvoiceByNumber(env, body.invoice.invoice_number);
+  if (existing && FINALISED_STATUSES.has(existing.status)) {
     return errorResponse('Invoice number already exists. Please reopen the invoice modal.', 409);
   }
 
-  const invoiceRecord = await logInvoice(env, body, PENDING_STATUS_CANDIDATES);
+  const invoiceRecord = existing || (await logInvoice(env, body, PENDING_STATUS_CANDIDATES));
 
   const { subject, html } = buildEmail({
     language: body.language,

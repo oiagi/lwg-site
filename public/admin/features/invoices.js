@@ -78,6 +78,7 @@ export async function openInvoiceModal(courseId, studentId, coursesCache) {
   if (fileEl) fileEl.value = '';
   btn.textContent = 'send invoice';
   btn.disabled = false;
+  resetDownloadButton('download');
 
   bindInvoiceListeners();
   updateInvoicePreview();
@@ -91,6 +92,13 @@ export async function openInvoiceModal(courseId, studentId, coursesCache) {
   });
 }
 
+function resetDownloadButton(label) {
+  const dlBtn = document.getElementById('inv-download');
+  if (!dlBtn) return;
+  dlBtn.textContent = label;
+  dlBtn.disabled = false;
+}
+
 export async function openBulkInvoiceModal(courseId, coursesCache) {
   const course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
@@ -98,29 +106,29 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
     return;
   }
 
-  const skippedOpen = (course.students || []).filter((s) => (s.open_invoices || []).length);
-  const recipients = (course.students || []).filter(
-    (s) => (s.email || s.billing_email) && !(s.open_invoices || []).length
-  );
+  const recipients = (course.students || []).filter((s) => s.email || s.billing_email);
 
   if (!recipients.length) {
-    alert(
-      skippedOpen.length
-        ? 'No invoices to send. Every student with an email already has an open invoice for this course.'
-        : 'No students with email addresses were found for this course.'
-    );
+    alert('No students with email addresses were found for this course.');
     return;
   }
 
   currentCourse = course;
   currentStudent = recipients[0];
   bulkPreviewIndex = 0;
-  currentBulkRecipients = recipients.map((s) => ({
-    ...s,
-    selected: true,
-    _originalLessonCount: s.invoice_lesson_count,
-    qrAttachment: createQrAttachment(),
-  }));
+  currentBulkRecipients = recipients.map((s) => {
+    const alreadyInvoiced = Boolean(
+      (s.open_invoices || []).length || (s.paid_invoices || []).length
+    );
+    return {
+      ...s,
+      selected: !alreadyInvoiced,
+      alreadyInvoiced,
+      _originalLessonCount: s.invoice_lesson_count,
+      _invoiceNumber: null,
+      qrAttachment: createQrAttachment(),
+    };
+  });
   resetSharedQrAttachment();
 
   const titleEl = document.getElementById('invoice-title');
@@ -152,7 +160,7 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
   const fileEl = document.getElementById('inv-qr-file');
   if (fileEl) fileEl.value = '';
 
-  renderBulkInvoiceRecipients(currentBulkRecipients, skippedOpen);
+  renderBulkInvoiceRecipients(currentBulkRecipients);
   bindInvoiceListeners();
   updateInvoicePreview();
   document.getElementById('invoice-modal').classList.add('open');
@@ -339,7 +347,7 @@ function formalGreeting(data) {
   return fullName ? `Guten Tag ${fullName}` : 'Guten Tag';
 }
 
-function renderBulkInvoiceRecipients(recipients, skipped = []) {
+function renderBulkInvoiceRecipients(recipients) {
   const wrap = document.getElementById('inv-bulk-recipients');
   if (!wrap) return;
   if (!recipients.length) {
@@ -347,8 +355,9 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
     wrap.innerHTML = '';
     return;
   }
-  const skippedText = skipped.length
-    ? `<p class="label-hint">${skipped.length} student(s) skipped because they already have an open invoice for this course.</p>`
+  const hasAlreadyInvoiced = recipients.some((s) => s.alreadyInvoiced);
+  const alreadyInvoicedHint = hasAlreadyInvoiced
+    ? '<p class="label-hint">Students who already have an invoice for this course are unchecked by default — check them to preview, download, or send again.</p>'
     : '';
   wrap.classList.remove('is-hidden');
   wrap.innerHTML = `
@@ -361,7 +370,11 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
             <div class="invoice-recipient-row">
               <input type="checkbox" data-invoice-recipient="${i}" ${s.selected ? 'checked' : ''}>
               <span class="invoice-recipient-person">
-                <span class="invoice-recipient-name">${esc(studentName(s))}</span>
+                <span class="invoice-recipient-name">${esc(studentName(s))}${
+                  s.alreadyInvoiced
+                    ? ' <span class="invoice-recipient-flag">already invoiced</span>'
+                    : ''
+                }</span>
                 <span class="invoice-recipient-email">${esc(billingEmail(s))}</span>
                 <input class="invoice-recipient-lessons" type="number" min="1" step="1"
                   value="${esc(String(studentLessonCount(s)))}"
@@ -376,7 +389,7 @@ function renderBulkInvoiceRecipients(recipients, skipped = []) {
         )
         .join('')}
     </div>
-    ${skippedText}`;
+    ${alreadyInvoicedHint}`;
 
   updateBulkInvoiceCount();
 
@@ -423,10 +436,17 @@ function updateBulkInvoiceCount() {
   const selected = selectedBulkRecipients().length;
   const countEl = document.getElementById('inv-bulk-count');
   if (countEl) countEl.textContent = `(${selected} selected)`;
+  if (!currentBulkRecipients.length) return;
   const btn = document.getElementById('inv-submit');
-  if (!btn || !currentBulkRecipients.length) return;
-  btn.disabled = selected === 0;
-  btn.textContent = selected === 1 ? 'send 1 invoice' : `send ${selected} invoices`;
+  if (btn) {
+    btn.disabled = selected === 0;
+    btn.textContent = selected === 1 ? 'send 1 invoice' : `send ${selected} invoices`;
+  }
+  const dlBtn = document.getElementById('inv-download');
+  if (dlBtn) {
+    dlBtn.disabled = selected === 0;
+    dlBtn.textContent = selected === 1 ? 'download 1' : `download ${selected}`;
+  }
 }
 
 function formatDateInput(date) {
@@ -1113,11 +1133,12 @@ export async function submitInvoice() {
         throw new Error('Invoice number must use the format LWG-YYYY-0001.');
       }
 
+      assignBulkInvoiceNumbers(data.invoiceNumber, bulkRecipients);
       let sent = 0;
       const failed = [];
       for (let i = 0; i < bulkRecipients.length; i += 1) {
         const student = bulkRecipients[i];
-        const invoiceNumber = incrementInvoiceNumber(data.invoiceNumber, i);
+        const invoiceNumber = student._invoiceNumber;
         const studentData = getInvoiceData(student, invoiceNumber);
         btn.textContent = `sending ${i + 1}/${bulkRecipients.length}…`;
         const pdfBase64 = await buildInvoicePdf(studentData, activeQrAttachment(student));
@@ -1170,6 +1191,20 @@ export async function submitInvoice() {
   }
 }
 
+function invoicePayloadFields(data) {
+  return {
+    invoice_number: data.invoiceNumber,
+    customer_reference: data.customerReference,
+    subject: data.subject,
+    quantity: data.quantity,
+    unit_price: data.unitPrice,
+    total_amount: data.totalAmount,
+    currency: data.currency,
+    invoice_date: data.invoiceDate,
+    due_date: data.dueDate,
+  };
+}
+
 async function sendInvoiceRequest(data, student, pdfBase64) {
   const res = await apiFetch('/api/send-invoice', {
     method: 'POST',
@@ -1183,21 +1218,169 @@ async function sendInvoiceRequest(data, student, pdfBase64) {
       gender: data.recipientGender,
       gender_note: data.recipientGenderNote,
       language: data.language,
-      invoice: {
-        invoice_number: data.invoiceNumber,
-        customer_reference: data.customerReference,
-        subject: data.subject,
-        quantity: data.quantity,
-        unit_price: data.unitPrice,
-        total_amount: data.totalAmount,
-        currency: data.currency,
-        invoice_date: data.invoiceDate,
-        due_date: data.dueDate,
-      },
+      invoice: invoicePayloadFields(data),
       pdf_base64: pdfBase64,
     },
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
   return body;
+}
+
+// Records a downloaded invoice (status 'downloaded') and archives its PDF so it
+// shows in the overview. Sending the same number later flips it to 'sent'.
+async function logInvoiceDownload(data, student, pdfBase64) {
+  const res = await apiFetch('/api/log-invoice-download', {
+    method: 'POST',
+    body: {
+      student_id: student.id,
+      course_id: currentCourse.id,
+      language: data.language,
+      invoice: invoicePayloadFields(data),
+      pdf_base64: pdfBase64,
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+  return body;
+}
+
+// Assigns each recipient a stable invoice number derived from the base, keeping
+// any already assigned (e.g. from an earlier download) so download → send reuses
+// the same number. Caller must validate the base format first.
+function assignBulkInvoiceNumbers(base, recipients) {
+  // Seed from every recipient (even deselected ones that were already downloaded)
+  // so a fresh number never collides with one already logged for someone else.
+  const used = new Set(currentBulkRecipients.map((r) => r._invoiceNumber).filter(Boolean));
+  let offset = 0;
+  for (const recipient of recipients) {
+    if (recipient._invoiceNumber) continue;
+    let candidate = incrementInvoiceNumber(base, offset);
+    offset += 1;
+    while (used.has(candidate)) {
+      candidate = incrementInvoiceNumber(base, offset);
+      offset += 1;
+    }
+    recipient._invoiceNumber = candidate;
+    used.add(candidate);
+  }
+}
+
+function base64ToBytes(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function invoiceFilename(data) {
+  const prefix = data.language === 'en' ? 'invoice' : 'rechnung';
+  const numberPart = String(data.invoiceNumber || 'lwg').replace(/[^a-z0-9._-]+/gi, '-');
+  return `${prefix}-${numberPart}.pdf`;
+}
+
+function downloadPdfFromBase64(base64, filename) {
+  const blob = new Blob([base64ToBytes(base64)], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export async function downloadInvoice() {
+  const btn = document.getElementById('inv-download');
+  const sendBtn = document.getElementById('inv-submit');
+  const msg = document.getElementById('inv-msg');
+  msg.classList.remove('is-visible-block');
+
+  const data = getInvoiceData();
+  const isBulk = currentBulkRecipients.length > 0;
+  const bulkRecipients = isBulk ? selectedBulkRecipients() : [];
+  if (isBulk && !bulkRecipients.length) {
+    msg.textContent = 'Select at least one recipient.';
+    msg.className = 'modal-msg err';
+    msg.classList.add('is-visible-block');
+    return;
+  }
+  if (!data.invoiceNumber || !data.totalAmount) {
+    msg.textContent = 'Please fill invoice number and amount.';
+    msg.className = 'modal-msg err';
+    msg.classList.add('is-visible-block');
+    return;
+  }
+
+  const selectedQrAttachments = isBulk
+    ? bulkRecipients.map((student) => activeQrAttachment(student))
+    : [activeQrAttachment()];
+  if (
+    selectedQrAttachments.some(
+      (attachment) => attachment.fileType === 'pdf' && !attachment.pdfBytes
+    )
+  ) {
+    msg.textContent = 'The QR bill PDF is still loading. Please wait a moment.';
+    msg.className = 'modal-msg err';
+    msg.classList.add('is-visible-block');
+    return;
+  }
+
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      throw new Error('PDF library not loaded — please reload the page.');
+    }
+
+    const recipients = isBulk ? bulkRecipients : [currentStudent];
+    if (isBulk) {
+      const invoiceNumberPattern = /^(LWG-\d{4}-)(\d{4})$/;
+      if (!invoiceNumberPattern.test(data.invoiceNumber)) {
+        throw new Error('Invoice number must use the format LWG-YYYY-0001.');
+      }
+      assignBulkInvoiceNumbers(data.invoiceNumber, bulkRecipients);
+    }
+
+    let done = 0;
+    const failed = [];
+    for (let i = 0; i < recipients.length; i += 1) {
+      const student = recipients[i];
+      const invoiceNumber = isBulk ? student._invoiceNumber : data.invoiceNumber;
+      const studentData = isBulk ? getInvoiceData(student, invoiceNumber) : data;
+      btn.textContent =
+        recipients.length > 1 ? `preparing ${i + 1}/${recipients.length}…` : 'preparing…';
+      const pdfBase64 = await buildInvoicePdf(studentData, activeQrAttachment(student));
+      downloadPdfFromBase64(pdfBase64, invoiceFilename(studentData));
+      try {
+        await logInvoiceDownload(studentData, student, pdfBase64);
+        done += 1;
+      } catch (err) {
+        failed.push(`${studentName(student)}: ${err.message || err}`);
+      }
+    }
+
+    if (failed.length) {
+      msg.textContent = `Downloaded ${recipients.length}; ${failed.length} not recorded in overview. ${failed.join(' | ')}`;
+      msg.className = 'modal-msg err';
+    } else {
+      msg.textContent =
+        done === 1
+          ? 'Invoice downloaded and added to the overview.'
+          : `Downloaded ${done} invoices and added them to the overview.`;
+      msg.className = 'modal-msg success';
+    }
+    msg.classList.add('is-visible-block');
+  } catch (err) {
+    msg.textContent = 'Error: ' + (err.message || err);
+    msg.className = 'modal-msg err';
+    msg.classList.add('is-visible-block');
+  } finally {
+    btn.textContent = originalLabel;
+    btn.disabled = false;
+    if (sendBtn) sendBtn.disabled = isBulk ? selectedBulkRecipients().length === 0 : false;
+  }
 }
