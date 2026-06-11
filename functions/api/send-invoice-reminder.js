@@ -33,7 +33,10 @@ function esc(str) {
 function greeting(student, language) {
   const name = student.first_name || '';
   if (language === 'en') return name ? `Dear ${name},` : 'Dear customer,';
-  return name ? `Liebe/r ${name}` : 'Liebe/r Kunde/in';
+  if (!name) return 'Hallo';
+  if (student.gender === 'female') return `Liebe ${name}`;
+  if (student.gender === 'male') return `Lieber ${name}`;
+  return `Hallo ${name}`;
 }
 
 function buildReminderEmail({ invoice, student, language }) {
@@ -135,7 +138,7 @@ async function fetchInvoice(env, invoiceNumber) {
 async function fetchStudent(env, studentId) {
   if (!studentId) return null;
   const res = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}&select=first_name,last_name,email,billing_email&limit=1`,
+    `${env.SUPABASE_URL}/rest/v1/students?id=eq.${encodeURIComponent(studentId)}&select=first_name,last_name,gender,email,billing_email&limit=1`,
     { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
   );
   if (!res.ok) throw new Error(`Student lookup failed: ${await res.text()}`);
