@@ -820,27 +820,21 @@ export async function setGroupSlotStatus(slotId, status) {
   }
 }
 
-// Completed minutes are summed from actual session durations; the total mixes
-// actual durations of existing sessions with the course default for sessions
-// not yet scheduled. Returns null when durations can't be determined.
+// Completed minutes are summed from actual session durations; the total is the
+// nominal contract amount (booked sessions × default session length), which stays
+// fixed even when the time is redistributed across a different number of
+// sessions. Returns null when completed durations can't be determined.
 function computeCourseMinutes(course) {
   const defaultLen = course.session_length_minutes || null;
   const sessions = (course.sessions || []).filter((s) => s.status !== 'cancelled');
   let doneMin = 0;
-  let plannedMin = 0;
   for (const s of sessions) {
+    if (s.status !== 'completed') continue;
     const dur = s.duration_minutes ?? defaultLen;
     if (!dur) return null;
-    if (s.status === 'completed') doneMin += dur;
-    else plannedMin += dur;
+    doneMin += dur;
   }
-  let totalMin = null;
-  if (course.sessions_total) {
-    const unscheduled = Math.max(0, course.sessions_total - sessions.length);
-    if (unscheduled === 0 || defaultLen) {
-      totalMin = doneMin + plannedMin + unscheduled * (defaultLen || 0);
-    }
-  }
+  const totalMin = course.sessions_total && defaultLen ? course.sessions_total * defaultLen : null;
   return { doneMin, totalMin };
 }
 
@@ -1147,7 +1141,6 @@ export async function cancelSession(sessionId, courseId) {
     });
     if (!res.ok) throw new Error();
     const row = document.getElementById('sess-' + sessionId);
-    const duration = row ? parseInt(row.dataset.duration, 10) : NaN;
     if (row) row.remove();
     const courseRow = document.getElementById('course-' + courseId);
     if (courseRow) {
@@ -1158,15 +1151,10 @@ export async function cancelSession(sessionId, courseId) {
         if (match) {
           const total = parseInt(match[2]);
           const newDone = parseInt(match[1]);
-          let newText = newDone + ' / ' + (total - 1) + ' sessions';
-          const minMatch = text.match(/(\d+) \/ (\d+) min/);
-          const soloMinMatch = text.match(/· (\d+) min/);
-          if (minMatch && !isNaN(duration)) {
-            newText += ' · ' + minMatch[1] + ' / ' + (parseInt(minMatch[2]) - duration) + ' min';
-          } else if (soloMinMatch) {
-            newText += ' · ' + soloMinMatch[1] + ' min';
-          }
-          countEl.firstChild.textContent = newText;
+          // The nominal minutes total is unaffected by cancelling a session
+          const minPart = text.match(/ · \d+(?: \/ \d+)? min/);
+          countEl.firstChild.textContent =
+            newDone + ' / ' + (total - 1) + ' sessions' + (minPart ? minPart[0] : '');
         }
       }
     }
