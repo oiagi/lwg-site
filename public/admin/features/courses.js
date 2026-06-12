@@ -820,6 +820,30 @@ export async function setGroupSlotStatus(slotId, status) {
   }
 }
 
+// Completed minutes are summed from actual session durations; the total mixes
+// actual durations of existing sessions with the course default for sessions
+// not yet scheduled. Returns null when durations can't be determined.
+function computeCourseMinutes(course) {
+  const defaultLen = course.session_length_minutes || null;
+  const sessions = (course.sessions || []).filter((s) => s.status !== 'cancelled');
+  let doneMin = 0;
+  let plannedMin = 0;
+  for (const s of sessions) {
+    const dur = s.duration_minutes ?? defaultLen;
+    if (!dur) return null;
+    if (s.status === 'completed') doneMin += dur;
+    else plannedMin += dur;
+  }
+  let totalMin = null;
+  if (course.sessions_total) {
+    const unscheduled = Math.max(0, course.sessions_total - sessions.length);
+    if (unscheduled === 0 || defaultLen) {
+      totalMin = doneMin + plannedMin + unscheduled * (defaultLen || 0);
+    }
+  }
+  return { doneMin, totalMin };
+}
+
 function renderCourses(courses) {
   const list = document.getElementById('course-list');
   if (!courses.length) {
@@ -839,7 +863,16 @@ function renderCourses(courses) {
       const done = c.sessions_completed || 0;
       const total = c.sessions_total;
       const remaining = total ? total - done : null;
-      const sessLine = total ? `${done} / ${total} sessions` : `${done} sessions completed`;
+      const minutes = computeCourseMinutes(c);
+      let minutesLine = '';
+      if (minutes) {
+        minutesLine =
+          minutes.totalMin !== null
+            ? ` · ${minutes.doneMin} / ${minutes.totalMin} min`
+            : ` · ${minutes.doneMin} min`;
+      }
+      const sessLine =
+        (total ? `${done} / ${total} sessions` : `${done} sessions completed`) + minutesLine;
 
       const rebookFlag =
         total && remaining !== null && remaining > 0 && remaining <= 3
@@ -862,7 +895,7 @@ function renderCourses(courses) {
         .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
         .map(
           (s, idx) => `
-      <div class="session-row" id="sess-${s.id}">
+      <div class="session-row" id="sess-${s.id}" data-duration="${s.duration_minutes ?? c.session_length_minutes ?? ''}">
         <div class="session-number">${idx + 1}.</div>
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDateWithEnd(s.scheduled_at, s.duration_minutes)}</div>
@@ -1114,16 +1147,26 @@ export async function cancelSession(sessionId, courseId) {
     });
     if (!res.ok) throw new Error();
     const row = document.getElementById('sess-' + sessionId);
+    const duration = row ? parseInt(row.dataset.duration, 10) : NaN;
     if (row) row.remove();
     const courseRow = document.getElementById('course-' + courseId);
     if (courseRow) {
       const countEl = courseRow.querySelector('.course-sessions');
       if (countEl) {
-        const match = countEl.textContent.match(/(\d+) \/ (\d+)/);
+        const text = countEl.firstChild.textContent;
+        const match = text.match(/(\d+) \/ (\d+) sessions/);
         if (match) {
           const total = parseInt(match[2]);
           const newDone = parseInt(match[1]);
-          countEl.firstChild.textContent = newDone + ' / ' + (total - 1) + ' sessions';
+          let newText = newDone + ' / ' + (total - 1) + ' sessions';
+          const minMatch = text.match(/(\d+) \/ (\d+) min/);
+          const soloMinMatch = text.match(/· (\d+) min/);
+          if (minMatch && !isNaN(duration)) {
+            newText += ' · ' + minMatch[1] + ' / ' + (parseInt(minMatch[2]) - duration) + ' min';
+          } else if (soloMinMatch) {
+            newText += ' · ' + soloMinMatch[1] + ' min';
+          }
+          countEl.firstChild.textContent = newText;
         }
       }
     }
@@ -1255,6 +1298,7 @@ export async function logSession(sessionId, courseId) {
 
 function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
   const row = document.getElementById('sess-' + sessionId);
+  const duration = row ? parseInt(row.dataset.duration, 10) : NaN;
   if (row) {
     const dot = row.querySelector('.session-status-dot');
     if (dot) dot.className = 'session-status-dot completed';
@@ -1274,18 +1318,33 @@ function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
   const countEl = courseRow.querySelector('.course-sessions');
   if (!countEl) return;
 
-  const slashMatch = countEl.textContent.match(/(\d+) \/ (\d+)/);
+  const text = countEl.firstChild.textContent;
+
+  const slashMatch = text.match(/(\d+) \/ (\d+) sessions/);
   if (slashMatch) {
     const newDone = parseInt(slashMatch[1], 10) + 1;
     const total = parseInt(slashMatch[2], 10);
-    countEl.firstChild.textContent = newDone + ' / ' + total + ' sessions';
+    let newText = newDone + ' / ' + total + ' sessions';
+    const minMatch = text.match(/(\d+) \/ (\d+) min/);
+    const soloMinMatch = text.match(/· (\d+) min/);
+    if (minMatch && !isNaN(duration)) {
+      newText += ' · ' + (parseInt(minMatch[1], 10) + duration) + ' / ' + minMatch[2] + ' min';
+    } else if (soloMinMatch && !isNaN(duration)) {
+      newText += ' · ' + (parseInt(soloMinMatch[1], 10) + duration) + ' min';
+    }
+    countEl.firstChild.textContent = newText;
     return;
   }
 
-  const openEndedMatch = countEl.textContent.match(/(\d+) sessions completed/);
+  const openEndedMatch = text.match(/(\d+) sessions completed/);
   if (openEndedMatch) {
     const newDone = parseInt(openEndedMatch[1], 10) + 1;
-    countEl.firstChild.textContent = newDone + ' sessions completed';
+    let newText = newDone + ' sessions completed';
+    const minMatch = text.match(/· (\d+) min/);
+    if (minMatch && !isNaN(duration)) {
+      newText += ' · ' + (parseInt(minMatch[1], 10) + duration) + ' min';
+    }
+    countEl.firstChild.textContent = newText;
   }
 }
 
