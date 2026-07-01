@@ -160,6 +160,17 @@ function setValue(id, value) {
   if (el && value !== null && value !== undefined) el.value = value;
 }
 
+function showFormMessage(text, type, { scroll = false } = {}) {
+  const msgEl = document.getElementById('nc-msg');
+  if (!msgEl) return;
+  msgEl.textContent = text;
+  msgEl.className = `modal-msg page-form-msg ${type}`;
+  msgEl.classList.add('is-visible-block');
+  if (scroll) {
+    msgEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
 function splitLevel(value) {
   const level = String(value || '');
   const suffix = level.match(/(\.[123]|\+)$/)?.[0] || '';
@@ -226,10 +237,10 @@ function applyEnquiryPrefill(enquiry) {
     attachSearchListeners(0);
   }
 
-  const msgEl = document.getElementById('nc-msg');
-  msgEl.textContent =
-    'Prefilled from booking request. Set the first session date and teacher, then create the course.';
-  msgEl.className = 'modal-msg success is-visible-block';
+  showFormMessage(
+    'Prefilled from booking request. Set the first session date and teacher, then create the course.',
+    'success'
+  );
 }
 
 function addParticipantBlock() {
@@ -251,9 +262,9 @@ async function handleSubmit(e) {
   const teacherId = document.getElementById('nc-teacher').value;
   const datetime = document.getElementById('nc-datetime').value;
   if (!teacherId || !datetime) {
-    msgEl.textContent = 'Please select a teacher and set a first session date.';
-    msgEl.className = 'modal-msg err';
-    msgEl.classList.add('is-visible-block');
+    showFormMessage('Please select a teacher and set a first session date.', 'err', {
+      scroll: true,
+    });
     return;
   }
 
@@ -280,9 +291,7 @@ async function handleSubmit(e) {
   const accessLabel = document.getElementById('nc-access-label')?.value.trim() || '';
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
   if (companyCodeBookingEnabled && !accessCode) {
-    msgEl.textContent = 'Please enter a company booking code.';
-    msgEl.className = 'modal-msg err';
-    msgEl.classList.add('is-visible-block');
+    showFormMessage('Please enter a company booking code.', 'err', { scroll: true });
     return;
   }
 
@@ -341,18 +350,16 @@ async function handleSubmit(e) {
     const result = await res.json();
     if (!res.ok) throw new Error(result.error || 'Unknown error');
 
-    msgEl.textContent = `Created. Course: ${result.course_code}`;
-    msgEl.className = 'modal-msg success';
-    msgEl.classList.add('is-visible-block');
+    showFormMessage(`Created. Course: ${result.course_code}`, 'success', { scroll: true });
     btn.textContent = 'created';
 
     setTimeout(() => {
       window.location.href = '/admin#courses';
     }, 1500);
   } catch (err) {
-    msgEl.textContent = err.message || 'Something went wrong. Please try again.';
-    msgEl.className = 'modal-msg err';
-    msgEl.classList.add('is-visible-block');
+    showFormMessage(err.message || 'Something went wrong. Please try again.', 'err', {
+      scroll: true,
+    });
     btn.textContent = 'create course & calendar event';
     delete btn.dataset.loading;
     btn.disabled = false;
@@ -404,10 +411,7 @@ async function handleSubmit(e) {
       })
       .then((student) => applyStudentToParticipant(student, 0))
       .catch(() => {
-        const msgEl = document.getElementById('nc-msg');
-        msgEl.textContent = 'Could not prefill the selected student.';
-        msgEl.className = 'modal-msg err';
-        msgEl.classList.add('is-visible-block');
+        showFormMessage('Could not prefill the selected student.', 'err');
       });
   }
 
@@ -419,10 +423,7 @@ async function handleSubmit(e) {
       })
       .then(applyEnquiryPrefill)
       .catch(() => {
-        const msgEl = document.getElementById('nc-msg');
-        msgEl.textContent = 'Could not prefill the selected booking request.';
-        msgEl.className = 'modal-msg err';
-        msgEl.classList.add('is-visible-block');
+        showFormMessage('Could not prefill the selected booking request.', 'err');
       });
   }
 

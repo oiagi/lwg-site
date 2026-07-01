@@ -2929,13 +2929,13 @@ html[data-device='mobile'] .avail-day {
 .page-form-actions {
   display: flex;
   gap: 0.8rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding-top: 1.2rem;
   border-top: 1px solid var(--border-soft);
   position: sticky;
   bottom: 0;
   z-index: 4;
-  background: #fff;
+  background: var(--page-bg);
   padding-bottom: 1rem;
 }
 .page-form-actions .modal-cancel,
@@ -2944,6 +2944,9 @@ html[data-device='mobile'] .avail-day {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.page-form-msg {
+  margin-top: 1.4rem;
 }
 .detail-contact-line {
   display: flex;
