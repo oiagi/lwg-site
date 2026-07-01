@@ -8,20 +8,20 @@ let participantCount = 1;
 const prefillStudentId = new URLSearchParams(window.location.search).get('student_id');
 const prefillEnquiryId = new URLSearchParams(window.location.search).get('enquiry_id');
 
-const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+const SUFFIXABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
 const DEFAULT_PRICE_PER_PERSON = {
   private: 120,
   duo: 70,
   group: 50,
 };
 
-function syncPlusEnabled(baseId, plusId) {
+function syncSuffixEnabled(baseId, suffixId) {
   const baseEl = document.getElementById(baseId);
-  const plusEl = document.getElementById(plusId);
-  if (!baseEl || !plusEl) return;
-  const enabled = PLUSABLE_LEVELS.has(baseEl.value);
-  plusEl.disabled = !enabled;
-  if (!enabled) plusEl.value = '';
+  const suffixEl = document.getElementById(suffixId);
+  if (!baseEl || !suffixEl) return;
+  const enabled = SUFFIXABLE_LEVELS.has(baseEl.value);
+  suffixEl.disabled = !enabled;
+  if (!enabled) suffixEl.value = '';
 }
 
 function fillDefaultPerPersonPrice() {
@@ -162,8 +162,8 @@ function setValue(id, value) {
 
 function splitLevel(value) {
   const level = String(value || '');
-  if (level.endsWith('+')) return { base: level.slice(0, -1), plus: '+' };
-  return { base: level, plus: '' };
+  const suffix = level.match(/(\.[123]|\+)$/)?.[0] || '';
+  return suffix ? { base: level.slice(0, -suffix.length), suffix } : { base: level, suffix: '' };
 }
 
 function applyEnquiryPrefill(enquiry) {
@@ -183,10 +183,10 @@ function applyEnquiryPrefill(enquiry) {
 
   setValue('nc-course-type', booking.course_type || enquiry.service || 'language course');
   setValue('nc-subject', booking.subject || 'German');
-  const { base, plus } = splitLevel(booking.preferred_level || booking.level);
+  const { base, suffix } = splitLevel(booking.preferred_level || booking.level);
   setValue('nc-level', base);
-  setValue('nc-level-plus', plus);
-  syncPlusEnabled('nc-level', 'nc-level-plus');
+  setValue('nc-level-suffix', suffix);
+  syncSuffixEnabled('nc-level', 'nc-level-suffix');
   setValue('nc-group', 'group');
   setValue('nc-sessions', booking.full_lesson_count || booking.sessions_total || '');
   setValue('nc-session-length', booking.session_length_minutes || '');
@@ -260,8 +260,8 @@ async function handleSubmit(e) {
   const courseType = document.getElementById('nc-course-type').value;
   const subject = document.getElementById('nc-subject').value;
   const levelBase = document.getElementById('nc-level').value;
-  const levelPlus = document.getElementById('nc-level-plus').value || '';
-  const level = levelBase + levelPlus;
+  const levelSuffix = document.getElementById('nc-level-suffix').value || '';
+  const level = levelBase + levelSuffix;
   const groupType = document.getElementById('nc-group').value;
   const sessions = document.getElementById('nc-sessions').value;
   const sessionLength = document.getElementById('nc-session-length').value;
@@ -467,8 +467,8 @@ async function handleSubmit(e) {
   document.getElementById('nc-group').addEventListener('change', fillDefaultPerPersonPrice);
   document
     .getElementById('nc-level')
-    .addEventListener('change', () => syncPlusEnabled('nc-level', 'nc-level-plus'));
-  syncPlusEnabled('nc-level', 'nc-level-plus');
+    .addEventListener('change', () => syncSuffixEnabled('nc-level', 'nc-level-suffix'));
+  syncSuffixEnabled('nc-level', 'nc-level-suffix');
   fillDefaultPerPersonPrice();
 
   document.getElementById('page-loading').classList.add('is-hidden');
