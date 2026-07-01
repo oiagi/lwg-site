@@ -7,7 +7,7 @@ function setVal(id, v) {
   if (el) el.value = v ?? '';
 }
 
-const PLUSABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1']);
+const SUFFIXABLE_LEVELS = new Set(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
 const DEFAULT_PRICE_PER_PERSON = {
   private: 120,
   duo: 70,
@@ -16,20 +16,21 @@ const DEFAULT_PRICE_PER_PERSON = {
 
 function splitLevel(raw) {
   const v = (raw || '').trim();
-  if (v.endsWith('+')) {
-    const base = v.slice(0, -1);
-    if (PLUSABLE_LEVELS.has(base)) return { base, plus: '+' };
+  const suffix = v.match(/(\.[123]|\+)$/)?.[0] || '';
+  if (suffix) {
+    const base = v.slice(0, -suffix.length);
+    if (SUFFIXABLE_LEVELS.has(base)) return { base, suffix };
   }
-  return { base: v, plus: '' };
+  return { base: v, suffix: '' };
 }
 
-function syncPlusEnabled(baseId, plusId) {
+function syncSuffixEnabled(baseId, suffixId) {
   const baseEl = document.getElementById(baseId);
-  const plusEl = document.getElementById(plusId);
-  if (!baseEl || !plusEl) return;
-  const enabled = PLUSABLE_LEVELS.has(baseEl.value);
-  plusEl.disabled = !enabled;
-  if (!enabled) plusEl.value = '';
+  const suffixEl = document.getElementById(suffixId);
+  if (!baseEl || !suffixEl) return;
+  const enabled = SUFFIXABLE_LEVELS.has(baseEl.value);
+  suffixEl.disabled = !enabled;
+  if (!enabled) suffixEl.value = '';
 }
 
 function fillDefaultPerPersonPrice() {
@@ -102,10 +103,10 @@ function populate(course) {
     : '';
   setVal('ec-course-type', course.course_type || 'language course');
   setVal('ec-subject', course.subject || 'German');
-  const { base, plus } = splitLevel(course.level);
+  const { base, suffix } = splitLevel(course.level);
   setVal('ec-level', base);
-  setVal('ec-level-plus', plus);
-  syncPlusEnabled('ec-level', 'ec-level-plus');
+  setVal('ec-level-suffix', suffix);
+  syncSuffixEnabled('ec-level', 'ec-level-suffix');
   setVal('ec-group', course.group_type || 'private');
   setVal('ec-status', course.status || 'active');
   setVal(
@@ -186,7 +187,7 @@ async function handleSubmit(e) {
     subject: document.getElementById('ec-subject').value,
     level:
       document.getElementById('ec-level').value +
-        (document.getElementById('ec-level-plus').value || '') || null,
+        (document.getElementById('ec-level-suffix').value || '') || null,
     group_type: document.getElementById('ec-group').value,
     status: document.getElementById('ec-status').value,
     sessions_total: sessionsVal === '' ? null : parseInt(sessionsVal, 10),
@@ -279,7 +280,7 @@ async function handleSubmit(e) {
   document.getElementById('ec-group').addEventListener('change', fillDefaultPerPersonPrice);
   document
     .getElementById('ec-level')
-    .addEventListener('change', () => syncPlusEnabled('ec-level', 'ec-level-plus'));
+    .addEventListener('change', () => syncSuffixEnabled('ec-level', 'ec-level-suffix'));
   document.getElementById('ec-toggle-address').addEventListener('click', () => {
     const fields = document.getElementById('ec-address-fields');
     setAddressFieldsOpen(fields?.classList.contains('is-hidden'));
