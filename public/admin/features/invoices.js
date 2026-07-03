@@ -751,6 +751,13 @@ function invoiceStrings(lang, isGroup = false) {
     customerNoLabel: isEN ? 'Customer no.:' : 'Kundennummer:',
     vatLabel: isEN ? 'VAT no.:' : 'MWST-Nummer:',
     titleFallback: isEN ? 'Invoice' : 'Rechnung',
+    classType: isGroup
+      ? isEN
+        ? 'Group lessons'
+        : 'Gruppenunterricht'
+      : isEN
+        ? 'Individual lessons'
+        : 'Individualunterricht',
     colSubject: isEN ? 'Subject' : 'Fach',
     colLessons: isEN ? 'No. of lessons' : 'Anzahl Lektionen',
     colAmount: isEN ? 'Amount CHF' : 'Betrag CHF',
@@ -812,6 +819,7 @@ function buildPreviewHtml(data) {
       </div>
       <p class="inv-prev-date">${esc(longDate(data.invoiceDate, lang))}</p>
       <h3>${esc(data.subject || s.titleFallback)}</h3>
+      <p class="inv-prev-classtype">${esc(s.classType)}</p>
       <p class="inv-prev-greeting">${esc(greeting)}</p>
       <table>
         <colgroup>
@@ -956,7 +964,7 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   const lang = data.language || 'de';
   const s = invoiceStrings(lang, isSharedCourse(currentCourse));
 
-  let y = 66;
+  let y = 56;
   const metaStartY = y;
   drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);
   y += 6;
@@ -985,22 +993,52 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   });
   const addressEndY = y;
 
-  y = Math.max(metaEndY, addressEndY) + 20;
+  const headerBottom = Math.max(metaEndY, addressEndY);
+
+  const widths = [56, 39, 50, 25];
+  const headerH = 7;
+  const totalH = 7;
+  setFont(19, 'bold');
+  const titleLines = doc.splitTextToSize(data.subject || s.titleFallback, contentW);
+  setFont(9);
+  const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
+  const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
+  setFont(10.5);
+  const paymentLines = doc.splitTextToSize(String(s.paymentText() || ''), contentW);
+  const blockH =
+    9 +
+    (titleLines.length - 1) * 8 +
+    6.5 +
+    9 +
+    8 +
+    headerH +
+    itemH +
+    totalH +
+    8 +
+    paymentLines.length * 5.5 +
+    7 +
+    5.5;
+  // Bottom bound: above the footnote, or above the QR image when it sits on page 1
+  const bottomBound = qrAttachment?.dataUrl ? pageH - 66 : pageH - 28;
+  // Distribute spare space 45/55 above/below so the block sits at the optical center
+  y = headerBottom + Math.max(8, (bottomBound - headerBottom - blockH) * 0.45);
   setFont(11);
   doc.text(longDate(data.invoiceDate, lang), margin, y);
 
-  y += 14;
+  y += 9;
   setFont(19, 'bold');
-  const titleLines = doc.splitTextToSize(data.subject || s.titleFallback, contentW);
   doc.text(titleLines, margin, y);
-  y += titleLines.length * 8 + 7;
+  y += (titleLines.length - 1) * 8 + 6.5;
+
+  setFont(11, 'italic');
+  doc.text(s.classType, margin, y);
+  y += 9;
 
   setFont(10.5);
   doc.text(formalGreeting(data), margin, y);
 
-  y += 18;
+  y += 8;
   const tableTop = y;
-  const widths = [56, 39, 50, 25];
   const xs = [
     margin,
     margin + widths[0],
@@ -1008,10 +1046,6 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     margin + widths[0] + widths[1] + widths[2],
   ];
   const tableW = widths.reduce((a, b) => a + b, 0);
-  const headerH = 7;
-  const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
-  const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
-  const totalH = 7;
 
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
@@ -1040,12 +1074,12 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.text('Total CHF', xs[0] + 2, totalTop + 4.5);
   textRight(money(data.totalAmount), xs[3] + widths[3] - 3, totalTop + 4.5);
 
-  y = totalTop + totalH + 18;
+  y = totalTop + totalH + 8;
   setFont(10.5);
   y = addWrappedText(doc, s.paymentText(), margin, y, contentW, 5.5);
-  y += 10;
+  y += 7;
   doc.text(s.closing, margin, y);
-  doc.text('Gioia Birukoff', margin, y + 6);
+  doc.text('Gioia Birukoff', margin, y + 5.5);
 
   if (qrAttachment?.dataUrl) {
     try {

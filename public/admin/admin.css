@@ -3294,7 +3294,7 @@ html[data-device='mobile'] .avail-day {
   display: grid;
   gap: 2rem;
   grid-template-columns: minmax(0, 0.95fr) minmax(16rem, 1.05fr);
-  margin: 1rem 0 2.4rem;
+  margin: 1rem 0 1.2rem;
 }
 .inv-prev-meta {
   margin: 0;
@@ -3306,11 +3306,15 @@ html[data-device='mobile'] .avail-day {
   font-family: Arial, sans-serif;
   font-size: 1.35rem;
   line-height: 1.1;
-  margin: 0 0 1rem;
+  margin: 0 0 0.35rem;
   padding: 0;
 }
+.inv-prev-classtype {
+  font-style: italic;
+  margin: 0 0 1rem;
+}
 .inv-prev-greeting {
-  margin-bottom: 1.4rem;
+  margin-bottom: 0.8rem;
 }
 .inv-prev-address {
   font-size: 0.76rem;
@@ -3326,7 +3330,7 @@ html[data-device='mobile'] .avail-day {
 .inv-prev-page table {
   border-collapse: collapse;
   font-size: 0.72rem;
-  margin: 1rem 0 1.4rem;
+  margin: 0.5rem 0 0.8rem;
   width: 100%;
 }
 .invoice-col-subject {
