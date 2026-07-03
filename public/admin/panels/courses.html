@@ -330,6 +330,48 @@
   </div>
 </div>
 
+<!-- ── Contracts modal ───────────────────────────────────────────────── -->
+<div class="modal-overlay" id="contracts-modal">
+  <div class="modal modal-wide">
+    <h2 id="con-title">send course contracts</h2>
+    <input type="hidden" id="con-course-id" value="">
+
+    <div class="modal-field">
+      <label>Recipients <span class="cs-meta" id="con-count"></span></label>
+      <div id="con-students" class="cert-students"></div>
+    </div>
+
+    <div class="modal-field cert-options">
+      <div>
+        <label>Language</label>
+        <div class="cert-radio-row">
+          <label class="cert-radio">
+            <input type="radio" name="con-language" value="de" checked> Deutsch
+          </label>
+          <label class="cert-radio">
+            <input type="radio" name="con-language" value="en"> English
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <label>Preview</label>
+      <div id="con-preview" class="cert-preview contract-preview"></div>
+      <p class="label-hint mt-small">
+        Each contract is sent as a pre-signed PDF attachment together with a personal
+        link where the student uploads the printed and signed copy.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeContractModal">cancel</button>
+      <button class="modal-submit" id="con-submit">send contracts</button>
+    </div>
+    <p class="modal-msg" id="con-msg"></p>
+  </div>
+</div>
+
 <!-- ── Attendance modal ──────────────────────────────────────────────── -->
 <div class="modal-overlay" id="attendance-modal">
   <div class="modal">

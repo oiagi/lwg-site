@@ -25,6 +25,7 @@ import {
   sendCourseConfirmation,
   openScheduleModal,
   openCertificateModal,
+  openContractModal,
   openInvoiceModal,
   openBulkInvoiceModal,
   toggleCourseAddressEditor,
@@ -41,6 +42,7 @@ import {
   deleteGroupSlot,
 } from './features/courses.js?v=invoice-overview-cleanup-20260610';
 import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
+import { closeContractModal, downloadSignedContract } from './features/contracts.js';
 import {
   closeInvoiceModal,
   submitInvoice,
@@ -147,6 +149,9 @@ const actions = {
   openScheduleModal,
   openCertificateModal,
   closeCertificateModal,
+  openContractModal,
+  closeContractModal,
+  downloadSignedContract,
   openInvoiceModal,
   openBulkInvoiceModal,
   closeInvoiceModal,

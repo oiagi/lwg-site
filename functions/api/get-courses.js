@@ -121,29 +121,37 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const companyIds = [...new Set(courses.map((c) => c.company_id).filter(Boolean))];
 
-    const [sessRes, initialEnrolRes, certRes, pendingRes, companyRes] = await Promise.all([
-      fetch(
-        `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
-        { headers: H }
-      ),
-      fetch(`${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT}`, {
-        headers: H,
-      }),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/certificates?or=(${courseFilter})&select=student_id,course_id,sent_at&order=sent_at.desc`,
-        { headers: H }
-      ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/enquiries?or=(${courseFilter})&status=eq.pending_course_booking&order=created_at.asc&select=id,created_at,course_id,student_id,lead_first,lead_last,lead_email,lead_phone,booking_data,contact_data`,
-        { headers: H }
-      ),
-      companyIds.length
-        ? fetch(
-            `${SUPABASE_URL}/rest/v1/companies?or=(${companyIds.map((id) => `id.eq.${id}`).join(',')})&select=id,name`,
-            { headers: H }
-          )
-        : Promise.resolve(null),
-    ]);
+    const [sessRes, initialEnrolRes, certRes, contractRes, pendingRes, companyRes] =
+      await Promise.all([
+        fetch(
+          `${SUPABASE_URL}/rest/v1/sessions?or=(${courseFilter})&status=neq.cancelled&order=scheduled_at.asc&select=*`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT}`,
+          {
+            headers: H,
+          }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/certificates?or=(${courseFilter})&select=student_id,course_id,sent_at&order=sent_at.desc`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/contracts?or=(${courseFilter})&select=id,student_id,course_id,sent_at,signed_uploaded_at,signed_file_name&order=sent_at.desc`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/enquiries?or=(${courseFilter})&status=eq.pending_course_booking&order=created_at.asc&select=id,created_at,course_id,student_id,lead_first,lead_last,lead_email,lead_phone,booking_data,contact_data`,
+          { headers: H }
+        ),
+        companyIds.length
+          ? fetch(
+              `${SUPABASE_URL}/rest/v1/companies?or=(${companyIds.map((id) => `id.eq.${id}`).join(',')})&select=id,name`,
+              { headers: H }
+            )
+          : Promise.resolve(null),
+      ]);
 
     const allSessions = sessRes.ok ? await sessRes.json() : [];
     const companyNameMap = {};
@@ -166,6 +174,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     }
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
     const allCertificates = certRes.ok ? await certRes.json() : [];
+    const allContracts = contractRes.ok ? await contractRes.json() : [];
     const pendingBookings = pendingRes.ok ? await pendingRes.json() : [];
 
     // ── Batch fetch all unique students ────────────────────────────────
@@ -239,6 +248,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       if (!byStudent[c.student_id]) byStudent[c.student_id] = c.sent_at;
     }
 
+    // contracts ordered desc above; keep the latest per (course, student)
+    const contractByCourseStudent = {};
+    for (const c of allContracts) {
+      const byStudent = (contractByCourseStudent[c.course_id] ||= {});
+      if (!byStudent[c.student_id]) byStudent[c.student_id] = c;
+    }
+
     const studentsById = {};
     for (const s of allStudents) {
       studentsById[s.id] = s;
@@ -286,6 +302,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const confSentByStudent = confirmationSentByCourseStudent[course.id] || {};
       const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
+      const contractByStudent = contractByCourseStudent[course.id] || {};
       const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
       const students = [...(studentIdsByCourse[course.id] || [])]
@@ -301,6 +318,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             confirmation_sent_at: confSentByStudent[id] || null,
             schedule_sent_at: schedSentByStudent[id] || null,
             certificate_sent_at: certSentByStudent[id] || null,
+            contract_id: contractByStudent[id]?.id || null,
+            contract_sent_at: contractByStudent[id]?.sent_at || null,
+            contract_signed_at: contractByStudent[id]?.signed_uploaded_at || null,
             invoice_sent_at: invoiceSentByStudent[id] || null,
           };
         })

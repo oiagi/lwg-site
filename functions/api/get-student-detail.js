@@ -145,8 +145,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       courses = courseRes.ok ? await courseRes.json() : [];
     }
 
-    // ── Load company name, enquiries, and invoices in parallel ──────────
-    const [compRes, enquiriesRes, invoicesRes] = await Promise.all([
+    // ── Load company name, enquiries, invoices, and contracts in parallel ──
+    const [compRes, enquiriesRes, invoicesRes, contractsRes] = await Promise.all([
       student.company_id
         ? fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${student.company_id}&select=id,name`, {
             headers: H,
@@ -160,6 +160,10 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date,course_id`,
         { headers: H }
       ),
+      fetch(
+        `${SUPABASE_URL}/rest/v1/contracts?student_id=eq.${id}&order=sent_at.desc&select=id,contract_ref,course_id,language,sent_at,signed_uploaded_at,signed_file_name`,
+        { headers: H }
+      ),
     ]);
 
     let company_name = null;
@@ -170,6 +174,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const enquiries = enquiriesRes.ok ? await enquiriesRes.json() : [];
     const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
+    const contracts = contractsRes.ok ? await contractsRes.json() : [];
     const enquiryCourseIds = [...new Set(enquiries.map((e) => e.course_id).filter(Boolean))];
     let enquiryCourses = [];
     if (enquiryCourseIds.length) {
@@ -197,6 +202,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       enquiries: enrichedEnquiries,
       pending_request_count: enrichedEnquiries.filter((enquiry) => enquiry.untreated).length,
       invoices,
+      contracts,
     });
   } catch (err) {
     console.error('Error:', err);

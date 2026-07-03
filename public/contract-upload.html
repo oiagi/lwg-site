@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload signed contract — Learning with Gioia</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/enquiry.css">
+  <link rel="stylesheet" href="/intake.css">
+  <link rel="stylesheet" href="/contract-upload.css">
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">skip to content</a>
+
+  <div class="form-container" id="main">
+    <div id="cu-loading" class="loading-state">loading…</div>
+
+    <div id="cu-content" class="is-hidden">
+      <h1 id="cu-title">your course contract</h1>
+      <p class="intake-intro" id="cu-intro">
+        Please print the contract we emailed you, sign it, and upload a scan or
+        photo of the signed document below.
+      </p>
+
+      <div class="cu-course-box">
+        <p class="section-label" id="cu-course-label">course</p>
+        <p class="cu-course-line" id="cu-course-line"></p>
+      </div>
+
+      <div class="cu-uploaded-note is-hidden" id="cu-already">
+        <p id="cu-already-text"></p>
+      </div>
+
+      <div class="field">
+        <label for="cu-file" id="cu-file-label">signed contract (PDF, JPG or PNG, max. 10 MB) *</label>
+        <input type="file" id="cu-file" accept="application/pdf,image/jpeg,image/png" />
+        <div class="error" id="cu-file-error">Please choose a PDF, JPG or PNG file up to 10 MB.</div>
+      </div>
+
+      <button class="submit" id="cu-submit-btn">upload signed contract →</button>
+      <div class="error submit-error" id="cu-submit-error">
+        Something went wrong — please try again or email us at
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </div>
+    </div>
+
+    <div id="cu-thanks" class="is-hidden text-center">
+      <h1 id="cu-thanks-title">thank you.</h1>
+      <p id="cu-thanks-text">We've received your signed contract. You're all set!</p>
+    </div>
+
+    <div id="cu-error" class="is-hidden text-center">
+      <h1>link expired or invalid.</h1>
+      <p>Please contact us for a new link, or email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+  </div>
+
+  <script src="/contract-upload.js"></script>
+</body>
+</html>

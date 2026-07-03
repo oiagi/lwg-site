@@ -435,6 +435,28 @@ function renderStudentDetail(container, s) {
       </p>
     </div>`;
 
+  const courseCodeById = {};
+  (s.courses || []).forEach((c) => {
+    courseCodeById[c.id] = c.course_code;
+  });
+  const contractsHtml = (s.contracts || []).length
+    ? (s.contracts || [])
+        .map((con) => {
+          const courseLabel = courseCodeById[con.course_id] || '—';
+          const statusHtml = con.signed_uploaded_at
+            ? `<span class="sent-tag paid-tag">signed uploaded · ${esc(fmtDate(con.signed_uploaded_at))}</span>
+               <button class="contract-view-btn" data-action="downloadSignedContract"
+                 data-args="${esc(con.id)}">view / download</button>`
+            : '<span class="detail-muted">awaiting signed upload</span>';
+          return `<li class="contract-row">
+            <span class="contract-row-main">${esc(courseLabel)} · ${esc(con.contract_ref)}
+              <span class="detail-muted">sent ${esc(fmtDate(con.sent_at))}</span></span>
+            ${statusHtml}
+          </li>`;
+        })
+        .join('')
+    : '';
+
   const adminHtml = renderAdminSection(s);
   const requestHtml = renderRequestSection(s);
   const requestFlag = s.pending_request_count
@@ -471,6 +493,14 @@ function renderStudentDetail(container, s) {
       <p class="detail-meta">Requests</p>
       ${requestHtml}
     </div>
+    ${
+      contractsHtml
+        ? `<div class="detail-section">
+             <p class="detail-meta">Contracts</p>
+             <ul class="contract-list">${contractsHtml}</ul>
+           </div>`
+        : ''
+    }
     <div class="detail-section">
       <p class="detail-meta">Admin</p>
       ${adminHtml}

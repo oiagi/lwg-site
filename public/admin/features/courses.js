@@ -12,6 +12,7 @@ import { loadTeachers } from './teachers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { openConfirmSend } from './confirm-send.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
+import { openContractModal as openContracts } from './contracts.js';
 import {
   openBulkInvoiceModal as openBulkInvoices,
   openInvoiceModal as openInvoice,
@@ -283,6 +284,8 @@ function sentCommunicationsBlock(course) {
   const confirmationSent = students.filter((s) => s.confirmation_sent_at);
   const scheduleSent = students.filter((s) => s.schedule_sent_at);
   const certSent = students.filter((s) => s.certificate_sent_at);
+  const contractSent = students.filter((s) => s.contract_sent_at);
+  const contractSigned = students.filter((s) => s.contract_signed_at);
   const invoiceSent = students.filter((s) => s.invoice_sent_at);
 
   if (
@@ -290,6 +293,7 @@ function sentCommunicationsBlock(course) {
     !confirmationSent.length &&
     !scheduleSent.length &&
     !certSent.length &&
+    !contractSent.length &&
     !invoiceSent.length
   ) {
     return '';
@@ -327,6 +331,15 @@ function sentCommunicationsBlock(course) {
     const last = latest(certSent, 'certificate_sent_at');
     items.push(
       `<li>certificate sent to ${certSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
+    );
+  }
+  if (contractSent.length) {
+    const last = latest(contractSent, 'contract_sent_at');
+    const signedNote = contractSigned.length ? ` · ${contractSigned.length} signed` : '';
+    items.push(
+      `<li>contract sent to ${contractSent.length} of ${total}${signedNote} · <span class="detail-muted">last ${esc(
         fmtDate(last)
       )}</span></li>`
     );
@@ -945,6 +958,13 @@ function renderCourses(courses) {
               s.certificate_sent_at
                 ? `<span class="sent-tag">certificate sent · ${esc(fmtDate(s.certificate_sent_at))}</span>`
                 : '',
+              s.contract_signed_at
+                ? `<span class="sent-tag paid-tag">contract signed · ${esc(fmtDate(s.contract_signed_at))}</span>
+                   <button class="contract-view-btn" data-action="downloadSignedContract"
+                     data-args="${s.contract_id}">view signed contract</button>`
+                : s.contract_sent_at
+                  ? `<span class="sent-tag">contract sent · ${esc(fmtDate(s.contract_sent_at))}</span>`
+                  : '',
             ]
               .filter(Boolean)
               .join('');
@@ -1076,6 +1096,11 @@ function renderCourses(courses) {
                   <button class="save-btn"
                     data-action="openCertificateModal" data-args="${c.id}">send certificates</button>
                   <span class="saved-msg" id="cert-row-msg-${c.id}">sent</span>
+                </div>
+                <div class="detail-action-row">
+                  <button class="save-btn"
+                    data-action="openContractModal" data-args="${c.id}">send contracts</button>
+                  <span class="saved-msg" id="contract-row-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"
@@ -2240,6 +2265,10 @@ export async function sendCourseConfirmation(courseId) {
 
 export function openCertificateModal(courseId) {
   return openCertificates(courseId, coursesCache);
+}
+
+export function openContractModal(courseId) {
+  return openContracts(courseId, coursesCache);
 }
 
 export async function openScheduleModal(courseId) {

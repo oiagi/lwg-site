@@ -1,0 +1,29 @@
+/* ── Signed contract upload page ──────────────────────────────────── */
+
+.cu-course-box {
+  border: 1px solid var(--border-soft, #e3e8ee);
+  background: #f8fafc;
+  padding: 1rem 1.2rem;
+  margin: 1.4rem 0;
+}
+
+.cu-course-line {
+  margin: 0.3rem 0 0;
+  font-size: 1.05rem;
+}
+
+.cu-uploaded-note {
+  border-left: 3px solid #b7d3c4;
+  background: #f2f8f4;
+  padding: 0.7rem 1rem;
+  margin: 0 0 1.4rem;
+  font-size: 0.9rem;
+}
+
+.cu-uploaded-note p {
+  margin: 0;
+}
+
+#cu-file {
+  padding: 0.6rem 0;
+}
