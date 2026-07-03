@@ -3306,8 +3306,12 @@ html[data-device='mobile'] .avail-day {
   font-family: Arial, sans-serif;
   font-size: 1.35rem;
   line-height: 1.1;
-  margin: 0 0 1rem;
+  margin: 0 0 0.35rem;
   padding: 0;
+}
+.inv-prev-classtype {
+  font-style: italic;
+  margin: 0 0 1rem;
 }
 .inv-prev-greeting {
   margin-bottom: 0.8rem;
