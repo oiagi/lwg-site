@@ -6,6 +6,10 @@ import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { formatCourseAddress } from './courses.js';
+import {
+  CANCELLATION_POLICY_BY_LANGUAGE,
+  GROUP_CANCELLATION_POLICY_BY_LANGUAGE,
+} from '../../agb-content.js';
 
 const LOGO_URL = '/lwg_logo.svg';
 const SIGNATURE_URL = '/admin/assets/signature.png';
@@ -17,8 +21,12 @@ const PROVIDER_NAME = 'learning with gioia';
 const PROVIDER_CITY = 'Zürich';
 
 /* ── Standardised contract terms ──────────────────────────────────
-   Edit the wording here; each entry renders as one numbered clause. */
-const CONTRACT_TERMS_DE = [
+   Edit the wording here; each entry renders as one numbered clause.
+   Clause 3 (Absenzen / Missed lessons) depends on the class type and
+   reuses the cancellation wording of the course confirmation email
+   (public/agb-content.js): group lessons cannot be cancelled or
+   rescheduled; individual lessons follow the 24-hour rule. */
+const contractTermsDe = (isGroup) => [
   {
     title: 'Vertragsgegenstand',
     text: 'Dieser Vertrag regelt die Teilnahme am oben aufgeführten Kurs bei learning with gioia.',
@@ -29,7 +37,7 @@ const CONTRACT_TERMS_DE = [
   },
   {
     title: 'Absenzen',
-    text: 'Verpasste Lektionen werden nicht zurückerstattet. Eine Verschiebung einzelner Lektionen ist nach Absprache und mit mindestens 24 Stunden Vorlauf möglich.',
+    text: isGroup ? GROUP_CANCELLATION_POLICY_BY_LANGUAGE.de : CANCELLATION_POLICY_BY_LANGUAGE.de,
   },
   {
     title: 'Allgemeine Geschäftsbedingungen',
@@ -41,7 +49,7 @@ const CONTRACT_TERMS_DE = [
   },
 ];
 
-const CONTRACT_TERMS_EN = [
+const contractTermsEn = (isGroup) => [
   {
     title: 'Subject of the agreement',
     text: 'This agreement governs participation in the course listed above at learning with gioia.',
@@ -52,7 +60,7 @@ const CONTRACT_TERMS_EN = [
   },
   {
     title: 'Missed lessons',
-    text: 'Missed lessons are not refunded. Individual lessons may be rescheduled by arrangement with at least 24 hours notice.',
+    text: isGroup ? GROUP_CANCELLATION_POLICY_BY_LANGUAGE.en : CANCELLATION_POLICY_BY_LANGUAGE.en,
   },
   {
     title: 'General terms and conditions',
@@ -261,6 +269,7 @@ function buildContractData(recipient, course, opts) {
     level: course.level || '',
     location: address || course.location || '',
     classType: classTypeDisplay,
+    isGroup,
     dateRange: firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '—',
     sessionsDisplay,
     fee: feeDisplay(course, isEN),
@@ -274,7 +283,7 @@ function buildContractData(recipient, course, opts) {
   };
 }
 
-function strings(isEN) {
+function strings(isEN, isGroup) {
   return isEN
     ? {
         title: 'Course Agreement',
@@ -291,7 +300,7 @@ function strings(isEN) {
         locationLabel: 'Location',
         classTypeLabel: 'Class type',
         feeLabel: 'Course fee',
-        terms: CONTRACT_TERMS_EN,
+        terms: contractTermsEn(isGroup),
         providerSigLabel: 'The provider',
         studentSigLabel: 'The participant',
         placeDateLabel: 'Place, date',
@@ -313,7 +322,7 @@ function strings(isEN) {
         locationLabel: 'Ort',
         classTypeLabel: 'Unterrichtsart',
         feeLabel: 'Kursgeld',
-        terms: CONTRACT_TERMS_DE,
+        terms: contractTermsDe(isGroup),
         providerSigLabel: 'Die Anbieterin',
         studentSigLabel: 'Die Teilnehmerin / der Teilnehmer',
         placeDateLabel: 'Ort, Datum',
@@ -337,7 +346,7 @@ function contractDetailRows(data, t) {
 
 /* ── Preview ────────────────────────────────────────────────────── */
 function buildPreviewHtml(data) {
-  const t = strings(data.isEN);
+  const t = strings(data.isEN, data.isGroup);
   const detailRow = (k, v) =>
     `<div class="cert-prev-row"><span>${esc(k)}</span><span>${esc(v)}</span></div>`;
   const termsHtml = t.terms
@@ -489,7 +498,7 @@ function buildContractPdf(data) {
   const pageH = 297;
   const marginX = 24;
   const contentW = pageW - marginX * 2;
-  const t = strings(data.isEN);
+  const t = strings(data.isEN, data.isGroup);
   let y = 18;
 
   // Logo (centered, top)
