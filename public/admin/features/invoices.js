@@ -751,6 +751,13 @@ function invoiceStrings(lang, isGroup = false) {
     customerNoLabel: isEN ? 'Customer no.:' : 'Kundennummer:',
     vatLabel: isEN ? 'VAT no.:' : 'MWST-Nummer:',
     titleFallback: isEN ? 'Invoice' : 'Rechnung',
+    classType: isGroup
+      ? isEN
+        ? 'Group lessons'
+        : 'Gruppenunterricht'
+      : isEN
+        ? 'Individual lessons'
+        : 'Individualunterricht',
     colSubject: isEN ? 'Subject' : 'Fach',
     colLessons: isEN ? 'No. of lessons' : 'Anzahl Lektionen',
     colAmount: isEN ? 'Amount CHF' : 'Betrag CHF',
@@ -777,7 +784,7 @@ function buildPreviewHtml(data) {
   const qrAttachment = activeQrAttachment(currentStudent);
   const qrPreview =
     qrAttachment.fileType === 'pdf'
-      ? `<span>${qrAttachment.pdfBytes ? 'QR bill PDF will be attached as page 2' : 'Loading QR bill PDF...'}</span>`
+      ? `<span>${qrAttachment.pdfBytes ? 'QR payment part will be placed at the bottom of this page (page 2 if it does not fit)' : 'Loading QR bill PDF...'}</span>`
       : qrAttachment.dataUrl
         ? `<img src="${qrAttachment.dataUrl}" alt="">`
         : '<span>QR bill PDF</span>';
@@ -830,7 +837,7 @@ function buildPreviewHtml(data) {
         </thead>
         <tbody>
           <tr>
-            <td>${esc(data.subject)}</td>
+            <td>${esc(data.subject)}<br><em>${esc(s.classType)}</em></td>
             <td>${esc(String(data.quantity))}</td>
             <td>${esc(money(data.unitPrice))}</td>
             <td>${esc(money(data.totalAmount))}</td>
@@ -902,13 +909,37 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
   return y + lines.length * lineHeight;
 }
 
-async function mergeWithQrPdf(invoiceBytes, qrAttachment = sharedQrAttachment) {
+// Swiss QR payment part: full page width, exactly 105mm tall, at the bottom edge.
+const QR_PART_HEIGHT_MM = 105;
+const MM_TO_PT = 72 / 25.4;
+
+async function mergeWithQrPdf(
+  invoiceBytes,
+  qrAttachment = sharedQrAttachment,
+  qrOnFirstPage = false
+) {
   if (!qrAttachment?.pdfBytes) return arrayBufferToBase64(invoiceBytes);
   if (!window.PDFLib?.PDFDocument) {
     throw new Error('PDF merge library not loaded — please reload the page.');
   }
   const invoiceDoc = await window.PDFLib.PDFDocument.load(invoiceBytes);
   const qrDoc = await window.PDFLib.PDFDocument.load(qrAttachment.pdfBytes);
+  if (qrOnFirstPage && qrDoc.getPageCount() === 1) {
+    // Crop the bottom 105mm of the bank's PDF (the payment part — the rest is
+    // letterhead) and stamp it onto the bottom of the invoice page.
+    const [qrPage] = qrDoc.getPages();
+    const cropHeight = Math.min(qrPage.getHeight(), QR_PART_HEIGHT_MM * MM_TO_PT);
+    const embedded = await invoiceDoc.embedPage(qrPage, {
+      left: 0,
+      bottom: 0,
+      right: qrPage.getWidth(),
+      top: cropHeight,
+    });
+    const firstPage = invoiceDoc.getPage(0);
+    const scale = firstPage.getWidth() / embedded.width;
+    firstPage.drawPage(embedded, { x: 0, y: 0, xScale: scale, yScale: scale });
+    return await invoiceDoc.saveAsBase64({ dataUri: false });
+  }
   const copiedPages = await invoiceDoc.copyPages(qrDoc, qrDoc.getPageIndices());
   copiedPages.forEach((page) => invoiceDoc.addPage(page));
   return await invoiceDoc.saveAsBase64({ dataUri: false });
@@ -956,7 +987,7 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   const lang = data.language || 'de';
   const s = invoiceStrings(lang, isSharedCourse(currentCourse));
 
-  let y = 66;
+  let y = 56;
   const metaStartY = y;
   drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);
   y += 6;
@@ -985,20 +1016,20 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   });
   const addressEndY = y;
 
-  y = Math.max(metaEndY, addressEndY) + 20;
+  y = Math.max(metaEndY, addressEndY) + 8;
   setFont(11);
   doc.text(longDate(data.invoiceDate, lang), margin, y);
 
-  y += 14;
+  y += 9;
   setFont(19, 'bold');
   const titleLines = doc.splitTextToSize(data.subject || s.titleFallback, contentW);
   doc.text(titleLines, margin, y);
-  y += titleLines.length * 8 + 7;
+  y += titleLines.length * 8 + 6;
 
   setFont(10.5);
   doc.text(formalGreeting(data), margin, y);
 
-  y += 18;
+  y += 8;
   const tableTop = y;
   const widths = [56, 39, 50, 25];
   const xs = [
@@ -1010,7 +1041,10 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   const tableW = widths.reduce((a, b) => a + b, 0);
   const headerH = 7;
   const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
-  const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
+  const classTypeLines = doc.splitTextToSize(s.classType, widths[0] - 5);
+  const itemLineH = 3.7; // jsPDF line spacing at 9pt
+  const classTypeOffset = 5.5 + subjectLines.length * itemLineH + 0.5;
+  const itemH = Math.max(8, classTypeOffset + (classTypeLines.length - 1) * itemLineH + 3.5);
   const totalH = 7;
 
   doc.setDrawColor(0, 0, 0);
@@ -1029,6 +1063,9 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.line(xs[2], itemTop, xs[2], itemTop + itemH);
   doc.line(xs[3], itemTop, xs[3], itemTop + itemH);
   doc.text(subjectLines, xs[0] + 2, itemTop + 5.5);
+  setFont(9, 'italic');
+  doc.text(classTypeLines, xs[0] + 2, itemTop + classTypeOffset);
+  setFont(9);
   textRight(data.quantity, xs[1] + widths[1] - 3, itemTop + 5.5);
   textRight(money(data.unitPrice), xs[2] + widths[2] - 3, itemTop + 5.5);
   textRight(money(data.totalAmount), xs[3] + widths[3] - 3, itemTop + 5.5);
@@ -1040,12 +1077,13 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.text('Total CHF', xs[0] + 2, totalTop + 4.5);
   textRight(money(data.totalAmount), xs[3] + widths[3] - 3, totalTop + 4.5);
 
-  y = totalTop + totalH + 18;
+  y = totalTop + totalH + 8;
   setFont(10.5);
   y = addWrappedText(doc, s.paymentText(), margin, y, contentW, 5.5);
-  y += 10;
+  y += 7;
   doc.text(s.closing, margin, y);
-  doc.text('Gioia Birukoff', margin, y + 6);
+  doc.text('Gioia Birukoff', margin, y + 5.5);
+  const contentBottom = y + 5.5 + 2;
 
   if (qrAttachment?.dataUrl) {
     try {
@@ -1055,10 +1093,17 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     }
   }
 
+  // Place the QR payment part on this page when the footnote still fits above
+  // the 105mm payment-part zone; otherwise fall back to appending it as page 2.
   setFont(7.2);
-  addWrappedText(doc, s.footnote, margin, pageH - 22, contentW, 3.6);
+  const footnoteLines = doc.splitTextToSize(String(s.footnote || ''), contentW);
+  const footnoteLineH = 3.6;
+  const qrZoneTop = pageH - QR_PART_HEIGHT_MM;
+  const footnoteYAboveQr = qrZoneTop - 3 - (footnoteLines.length - 1) * footnoteLineH;
+  const qrOnFirstPage = Boolean(qrAttachment?.pdfBytes) && footnoteYAboveQr >= contentBottom + 2.5;
+  doc.text(footnoteLines, margin, qrOnFirstPage ? footnoteYAboveQr : pageH - 22);
 
-  return await mergeWithQrPdf(doc.output('arraybuffer'), qrAttachment);
+  return await mergeWithQrPdf(doc.output('arraybuffer'), qrAttachment, qrOnFirstPage);
 }
 
 async function persistLessonCount(courseId, studentId, count) {
