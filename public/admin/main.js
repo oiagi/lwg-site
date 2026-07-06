@@ -80,7 +80,12 @@ import {
   submitImport,
 } from './features/excel.js';
 import { authoriseTeacher, setOnAuthoriseComplete } from './features/teachers.js';
-import { loadAvailability, onTeacherSelect } from './features/availability.js';
+import {
+  loadAvailability,
+  onTeacherSelect,
+  addBlockedDate,
+  deleteBlockedDate,
+} from './features/availability.js';
 import { trapFocus, releaseFocus } from './core/helpers.js';
 import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
 import {
@@ -201,6 +206,8 @@ const actions = {
   authoriseTeacher,
   // Availability
   onTeacherSelect,
+  addBlockedDate,
+  deleteBlockedDate,
   // Invoice archive
   switchArchiveYear,
   toggleInvoiceActions,

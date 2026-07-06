@@ -21,7 +21,8 @@ import {
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
-import { fetchCourseEvents } from './_calendar.js';
+import { fetchCourseEvents, applyBlockedDatesToSeries } from './_calendar.js';
+import { loadBlockedPeriods } from './_blocked-dates.js';
 
 function dbEq(value) {
   return encodeURIComponent(String(value));
@@ -101,6 +102,47 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   } catch (err) {
     return errorResponse(err.message || 'Calendar API error', err.statusCode || 502);
   }
+
+  // ── Enforce blocked dates on the recurring series ──────────────────────
+  // Future occurrences of the course's recurring event that fall on blocked
+  // dates are excluded (EXDATE) and the RRULE COUNT extended, so the skipped
+  // sessions reappear after the last scheduled one. On success the events
+  // are re-fetched so the sync below mirrors the corrected series.
+  let blockedApplied = null;
+  if (course.calendar_event_id) {
+    try {
+      const blockedPeriods = await loadBlockedPeriods(SUPABASE_URL, headers);
+      blockedApplied = await applyBlockedDatesToSeries({
+        accessToken,
+        calendarId: teacher.calendar_id,
+        masterEventId: course.calendar_event_id,
+        activeEvents,
+        blockedPeriods,
+      });
+      if (blockedApplied) {
+        ({ active: activeEvents, cancelled: cancelledEvents } = await fetchCourseEvents({
+          accessToken,
+          calendarId: teacher.calendar_id,
+          courseCode: course.course_code,
+        }));
+        const recUpdateRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/courses?id=eq.${dbEq(course.id)}`,
+          {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ recurrence_rule: blockedApplied.recurrenceRule }),
+          }
+        );
+        if (!recUpdateRes.ok)
+          console.error('Could not store updated recurrence rule:', await recUpdateRes.text());
+      }
+    } catch (err) {
+      // Non-fatal: sync still mirrors the calendar as-is; the next sync
+      // retries the blocked-date enforcement.
+      console.error('Blocked-date enforcement error:', err);
+    }
+  }
+
   const activeEventIds = new Set(activeEvents.map((e) => e.id));
 
   // ── Load existing session records once ────────────────────────────────
@@ -193,5 +235,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     created: createdCount,
     updated: updatedCount,
     removed: removedCount,
+    blocked_sessions_moved: blockedApplied ? blockedApplied.excludedCount : 0,
   });
 }, 'sync-calendar');
