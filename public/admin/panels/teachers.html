@@ -8,3 +8,28 @@
 <div id="availability-content">
   <div class="empty-state">select a teacher to view their schedule</div>
 </div>
+<div class="blocked-dates">
+  <h3 class="blocked-dates-title">Blocked dates</h3>
+  <p class="blocked-dates-note">
+    No sessions are scheduled on these days. Recurring sessions that would fall on a blocked date
+    are moved to after the last session of the course cycle (applied when scheduling a course and
+    on calendar sync).
+  </p>
+  <div id="blocked-dates-list"><div class="loading-state">loading…</div></div>
+  <div class="blocked-dates-form">
+    <div class="modal-field modal-field--compact">
+      <label for="blocked-start">From</label>
+      <input type="date" id="blocked-start" />
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="blocked-end">To (optional)</label>
+      <input type="date" id="blocked-end" />
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="blocked-label">Label (optional)</label>
+      <input type="text" id="blocked-label" maxlength="120" placeholder="e.g. Christmas break" />
+    </div>
+    <button class="action-btn" data-action="addBlockedDate">Add</button>
+  </div>
+  <p id="blocked-dates-error" class="blocked-dates-error is-hidden"></p>
+</div>

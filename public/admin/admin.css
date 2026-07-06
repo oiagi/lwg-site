@@ -2281,11 +2281,83 @@ html[data-device='mobile'] .report-table {
   font-style: italic;
   padding: 0.2rem 0;
 }
+.avail-day.blocked {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(192, 57, 43, 0.05),
+    rgba(192, 57, 43, 0.05) 6px,
+    rgba(255, 255, 255, 0.5) 6px,
+    rgba(255, 255, 255, 0.5) 12px
+  );
+  border-color: rgba(192, 57, 43, 0.35);
+}
+.avail-blocked-tag {
+  font-size: 0.72rem;
+  color: #c0392b;
+  font-style: italic;
+  padding: 0.2rem 0;
+}
 html[data-device='mobile'] .avail-week {
   grid-template-columns: 1fr;
 }
 html[data-device='mobile'] .avail-day {
   min-height: auto;
+}
+
+/* ── Blocked dates ────────────────────────────────────────────────── */
+.blocked-dates {
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #ddd;
+}
+.blocked-dates-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: #555;
+  margin: 0 0 0.4rem;
+}
+.blocked-dates-note {
+  font-size: 0.78rem;
+  color: #888;
+  max-width: 46rem;
+  margin: 0 0 1rem;
+}
+.blocked-dates-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.85rem;
+}
+.blocked-dates-range {
+  min-width: 14rem;
+  color: #1a1a1a;
+}
+.blocked-dates-label {
+  flex: 1;
+  color: #888;
+}
+.blocked-dates-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.blocked-dates-error {
+  font-size: 0.78rem;
+  color: #c0392b;
+  margin-top: 0.5rem;
+}
+html[data-device='mobile'] .blocked-dates-row {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+html[data-device='mobile'] .blocked-dates-range {
+  min-width: 0;
 }
 #avail-teacher {
   font-family: inherit;

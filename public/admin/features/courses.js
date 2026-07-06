@@ -1147,6 +1147,8 @@ export async function syncCalendar(courseId) {
       const parts = [];
       if (typeof body.events_found === 'number') parts.push(`${body.events_found} events`);
       if (typeof body.completed === 'number') parts.push(`${body.completed} completed`);
+      if (body.blocked_sessions_moved)
+        parts.push(`${body.blocked_sessions_moved} moved off blocked dates`);
       showMessage(msg, parts.length ? 'synced · ' + parts.join(', ') : 'synced');
     }
     loadCourses(currentCourseFilter);

@@ -33,6 +33,7 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { createCourseCalendarEvent, fetchCourseEvents } from './_calendar.js';
+import { loadBlockedPeriods } from './_blocked-dates.js';
 import {
   completeEnquiriesForEnrolment,
   findOrCreateStudent,
@@ -173,6 +174,21 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   // ── Calendar event ───────────────────────────────────────────────────
+  // Blocked dates shift recurring occurrences past the end of the cycle,
+  // so failing to load them must block scheduling rather than silently
+  // producing sessions on excluded days.
+  let blockedPeriods = [];
+  if (accessToken && teacher.calendar_id && !single_session) {
+    try {
+      blockedPeriods = await loadBlockedPeriods(
+        SUPABASE_URL,
+        supabaseHeaders(SUPABASE_SERVICE_KEY)
+      );
+    } catch (err) {
+      return errorResponse(err.message || 'Could not load blocked dates', err.statusCode || 502);
+    }
+  }
+
   let calendarEventId = null,
     recurrenceRule = null;
   if (accessToken && teacher.calendar_id) {
@@ -188,6 +204,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         durationMinutes: duration_minutes,
         sessionsTotal: sessions_total,
         singleSession: single_session,
+        blockedPeriods,
       }));
     } catch (err) {
       console.error('Calendar API error:', err);
