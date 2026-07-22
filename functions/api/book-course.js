@@ -16,6 +16,7 @@ import {
   parseJsonBody,
   pickDefined,
   normalizePageLanguage,
+  capitalizeNameFields,
 } from './_utils.js';
 import { validate } from './_validate.js';
 import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
@@ -100,6 +101,7 @@ function normalizeStudent(input) {
     if (typeof value === 'boolean') out[key] = value;
     else out[key] = cleanString(value, key === 'email' || key === 'billing_email' ? 320 : 200);
   }
+  capitalizeNameFields(out);
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
   if (!['female', 'male', 'other'].includes(out.gender)) {

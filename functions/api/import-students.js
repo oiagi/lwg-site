@@ -16,6 +16,7 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
+  capitalizeNameFields,
 } from './_utils.js';
 
 const ALLOWED_FIELDS = [
@@ -69,7 +70,7 @@ function pickAllowed(row) {
       delete out[noteField];
     }
   }
-  return out;
+  return capitalizeNameFields(out);
 }
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {

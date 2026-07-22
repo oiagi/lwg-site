@@ -3,7 +3,7 @@
 // Used by confirm-booking, submit-enquiry, and any future endpoint that
 // needs to find or create a student record.
 
-import { supabaseHeaders } from './_utils.js';
+import { supabaseHeaders, capitalizeWords } from './_utils.js';
 
 /**
  * Find an existing student by email or create a new one.
@@ -30,8 +30,8 @@ export async function findOrCreateStudent(
     method: 'POST',
     headers: { ...H, Prefer: 'return=representation' },
     body: JSON.stringify({
-      first_name: first_name || null,
-      last_name: last_name || null,
+      first_name: capitalizeWords(first_name) || null,
+      last_name: capitalizeWords(last_name) || null,
       gender: ['female', 'male', 'other'].includes(gender) ? gender : null,
       gender_note: gender === 'other' ? gender_note || null : null,
       email: email || null,
