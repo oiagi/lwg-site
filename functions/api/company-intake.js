@@ -57,6 +57,12 @@ function buildIntakeConfirmationEmail(data, lang) {
     .join(', ');
 
   const hasBilling = !!(data.billing_name || data.billing_street);
+  const hasEmergency = !!(
+    data.emergency_contact ||
+    data.ec_relationship ||
+    data.ec_phone ||
+    data.ec_email
+  );
   const billingAddress = hasBilling
     ? [
         [data.billing_street, data.billing_street_number].filter(Boolean).join(' '),
@@ -120,7 +126,7 @@ function buildIntakeConfirmationEmail(data, lang) {
             ${tableRow(L.email, data.email)}
             ${tableRow(L.phone, data.phone)}
             ${tableRow(L.address, address)}
-            ${tableSection(L.emergency)}
+            ${hasEmergency ? tableSection(L.emergency) : ''}
             ${tableRow(L.name, data.emergency_contact)}
             ${tableRow(L.relationship, data.ec_relationship)}
             ${tableRow(L.phone, data.ec_phone)}
@@ -280,14 +286,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'street_number',
     'postcode',
     'city',
-    'emergency_contact',
-    'ec_relationship',
-    'ec_phone',
-    'ec_email',
   ]);
   if (missing) return errorResponse(`${missing} is required`, 400);
   if (!emailValid(body.email)) return errorResponse('email must be valid', 400);
-  if (!emailValid(body.ec_email)) return errorResponse('ec_email must be valid', 400);
+  if (body.ec_email && !emailValid(body.ec_email)) {
+    return errorResponse('ec_email must be valid', 400);
+  }
 
   if (body.billing_separate) {
     const missingBilling = missingRequired(body, [

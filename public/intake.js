@@ -201,6 +201,14 @@
     return !invalid;
   }
 
+  // Empty is accepted; a filled-in value still has to look like an email.
+  function optionalEmail(id, message) {
+    const value = getVal(id);
+    const invalid = Boolean(value) && !emailValid(value);
+    showGeneratedError(id, message, invalid);
+    return !invalid;
+  }
+
   document.getElementById('intake-submit-btn').addEventListener('click', async () => {
     let valid = true;
     const firstName = getVal('if-first-name');
@@ -225,14 +233,11 @@
       ['if-street-number', 'Please enter a street number.'],
       ['if-postcode', 'Please enter a postcode.'],
       ['if-city', 'Please enter a city.'],
-      ['if-ec-name', 'Please enter an emergency contact name.'],
-      ['if-ec-relationship', 'Please enter the emergency contact relationship.'],
-      ['if-ec-phone', 'Please enter an emergency contact phone number.'],
     ].forEach(([id, message]) => {
       if (!requireValue(id, message)) valid = false;
     });
     if (!requireEmail('if-email', 'Please enter a valid email address.')) valid = false;
-    if (!requireEmail('if-ec-email', 'Please enter a valid emergency contact email.')) {
+    if (!optionalEmail('if-ec-email', 'Please enter a valid emergency contact email.')) {
       valid = false;
     }
     if (billingCheckbox.checked) {

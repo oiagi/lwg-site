@@ -346,13 +346,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'street_number',
     'postcode',
     'city',
-    'emergency_contact',
-    'ec_relationship',
-    'ec_phone',
-    'ec_email',
   ]);
   if (missing) return errorResponse(`${missing} is required`, 400);
-  if (!emailValid(student.ec_email)) return errorResponse('ec_email must be valid', 400);
+  if (student.ec_email && !emailValid(student.ec_email)) {
+    return errorResponse('ec_email must be valid', 400);
+  }
   if (
     billingSeparate ||
     [
