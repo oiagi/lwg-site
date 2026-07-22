@@ -323,6 +323,14 @@ renderAgbConsent();
     return !invalid;
   }
 
+  // Empty is accepted; a filled-in value still has to look like an email.
+  function optionalEmail(id, message) {
+    const value = val(id);
+    const invalid = Boolean(value) && !emailValid(value);
+    showGeneratedError(id, message, invalid);
+    return !invalid;
+  }
+
   function buildStudentPayload() {
     const student = {
       first_name: val('bf-first-name'),
@@ -373,9 +381,6 @@ renderAgbConsent();
       ['bf-street-number', 'Please enter a street number.'],
       ['bf-postcode', 'Please enter a postcode.'],
       ['bf-city', 'Please enter a city.'],
-      ['bf-ec-name', 'Please enter an emergency contact name.'],
-      ['bf-ec-relationship', 'Please enter the emergency contact relationship.'],
-      ['bf-ec-phone', 'Please enter an emergency contact phone number.'],
     ];
 
     let valid = true;
@@ -392,7 +397,7 @@ renderAgbConsent();
     requiredFields.forEach(([id, message]) => {
       if (!requireValue(id, message)) valid = false;
     });
-    if (!requireEmail('bf-ec-email', 'Please enter a valid emergency contact email.')) {
+    if (!optionalEmail('bf-ec-email', 'Please enter a valid emergency contact email.')) {
       valid = false;
     }
     if (billingCheckbox.checked) {
