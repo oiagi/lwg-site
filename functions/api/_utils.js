@@ -38,6 +38,42 @@ export function normalizePageLanguage(value, fallback = 'en') {
   return ['en', 'de'].includes(value) ? value : fallback;
 }
 
+// ── Formal capitalization ─────────────────────────────────────────────────
+// Uppercases the first letter of each word ("firstname lastname" →
+// "Firstname Lastname"), including after hyphens ("anna-lena" → "Anna-Lena").
+// Letters that are already uppercase are left alone, so "McDonald" and
+// acronyms survive unchanged.
+export function capitalizeWords(value) {
+  if (typeof value !== 'string') return value;
+  return value.replace(
+    /(^|[\s\-/.])(\p{Ll})/gu,
+    (match, sep, letter) => sep + letter.toUpperCase()
+  );
+}
+
+// Student fields that carry names/addresses and should be stored with formal
+// capitalization regardless of how the student typed them.
+export const CAPITALIZED_STUDENT_FIELDS = [
+  'first_name',
+  'last_name',
+  'street',
+  'city',
+  'billing_name',
+  'billing_street',
+  'billing_city',
+  'emergency_contact',
+];
+
+// Applies capitalizeWords() in place to whichever of the given fields are
+// present as strings. Returns the same object for convenience.
+export function capitalizeNameFields(data, fields = CAPITALIZED_STUDENT_FIELDS) {
+  if (!data) return data;
+  for (const field of fields) {
+    if (typeof data[field] === 'string') data[field] = capitalizeWords(data[field]);
+  }
+  return data;
+}
+
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {

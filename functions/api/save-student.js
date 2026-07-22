@@ -17,6 +17,7 @@ import {
   withErrorHandling,
   parseJsonBody,
   pickDefined,
+  capitalizeNameFields,
 } from './_utils.js';
 
 const STUDENT_FIELDS = [
@@ -108,6 +109,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   // active is excluded from allowed fields because it is derived from status below.
   const data = pickDefined(body, STUDENT_FIELDS);
+  capitalizeNameFields(data);
 
   if ('gender' in data) {
     if (!GENDER_VALUES.has(data.gender)) {

@@ -11,6 +11,7 @@ import {
   withErrorHandling,
   checkRateLimit,
   parseJsonBody,
+  capitalizeNameFields,
 } from './_utils.js';
 
 const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
@@ -315,6 +316,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const { company, error, status } = await loadCompanyByCode(env, code);
   if (error) return errorResponse(error, status);
+
+  // Capitalize before building the payload so derived billing_address also
+  // gets the formal-case values.
+  capitalizeNameFields(body);
 
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
   const H = { ...supabaseHeaders(SUPABASE_SERVICE_KEY), Prefer: 'return=representation' };

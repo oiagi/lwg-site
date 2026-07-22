@@ -557,18 +557,6 @@ function currentLang() {
   return document.querySelector('input[name="inv-language"]:checked')?.value || 'de';
 }
 
-function orderDate(student) {
-  if (student?.joined_at) {
-    const d = new Date(student.joined_at + 'T00:00:00');
-    if (!Number.isNaN(d.getTime())) return d;
-  }
-  if (currentCourse?.created_at) {
-    const d = new Date(currentCourse.created_at);
-    if (!Number.isNaN(d.getTime())) return d;
-  }
-  return new Date();
-}
-
 function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   const today = new Date();
   const due = firstCourseDate(currentCourse) || addDays(today, 14);
@@ -580,7 +568,7 @@ function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   return {
     invoiceNumber,
     customerReference: student?.customer_reference || '',
-    invoiceDate: formatDateInput(orderDate(student)),
+    invoiceDate: formatDateInput(today),
     dueDate: formatDateInput(due),
     subject: formalCourseLabel(currentCourse, currentLang()) || courseCode,
     quantity,

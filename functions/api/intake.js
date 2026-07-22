@@ -17,6 +17,7 @@ import {
   withErrorHandling,
   checkRateLimit,
   parseJsonBody,
+  capitalizeNameFields,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
 
@@ -303,6 +304,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const { student, error, status } = await loadStudentByToken(env, token);
   if (error) return errorResponse(error, status);
+
+  // Capitalize before copying so derived billing_address also gets the
+  // formal-case values.
+  capitalizeNameFields(body);
 
   const editable = [
     'first_name',
