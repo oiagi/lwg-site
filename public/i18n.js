@@ -111,23 +111,89 @@
         de: 'Learning with Gioia - Sprachkurse & Nachhilfe in Zürich',
       },
       description: {
-        en: 'Language courses, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
-        de: 'Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Muttersprachliche Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
+        en: 'German and Swiss German courses, Gymivorbereitung, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
+        de: 'Deutsch- und Schweizerdeutschkurse, Gymivorbereitung, Prüfungsvorbereitung und Nachhilfe in Zürich. Muttersprachliche Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
       },
       text: {
         '.hero-tagline': {
           en: '<em>Language courses, exam preparation &amp; tutoring</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
           de: '<em>Sprachkurse, Prüfungsvorbereitung &amp; Nachhilfe</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
         },
-        '.lede p:nth-of-type(1)': {
+        '.hero-lede': {
           en: 'Small groups. Carefully prepared, individually tailored lessons.',
           de: 'Kleine Gruppen. Sorgfältige Vorbereitung, individuell abgestimmter Unterricht.',
         },
-        '.lede p:nth-of-type(2)': {
+        '#hero-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+        '#hero-cta-offer': { en: 'what we offer', de: 'Unser Angebot' },
+        '#offer .kicker': { en: 'what we offer', de: 'Unser Angebot' },
+        '#offer .section-title': { en: 'Courses &amp; tutoring', de: 'Kurse &amp; Nachhilfe' },
+        '#offer-german h3': { en: 'German courses', de: 'Deutschkurse' },
+        '#offer-german p': {
+          en: 'German for everyday life, work and study — from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers.',
+          de: 'Deutsch für Alltag, Beruf und Studium — von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.',
+        },
+        '#offer-swiss h3': { en: 'Swiss German', de: 'Schweizerdeutsch' },
+        '#offer-swiss p': {
+          en: 'Finally understand the Dialekt — and dare to speak it. Swiss German courses for everyone who wants to feel at home in Zürich.',
+          de: 'Endlich den Dialekt verstehen — und sich zu sprechen trauen. Schweizerdeutschkurse für alle, die sich in Zürich zuhause fühlen wollen.',
+        },
+        '#offer-gymi h3': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+        '#offer-gymi p': {
+          en: 'Structured preparation for the Gymnasium entrance exam — building knowledge, exam technique and confidence, in small groups or one-to-one.',
+          de: 'Strukturierte Vorbereitung auf die Gymiprüfung — Wissen, Prüfungstechnik und Selbstvertrauen, in kleinen Gruppen oder im Einzelunterricht.',
+        },
+        '#offer-exams h3': {
+          en: 'English &amp; exam preparation',
+          de: 'Englisch &amp; Prüfungsvorbereitung',
+        },
+        '#offer-exams p': {
+          en: 'English courses and targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. Tutoring from primary school to university.',
+          de: 'Englischkurse und gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Nachhilfe von der Primarschule bis zur Universität.',
+        },
+        '#offer-more': { en: 'full offer &amp; pricing →', de: 'Angebot &amp; Preise →' },
+        '#gymi .kicker': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+        '#gymi .section-title': {
+          en: 'Confident into the Gymi exam',
+          de: 'Mit Selbstvertrauen an die Gymiprüfung',
+        },
+        '#gymi .feature-text': {
+          en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day — in small groups or one-to-one, always tailored to your child.',
+          de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen — in kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+        },
+        '#gymi-cta': { en: 'enquire about Gymivorbereitung', de: 'Gymivorbereitung anfragen' },
+        '#schweizerdeutsch .kicker': { en: 'Swiss German', de: 'Schweizerdeutsch' },
+        '#schweizerdeutsch .section-title': { en: 'Grüezi, Züri!', de: 'Grüezi, Züri!' },
+        '#schweizerdeutsch .feature-text': {
+          en: 'You speak German, but the Dialekt is a different story? Our Swiss German courses, taught by native speakers, help you follow conversations, join in — and finally feel at home in Swiss everyday life.',
+          de: 'Du sprichst Deutsch, aber der Dialekt bleibt ein Rätsel? Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden — und dich im Schweizer Alltag endlich zuhause zu fühlen.',
+        },
+        '#swiss-cta': { en: 'learn Swiss German', de: 'Schweizerdeutsch lernen' },
+        '#reviews .kicker': { en: 'reviews', de: 'Stimmen' },
+        '#reviews .section-title': {
+          en: 'What our students say',
+          de: 'Was unsere Lernenden sagen',
+        },
+        '.review blockquote p': {
+          en: 'Review text will follow shortly.',
+          de: 'Bewertung folgt in Kürze.',
+        },
+        '.review figcaption': { en: '— a student', de: '— eine Schülerin' },
+        '#about .kicker': { en: 'about', de: 'Über mich' },
+        '#about .section-title': {
+          en: 'Experience &amp; background',
+          de: 'Erfahrung &amp; Hintergrund',
+        },
+        '.about-text': {
+          en: 'Nothing here yet — a proper introduction to my background and experience will follow soon :)',
+          de: 'Hier steht noch nichts — eine richtige Vorstellung meines Hintergrunds und meiner Erfahrung folgt bald :)',
+        },
+        '#start .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
+        '.closing-text': {
           en: 'We want to give you confidence and motivation to use your knowledge beyond the classroom.',
           de: 'Wir wollen dich dabei unterstützen, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
         },
-        '.home-cta': { en: 'Find out more ->', de: 'Mehr erfahren ->' },
+        '#closing-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+        '#closing-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
       },
     },
     '/info.html': {

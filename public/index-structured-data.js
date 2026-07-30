@@ -12,7 +12,7 @@
     },
     image: 'https://learningwithgioia.ch/gioia_logo.png',
     description:
-      'Language courses, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
+      'German and Swiss German courses, Gymivorbereitung, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Zürich',
@@ -24,7 +24,13 @@
       name: 'Zürich',
     },
     knowsLanguage: ['de', 'en', 'gsw'],
-    serviceType: ['Language courses', 'Exam preparation', 'Tutoring'],
+    serviceType: [
+      'Language courses',
+      'Swiss German courses',
+      'Gymivorbereitung',
+      'Exam preparation',
+      'Tutoring',
+    ],
   });
   document.head.appendChild(script);
 })();
