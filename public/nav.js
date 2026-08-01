@@ -74,6 +74,7 @@
       navLink('/english-courses.html', 'englishCourses'),
       navLink('/exam-preparation.html', 'examPreparation'),
       navLink('/company-courses.html', 'companyCourses'),
+      navLink('/lunch-time-german.html', 'lunchTimeGerman'),
     ]) +
     navLink('/index.html', 'courseStructure', 'offer-details') +
     navSection(navLink('/index.html', 'levels', 'levels'), [navLink('/niveaus.html', 'niveaus')]) +
