@@ -180,8 +180,8 @@
           de: 'Kursstruktur',
         },
         '#structure-hours': {
-          en: 'Progressing through a full level (e.g. from A0 to A1) typically takes around 100-150 hours** of guided learning, alongside a similar amount of independent study.',
-          de: 'Um ein vollständiges Sprachniveau abzudecken (z. B. von A0 zu A1), benötigt man in der Regel etwa 100-150 Stunden** angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen.',
+          en: 'Progressing through a full level (e.g. from A0 to A1) typically takes around 100 to 150 hours** of guided learning, alongside a similar amount of independent study.',
+          de: 'Um ein vollständiges Sprachniveau abzudecken (z. B. von A0 zu A1), benötigt man in der Regel etwa 100 bis 150 Stunden** angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen.',
         },
         '#structure-suggestion': {
           en: 'Our regular group courses are structured into three blocks per level:',
@@ -193,8 +193,8 @@
           attr: 'aria-label',
         },
         '#structure-level-hours': {
-          en: '~100-150 h guided learning',
-          de: '~100-150 Std. angeleitetes Lernen',
+          en: 'approx. 100 to 150 h guided learning',
+          de: 'ca. 100 bis 150 Std. angeleitetes Lernen',
         },
         '.structure-part__hours': { en: '32 h', de: '32 Std.' },
         '#structure-etc': { en: 'etc.', de: 'usw.' },
@@ -208,8 +208,8 @@
           de: 'Welches Niveau passt zu dir?',
         },
         '.levels-text': {
-          en: 'Not sure where to start? The six CEFR levels, A1 to C2, describe what you can do in a language. Our interactive self-assessment helps you find your current level — the perfect starting point for choosing the right course.',
-          de: 'Du weisst nicht, wo du starten sollst? Die sechs Niveaus des GER, A1 bis C2, beschreiben, was du in einer Sprache kannst. Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden — der perfekte Ausgangspunkt für den passenden Kurs.',
+          en: 'Not sure where to start? The six CEFR levels, A1 to C2, describe what you can do in a language. Our interactive self-assessment helps you find your current level, the perfect starting point for choosing the right course.',
+          de: 'Du weisst nicht, wo du starten sollst? Die sechs Niveaus des GER, A1 bis C2, beschreiben, was du in einer Sprache kannst. Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden, der perfekte Ausgangspunkt für den passenden Kurs.',
         },
         '#levels-cta': { en: 'find your level', de: 'Niveau herausfinden' },
         '#materials .kicker': { en: 'materials', de: 'Materialien' },
@@ -218,8 +218,8 @@
           de: 'Kostenlose Lernmaterialien',
         },
         '#materials-intro': {
-          en: 'Small interactive guides we built for our students — free for everyone. Reference, quiz and cheat sheet included.',
-          de: 'Kleine interaktive Guides, die wir für unsere Lernenden gebaut haben — kostenlos für alle. Mit Übersicht, Quiz und Spickzettel.',
+          en: 'Small interactive guides we built for our students. Free for everyone. Reference, quiz and cheat sheet included.',
+          de: 'Kleine interaktive Guides, die wir für unsere Lernenden gebaut haben. Kostenlos für alle. Mit Übersicht, Quiz und Spickzettel.',
         },
         '#material-konjunktionen h3': { en: 'Conjunctions', de: 'Konjunktionen' },
         '#material-konjunktionen p': {
@@ -273,8 +273,8 @@
         },
         '#review-submit': { en: 'submit review', de: 'Bewertung senden' },
         '#err-review-submit': {
-          en: 'Something went wrong — please try again later.',
-          de: 'Etwas ist schiefgelaufen — bitte versuche es später erneut.',
+          en: 'Something went wrong, please try again later.',
+          de: 'Etwas ist schiefgelaufen, bitte versuche es später erneut.',
         },
         '#review-success': {
           en: 'Thank you! Your review will appear here once it has been checked.',
