@@ -611,7 +611,16 @@ a.offer-card {
     padding: 0.8rem 1.5rem;
     font-size: 0.7rem;
   }
+  /* Stack the diagram: full level on top, its three parts on the row below */
+  .structure-diagram {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    justify-items: center;
+    gap: 0.6rem;
+  }
   .structure-level {
+    grid-column: 1 / -1;
     padding: 0.6rem 0.8rem;
   }
   .structure-level__code {
@@ -620,8 +629,15 @@ a.offer-card {
   .structure-level__hours {
     font-size: 0.72rem;
   }
+  .structure-arrow {
+    grid-column: 1 / -1;
+    transform: rotate(90deg);
+  }
   .structure-part {
     padding: 0.45rem 0.6rem;
+  }
+  .structure-etc {
+    grid-column: 1 / -1;
   }
 }
 
