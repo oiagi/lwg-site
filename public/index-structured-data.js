@@ -12,19 +12,28 @@
     },
     image: 'https://learningwithgioia.ch/gioia_logo.png',
     description:
-      'Language courses, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
+      'German and Swiss German courses, Gymivorbereitung, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Zürich',
       addressCountry: 'CH',
     },
     email: 'info@learningwithgioia.ch',
+    priceRange: 'CHF 1600–4800 per course',
     areaServed: {
       '@type': 'City',
       name: 'Zürich',
     },
     knowsLanguage: ['de', 'en', 'gsw'],
-    serviceType: ['Language courses', 'Exam preparation', 'Tutoring'],
+    serviceType: [
+      'Language courses',
+      'Swiss German courses',
+      'Gymivorbereitung',
+      'English courses',
+      'Exam preparation',
+      'Company language courses',
+      'Tutoring',
+    ],
   });
   document.head.appendChild(script);
 })();

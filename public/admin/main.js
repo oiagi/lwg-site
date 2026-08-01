@@ -121,6 +121,13 @@ import {
   unlinkCourseFromCompany,
   navigateToCourse,
 } from './features/companies.js';
+import {
+  loadReviews,
+  filterReviews,
+  saveReview,
+  toggleReviewApproval,
+  deleteReview,
+} from './features/reviews.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -237,6 +244,11 @@ const actions = {
   confirmLinkCourse,
   unlinkCourseFromCompany,
   navigateToCourse,
+  // Reviews
+  filterReviews,
+  saveReview,
+  toggleReviewApproval,
+  deleteReview,
   // Tab switching
   switchTab,
 };
@@ -364,6 +376,7 @@ async function switchTab(tab, options = {}) {
   if (tab === 'teachers') loadAvailability();
   if (tab === 'invoices') loadInvoiceArchive();
   if (tab === 'companies') loadCompanies();
+  if (tab === 'reviews') loadReviews();
 }
 
 document.addEventListener('admin:switchTab', (e) => {

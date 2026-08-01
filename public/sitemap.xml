@@ -22,19 +22,109 @@
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/en/info</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/info" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/info" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/info" />
+    <loc>https://learningwithgioia.ch/en/german-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/german-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/german-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/german-courses" />
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://learningwithgioia.ch/de/info</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/info" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/info" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/info" />
+    <loc>https://learningwithgioia.ch/de/german-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/german-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/german-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/german-courses" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/swiss-german</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/swiss-german" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/swiss-german" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/swiss-german" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/swiss-german</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/swiss-german" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/swiss-german" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/swiss-german" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/gymivorbereitung</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/gymivorbereitung" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/gymivorbereitung" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/de/gymivorbereitung" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/gymivorbereitung</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/gymivorbereitung" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/gymivorbereitung" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/de/gymivorbereitung" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/english-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/english-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/english-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/english-courses" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/english-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/english-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/english-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/english-courses" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/exam-preparation</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/exam-preparation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/exam-preparation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/exam-preparation" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/exam-preparation</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/exam-preparation" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/exam-preparation" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/exam-preparation" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/en/company-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/company-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/company-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/company-courses" />
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://learningwithgioia.ch/de/company-courses</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://learningwithgioia.ch/en/company-courses" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://learningwithgioia.ch/de/company-courses" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://learningwithgioia.ch/en/company-courses" />
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
