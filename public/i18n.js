@@ -12,6 +12,7 @@
     '/english-courses.html': 'english-courses',
     '/exam-preparation.html': 'exam-preparation',
     '/company-courses.html': 'company-courses',
+    '/lunch-time-german.html': 'lunch-time-german',
     '/group-courses.html': 'group-courses',
     '/enquiry.html': 'enquiry',
     '/thankyou.html': 'thankyou',
@@ -96,6 +97,7 @@
     englishCourses: { en: 'English courses', de: 'Englischkurse' },
     examPreparation: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
     companyCourses: { en: 'Company courses', de: 'Firmenkurse' },
+    lunchTimeGerman: { en: 'Lunch time German', de: 'Lunch time German' },
     courseStructure: { en: 'course structure', de: 'Kursstruktur' },
     levels: { en: 'your level', de: 'Dein Niveau' },
     reviews: { en: 'reviews', de: 'Stimmen' },
@@ -172,6 +174,11 @@
         '#offer-company p': {
           en: 'Language training for teams, at your offices or ours. Built around your industry, your everyday work and the situations your people actually face.',
           de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Abgestimmt auf eure Branche, euren Arbeitsalltag und die Situationen, die bei euch wirklich vorkommen.',
+        },
+        '#offer-lunch h3': { en: 'Lunch time German', de: 'Lunch time German' },
+        '#offer-lunch p': {
+          en: 'A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break.',
+          de: 'Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause passt.',
         },
         '#offer .offer-card__cta': { en: 'learn more →', de: 'mehr erfahren →' },
         '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
@@ -642,7 +649,8 @@
   // ── Course detail pages ─────────────────────────────────────────
   // They share the tailored-programme note and CTAs; heading, intro and
   // meta always differ. Courses with a non-standard structure (exam
-  // preparation) pass `facts` to override individual fact rows.
+  // preparation, lunch time German) pass `facts` to override individual
+  // fact rows.
   const courseFacts = {
     '.kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
     '#fact-duration-label': { en: 'course duration', de: 'Kursdauer' },
@@ -762,6 +770,28 @@
       intro: {
         en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face - from client meetings to small talk in the corridor.',
         de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen - vom Kundengespräch bis zum Small Talk auf dem Gang.',
+      },
+    }),
+    '/lunch-time-german.html': coursePage({
+      title: {
+        en: 'Lunch Time German in Zürich - Learning with Gioia',
+        de: 'Lunch time German in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'Lunch time German in Zürich: lessons tailored to your needs and availability. Lessons of 60 minutes - CHF 50 per lesson in a group, CHF 120 one-to-one.',
+        de: 'Lunch time German in Zürich: Unterricht, abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60 Minuten - CHF 50 pro Lektion in der Gruppe, CHF 120 im Einzelunterricht.',
+      },
+      h1: { en: 'Lunch time German', de: 'Lunch time German' },
+      intro: {
+        en: 'A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break.',
+        de: 'Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause passt.',
+      },
+      facts: {
+        '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
+        '#fact-lessons-label': { en: 'lesson length', de: 'Lektionsdauer' },
+        '#fact-lessons-value': { en: '60 min', de: '60 Min.' },
+        '#fact-group-unit': { en: 'per lesson, per person', de: 'pro Lektion, pro Person' },
+        '#fact-solo-unit': { en: 'per lesson', de: 'pro Lektion' },
       },
     }),
   });
