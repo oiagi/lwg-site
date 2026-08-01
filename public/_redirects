@@ -10,9 +10,34 @@
 # redepartikeln.html renamed to modalpartikeln.html
 /redepartikeln.html  /modalpartikeln.html  301
 
+# info page merged into the scrollable homepage — must stay above the
+# /en/:page and /de/:page catch-all rewrites below, or /en/info would be
+# rewritten to the (now retired) info.html instead of redirecting.
+/info.html  /en/#offer-details  301
+/info       /en/#offer-details  301
+/en/info    /en/#offer-details  301
+/en/info/   /en/#offer-details  301
+/de/info    /de/#offer-details  301
+/de/info/   /de/#offer-details  301
+
+# english-exams split into two separate course pages. Must stay above the
+# /en/:page and /de/:page catch-all rewrites below, or /en/english-exams
+# would be rewritten to the (now removed) english-exams.html.
+/english-exams.html  /en/english-courses  301
+/english-exams       /en/english-courses  301
+/en/english-exams    /en/english-courses  301
+/en/english-exams/   /en/english-courses  301
+/de/english-exams    /de/english-courses  301
+/de/english-exams/   /de/english-courses  301
+
 # Canonical language-prefixed public URLs
 /index.html  /en/  301
-/info.html  /en/info  301
+/german-courses.html  /en/german-courses  301
+/swiss-german.html  /en/swiss-german  301
+/gymivorbereitung.html  /de/gymivorbereitung  301
+/english-courses.html  /en/english-courses  301
+/exam-preparation.html  /en/exam-preparation  301
+/company-courses.html  /en/company-courses  301
 /group-courses.html  /en/group-courses  301
 /enquiry.html  /en/enquiry  301
 /impressum.html  /de/impressum  301

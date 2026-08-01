@@ -249,13 +249,6 @@ button[data-loading]::after {
   gap: 0.6rem;
   align-items: flex-start;
 }
-.nav-section-label {
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0.5;
-}
 .nav-submenu {
   display: flex;
   flex-direction: column;
@@ -422,15 +415,115 @@ html[data-device='tablet'] .site-footer {
   width: min(80vw, 760px);
 }
 
-/* ── Desktop: standard nav sizing ──────────────────────────────── */
-html[data-device='desktop'] .nav-toggle {
-  font-size: 0.75rem;
+/* ── Desktop: persistent top bar with drop-down sublinks ───────── */
+html[data-device='desktop'] .nav {
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.75rem clamp(1rem, 4.5vw, 2.2rem);
+  background: color-mix(in srgb, var(--page-bg, var(--paper)) 90%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--rule);
 }
+html[data-device='desktop'] .nav-toggle {
+  display: none;
+}
+/* Always open on desktop — the toggle only exists for touch devices. */
 html[data-device='desktop'] .nav-menu {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   width: auto;
+  gap: clamp(0.7rem, 1.5vw, 1.4rem);
+  margin: 0;
+  /* keep clear of the fixed EN/DE switcher */
+  padding-right: 3.5rem;
+  animation: none;
 }
 html[data-device='desktop'] .nav-menu a {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+/* The padding/margin pair keeps the pointer inside the section while it
+   travels from the parent link down into the open submenu. */
+html[data-device='desktop'] .nav-section {
+  position: relative;
+  padding-bottom: 0.75rem;
+  margin-bottom: -0.75rem;
+}
+html[data-device='desktop'] .nav-submenu {
+  position: absolute;
+  top: 100%;
+  left: -1.1rem;
+  z-index: 5;
+  min-width: 12rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+  background: var(--paper);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+}
+html[data-device='desktop'] .nav-section:hover .nav-submenu,
+html[data-device='desktop'] .nav-section:focus-within .nav-submenu {
+  opacity: 1;
+  visibility: visible;
+}
+/* Sit the EN/DE switcher on the same baseline as the bar's links. */
+html[data-device='desktop'] .site-language {
+  top: 0.78rem;
+  right: clamp(1rem, 4.5vw, 2.2rem);
+  font-size: 0.72rem;
+}
+
+/* Narrow desktop windows can't hold the bar on one line — fall back to
+   the toggle menu rather than letting it overflow. */
+@media (max-width: 900px) {
+  html[data-device='desktop'] .nav {
+    top: clamp(0.8rem, 3.5vw, 1.8rem);
+    left: clamp(0.8rem, 4.5vw, 2.2rem);
+    right: auto;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    border-bottom: 0;
+  }
+  html[data-device='desktop'] .nav-toggle {
+    display: block;
+  }
+  html[data-device='desktop'] .nav-menu {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+    padding-right: 0;
+  }
+  html[data-device='desktop'] .nav-menu.open {
+    display: flex;
+  }
+  html[data-device='desktop'] .nav-section {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  html[data-device='desktop'] .nav-submenu {
+    position: static;
+    min-width: 0;
+    padding: 0 0 0 0.85rem;
+    border: 0;
+    border-left: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+    background: none;
+    opacity: 1;
+    visibility: visible;
+  }
+  html[data-device='desktop'] .site-language {
+    top: clamp(0.8rem, 3.5vw, 1.8rem);
+    right: clamp(0.8rem, 4.5vw, 2.2rem);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

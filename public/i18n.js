@@ -6,7 +6,12 @@
   const SUPPORTED = ['en', 'de'];
   const ROUTES = {
     '/index.html': '',
-    '/info.html': 'info',
+    '/german-courses.html': 'german-courses',
+    '/swiss-german.html': 'swiss-german',
+    '/gymivorbereitung.html': 'gymivorbereitung',
+    '/english-courses.html': 'english-courses',
+    '/exam-preparation.html': 'exam-preparation',
+    '/company-courses.html': 'company-courses',
     '/group-courses.html': 'group-courses',
     '/enquiry.html': 'enquiry',
     '/thankyou.html': 'thankyou',
@@ -84,14 +89,25 @@
     menu: { en: 'menu', de: 'Menü' },
     close: { en: 'close', de: 'Schliessen' },
     home: { en: 'Home', de: 'Start' },
-    info: { en: 'info', de: 'Info' },
+    offer: { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
+    germanCourses: { en: 'German courses', de: 'Deutschkurse' },
+    swissGerman: { en: 'Swiss German', de: 'Schweizerdeutsch' },
+    gymivorbereitung: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+    englishCourses: { en: 'English courses', de: 'Englischkurse' },
+    examPreparation: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
+    companyCourses: { en: 'Company courses', de: 'Firmenkurse' },
+    courseStructure: { en: 'course structure', de: 'Kursstruktur' },
+    levels: { en: 'your level', de: 'Dein Niveau' },
+    reviews: { en: 'reviews', de: 'Stimmen' },
+    about: { en: 'about', de: 'Über mich' },
+    start: { en: 'get started', de: 'Loslegen' },
     groupCourses: { en: 'group courses', de: 'Gruppenkurse' },
     enquiry: { en: 'enquiry', de: 'Anfrage' },
-    materials: { en: 'materials', de: 'Materialien' },
+    materials: { en: 'learning materials', de: 'Lernmaterialien' },
     modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
     subjunktionen: { en: 'subjunctions', de: 'Subjunktionen' },
     konjunktionen: { en: 'conjunctions', de: 'Konjunktionen' },
-    niveaus: { en: 'language levels', de: 'Sprachniveaus' },
+    niveaus: { en: 'find your level', de: 'Niveau herausfinden' },
     legalLabel: { en: 'Legal pages', de: 'Rechtliche Seiten' },
     impressum: { en: 'Imprint', de: 'Impressum' },
     privacy: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -129,63 +145,149 @@
         '#offer .section-title': { en: 'Courses &amp; tutoring', de: 'Kurse &amp; Nachhilfe' },
         '#offer-german h3': { en: 'German courses', de: 'Deutschkurse' },
         '#offer-german p': {
-          en: 'German for everyday life, work and study — from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers.',
-          de: 'Deutsch für Alltag, Beruf und Studium — von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.',
+          en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers.',
+          de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.',
         },
         '#offer-swiss h3': { en: 'Swiss German', de: 'Schweizerdeutsch' },
         '#offer-swiss p': {
-          en: 'Finally understand the Dialekt — and dare to speak it. Swiss German courses for everyone who wants to feel at home in Zürich.',
-          de: 'Endlich den Dialekt verstehen — und sich zu sprechen trauen. Schweizerdeutschkurse für alle, die sich in Zürich zuhause fühlen wollen.',
+          en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
+          de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
         },
         '#offer-gymi h3': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
         '#offer-gymi p': {
-          en: 'Structured preparation for the Gymnasium entrance exam — building knowledge, exam technique and confidence, in small groups or one-to-one.',
-          de: 'Strukturierte Vorbereitung auf die Gymiprüfung — Wissen, Prüfungstechnik und Selbstvertrauen, in kleinen Gruppen oder im Einzelunterricht.',
+          en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
+          de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
         },
-        '#offer-exams h3': {
-          en: 'English &amp; exam preparation',
-          de: 'Englisch &amp; Prüfungsvorbereitung',
+        '#offer-english h3': { en: 'English courses', de: 'Englischkurse' },
+        '#offer-english p': {
+          en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university.',
+          de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität.',
         },
+        '#offer-exams h3': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
         '#offer-exams p': {
-          en: 'English courses and targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. Tutoring from primary school to university.',
-          de: 'Englischkurse und gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Nachhilfe von der Primarschule bis zur Universität.',
+          en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
+          de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
         },
-        '#offer-more': { en: 'full offer &amp; pricing →', de: 'Angebot &amp; Preise →' },
-        '#gymi .kicker': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-        '#gymi .section-title': {
-          en: 'Confident into the Gymi exam',
-          de: 'Mit Selbstvertrauen an die Gymiprüfung',
+        '#offer-company h3': { en: 'Company courses', de: 'Firmenkurse' },
+        '#offer-company p': {
+          en: 'Language training for teams, at your offices or ours. Built around your industry, your everyday work and the situations your people actually face.',
+          de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Abgestimmt auf eure Branche, euren Arbeitsalltag und die Situationen, die bei euch wirklich vorkommen.',
         },
-        '#gymi .feature-text': {
-          en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day — in small groups or one-to-one, always tailored to your child.',
-          de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen — in kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+        '#offer .offer-card__cta': { en: 'learn more →', de: 'mehr erfahren →' },
+        '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
+        '#offer-details .section-title': {
+          en: 'Course structure',
+          de: 'Kursstruktur',
         },
-        '#gymi-cta': { en: 'enquire about Gymivorbereitung', de: 'Gymivorbereitung anfragen' },
-        '#schweizerdeutsch .kicker': { en: 'Swiss German', de: 'Schweizerdeutsch' },
-        '#schweizerdeutsch .section-title': { en: 'Grüezi, Züri!', de: 'Grüezi, Züri!' },
-        '#schweizerdeutsch .feature-text': {
-          en: 'You speak German, but the Dialekt is a different story? Our Swiss German courses, taught by native speakers, help you follow conversations, join in — and finally feel at home in Swiss everyday life.',
-          de: 'Du sprichst Deutsch, aber der Dialekt bleibt ein Rätsel? Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden — und dich im Schweizer Alltag endlich zuhause zu fühlen.',
+        '#structure-hours': {
+          en: 'Progressing through a full level (e.g. from A0 to A1) typically takes around 100-150 hours** of guided learning, alongside a similar amount of independent study.',
+          de: 'Um ein vollständiges Sprachniveau abzudecken (z. B. von A0 zu A1), benötigt man in der Regel etwa 100-150 Stunden** angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen.',
         },
-        '#swiss-cta': { en: 'learn Swiss German', de: 'Schweizerdeutsch lernen' },
+        '#structure-suggestion': {
+          en: 'Our regular group courses are structured into three blocks per level:',
+          de: 'Unsere regulären Gruppenkurse sind in drei Blöcke pro Niveau gegliedert:',
+        },
+        '#structure-diagram': {
+          en: 'One full level, for example A1, splits into the partial levels A1.1, A1.2 and A1.3 of 32 hours of guided learning each. The same pattern continues for further levels.',
+          de: 'Ein vollständiges Niveau, zum Beispiel A1, teilt sich in die Teilniveaus A1.1, A1.2 und A1.3 mit je 32 Stunden angeleitetem Lernen. Das gleiche Muster setzt sich für weitere Niveaus fort.',
+          attr: 'aria-label',
+        },
+        '#structure-level-hours': {
+          en: '~100-150 h guided learning',
+          de: '~100-150 Std. angeleitetes Lernen',
+        },
+        '.structure-part__hours': { en: '32 h', de: '32 Std.' },
+        '#structure-etc': { en: 'etc.', de: 'usw.' },
+        '#structure-cta': {
+          en: 'We offer schedules and programmes tailored to your individual needs, do not hesitate to contact us about your desired course today!',
+          de: 'Wir bieten Stundenpläne und Programme, die auf deine individuellen Bedürfnisse zugeschnitten sind. Zögere nicht, uns noch heute für deinen Wunschkurs zu kontaktieren!',
+        },
+        '#levels .kicker': { en: 'your level', de: 'Dein Niveau' },
+        '#levels .section-title': {
+          en: 'Which level fits you?',
+          de: 'Welches Niveau passt zu dir?',
+        },
+        '.levels-text': {
+          en: 'Not sure where to start? The six CEFR levels, A1 to C2, describe what you can do in a language. Our interactive self-assessment helps you find your current level — the perfect starting point for choosing the right course.',
+          de: 'Du weisst nicht, wo du starten sollst? Die sechs Niveaus des GER, A1 bis C2, beschreiben, was du in einer Sprache kannst. Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden — der perfekte Ausgangspunkt für den passenden Kurs.',
+        },
+        '#levels-cta': { en: 'find your level', de: 'Niveau herausfinden' },
+        '#materials .kicker': { en: 'materials', de: 'Materialien' },
+        '#materials .section-title': {
+          en: 'Free learning materials',
+          de: 'Kostenlose Lernmaterialien',
+        },
+        '#materials-intro': {
+          en: 'Small interactive guides we built for our students — free for everyone. Reference, quiz and cheat sheet included.',
+          de: 'Kleine interaktive Guides, die wir für unsere Lernenden gebaut haben — kostenlos für alle. Mit Übersicht, Quiz und Spickzettel.',
+        },
+        '#material-konjunktionen h3': { en: 'Conjunctions', de: 'Konjunktionen' },
+        '#material-konjunktionen p': {
+          en: 'The five words that connect equal parts.',
+          de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
+        },
+        '#material-modalpartikeln h3': { en: 'Modal particles', de: 'Modalpartikeln' },
+        '#material-modalpartikeln p': {
+          en: 'The little words that make German come alive.',
+          de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
+        },
+        '#material-subjunktionen h3': { en: 'Subjunctions', de: 'Subjunktionen' },
+        '#material-subjunktionen p': {
+          en: 'The words that open subordinate clauses and connect thoughts.',
+          de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
+        },
         '#reviews .kicker': { en: 'reviews', de: 'Stimmen' },
         '#reviews .section-title': {
           en: 'What our students say',
           de: 'Was unsere Lernenden sagen',
         },
-        '.review blockquote p': {
-          en: 'Review text will follow shortly.',
-          de: 'Bewertung folgt in Kürze.',
+        '#review-1 blockquote p': {
+          en: 'Gioia conveys knowledge very well and accurately. My son appreciates the private lessons.',
+          de: 'Gioia vermittelt Wissen sehr gut und präzise. Mein Sohn schätzt den Einzelunterricht.',
         },
-        '.review figcaption': { en: '— a student', de: '— eine Schülerin' },
+        '#review-1 figcaption': { en: '— Pascaline H.', de: '— Pascaline H.' },
+        '#review-2 blockquote p': {
+          en: 'Gioia is an incredibly kind and dedicated tutor. What I particularly appreciate about her is that she always prepared in advance for the topics I wanted to cover with her, whether they were specific subjects or concrete questions. I also really liked that I could go through not just one subject with her, but several. She always took extra time for this and prepared specifically for each topic. This was extremely helpful for me because it meant I had a dedicated contact person for different subjects. She also often found suitable documents, exercises, or additional materials for me and sent them to me, which was really practical and helped me a lot with my studies.',
+          de: 'Gioia ist eine unglaublich liebe und engagierte Nachhilfelehrerin. Was ich an ihr besonders schätze: Sie hat sich immer im Voraus auf die Themen vorbereitet, die ich mit ihr behandeln wollte — seien es bestimmte Fächer oder konkrete Fragen. Sehr gut gefallen hat mir auch, dass ich mit ihr nicht nur ein Fach, sondern mehrere durchgehen konnte. Dafür hat sie sich immer zusätzliche Zeit genommen und sich gezielt auf jedes Thema vorbereitet. Das war enorm hilfreich für mich, denn so hatte ich eine feste Ansprechperson für verschiedene Fächer. Oft hat sie auch passende Unterlagen, Übungen oder zusätzliche Materialien für mich gefunden und mir geschickt — das war wirklich praktisch und hat mir beim Lernen sehr geholfen.',
+        },
+        '#review-2 figcaption': { en: '— Malena F.', de: '— Malena F.' },
+        '#review-3 blockquote p': {
+          en: 'Gioia is a very professional, empathetic, patient, and dedicated teacher! 10 out of 10 :-)',
+          de: 'Gioia ist eine sehr professionelle, empathische, geduldige und engagierte Lehrerin! 10 von 10 :-)',
+        },
+        '#review-3 figcaption': { en: '— Miriam H.', de: '— Miriam H.' },
+        '#review-form-title': {
+          en: 'Had lessons with us? Leave a review',
+          de: 'Schon bei uns gelernt? Hinterlass eine Bewertung',
+        },
+        'label[for="review-name"]': { en: 'name', de: 'Name' },
+        'label[for="review-text"]': { en: 'your review', de: 'Deine Bewertung' },
+        '#err-review-name': { en: 'Please enter your name.', de: 'Bitte gib deinen Namen ein.' },
+        '#err-review-text': {
+          en: 'Please write a few words.',
+          de: 'Bitte schreib ein paar Worte.',
+        },
+        '#review-note': {
+          en: 'Reviews are checked before they appear on this page.',
+          de: 'Bewertungen werden geprüft, bevor sie auf dieser Seite erscheinen.',
+        },
+        '#review-submit': { en: 'submit review', de: 'Bewertung senden' },
+        '#err-review-submit': {
+          en: 'Something went wrong — please try again later.',
+          de: 'Etwas ist schiefgelaufen — bitte versuche es später erneut.',
+        },
+        '#review-success': {
+          en: 'Thank you! Your review will appear here once it has been checked.',
+          de: 'Danke! Deine Bewertung erscheint hier, sobald sie geprüft wurde.',
+        },
         '#about .kicker': { en: 'about', de: 'Über mich' },
         '#about .section-title': {
           en: 'Experience &amp; background',
           de: 'Erfahrung &amp; Hintergrund',
         },
         '.about-text': {
-          en: 'Nothing here yet — a proper introduction to my background and experience will follow soon :)',
-          de: 'Hier steht noch nichts — eine richtige Vorstellung meines Hintergrunds und meiner Erfahrung folgt bald :)',
+          en: 'tbc',
+          de: 'tbc',
         },
         '#start .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
         '.closing-text': {
@@ -194,75 +296,6 @@
         },
         '#closing-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
         '#closing-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
-      },
-    },
-    '/info.html': {
-      title: {
-        en: 'Courses & Pricing - Learning with Gioia',
-        de: 'Kurse & Preise - Learning with Gioia',
-      },
-      description: {
-        en: 'German, Swiss German and English language courses, exam preparation and tutoring in Zürich. All levels welcome. Pricing upon request.',
-        de: 'Deutsch-, Schweizerdeutsch- und Englischkurse, Prüfungsvorbereitung und Nachhilfe in Zürich. Alle Niveaus willkommen.',
-      },
-      text: {
-        h1: { en: 'what we offer', de: 'Was wir anbieten' },
-        '.section:nth-of-type(1) h2': { en: 'Language courses', de: 'Sprachkurse' },
-        '.section:nth-of-type(1) p': {
-          en: 'We offer courses in <strong>German</strong>, <strong>Swiss German</strong>, and <strong>English</strong>, taught exclusively by <strong>native speakers</strong>. All levels are welcome, from complete beginners to advanced learners looking to refine their skills. If you are interested in a language not listed here, please get in touch. We may be able to help.',
-          de: 'Wir bieten Kurse in <strong>Deutsch</strong>, <strong>Schweizerdeutsch</strong> und <strong>Englisch</strong> an, ausschliesslich unterrichtet von <strong>Muttersprachlerinnen und Muttersprachlern</strong>. Alle Niveaus sind willkommen, von kompletten Anfängerinnen und Anfängern bis zu Fortgeschrittenen, die ihre Kenntnisse verfeinern möchten. Wenn dich eine Sprache interessiert, die hier nicht aufgeführt ist, melde dich gerne. Vielleicht können wir helfen.',
-        },
-        '.section:nth-of-type(2) h2': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-        '.section:nth-of-type(2) p': {
-          en: 'We offer targeted preparation for internationally recognised language exams, including <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong>, and <strong>Goethe</strong>. Courses are tailored to the format and requirements of your chosen exam and are taught in the exam language. If you prefer to be taught in another language, please let us know and we will do our best to accommodate you.',
-          de: 'Ob <strong>Cambridge</strong>, <strong>TOEFL</strong>, <strong>IELTS</strong>, <strong>TELC</strong> und <strong>Goethe</strong> - wir bieten gezielte Vorbereitung auf international anerkannte Sprachprüfungen an. Die Kurse werden auf Format und Anforderungen deiner Prüfung abgestimmt und in der Prüfungssprache unterrichtet. Wenn du lieber in einer anderen Sprache unterrichtet werden möchtest, sag uns Bescheid. Wir geben unser Bestes, dich mit einer Lehrperson zu verbinden, die deine Sprache spricht.',
-        },
-        '.section:nth-of-type(3) h2': { en: 'Tutoring', de: 'Nachhilfe' },
-        '.section:nth-of-type(3) p': {
-          en: 'We provide tutoring support across all educational levels, from primary school through to university. Need ongoing help, targeted exam prep, or <strong>Gymivorbereitung</strong>? No problem! We will work with you to find the right approach.',
-          de: 'Wir bieten Nachhilfe auf allen Bildungsstufen an, von Primarschule bis zu Universität. Regelmässige Unterstützung, gezielte Prüfungsvorbereitung oder <strong>Gymivorbereitung</strong>? Kein Problem! Gemeinsam finden wir das passende Angebot.',
-        },
-        '.section:nth-of-type(4) h2': { en: 'Our teachers', de: 'Unsere Lehrpersonen' },
-        '.section:nth-of-type(4) p': {
-          en: 'All of our teachers hold or are working towards a university degree and a formal teaching qualification (<strong>Lehrdiplom</strong>). Our language teachers specialise in linguistics, bringing an understanding of how language works (not just how to speak it) to every lesson.',
-          de: 'Alle unsere Lehrpersonen haben einen Hochschulabschluss und verfügen über eine formale Lehrqualifikation (<strong>Lehrdiplom</strong>) oder befinden sich in der Ausbildung dahin. Unsere Sprachlehrpersonen spezialisieren sich auf Linguistik und verstehen, wie Sprache funktioniert (nicht nur, wie man sie spricht).',
-        },
-        '.section:nth-of-type(5) h2': { en: 'Location', de: 'Ort' },
-        '.section:nth-of-type(5) p': {
-          en: 'Group classes are held in central Zürich, within easy reach of Zürich HB. The exact venue is confirmed when a course is scheduled. Private, company, and online sessions can of course take place wherever suits you best.*',
-          de: 'Gruppenkurse finden zentral in Zürich statt, gut erreichbar vom Zürich HB. Der genaue Ort wird bestätigt, sobald ein Kurs geplant ist. Privat-, Firmen- und Onlinelektionen können natürlich dort stattfinden, wo es für dich am besten passt.*',
-        },
-        '.section:nth-of-type(5) li': { en: 'Travel fees apply.', de: 'Reisekosten fallen an.' },
-        '.section:nth-of-type(6) h2': { en: 'Course structure', de: 'Kursstruktur' },
-        '.section:nth-of-type(6) p:nth-of-type(1)': {
-          en: 'As a general guide, progressing through a full level, for example from A0 to A1, typically takes around 100-150 hours* of guided learning alongside a similar amount of independent study. Note that at higher levels, regular exposure and contact with native speakers becomes increasingly important alongside formal instruction.',
-          de: 'Um ein vollständiges Sprachniveau abzudecken, zum Beispiel von A0 zu A1, benötigt man durchschnittlich etwa 100-150 Stunden* angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen. Auf höheren Niveaus ist regelmässiger Kontakt mit der Sprache und Austausch mit Muttersprachlerinnen und Muttersprachlern neben formalem Unterricht unabdingbar.',
-        },
-        '.section:nth-of-type(6) p:nth-of-type(2)': {
-          en: 'The amount of lessons with Learning with Gioia depends on your goals and schedule. We will discuss this as part of your enquiry.',
-          de: 'Wie viele Lektionen mit Learning with Gioia sinnvoll sind, hängt von deinen Zielen und deinem Zeitplan ab. Wir besprechen das im Rahmen deiner Anfrage.',
-        },
-        '.section:nth-of-type(7) h2': { en: 'Pricing', de: 'Preise' },
-        '.pricing-card:nth-child(1) .pricing-card__label': {
-          en: 'Individual',
-          de: 'Einzelunterricht',
-        },
-        '.pricing-card:nth-child(1) .pricing-card__unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-        '.pricing-card:nth-child(2) .pricing-card__label': { en: '2 people', de: '2 Personen' },
-        '.pricing-card:nth-child(2) .pricing-card__unit': {
-          en: 'per person / 60 min',
-          de: 'pro Person / 60 Min.',
-        },
-        '.pricing-card:nth-child(3) .pricing-card__label': { en: '3-5 people', de: '3-5 Personen' },
-        '.pricing-card:nth-child(3) .pricing-card__unit': {
-          en: 'per person / 60 min',
-          de: 'pro Person / 60 Min.',
-        },
-        '.cta-row .book-cta:first-child': {
-          en: 'open group courses ->',
-          de: 'offene Gruppenkurse ->',
-        },
-        '.cta-row .book-cta:last-child': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
       },
     },
     '/enquiry.html': {
@@ -606,6 +639,133 @@
     },
   };
 
+  // ── Course detail pages ─────────────────────────────────────────
+  // They share the tailored-programme note and CTAs; heading, intro and
+  // meta always differ. Courses with a non-standard structure (exam
+  // preparation) pass `facts` to override individual fact rows.
+  const courseFacts = {
+    '.kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
+    '#fact-duration-label': { en: 'course duration', de: 'Kursdauer' },
+    '#fact-duration-value': { en: '4 months', de: '4 Monate' },
+    '#fact-lessons-label': { en: 'lessons of 60 min', de: 'Lektionen à 60 Min.' },
+    '#fact-group-label': { en: 'group (3-5)', de: 'Gruppe (3-5)' },
+    '#fact-group-unit': { en: 'per person', de: 'pro Person' },
+    '#fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
+    '#fact-solo-unit': { en: 'total', de: 'gesamt' },
+    '#course-tailored': {
+      en: 'You prefer a different schedule or programme? We offer fully tailored programmes. Contact us today to find the best schedule for you.',
+      de: 'Du wünschst dir einen anderen Zeitplan oder ein anderes Programm? Wir bieten vollständig massgeschneiderte Programme. Kontaktiere uns noch heute, damit wir den passenden Plan für dich finden.',
+    },
+    '#course-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+    '#course-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
+  };
+
+  function coursePage(entry) {
+    return {
+      title: entry.title,
+      description: entry.description,
+      text: Object.assign(
+        { h1: entry.h1, '#course-intro': entry.intro },
+        courseFacts,
+        entry.facts || {}
+      ),
+    };
+  }
+
+  Object.assign(pages, {
+    '/german-courses.html': coursePage({
+      title: {
+        en: 'German Courses in Zürich - Learning with Gioia',
+        de: 'Deutschkurse in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'German courses in Zürich from A0 to C2, taught by native speakers. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
+        de: 'Deutschkurse in Zürich von A0 bis C2, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+      },
+      h1: { en: 'German courses', de: 'Deutschkurse' },
+      intro: {
+        en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers with linguistics degrees and formal teaching qualifications.',
+        de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
+      },
+    }),
+    '/swiss-german.html': coursePage({
+      title: {
+        en: 'Swiss German Courses in Zürich - Learning with Gioia',
+        de: 'Schweizerdeutschkurse in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'Swiss German courses in Zürich taught by native speakers. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
+        de: 'Schweizerdeutschkurse in Zürich, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+      },
+      h1: { en: 'Swiss German', de: 'Schweizerdeutsch' },
+      intro: {
+        en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
+        de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
+      },
+    }),
+    '/gymivorbereitung.html': coursePage({
+      title: {
+        en: 'Gymivorbereitung in Zürich - Learning with Gioia',
+        de: 'Gymivorbereitung in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
+        de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+      },
+      h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+      intro: {
+        en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
+        de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+      },
+    }),
+    '/english-courses.html': coursePage({
+      title: {
+        en: 'English Courses in Zürich - Learning with Gioia',
+        de: 'Englischkurse in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'English courses and tutoring in Zürich, from beginner (A1) to advanced (C2). 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
+        de: 'Englischkurse und Nachhilfe in Zürich, von A1 bis C2. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+      },
+      h1: { en: 'English courses', de: 'Englischkurse' },
+      intro: {
+        en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university, always tailored to what you need next.',
+        de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität, immer abgestimmt auf das, was als Nächstes ansteht.',
+      },
+    }),
+    '/exam-preparation.html': coursePage({
+      title: {
+        en: 'Exam Preparation in Zürich - Learning with Gioia',
+        de: 'Prüfungsvorbereitung in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams in Zürich. 40 lessons of 60 minutes over 5 months - CHF 2000 in a group, CHF 4800 one-to-one.',
+        de: 'Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe in Zürich. 40 Lektionen à 60 Minuten in 5 Monaten - CHF 2000 in der Gruppe, CHF 4800 im Einzelunterricht.',
+      },
+      h1: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
+      intro: {
+        en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
+        de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
+      },
+      facts: { '#fact-duration-value': { en: '5 months', de: '5 Monate' } },
+    }),
+    '/company-courses.html': coursePage({
+      title: {
+        en: 'Company Language Courses in Zürich - Learning with Gioia',
+        de: 'Firmenkurse in Zürich - Learning with Gioia',
+      },
+      description: {
+        en: 'Language courses for companies and teams in Zürich, at your offices or ours. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
+        de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+      },
+      h1: { en: 'Company courses', de: 'Firmenkurse' },
+      intro: {
+        en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face - from client meetings to small talk in the corridor.',
+        de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen - vom Kundengespräch bis zum Small Talk auf dem Gang.',
+      },
+    }),
+  });
+
   Object.assign(pages, {
     '/intake.html': {
       title: {
@@ -877,6 +1037,9 @@
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },
     enquirySubmitting: { en: 'sending…', de: 'Wird gesendet…' },
     makeEnquiry: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
+    reviewSubmitting: { en: 'sending…', de: 'Wird gesendet…' },
+    reviewReadMore: { en: 'read more', de: 'mehr lesen' },
+    reviewReadLess: { en: 'show less', de: 'weniger anzeigen' },
   };
 
   function setMeta(name, value) {

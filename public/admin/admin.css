@@ -3810,3 +3810,73 @@ html[data-device='mobile'] .cert-prev-footer {
     text-align: left;
   }
 }
+
+/* ── Reviews tab ─────────────────────────────────────────────────── */
+.reviews-note {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: #888;
+  max-width: 640px;
+}
+
+.review-admin-card {
+  border: 1px solid #e3e8ee;
+  border-left: 3px solid #d8b26e;
+  background: #fff;
+  padding: 18px 20px 14px;
+  margin-bottom: 14px;
+  max-width: 760px;
+}
+
+.review-admin-card.approved {
+  border-left-color: #7ba889;
+}
+
+.review-admin-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.review-admin-status {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.review-admin-status.pending {
+  color: #b08a3e;
+}
+
+.review-admin-status.live {
+  color: #4d7a5e;
+}
+
+.review-admin-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.review-admin-card textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.review-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.review-admin-msg {
+  font-size: 12px;
+  color: #4d7a5e;
+}
+
+.review-admin-msg.error-text {
+  color: #b3564d;
+}

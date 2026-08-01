@@ -19,6 +19,7 @@
       addressCountry: 'CH',
     },
     email: 'info@learningwithgioia.ch',
+    priceRange: 'CHF 1600–4800 per course',
     areaServed: {
       '@type': 'City',
       name: 'Zürich',
@@ -28,7 +29,9 @@
       'Language courses',
       'Swiss German courses',
       'Gymivorbereitung',
+      'English courses',
       'Exam preparation',
+      'Company language courses',
       'Tutoring',
     ],
   });

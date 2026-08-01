@@ -16,6 +16,37 @@
 
   // ── Inject shared HTML ──────────────────────────────────────────
   // Only one overlay div (fixes duplicate overlay bug in several pages)
+  function navLink(page, key, hash) {
+    return (
+      '<a href="' +
+      href(page) +
+      (hash ? '#' + hash : '') +
+      '" data-page="' +
+      page +
+      '"' +
+      (hash ? ' data-hash="' + hash + '"' : '') +
+      ' data-nav-key="' +
+      key +
+      '">' +
+      tr(key) +
+      '</a>'
+    );
+  }
+
+  function navSection(headerLink, subLinks) {
+    return (
+      '<div class="nav-section">' +
+      headerLink +
+      '<div class="nav-submenu">' +
+      subLinks.join('') +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  // The nav mirrors the homepage section order; separate pages are
+  // nested under the section that links to them. Enquiry is linked
+  // from several sections, so it stays standalone at the end.
   const navHTML =
     '<a href="#content" class="skip-link">' +
     tr('skip') +
@@ -35,53 +66,28 @@
     '</span>' +
     '</button>' +
     '<div class="nav-menu" id="nav-menu">' +
-    '<a href="' +
-    href('/index.html') +
-    '" data-page="/index.html" data-nav-key="home">' +
-    tr('home') +
-    '</a>' +
-    '<a href="' +
-    href('/info.html') +
-    '" data-page="/info.html" data-nav-key="info">' +
-    tr('info') +
-    '</a>' +
-    '<a href="' +
-    href('/group-courses.html') +
-    '" data-page="/group-courses.html" data-nav-key="groupCourses">' +
-    tr('groupCourses') +
-    '</a>' +
-    '<a href="' +
-    href('/enquiry.html') +
-    '" data-page="/enquiry.html" data-nav-key="enquiry">' +
-    tr('enquiry') +
-    '</a>' +
-    '<a href="' +
-    href('/niveaus.html') +
-    '" data-page="/niveaus.html" data-nav-key="niveaus">' +
-    tr('niveaus') +
-    '</a>' +
-    '<div class="nav-section" aria-labelledby="nav-materials-label">' +
-    '<span class="nav-section-label" id="nav-materials-label" data-nav-key="materials">' +
-    tr('materials') +
-    '</span>' +
-    '<div class="nav-submenu">' +
-    '<a href="' +
-    href('/konjunktionen.html') +
-    '" data-page="/konjunktionen.html" data-nav-key="konjunktionen">' +
-    tr('konjunktionen') +
-    '</a>' +
-    '<a href="' +
-    href('/modalpartikeln.html') +
-    '" data-page="/modalpartikeln.html" data-nav-key="modalpartikeln">' +
-    tr('modalpartikeln') +
-    '</a>' +
-    '<a href="' +
-    href('/subjunktionen.html') +
-    '" data-page="/subjunktionen.html" data-nav-key="subjunktionen">' +
-    tr('subjunktionen') +
-    '</a>' +
-    '</div>' +
-    '</div>' +
+    navLink('/index.html', 'home') +
+    navSection(navLink('/index.html', 'offer', 'offer'), [
+      navLink('/german-courses.html', 'germanCourses'),
+      navLink('/swiss-german.html', 'swissGerman'),
+      navLink('/gymivorbereitung.html', 'gymivorbereitung'),
+      navLink('/english-courses.html', 'englishCourses'),
+      navLink('/exam-preparation.html', 'examPreparation'),
+      navLink('/company-courses.html', 'companyCourses'),
+    ]) +
+    navLink('/index.html', 'courseStructure', 'offer-details') +
+    navSection(navLink('/index.html', 'levels', 'levels'), [navLink('/niveaus.html', 'niveaus')]) +
+    navSection(navLink('/index.html', 'materials', 'materials'), [
+      navLink('/konjunktionen.html', 'konjunktionen'),
+      navLink('/modalpartikeln.html', 'modalpartikeln'),
+      navLink('/subjunktionen.html', 'subjunktionen'),
+    ]) +
+    navLink('/index.html', 'reviews', 'reviews') +
+    navLink('/index.html', 'about', 'about') +
+    navSection(navLink('/index.html', 'start', 'start'), [
+      navLink('/group-courses.html', 'groupCourses'),
+    ]) +
+    navLink('/enquiry.html', 'enquiry') +
     '</div>' +
     '</nav>';
   const footerHTML =
@@ -126,7 +132,7 @@
       el.textContent = tr(el.dataset.navKey);
     });
     document.querySelectorAll('[data-page]').forEach(function (el) {
-      el.href = href(el.dataset.page);
+      el.href = href(el.dataset.page) + (el.dataset.hash ? '#' + el.dataset.hash : '');
     });
     document.querySelectorAll('.skip-link').forEach(function (el) {
       el.textContent = tr('skip');
@@ -150,6 +156,7 @@
   }
   const currentPath = normalisePath(window.location.pathname);
   navMenu.querySelectorAll('a').forEach(function (link) {
+    if (link.dataset.hash) return; // section links never mark as current page
     const linkPath = normalisePath(new URL(link.href, window.location.href).pathname);
     if (
       linkPath === currentPath ||

@@ -266,6 +266,10 @@ html[data-touch='true'] .btn--ghost:active {
   background: var(--paper-deep);
   border-color: color-mix(in srgb, var(--ink) 30%, transparent);
 }
+/* Odd card out: spans the full width so the grid never ends ragged. */
+.offer-card--wide {
+  grid-column: 1 / -1;
+}
 .offer-card h3 {
   font-size: 1.35rem;
   font-weight: 600;
@@ -277,31 +281,131 @@ html[data-touch='true'] .btn--ghost:active {
   line-height: 1.65;
   color: var(--ink-soft);
 }
+a.offer-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+.offer-card__cta {
+  margin-top: auto;
+  padding-top: 1.4rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  transition: color 0.3s ease;
+}
+.offer-card:hover .offer-card__cta {
+  color: var(--ink);
+}
 
-/* ── Feature bands ───────────────────────────────────────────── */
-.feature {
-  background: var(--paper-deep);
-  padding: 6rem 1.5rem;
+/* ── Course structure ────────────────────────────────────────── */
+.structure-text {
+  max-width: 38rem;
+  margin: 0 auto 1.6rem;
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--ink-soft);
 }
-.feature--plain {
-  background: transparent;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+.structure-diagram {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 2rem auto 1.8rem;
 }
-.feature-inner {
-  max-width: 42rem;
-  margin: 0 auto;
+.structure-level {
+  border: 1px solid color-mix(in srgb, var(--ink) 45%, transparent);
+  background: var(--paper);
+  padding: 0.7rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
   text-align: center;
 }
-.feature .section-title {
-  margin-bottom: 1.6rem;
+.structure-level__code {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
 }
-.feature-text {
+.structure-level__hours {
+  max-width: 10rem;
+  font-size: 0.78rem;
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.structure-arrow {
+  color: var(--ink-mute);
+  font-size: 1.1rem;
+}
+.structure-part {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 0.55rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+.structure-part__code {
+  font-weight: 600;
+  line-height: 1;
+}
+.structure-part__hours {
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+}
+.structure-etc {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-mute);
+}
+.detail-sources {
+  margin-top: 3rem;
+  list-style: none;
+  text-align: left;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--ink-mute);
+}
+.detail-sources li + li {
+  margin-top: 0.4rem;
+}
+.detail-sources a {
+  color: inherit;
+}
+
+/* ── Levels & materials ──────────────────────────────────────── */
+.levels-text,
+.materials-intro {
+  max-width: 34rem;
+  margin: 0 auto 2.4rem;
   font-size: 1.15rem;
   font-weight: 300;
   line-height: 1.75;
   color: var(--ink-soft);
-  margin-bottom: 2.4rem;
+}
+.materials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  text-align: left;
+}
+.material-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--paper);
+}
+.material-card h3::after {
+  content: ' →';
+  font-weight: 300;
+  color: var(--ink-mute);
 }
 
 /* ── Reviews ─────────────────────────────────────────────────── */
@@ -342,6 +446,106 @@ html[data-touch='true'] .btn--ghost:active {
   text-transform: uppercase;
   color: var(--ink-mute);
 }
+.review--clamped blockquote p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
+  overflow: hidden;
+}
+.review-toggle {
+  margin-top: 0.9rem;
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.review-toggle:hover {
+  color: var(--ink);
+}
+
+/* ── Leave a review ──────────────────────────────────────────── */
+.review-form-wrap {
+  max-width: 34rem;
+  margin: 4rem auto 0;
+  text-align: left;
+}
+.review-form-title {
+  font-size: 1.35rem;
+  font-weight: 400;
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+.review-field {
+  margin-bottom: 1.4rem;
+}
+.review-field label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.5rem;
+}
+.review-field input,
+.review-field textarea {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.6;
+  padding: 0.7rem 0.9rem;
+  transition: border-color 0.25s ease;
+}
+.review-field input:focus,
+.review-field textarea:focus {
+  outline: none;
+  border-color: var(--ink-mute);
+}
+.review-field textarea {
+  resize: vertical;
+}
+.review-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.review-note {
+  font-size: 0.85rem;
+  color: var(--ink-mute);
+  margin-bottom: 1.6rem;
+}
+.review-error {
+  display: none;
+  font-size: 0.85rem;
+  color: #b3564d;
+  margin-top: 0.5rem;
+}
+.review-error.is-visible-block {
+  display: block;
+}
+.review-error--submit {
+  margin-top: 1rem;
+}
+.review-success {
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  text-align: center;
+}
 
 /* ── About ───────────────────────────────────────────────────── */
 .about-text {
@@ -374,7 +578,8 @@ html[data-touch='true'] .btn--ghost:active {
 
 /* ── Tablet & below ──────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .reviews-grid {
+  .reviews-grid,
+  .materials-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -396,8 +601,7 @@ html[data-touch='true'] .btn--ghost:active {
   .hero-lede {
     font-size: 1.05rem;
   }
-  .section,
-  .feature {
+  .section {
     padding: 3.8rem 1.25rem;
   }
   .offer-grid {
@@ -406,6 +610,18 @@ html[data-touch='true'] .btn--ghost:active {
   .btn {
     padding: 0.8rem 1.5rem;
     font-size: 0.7rem;
+  }
+  .structure-level {
+    padding: 0.6rem 0.8rem;
+  }
+  .structure-level__code {
+    font-size: 1.1rem;
+  }
+  .structure-level__hours {
+    font-size: 0.72rem;
+  }
+  .structure-part {
+    padding: 0.45rem 0.6rem;
   }
 }
 
