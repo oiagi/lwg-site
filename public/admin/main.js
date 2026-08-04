@@ -15,24 +15,30 @@ import {
   logSession,
   deleteCourse,
   removeStudentFromCourse,
-  openAttendanceModal,
-  closeAttendanceModal,
-  submitAttendance,
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
   initAddParticipantSearch,
+  toggleCourseAddressEditor,
+  saveCourseAddress,
+  togglePublicBooking,
+  toggleCompanyCodeBooking,
+  handleCourseBooking,
+} from './features/courses.js';
+import {
+  openAttendanceModal,
+  closeAttendanceModal,
+  submitAttendance,
+} from './features/attendance.js';
+import {
   sendCourseConfirmation,
   openScheduleModal,
   openCertificateModal,
   openContractModal,
   openInvoiceModal,
   openBulkInvoiceModal,
-  toggleCourseAddressEditor,
-  saveCourseAddress,
-  togglePublicBooking,
-  toggleCompanyCodeBooking,
-  handleCourseBooking,
+} from './features/course-communications.js';
+import {
   openGroupSlotModal,
   closeGroupSlotModal,
   submitGroupSlot,
@@ -40,7 +46,7 @@ import {
   togglePublicSlotsPanel,
   openEditGroupSlotModal,
   deleteGroupSlot,
-} from './features/courses.js';
+} from './features/course-slots.js';
 import { closeCertificateModal } from './features/certificates.js';
 import { closeContractModal, downloadSignedContract } from './features/contracts.js';
 import {
