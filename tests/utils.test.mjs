@@ -45,7 +45,9 @@ test('OAuth state signing round-trips and rejects tampering', async () => {
   // Tampered teacher id, tampered mac, wrong key, and garbage all fail.
   const [, expires, mac] = state.split('.');
   assert.equal(await verifyOAuthState(`other-id.${expires}.${mac}`, env), null);
-  assert.equal(await verifyOAuthState(state.slice(0, -1) + '0', env), null);
+  // Flip the last mac character to a guaranteed-different value.
+  const tampered = state.slice(0, -1) + (state.endsWith('0') ? '1' : '0');
+  assert.equal(await verifyOAuthState(tampered, env), null);
   assert.equal(await verifyOAuthState(state, { GOOGLE_CLIENT_SECRET: 'wrong' }), null);
   assert.equal(await verifyOAuthState('not-a-state', env), null);
   assert.equal(await verifyOAuthState(null, env), null);
