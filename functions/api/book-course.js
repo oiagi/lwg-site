@@ -326,7 +326,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     gender: {
       required: true,
       type: 'string',
-      oneOf: ['she/her', 'he/him', 'they/them', 'other', 'female', 'male'],
+      oneOf: ['female', 'male', 'other'],
     },
     email: { required: true, type: 'string', email: true, maxLength: 320 },
     consent_given: { required: true, type: 'boolean', oneOf: [true] },
