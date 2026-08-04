@@ -92,6 +92,14 @@ html[data-device='tablet'] .course-page {
   line-height: 1.7;
   color: var(--ink-soft);
 }
+.course-tailored a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.course-tailored a:hover {
+  text-decoration: none;
+}
 .course-actions {
   display: flex;
   gap: 1rem;

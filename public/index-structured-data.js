@@ -32,7 +32,8 @@
       'English courses',
       'Exam preparation',
       'Company language courses',
-      'Lunch time German courses',
+      'Lunchtime German courses',
+      'Intensive German courses',
       'Tutoring',
     ],
   });
