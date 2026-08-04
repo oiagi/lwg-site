@@ -1,6 +1,7 @@
 {
   "name": "lwg-site",
   "private": true,
+  "type": "module",
   "description": "Learning with Gioia — language school website",
   "scripts": {
     "lint": "eslint .",

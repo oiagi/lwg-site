@@ -53,7 +53,7 @@ export function capitalizeWords(value) {
 
 // Student fields that carry names/addresses and should be stored with formal
 // capitalization regardless of how the student typed them.
-export const CAPITALIZED_STUDENT_FIELDS = [
+const CAPITALIZED_STUDENT_FIELDS = [
   'first_name',
   'last_name',
   'street',
