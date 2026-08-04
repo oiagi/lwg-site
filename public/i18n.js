@@ -177,8 +177,8 @@
         },
         '#offer-lunch h3': { en: 'Build your own', de: 'Build your own' },
         '#offer-lunch p': {
-          en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-          de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+          en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability. German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
+          de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst, wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist. Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
         },
         '#offer .offer-card__cta': { en: 'learn more →', de: 'mehr erfahren →' },
         '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
@@ -649,8 +649,10 @@
   // ── Course detail pages ─────────────────────────────────────────
   // They share the tailored-programme note and CTAs; heading, intro and
   // meta always differ. Courses with a non-standard structure (exam
-  // preparation, lunch time German) pass `facts` to override individual
-  // fact rows.
+  // preparation, and the flexible ones: lunch time German, Gymivorbereitung,
+  // company courses) pass `facts` to override individual fact rows. The
+  // flexible ones also drop the tailored-programme note from their markup,
+  // so its key here simply matches nothing on those pages.
   const courseFacts = {
     '.kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
     '#fact-duration-label': { en: 'course duration', de: 'Kursdauer' },
@@ -717,13 +719,22 @@
         de: 'Gymivorbereitung in Zürich - Learning with Gioia',
       },
       description: {
-        en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
-        de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+        en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. Flexible schedule, lessons of 60-90 minutes - CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
+        de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. Flexibler Rhythmus, Lektionen à 60-90 Minuten - CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
       },
       h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
       intro: {
         en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
         de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+      },
+      facts: {
+        '#fact-duration-label': { en: 'frequency', de: 'Rhythmus' },
+        '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
+        '#fact-lessons-label': { en: 'lesson length', de: 'Lektionsdauer' },
+        '#fact-lessons-value': { en: '60-90 min', de: '60-90 Min.' },
+        '#fact-lessons-unit': { en: 'recommended', de: 'empfohlen' },
+        '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
+        '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       },
     }),
     '/english-courses.html': coursePage({
@@ -763,13 +774,22 @@
         de: 'Firmenkurse in Zürich - Learning with Gioia',
       },
       description: {
-        en: 'Language courses for companies and teams in Zürich, at your offices or ours. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
-        de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+        en: 'Language courses for companies and teams in Zürich, at your offices or ours. Flexible schedule, around 100 lessons of 60 minutes per level - CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
+        de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. Flexibler Rhythmus, rund 100 Lektionen à 60 Minuten pro Niveau - CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
       },
       h1: { en: 'Company courses', de: 'Firmenkurse' },
       intro: {
         en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face - from client meetings to small talk in the corridor.',
         de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen - vom Kundengespräch bis zum Small Talk auf dem Gang.',
+      },
+      facts: {
+        '#fact-duration-label': { en: 'frequency & duration', de: 'Rhythmus & Dauer' },
+        '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
+        '#fact-lessons-label': { en: 'lessons per level', de: 'Lektionen pro Niveau' },
+        '#fact-lessons-value': { en: '~100', de: '~100' },
+        '#fact-lessons-unit': { en: 'recommended, 60 min each', de: 'empfohlen, à 60 Min.' },
+        '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
+        '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       },
     }),
     '/lunch-time-german.html': coursePage({
@@ -783,8 +803,8 @@
       },
       h1: { en: 'Build your own', de: 'Build your own' },
       intro: {
-        en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-        de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+        en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability. German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
+        de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst, wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist. Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
       },
       facts: {
         '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
