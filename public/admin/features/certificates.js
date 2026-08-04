@@ -3,13 +3,15 @@ import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { formatCourseAddress } from './courses.js';
-
-const LOGO_URL = '/lwg_logo.svg';
-const SIGNATURE_URL = '/api/get-signature';
-const SIGNATURE_NAME = 'Gioia Birukoff';
-const SIGNATURE_TITLE_DE = 'Schulleitung · learning with gioia';
-const SIGNATURE_TITLE_EN = 'Founder · learning with gioia';
-const ISSUE_LOCATION = 'Zürich';
+import {
+  loadPdfAssets,
+  imageAspectRatio,
+  SIGNATURE_URL,
+  SIGNATURE_NAME,
+  SIGNATURE_TITLE_DE,
+  SIGNATURE_TITLE_EN,
+  ISSUE_LOCATION,
+} from '../core/pdf-assets.js';
 
 let currentCourse = null;
 let currentRecipients = [];
@@ -395,77 +397,7 @@ function generateCertificateId() {
 let signatureLoadError = null;
 
 async function loadAssets() {
-  if (!logoDataUrl) {
-    try {
-      logoDataUrl = await loadImageAsDataUrl(LOGO_URL);
-    } catch (err) {
-      console.error('Could not load logo:', err);
-      logoDataUrl = null;
-    }
-  }
-  if (!signatureDataUrl) {
-    try {
-      signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL, { authed: true });
-      signatureLoadError = null;
-    } catch (err) {
-      signatureLoadError = err?.message || String(err);
-      console.warn(
-        `Signature image could not be loaded from ${SIGNATURE_URL}: ${signatureLoadError}. ` +
-          'Certificates will be issued without a signature image until the file is reachable.'
-      );
-      signatureDataUrl = null;
-    }
-  }
-}
-
-async function loadImageAsDataUrl(url, { authed = false } = {}) {
-  // Use fetch + FileReader: gives real HTTP error messages, avoids
-  // CORS quirks of <img crossorigin>, and bypasses image-cache lag.
-  // authed: route the request through apiFetch so admin-only endpoints
-  // receive the Bearer token.
-  const res = authed ? await apiFetch(url) : await fetch(url, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
-  const blob = await res.blob();
-
-  // SVG: rasterise via canvas so jsPDF can embed it as PNG.
-  if (blob.type === 'image/svg+xml' || /\.svg(\?|$)/i.test(url)) {
-    const objectUrl = URL.createObjectURL(blob);
-    try {
-      return await rasteriseToPngDataUrl(objectUrl);
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-    }
-  }
-
-  return await blobToDataUrl(blob);
-}
-
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('FileReader failed'));
-    reader.readAsDataURL(blob);
-  });
-}
-
-function rasteriseToPngDataUrl(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || 800;
-        canvas.height = img.naturalHeight || 600;
-        canvas.getContext('2d').drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      } catch (err) {
-        reject(err);
-      }
-    };
-    img.onerror = () => reject(new Error('Image decode failed: ' + src));
-    img.src = src;
-  });
+  ({ logoDataUrl, signatureDataUrl, signatureLoadError } = await loadPdfAssets());
 }
 
 /* ── PDF generation ─────────────────────────────────────────────── */
@@ -623,16 +555,6 @@ function buildCertificatePdf(data) {
   // Return base64 (without "data:application/pdf;base64," prefix)
   const dataUri = doc.output('datauristring');
   return dataUri.split(',')[1];
-}
-
-function imageAspectRatio(doc, dataUrl) {
-  try {
-    const props = doc.getImageProperties(dataUrl);
-    if (props?.width && props?.height) return props.width / props.height;
-  } catch (err) {
-    console.warn('Could not read image dimensions:', err);
-  }
-  return null;
 }
 
 /* ── Submit ─────────────────────────────────────────────────────── */
