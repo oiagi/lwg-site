@@ -38,24 +38,27 @@ async function listYearFiles(env, year) {
   return res.json();
 }
 
+// Columns added by later migrations. Databases that have not run them yet fall
+// back to the base column set rather than failing the whole archive listing.
+const BASE_COLUMNS = 'id,invoice_number,status,total_amount,currency,due_date,student_id,course_id';
+const OPTIONAL_COLUMNS = ['reminder_sent_at', 'cancelled_at', 'cancellation_notified_at'];
+
 async function fetchInvoiceRecords(env, invoiceNumbers) {
   if (invoiceNumbers.length === 0) return [];
   const list = invoiceNumbers.map((n) => encodeURIComponent(n)).join(',');
   const url = `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})`;
-  let res = await fetch(
-    `${url}&select=id,invoice_number,status,total_amount,currency,due_date,reminder_sent_at,student_id,course_id`,
-    { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-  );
+  let res = await fetch(`${url}&select=${BASE_COLUMNS},${OPTIONAL_COLUMNS.join(',')}`, {
+    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+  });
   if (!res.ok) {
     const errorText = await res.text();
-    if (!errorText.includes('reminder_sent_at')) {
+    if (!OPTIONAL_COLUMNS.some((col) => errorText.includes(col))) {
       console.error('invoice-archive DB fetch failed:', errorText);
       return [];
     }
-    res = await fetch(
-      `${url}&select=id,invoice_number,status,total_amount,currency,due_date,student_id,course_id`,
-      { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-    );
+    res = await fetch(`${url}&select=${BASE_COLUMNS}`, {
+      headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+    });
   }
   if (!res.ok) {
     console.error('invoice-archive DB fetch failed:', await res.text());
@@ -160,6 +163,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       invoice_id: record.id ?? null,
       due_date: record.due_date ?? null,
       reminder_sent_at: record.reminder_sent_at ?? null,
+      cancelled_at: record.cancelled_at ?? null,
+      cancellation_notified_at: record.cancellation_notified_at ?? null,
       total_amount: record.total_amount ?? null,
       currency: record.currency ?? 'CHF',
       student_name: student

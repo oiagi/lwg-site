@@ -265,6 +265,10 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const paidInvoicesByCourseStudent = {};
     const invoiceSentByCourseStudent = {};
     for (const inv of allInvoices) {
+      // Cancelled invoices stay in the archive but must not show up as an open
+      // charge, a paid invoice or a sent communication — the replacement
+      // invoice is issued from this page and should look outstanding again.
+      if (inv.status === 'cancelled') continue;
       if (['sent', 'paid'].includes(inv.status)) {
         const byStudent = (invoiceSentByCourseStudent[inv.course_id] ||= {});
         const sentAt = inv.sent_at || inv.issued_date;

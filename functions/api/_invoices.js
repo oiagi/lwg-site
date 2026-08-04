@@ -11,9 +11,10 @@ export const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
 export const PENDING_STATUS_CANDIDATES = ['pending', 'unpaid', 'open', 'sent'];
 export const DOWNLOADED_STATUS_CANDIDATES = ['downloaded', 'pending', 'unpaid', 'open'];
 
-// Statuses that represent an invoice that has already been emailed/settled, so a
-// fresh send must be refused as a genuine duplicate.
-export const FINALISED_STATUSES = new Set(['sent', 'paid']);
+// Statuses that represent an invoice that has already been emailed/settled or
+// deliberately voided, so a fresh send must be refused as a genuine duplicate.
+// A cancelled number is never reused — the replacement invoice gets a new one.
+export const FINALISED_STATUSES = new Set(['sent', 'paid', 'cancelled']);
 
 // Looks up an existing invoice by number. Returns { id, status } or null.
 export async function findInvoiceByNumber(env, invoiceNumber) {

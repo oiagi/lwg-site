@@ -1,8 +1,36 @@
 <div class="dashboard-header students-header">
+  <div class="course-filter-row" id="archive-view-filters">
+    <button class="filter-btn active" data-action="switchArchiveView" data-args="active" id="archive-view-active">invoices</button>
+    <button class="filter-btn" data-action="switchArchiveView" data-args="cancelled" id="archive-view-cancelled">cancelled</button>
+  </div>
   <div class="course-filter-row" id="archive-year-filters">
     <!-- Year filter buttons injected by JS -->
   </div>
 </div>
 <div id="archive-list">
   <div class="loading-state">loading…</div>
+</div>
+
+<!-- ── Cancel invoice modal ──────────────────────────────────────────── -->
+<div class="modal-overlay" id="cancel-invoice-modal">
+  <div class="modal">
+    <h2>cancel invoice</h2>
+    <input type="hidden" id="cancel-inv-number" value="">
+    <p class="detail-muted" id="cancel-inv-summary"></p>
+    <p class="detail-muted">
+      The invoice keeps its number and stays in the archive under
+      <em>cancelled</em>. Issue the corrected invoice from the course page.
+    </p>
+    <div class="modal-field">
+      <label class="checkbox-label">
+        <input type="checkbox" id="cancel-inv-notify">
+        <span>Email the student that this invoice has been cancelled and a new one follows</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" data-action="closeCancelInvoiceModal">back</button>
+      <button class="modal-submit" id="cancel-inv-submit" data-action="submitCancelInvoice">cancel invoice</button>
+    </div>
+    <p class="modal-msg" id="cancel-inv-msg"></p>
+  </div>
 </div>

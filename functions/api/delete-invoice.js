@@ -1,8 +1,10 @@
 // functions/api/delete-invoice.js
 // DELETE /api/delete-invoice?invoice_number=LWG-2026-0001
 //
-// Deletes an invoice record and its archived PDF. Intended for mistaken/test
-// invoices; normal accounting corrections should usually keep an audit trail.
+// Permanently removes an invoice record and its archived PDF. Only cancelled
+// invoices may be deleted — accounting corrections go through
+// /api/cancel-invoice, which keeps the record. This is the last resort for
+// test or mistaken invoices that should not appear in the archive at all.
 
 import {
   supabaseHeaders,
@@ -11,6 +13,7 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+import { findInvoiceByNumber } from './_invoices.js';
 
 const BUCKET = 'invoice-archive';
 const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
@@ -53,6 +56,11 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
   const url = new URL(request.url);
   const invoiceNumber = String(url.searchParams.get('invoice_number') || '').trim();
   if (!INVOICE_NUMBER_RE.test(invoiceNumber)) return errorResponse('Invalid invoice_number', 400);
+
+  const existing = await findInvoiceByNumber(env, invoiceNumber);
+  if (existing && existing.status !== 'cancelled') {
+    return errorResponse('Only cancelled invoices can be deleted. Cancel the invoice first.', 400);
+  }
 
   const archiveDeleted = await deleteArchivedPdf(env, invoiceNumber);
   if (!archiveDeleted) return errorResponse('Could not delete archived invoice PDF', 502);

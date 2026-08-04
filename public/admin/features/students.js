@@ -844,14 +844,14 @@ export function copyIntakeLink(token, btn) {
 
 // Admin section: one read-only row per enrolled course. Values come directly
 // from the course record; open charges are the sum of the student's unpaid
-// invoices linked to that course.
+// invoices linked to that course (cancelled invoices no longer count).
 function renderAdminSection(s) {
   const courses = (s.courses || []).filter((c) => c.status === 'active');
   const invoices = s.invoices || [];
 
   const openByCourse = {};
   for (const inv of invoices) {
-    if (inv.status === 'paid' || !inv.course_id) continue;
+    if (inv.status === 'paid' || inv.status === 'cancelled' || !inv.course_id) continue;
     openByCourse[inv.course_id] =
       (openByCourse[inv.course_id] || 0) + Number(inv.total_amount || 0);
   }

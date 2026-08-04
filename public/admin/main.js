@@ -40,7 +40,7 @@ import {
   togglePublicSlotsPanel,
   openEditGroupSlotModal,
   deleteGroupSlot,
-} from './features/courses.js?v=invoice-overview-cleanup-20260610';
+} from './features/courses.js?v=invoice-cancel-20260804';
 import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
 import { closeContractModal, downloadSignedContract } from './features/contracts.js';
 import {
@@ -49,7 +49,7 @@ import {
   downloadInvoice,
   prevBulkPreview,
   nextBulkPreview,
-} from './features/invoices.js?v=invoice-overview-cleanup-20260610';
+} from './features/invoices.js?v=invoice-cancel-20260804';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -91,11 +91,15 @@ import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js'
 import {
   loadInvoiceArchive,
   switchArchiveYear,
+  switchArchiveView,
   toggleInvoiceActions,
   sendInvoiceReminder,
   markArchivedInvoicePaid,
+  openCancelInvoiceModal,
+  closeCancelInvoiceModal,
+  submitCancelInvoice,
   deleteInvoice,
-} from './features/invoice-archive.js?v=invoice-overview-cleanup-20260610';
+} from './features/invoice-archive.js?v=invoice-cancel-20260804';
 import {
   loadCompanies,
   selectCompany,
@@ -217,9 +221,13 @@ const actions = {
   deleteBlockedDate,
   // Invoice archive
   switchArchiveYear,
+  switchArchiveView,
   toggleInvoiceActions,
   sendInvoiceReminder,
   markArchivedInvoicePaid,
+  openCancelInvoiceModal,
+  closeCancelInvoiceModal,
+  submitCancelInvoice,
   deleteInvoice,
   // Companies
   selectCompany,
