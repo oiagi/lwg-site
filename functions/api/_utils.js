@@ -209,6 +209,42 @@ export async function checkRateLimit(request, { maxRequests = 5, windowSeconds =
   return null;
 }
 
+// ── OAuth state signing ───────────────────────────────────────────────────
+// The OAuth `state` parameter round-trips through Google's consent screen.
+// Signing it (HMAC keyed with the OAuth client secret) stops a forged
+// callback from binding an attacker's Google account to an arbitrary
+// teacher record. Format: "<teacher_id>.<expiry_ms>.<hmac_hex>".
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+
+async function oauthStateHmac(payload, env) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(env.GOOGLE_CLIENT_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function signOAuthState(teacherId, env) {
+  const payload = `${teacherId}.${Date.now() + OAUTH_STATE_TTL_MS}`;
+  return `${payload}.${await oauthStateHmac(payload, env)}`;
+}
+
+/** Returns the teacher id if the state is authentic and unexpired, else null. */
+export async function verifyOAuthState(state, env) {
+  const [teacherId, expires, mac] = String(state || '').split('.');
+  if (!teacherId || !expires || !mac) return null;
+  if (!/^\d+$/.test(expires) || Number(expires) < Date.now()) return null;
+  const expected = await oauthStateHmac(`${teacherId}.${expires}`, env);
+  if (mac.length !== expected.length) return null;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= mac.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0 ? teacherId : null;
+}
+
 // ── Google OAuth token refresh ────────────────────────────────────────────
 // Returns a valid access token for the given teacher, refreshing via OAuth
 // if the current token is within 5 minutes of expiry. Persists the new

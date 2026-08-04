@@ -23,9 +23,9 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getOrCreateStudentToken } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -220,20 +220,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
             ? `course-contract-${r.contract_ref}.pdf`
             : `kursvertrag-${r.contract_ref}.pdf`;
 
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: [r.email],
-            reply_to: NOTIFY_EMAILS,
-            subject,
-            html,
-            attachments: [{ filename, content: r.pdf_base64 }],
-          }),
+        const res = await sendResendEmail(RESEND_API_KEY, {
+          to: [r.email],
+          reply_to: NOTIFY_EMAILS,
+          subject,
+          html,
+          attachments: [{ filename, content: r.pdf_base64 }],
         });
         if (!res.ok) {
           console.error(`Contract email failed for ${r.email}:`, await res.text());

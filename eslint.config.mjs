@@ -3,7 +3,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['.wrangler/**', 'node_modules/**'],
+    ignores: ['.wrangler/**', 'node_modules/**', 'public/admin/vendor/**'],
   },
   js.configs.recommended,
   {

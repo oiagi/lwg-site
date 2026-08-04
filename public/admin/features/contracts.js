@@ -12,7 +12,7 @@ import {
 } from '../../agb-content.js';
 
 const LOGO_URL = '/lwg_logo.svg';
-const SIGNATURE_URL = '/admin/assets/signature.png';
+const SIGNATURE_URL = '/api/get-signature';
 const SIGNATURE_NAME = 'Gioia Birukoff';
 const SIGNATURE_TITLE_DE = 'Schulleitung · learning with gioia';
 const SIGNATURE_TITLE_EN = 'Founder · learning with gioia';
@@ -432,7 +432,7 @@ async function loadAssets() {
   }
   if (!signatureDataUrl) {
     try {
-      signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL);
+      signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL, { authed: true });
       signatureLoadError = null;
     } catch (err) {
       signatureLoadError = err?.message || String(err);
@@ -444,8 +444,10 @@ async function loadAssets() {
   }
 }
 
-async function loadImageAsDataUrl(url) {
-  const res = await fetch(url, { cache: 'no-cache' });
+async function loadImageAsDataUrl(url, { authed = false } = {}) {
+  // authed: route the request through apiFetch so admin-only endpoints
+  // receive the Bearer token.
+  const res = authed ? await apiFetch(url) : await fetch(url, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
   const blob = await res.blob();
 

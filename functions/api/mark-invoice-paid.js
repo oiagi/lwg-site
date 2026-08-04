@@ -11,8 +11,8 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 
 function esc(str) {
@@ -96,19 +96,11 @@ async function sendPaymentThankYouEmail(env, invoice, H) {
     );
     const email = buildPaymentThankYouEmail(student, language);
 
-    const sendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [recipientEmail],
-        reply_to: NOTIFY_EMAILS,
-        subject: email.subject,
-        html: email.html,
-      }),
+    const sendRes = await sendResendEmail(RESEND_API_KEY, {
+      to: [recipientEmail],
+      reply_to: NOTIFY_EMAILS,
+      subject: email.subject,
+      html: email.html,
     });
     if (!sendRes.ok) {
       console.error('mark-invoice-paid email error:', await sendRes.text());

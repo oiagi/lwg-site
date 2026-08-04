@@ -40,8 +40,8 @@ import {
   togglePublicSlotsPanel,
   openEditGroupSlotModal,
   deleteGroupSlot,
-} from './features/courses.js?v=invoice-overview-cleanup-20260610';
-import { closeCertificateModal } from './features/certificates.js?v=cert-submit-20260601';
+} from './features/courses.js';
+import { closeCertificateModal } from './features/certificates.js';
 import { closeContractModal, downloadSignedContract } from './features/contracts.js';
 import {
   closeInvoiceModal,
@@ -49,7 +49,7 @@ import {
   downloadInvoice,
   prevBulkPreview,
   nextBulkPreview,
-} from './features/invoices.js?v=invoice-overview-cleanup-20260610';
+} from './features/invoices.js';
 import {
   loadStudents,
   getCurrentStudentFilter,
@@ -95,7 +95,7 @@ import {
   sendInvoiceReminder,
   markArchivedInvoicePaid,
   deleteInvoice,
-} from './features/invoice-archive.js?v=invoice-overview-cleanup-20260610';
+} from './features/invoice-archive.js';
 import {
   loadCompanies,
   selectCompany,

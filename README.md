@@ -42,8 +42,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 
 | Page                 | File                         | Notes                                                            |
 | -------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| Home                 | `index.html`                 |                                                                  |
-| Courses and pricing  | `info.html`                  |                                                                  |
+| Home                 | `index.html`                 | Includes courses and pricing (`#offer-details`)                  |
 | Group courses        | `group-courses.html`         | Public listing + booking form                                    |
 | Enquiry              | `enquiry.html`               | Contact form                                                     |
 | Thank you            | `thankyou.html`              | Post-submission landing page                                     |
@@ -117,9 +116,14 @@ Cloudflare Pages. Pushes to `main` deploy automatically — no build step needed
 ## Code quality
 
 ```bash
-npm run lint           # ESLint
-npm run format:check   # Prettier (check)
-npm run format         # Prettier (fix)
+npm run lint             # ESLint
+npm run format:check     # Prettier (check)
+npm run format           # Prettier (fix)
+node --test tests/*.test.mjs   # unit tests (no dependencies — Node ≥22 built-in runner)
 ```
 
 GitHub Actions runs lint + format check on every push and PR to `main`.
+
+Unit tests in `tests/` cover the pure logic in `functions/api/_*.js` (booking
+eligibility, schedule planning around blocked dates, validation schemas, OAuth
+state signing).

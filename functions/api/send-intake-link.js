@@ -14,8 +14,8 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getOrCreateStudentToken, getStudentLanguage } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 
 function esc(str) {
@@ -119,16 +119,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       : await getStudentLanguage(SUPABASE_URL, SUPABASE_SERVICE_KEY, body.student_id);
   const email = buildIntakeLinkEmail(student, intakeUrl, language);
 
-  const sendRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [student.email],
-      reply_to: NOTIFY_EMAILS,
-      subject: email.subject,
-      html: email.html,
-    }),
+  const sendRes = await sendResendEmail(env.RESEND_API_KEY, {
+    to: [student.email],
+    reply_to: NOTIFY_EMAILS,
+    subject: email.subject,
+    html: email.html,
   });
 
   if (!sendRes.ok) {

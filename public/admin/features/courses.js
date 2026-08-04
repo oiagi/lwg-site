@@ -16,7 +16,7 @@ import { openContractModal as openContracts } from './contracts.js';
 import {
   openBulkInvoiceModal as openBulkInvoices,
   openInvoiceModal as openInvoice,
-} from './invoices.js?v=invoice-overview-cleanup-20260610';
+} from './invoices.js';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };

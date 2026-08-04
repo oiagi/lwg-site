@@ -39,8 +39,9 @@ import {
   slotRequiresAccessCode,
 } from './_public-course-booking.js';
 
+import { sendResendEmail } from './_email.js';
+
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 const STUDENT_FIELDS = [
   'first_name',
@@ -291,19 +292,11 @@ function adminCourseUrl(request, env, courseId) {
 
 async function sendEmail(env, to, email) {
   if (!env.RESEND_API_KEY) return false;
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: Array.isArray(to) ? to : [to],
-      reply_to: NOTIFY_EMAILS,
-      subject: email.subject,
-      html: email.html,
-    }),
+  const res = await sendResendEmail(env.RESEND_API_KEY, {
+    to: Array.isArray(to) ? to : [to],
+    reply_to: NOTIFY_EMAILS,
+    subject: email.subject,
+    html: email.html,
   });
   if (!res.ok) console.error('book-course email error:', await res.text());
   return res.ok;

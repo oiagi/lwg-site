@@ -14,9 +14,9 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { validate } from './_validate.js';
+import { sendResendEmail } from './_email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -80,17 +80,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   // Notify admin — best-effort, the review is already stored.
   try {
-    const mailRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: NOTIFY_EMAILS,
-        subject: `New review awaiting approval — ${name}`,
-        html: `<!DOCTYPE html>
+    const mailRes = await sendResendEmail(env.RESEND_API_KEY, {
+      to: NOTIFY_EMAILS,
+      subject: `New review awaiting approval — ${name}`,
+      html: `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
@@ -118,7 +111,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   </table>
 </body>
 </html>`,
-      }),
     });
     if (!mailRes.ok) console.error('Review notification email error:', await mailRes.text());
   } catch (err) {

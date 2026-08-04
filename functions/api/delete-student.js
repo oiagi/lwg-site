@@ -15,8 +15,8 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 
 // Tables that reference students.id via student_id. Ordered so that any
@@ -120,16 +120,11 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
 
   if (RESEND_API_KEY && studentEmail && studentRecord) {
     const email = buildGdprDeletionEmail(studentRecord);
-    fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [studentEmail],
-        reply_to: NOTIFY_EMAILS,
-        subject: email.subject,
-        html: email.html,
-      }),
+    sendResendEmail(RESEND_API_KEY, {
+      to: [studentEmail],
+      reply_to: NOTIFY_EMAILS,
+      subject: email.subject,
+      html: email.html,
     })
       .then((r) => {
         if (!r.ok) r.text().then((t) => console.error('delete-student email error:', t));

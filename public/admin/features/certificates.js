@@ -5,7 +5,7 @@ import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { formatCourseAddress } from './courses.js';
 
 const LOGO_URL = '/lwg_logo.svg';
-const SIGNATURE_URL = '/admin/assets/signature.png';
+const SIGNATURE_URL = '/api/get-signature';
 const SIGNATURE_NAME = 'Gioia Birukoff';
 const SIGNATURE_TITLE_DE = 'Schulleitung · learning with gioia';
 const SIGNATURE_TITLE_EN = 'Founder · learning with gioia';
@@ -405,7 +405,7 @@ async function loadAssets() {
   }
   if (!signatureDataUrl) {
     try {
-      signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL);
+      signatureDataUrl = await loadImageAsDataUrl(SIGNATURE_URL, { authed: true });
       signatureLoadError = null;
     } catch (err) {
       signatureLoadError = err?.message || String(err);
@@ -418,10 +418,12 @@ async function loadAssets() {
   }
 }
 
-async function loadImageAsDataUrl(url) {
+async function loadImageAsDataUrl(url, { authed = false } = {}) {
   // Use fetch + FileReader: gives real HTTP error messages, avoids
   // CORS quirks of <img crossorigin>, and bypasses image-cache lag.
-  const res = await fetch(url, { cache: 'no-cache' });
+  // authed: route the request through apiFetch so admin-only endpoints
+  // receive the Bearer token.
+  const res = authed ? await apiFetch(url) : await fetch(url, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
   const blob = await res.blob();
 
