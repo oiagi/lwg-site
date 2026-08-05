@@ -13,9 +13,9 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
 const BUCKET = 'invoice-archive';
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const REMINDABLE_STATUSES = new Set(['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded']);
 const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
@@ -210,25 +210,17 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       : await getStudentLanguage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, invoice.student_id);
   const email = buildReminderEmail({ invoice, student, language });
 
-  const sendRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [recipientEmail],
-      reply_to: NOTIFY_EMAILS,
-      subject: email.subject,
-      html: email.html,
-      attachments: [
-        {
-          filename: `${language === 'en' ? 'payment-reminder' : 'zahlungserinnerung'}-${invoice.invoice_number}.pdf`,
-          content: pdfBase64,
-        },
-      ],
-    }),
+  const sendRes = await sendResendEmail(env.RESEND_API_KEY, {
+    to: [recipientEmail],
+    reply_to: NOTIFY_EMAILS,
+    subject: email.subject,
+    html: email.html,
+    attachments: [
+      {
+        filename: `${language === 'en' ? 'payment-reminder' : 'zahlungserinnerung'}-${invoice.invoice_number}.pdf`,
+        content: pdfBase64,
+      },
+    ],
   });
 
   if (!sendRes.ok) {

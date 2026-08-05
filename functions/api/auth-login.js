@@ -12,7 +12,7 @@
 //   GOOGLE_CLIENT_ID — OAuth client ID from Google Cloud Console
 //   SUPABASE_URL     — Supabase project URL (for JWT verification)
 
-import { verifySupabaseToken, withErrorHandling } from './_utils.js';
+import { signOAuthState, verifySupabaseToken, withErrorHandling } from './_utils.js';
 
 function oauthRedirectUri(env, requestUrl) {
   const origin = env.SITE_URL || new URL(requestUrl).origin;
@@ -48,7 +48,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
     access_type: 'offline', // request refresh token for long-lived access
     prompt: 'consent', // always show consent to ensure refresh token is issued
-    state: teacher_id, // passed back in callback to identify which teacher
+    // Signed teacher id, passed back in the callback to identify which
+    // teacher — and verified there so a forged callback is rejected.
+    state: await signOAuthState(teacher_id, env),
   });
 
   return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`, 302);

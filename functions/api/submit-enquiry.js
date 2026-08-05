@@ -19,9 +19,9 @@ import {
 } from './_utils.js';
 import { validate } from './_validate.js';
 import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -332,19 +332,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   const sendEmail = async (to, email) => {
     const toList = Array.isArray(to) ? to : [to];
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: toList,
-        reply_to: NOTIFY_EMAILS,
-        subject: email.subject,
-        html: email.html,
-      }),
+    const res = await sendResendEmail(RESEND_API_KEY, {
+      to: toList,
+      reply_to: NOTIFY_EMAILS,
+      subject: email.subject,
+      html: email.html,
     });
     if (!res.ok) console.error(`Email error (to: ${toList.join(', ')}):`, await res.text());
     return res.ok;

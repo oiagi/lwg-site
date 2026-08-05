@@ -20,8 +20,8 @@ import {
   capitalizeNameFields,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ADMIN_EMAIL = 'info@learningwithgioia.ch';
 
 const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
@@ -425,16 +425,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   </table>
 </body>
 </html>`;
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [ADMIN_EMAIL],
-        reply_to: [ADMIN_EMAIL],
-        subject: `Intake form completed — ${studentName}`,
-        html: adminHtml,
-      }),
+    await sendResendEmail(RESEND_API_KEY, {
+      to: [ADMIN_EMAIL],
+      reply_to: [ADMIN_EMAIL],
+      subject: `Intake form completed — ${studentName}`,
+      html: adminHtml,
     }).catch(() => {});
 
     if (studentEmail) {
@@ -447,16 +442,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         last_name: update.last_name || student.last_name,
       };
       const { subject, html: confirmHtml } = buildIntakeConfirmationEmail(confirmData, lang);
-      const confirmRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [studentEmail],
-          reply_to: [ADMIN_EMAIL],
-          subject,
-          html: confirmHtml,
-        }),
+      const confirmRes = await sendResendEmail(RESEND_API_KEY, {
+        to: [studentEmail],
+        reply_to: [ADMIN_EMAIL],
+        subject,
+        html: confirmHtml,
       }).catch((err) => {
         console.error('[intake] student confirmation fetch error:', err?.message);
         return null;

@@ -13,8 +13,8 @@ import {
   parseJsonBody,
   capitalizeNameFields,
 } from './_utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ADMIN_EMAIL = 'info@learningwithgioia.ch';
 
 function esc(str) {
@@ -401,16 +401,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   </table>
 </body>
 </html>`;
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [ADMIN_EMAIL],
-        reply_to: [ADMIN_EMAIL],
-        subject: `Company intake form completed — ${studentName} (${company.name})`,
-        html: adminHtml,
-      }),
+    await sendResendEmail(RESEND_API_KEY, {
+      to: [ADMIN_EMAIL],
+      reply_to: [ADMIN_EMAIL],
+      subject: `Company intake form completed — ${studentName} (${company.name})`,
+      html: adminHtml,
     }).catch(() => {});
   }
 
@@ -418,16 +413,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (RESEND_API_KEY && body.email) {
     const lang = body.language === 'en' ? 'en' : 'de';
     const { subject, html } = buildIntakeConfirmationEmail(data, lang);
-    const confirmRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [body.email],
-        reply_to: [ADMIN_EMAIL],
-        subject,
-        html,
-      }),
+    const confirmRes = await sendResendEmail(RESEND_API_KEY, {
+      to: [body.email],
+      reply_to: [ADMIN_EMAIL],
+      subject,
+      html,
     }).catch((err) => {
       console.error('[company-intake] confirmation fetch error:', err?.message);
       return null;

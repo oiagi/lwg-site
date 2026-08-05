@@ -60,14 +60,8 @@
 /en/:page/  /:page  200
 /de/:page/  /:page  200
 
-# Admin dashboard tabs as URLs (rewrite to single-page admin/index.html)
-# Target is /admin (served by admin/index.html) — never /admin.html, since
-# Pages auto-strips .html and the redirect target would loop. /admin itself
-# is served natively; main.js then replaceState's the URL to /admin/students.
-/admin.html      /admin/students  301
-/admin/students  /admin           200
-/admin/courses   /admin           200
-/admin/teachers  /admin           200
+# Legacy /admin.html bookmarks — the admin SPA routes tabs via #hash now.
+/admin.html      /admin  301
 
 # Legacy standalone admin pages moved under admin/pages/
 /admin/course-new.html     /admin/pages/course-new.html     301

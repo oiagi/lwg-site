@@ -18,8 +18,8 @@ import {
   withErrorHandling,
   checkRateLimit,
 } from './_utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ADMIN_EMAIL = 'info@learningwithgioia.ch';
 
 const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
@@ -221,16 +221,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   </table>
 </body>
 </html>`;
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [ADMIN_EMAIL],
-        reply_to: [ADMIN_EMAIL],
-        subject: `Signed contract uploaded — ${studentName}`,
-        html: adminHtml,
-      }),
+    await sendResendEmail(RESEND_API_KEY, {
+      to: [ADMIN_EMAIL],
+      reply_to: [ADMIN_EMAIL],
+      subject: `Signed contract uploaded — ${studentName}`,
+      html: adminHtml,
     }).catch(() => {});
   }
 

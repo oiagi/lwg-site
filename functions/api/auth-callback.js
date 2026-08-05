@@ -1,5 +1,5 @@
 // functions/api/auth/callback.js
-// GET /api/auth/callback?code=...&state=<teacher_id>
+// GET /api/auth/callback?code=...&state=<signed teacher id>
 //
 // Handles the redirect back from Google after OAuth consent.
 // Exchanges the authorisation code for access + refresh tokens,
@@ -11,7 +11,7 @@
 //   SUPABASE_URL         — Supabase project URL
 //   SUPABASE_SERVICE_KEY — Supabase service role key
 
-import { withErrorHandling } from './_utils.js';
+import { verifyOAuthState, withErrorHandling } from './_utils.js';
 
 function oauthRedirectUri(env, requestUrl) {
   const origin = env.SITE_URL || new URL(requestUrl).origin;
@@ -39,17 +39,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
-  const teacher_id = url.searchParams.get('state');
+  // The state was signed in auth-login; a missing/forged/expired signature
+  // yields null here and is treated the same as a missing teacher id.
+  const teacher_id = await verifyOAuthState(url.searchParams.get('state'), env);
   const error = url.searchParams.get('error');
   const siteUrl = env.SITE_URL || url.origin;
 
   // ── Handle user denying consent ──────────────────────────────────────
   if (error) {
-    return Response.redirect(`${siteUrl}/admin.html?auth=denied`, 302);
+    return Response.redirect(`${siteUrl}/admin?auth=denied`, 302);
   }
 
   if (!code || !teacher_id) {
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin?auth=error`, 302);
   }
 
   // ── Exchange authorisation code for tokens ───────────────────────────
@@ -69,13 +71,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     if (!tokenRes.ok) {
       console.error('Token exchange failed:', await tokenRes.text());
-      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+      return Response.redirect(`${siteUrl}/admin?auth=error`, 302);
     }
 
     tokens = await tokenRes.json();
   } catch (err) {
     console.error('Token exchange error:', err);
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin?auth=error`, 302);
   }
 
   // ── Store tokens in Supabase against the teacher record ─────────────
@@ -111,13 +113,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     if (!res.ok) {
       console.error('Supabase token store failed:', await res.text());
-      return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+      return Response.redirect(`${siteUrl}/admin?auth=error`, 302);
     }
   } catch (err) {
     console.error('Supabase error:', err);
-    return Response.redirect(`${siteUrl}/admin.html?auth=error`, 302);
+    return Response.redirect(`${siteUrl}/admin?auth=error`, 302);
   }
 
   // ── Success — redirect back to admin dashboard ───────────────────────
-  return Response.redirect(`${siteUrl}/admin.html?auth=success`, 302);
+  return Response.redirect(`${siteUrl}/admin?auth=success`, 302);
 }, 'auth-callback');

@@ -13,8 +13,8 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
+import { sendResendEmail } from './_email.js';
 
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const DEFAULT_SITE_URL = 'https://learningwithgioia.ch';
 
@@ -133,19 +133,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         language,
       });
       try {
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: [student.email],
-            reply_to: NOTIFY_EMAILS,
-            subject: email.subject,
-            html: email.html,
-          }),
+        const res = await sendResendEmail(RESEND_API_KEY, {
+          to: [student.email],
+          reply_to: NOTIFY_EMAILS,
+          subject: email.subject,
+          html: email.html,
         });
         if (!res.ok) {
           console.error(`Company intake email failed for ${student.email}:`, await res.text());

@@ -27,9 +27,9 @@ import {
   archiveInvoicePdf,
   logInvoice,
 } from './_invoices.js';
+import { sendResendEmail } from './_email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
 function esc(str) {
@@ -214,25 +214,17 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'lwg'
   )}.pdf`;
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [body.email],
-      reply_to: NOTIFY_EMAILS,
-      subject,
-      html,
-      attachments: [
-        {
-          filename,
-          content: body.pdf_base64,
-        },
-      ],
-    }),
+  const res = await sendResendEmail(RESEND_API_KEY, {
+    to: [body.email],
+    reply_to: NOTIFY_EMAILS,
+    subject,
+    html,
+    attachments: [
+      {
+        filename,
+        content: body.pdf_base64,
+      },
+    ],
   });
 
   if (!res.ok) {
