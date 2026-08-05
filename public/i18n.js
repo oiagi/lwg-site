@@ -177,8 +177,8 @@
         },
         '#offer-lunch h3': { en: 'Build your own', de: 'Build your own' },
         '#offer-lunch p': {
-          en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-          de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+          en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
+          de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
         },
         '#offer .offer-card__cta': { en: 'learn more →', de: 'mehr erfahren →' },
         '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
@@ -717,13 +717,20 @@
         de: 'Gymivorbereitung in Zürich - Learning with Gioia',
       },
       description: {
-        en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
-        de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+        en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 12 lessons of 90 minutes over 3 months - CHF 80 per person per 60 minutes in a group, CHF 120 one-to-one.',
+        de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 12 Lektionen à 90 Minuten in 3 Monaten - CHF 80 pro Person pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
       },
       h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
       intro: {
         en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
         de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+      },
+      facts: {
+        '#fact-duration-value': { en: '3 months', de: '3 Monate' },
+        '#fact-lessons-label': { en: 'lessons of 90 min', de: 'Lektionen à 90 Min.' },
+        '#fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
+        '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
+        '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       },
     }),
     '/english-courses.html': coursePage({
@@ -763,13 +770,27 @@
         de: 'Firmenkurse in Zürich - Learning with Gioia',
       },
       description: {
-        en: 'Language courses for companies and teams in Zürich, at your offices or ours. 32 lessons of 60 minutes over 4 months - CHF 1600 in a group, CHF 3840 one-to-one.',
-        de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. 32 Lektionen à 60 Minuten in 4 Monaten - CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+        en: 'Language courses for companies and teams in Zürich, at your offices or ours. Around 100 lessons per level, suggested 2 × 60 minutes per week - pricing on request.',
+        de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. Rund 100 Lektionen pro Niveau, empfohlen 2 × 60 Minuten pro Woche - Preis auf Anfrage.',
       },
       h1: { en: 'Company courses', de: 'Firmenkurse' },
       intro: {
         en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face - from client meetings to small talk in the corridor.',
         de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen - vom Kundengespräch bis zum Small Talk auf dem Gang.',
+      },
+      facts: {
+        '#fact-lessons-label': { en: 'suggested lessons', de: 'Empfohlene Lektionen' },
+        '#fact-lessons-value': { en: 'approx. 100', de: 'ca. 100' },
+        '#fact-lessons-unit': { en: 'per level', de: 'pro Niveau' },
+        '#fact-frequency-label': { en: 'suggested frequency', de: 'Empfohlener Rhythmus' },
+        '#fact-frequency-value': { en: '2 × 60 min', de: '2 × 60 Min.' },
+        '#fact-frequency-unit': { en: 'per week', de: 'pro Woche' },
+        '#fact-price-label': { en: 'pricing', de: 'Preis' },
+        '#fact-price-value': { en: 'on request', de: 'auf Anfrage' },
+        '#course-structure-note': {
+          en: 'Not sure how many lessons your team needs? Our <a href="/index.html#offer-details">guidance on course structure</a> shows how a full level breaks down.',
+          de: 'Unsicher, wie viele Lektionen euer Team braucht? Unsere <a href="/index.html#offer-details">Hinweise zur Kursstruktur</a> zeigen, wie sich ein vollständiges Niveau aufteilt.',
+        },
       },
     }),
     '/lunch-time-german.html': coursePage({
@@ -778,13 +799,13 @@
         de: 'Build Your Own: Deutschkurs nach Mass in Zürich - Learning with Gioia',
       },
       description: {
-        en: 'Build your own German course in Zürich: lunchtime German, intensive German, tailored to your needs and availability. Lessons of 60, 90 or 120 minutes - CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
-        de: 'Dein Deutschkurs nach Mass in Zürich: Lunchtime German, Intensivdeutsch, abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60, 90 oder 120 Minuten - CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
+        en: 'Build your own German course in Zürich: lunchtime German, intensive German, Swiss German and German combined, business English - tailored to your needs and availability. Lessons of 60, 90 or 120 minutes - CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
+        de: 'Dein Kurs nach Mass in Zürich: Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch - abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60, 90 oder 120 Minuten - CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
       },
       h1: { en: 'Build your own', de: 'Build your own' },
       intro: {
-        en: 'Lunchtime German, Intensive German, you name it, we got you. A course experience tailored exactly to your needs and availability — German lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-        de: 'Lunchtime German, Intensivdeutsch, sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Deutschunterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+        en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
+        de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
       },
       facts: {
         '#fact-duration-value': { en: 'flexible', de: 'flexibel' },

@@ -50,6 +50,10 @@ html[data-device='tablet'] .course-page {
   gap: 1rem;
   margin-bottom: 2.8rem;
 }
+/* Courses that quote three facts instead of four (company courses). */
+.course-facts--three {
+  grid-template-columns: repeat(3, 1fr);
+}
 .fact {
   border: 1px solid var(--rule);
   padding: 1.4rem 0.9rem;
