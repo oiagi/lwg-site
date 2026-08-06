@@ -28,19 +28,19 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function buildEmail({ firstName, companyName, intakeUrl, language }) {
+function buildEmail({ firstName, intakeUrl, language }) {
   const isEn = language === 'en';
   const greeting = firstName || (isEn ? 'there' : 'du');
   const copy = isEn
     ? {
         subject: 'Please complete your student intake form · learning with gioia',
-        intro: `Hello ${greeting} :) Please fill in your details so we can create or update your student record for ${companyName}.`,
+        intro: `Hello ${greeting} :) Please fill in your details so we can create or update your student record.`,
         button: 'Complete intake form',
         footer: 'Any questions? Write to us at',
       }
     : {
         subject: 'Bitte fülle dein Anmeldeformular aus · learning with gioia',
-        intro: `Hallo ${greeting} :) Bitte fülle deine Angaben aus, damit wir deinen Studenteneintrag für ${companyName} erstellen oder aktualisieren können.`,
+        intro: `Hallo ${greeting} :) Bitte fülle deine Angaben aus, damit wir deinen Schülereintrag erstellen oder aktualisieren können.`,
         button: 'Formular ausfüllen',
         footer: 'Noch Fragen? Schreib uns an',
       };
@@ -128,7 +128,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     students.map(async (student) => {
       const email = buildEmail({
         firstName: student.first_name || '',
-        companyName: company.name,
         intakeUrl,
         language,
       });

@@ -149,8 +149,9 @@
       if (isCompanyIntake) {
         populate({});
         const intro = document.querySelector('.intake-intro');
-        if (intro && data.company_name) {
-          intro.textContent = `Please fill in the information below so we can create your student record for ${data.company_name}. Fields marked * are required.`;
+        if (intro) {
+          intro.textContent =
+            'Please fill in the information below so we can create your student record. Fields marked * are required.';
         }
       } else {
         populate(data);

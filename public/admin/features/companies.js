@@ -444,7 +444,7 @@ export function openSendCompanyIntakeLink(id) {
       subject: 'Please complete your student intake form · learning with gioia',
       contentHtml: `
         <p>Hello [first name] :)<br>
-        Please fill in your details so we can create or update your student record for ${esc(company.name)}.<br>
+        Please fill in your details so we can create or update your student record.<br>
         <a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
         <p style="color:#888;font-size:12px;margin-top:8px;">Each recipient receives the same company intake link.</p>`,
       languageOptions: [{ value: 'de' }, { value: 'en' }],
