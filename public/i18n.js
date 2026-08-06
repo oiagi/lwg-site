@@ -101,7 +101,7 @@
     courseStructure: { en: 'course structure', de: 'Kursstruktur' },
     levels: { en: 'your level', de: 'Dein Niveau' },
     reviews: { en: 'reviews', de: 'Stimmen' },
-    about: { en: 'about', de: 'Über mich' },
+    about: { en: 'about', de: 'Über uns' },
     start: { en: 'get started', de: 'Loslegen' },
     groupCourses: { en: 'group courses', de: 'Gruppenkurse' },
     enquiry: { en: 'enquiry', de: 'Anfrage' },
@@ -287,7 +287,7 @@
           en: 'Thank you! Your review will appear here once it has been checked.',
           de: 'Danke! Deine Bewertung erscheint hier, sobald sie geprüft wurde.',
         },
-        '#about .kicker': { en: 'about', de: 'Über mich' },
+        '#about .kicker': { en: 'about', de: 'Über uns' },
         '#about .section-title': {
           en: 'Experience &amp; background',
           de: 'Erfahrung &amp; Hintergrund',
