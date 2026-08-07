@@ -11,9 +11,19 @@ export const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
 export const PENDING_STATUS_CANDIDATES = ['pending', 'unpaid', 'open', 'sent'];
 export const DOWNLOADED_STATUS_CANDIDATES = ['downloaded', 'pending', 'unpaid', 'open'];
 
-// Statuses that represent an invoice that has already been emailed/settled, so a
-// fresh send must be refused as a genuine duplicate.
-export const FINALISED_STATUSES = new Set(['sent', 'paid']);
+// Statuses that represent an invoice that has already been emailed/settled or
+// cancelled, so a fresh send must be refused as a genuine duplicate.
+export const FINALISED_STATUSES = new Set(['sent', 'paid', 'cancelled', 'storno']);
+
+// Columns that may not exist yet in older databases (their migrations are
+// applied by hand). When PostgREST reports one missing, it is stripped from
+// the insert payload and the insert retried.
+const OPTIONAL_INVOICE_COLUMNS = [
+  'invoice_language',
+  'item_subject',
+  'item_quantity',
+  'item_unit_price',
+];
 
 // Looks up an existing invoice by number. Returns { id, status } or null.
 export async function findInvoiceByNumber(env, invoiceNumber) {
@@ -31,9 +41,16 @@ export async function findInvoiceByNumber(env, invoiceNumber) {
   return rows[0] || null;
 }
 
+// Returns true when the row was updated. 'sent' and 'cancelled' also stamp
+// their timestamp column, falling back to a status-only update on databases
+// where that column does not exist yet.
 export async function updateInvoiceStatus(env, invoiceId, status) {
-  if (!invoiceId) return;
-  const payload = status === 'sent' ? { status, sent_at: new Date().toISOString() } : { status };
+  if (!invoiceId) return false;
+  const timestampField =
+    status === 'sent' ? 'sent_at' : status === 'cancelled' ? 'cancelled_at' : null;
+  const payload = timestampField
+    ? { status, [timestampField]: new Date().toISOString() }
+    : { status };
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
     method: 'PATCH',
     headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
@@ -41,24 +58,27 @@ export async function updateInvoiceStatus(env, invoiceId, status) {
   });
   if (!res.ok) {
     const errorText = await res.text();
-    if (status === 'sent' && errorText.includes('sent_at')) {
+    if (timestampField && errorText.includes(timestampField)) {
       const compatRes = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices?id=eq.${invoiceId}`, {
         method: 'PATCH',
         headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
         body: JSON.stringify({ status }),
       });
-      if (compatRes.ok) return;
+      if (compatRes.ok) return true;
       console.error(`Invoice status update failed for ${invoiceId}:`, await compatRes.text());
-      return;
+      return false;
     }
     console.error(`Invoice status update failed for ${invoiceId}:`, errorText);
+    return false;
   }
+  return true;
 }
 
 // Uploads the invoice PDF to the invoice-archive bucket. Uses upsert so a
 // previously-downloaded invoice can be overwritten when it is later sent.
+// Returns true when the upload succeeded.
 export async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return;
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return false;
   const yearMatch = invoiceNumber.match(/^LWG-(\d{4})-/);
   const year = yearMatch ? yearMatch[1] : 'misc';
   let binary;
@@ -66,7 +86,7 @@ export async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
     binary = atob(pdfBase64);
   } catch {
     console.error('Invoice archive: invalid base64 PDF for', invoiceNumber);
-    return;
+    return false;
   }
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -84,12 +104,18 @@ export async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
   );
   if (!res.ok) {
     console.error(`Invoice archive upload failed for ${invoiceNumber}:`, await res.text());
+    return false;
   }
+  return true;
 }
 
 // Inserts an invoice row, trying each status candidate until the database's
-// status check constraint accepts one. Returns the created record or throws.
-export async function logInvoice(env, body, statusCandidates) {
+// status check constraint accepts one. Optional columns the database does not
+// have yet are stripped and the insert retried, so the code keeps working
+// before their migration is applied. `extraFields` lets callers persist
+// additional columns (e.g. cancels_invoice_id for storno rows).
+// Returns the created record or throws (the raw DB error is on err.dbError).
+export async function logInvoice(env, body, statusCandidates, extraFields = {}) {
   const inv = body.invoice || {};
   const basePayload = {
     student_id: body.student_id,
@@ -101,11 +127,16 @@ export async function logInvoice(env, body, statusCandidates) {
     issued_date: inv.invoice_date || new Date().toISOString().slice(0, 10),
     due_date: inv.due_date || null,
     invoice_language: body.language,
+    item_subject: inv.subject ?? null,
+    item_quantity:
+      inv.quantity === undefined || inv.quantity === null ? null : Number(inv.quantity),
+    item_unit_price:
+      inv.unit_price === undefined || inv.unit_price === null ? null : Number(inv.unit_price),
+    ...extraFields,
   };
 
-  let lastError = '';
-  for (const status of statusCandidates) {
-    let res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
+  const insert = (status) =>
+    fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
       method: 'POST',
       headers: {
         ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
@@ -114,20 +145,33 @@ export async function logInvoice(env, body, statusCandidates) {
       body: JSON.stringify({ ...basePayload, status }),
     });
 
-    if (!res.ok) {
+  let lastError = '';
+  for (const status of statusCandidates) {
+    let res = await insert(status);
+
+    while (!res.ok) {
       lastError = await res.text();
-      if (lastError.includes('invoice_language')) {
-        delete basePayload.invoice_language;
-        res = await fetch(`${env.SUPABASE_URL}/rest/v1/invoices`, {
-          method: 'POST',
-          headers: {
-            ...supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-            Prefer: 'return=representation',
-          },
-          body: JSON.stringify({ ...basePayload, status }),
-        });
-        if (!res.ok) lastError = await res.text();
+      const missing = OPTIONAL_INVOICE_COLUMNS.filter(
+        (col) => col in basePayload && lastError.includes(col)
+      );
+      if (missing.length) {
+        missing.forEach((col) => delete basePayload[col]);
+        res = await insert(status);
+        continue;
       }
+      // Databases that predate add_invoice_cancellation.sql still have
+      // due_date NOT NULL. Storno rows deliberately carry none, so fall back
+      // to the issue date rather than failing the cancellation.
+      if (
+        basePayload.due_date === null &&
+        lastError.includes('due_date') &&
+        lastError.includes('not-null')
+      ) {
+        basePayload.due_date = basePayload.issued_date;
+        res = await insert(status);
+        continue;
+      }
+      break;
     }
 
     if (res.ok) {
@@ -142,5 +186,6 @@ export async function logInvoice(env, body, statusCandidates) {
   const err = new Error('Invoice could not be recorded.');
   err.statusCode = 400;
   err.userMessage = 'Invoice could not be recorded.';
+  err.dbError = lastError;
   throw err;
 }

@@ -65,23 +65,23 @@ Covers: students, courses, enrolments, sessions, attendance, invoices, companies
 
 All endpoints live at `/api/*`. Shared helpers are prefixed with `_` and not routable.
 
-| Domain        | Endpoints                                                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Auth          | `auth-login`, `auth-callback`                                                                                                |
-| Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                                            |
-| Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`                                                     |
-| Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students`                  |
-| Sessions      | `log-session`, `cancel-session`, `get-attendance`, `save-attendance`, `send-session-schedule`                                |
-| Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`, `group-course-slots`, `group-course-access-code`                  |
-| Companies     | `get-companies`, `save-company`, `send-company-booking-code`, `company-intake`, `send-company-intake-link`                   |
-| Teachers      | `get-teachers`, `get-teacher-availability`                                                                                   |
-| Invoices      | `get-next-invoice-number`, `mark-invoice-paid`, `send-invoice`, `send-invoice-reminder`, `delete-invoice`, `invoice-archive` |
-| Intake        | `intake`, `mark-intake-seen`, `send-intake-link`                                                                             |
-| Enquiry       | `submit-enquiry`, `get-enquiry`, `mark-enquiry-treated`                                                                      |
-| Calendar      | `sync-calendar`                                                                                                              |
-| Certificates  | `send-certificates`                                                                                                          |
-| Confirmations | `send-course-confirmation`                                                                                                   |
-| Config        | `config`                                                                                                                     |
+| Domain        | Endpoints                                                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth          | `auth-login`, `auth-callback`                                                                                                                  |
+| Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                                                              |
+| Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`                                                                       |
+| Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students`                                    |
+| Sessions      | `log-session`, `cancel-session`, `get-attendance`, `save-attendance`, `send-session-schedule`                                                  |
+| Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`, `group-course-slots`, `group-course-access-code`                                    |
+| Companies     | `get-companies`, `save-company`, `send-company-booking-code`, `company-intake`, `send-company-intake-link`                                     |
+| Teachers      | `get-teachers`, `get-teacher-availability`                                                                                                     |
+| Invoices      | `get-next-invoice-number`, `mark-invoice-paid`, `send-invoice`, `send-invoice-reminder`, `cancel-invoice`, `delete-invoice`, `invoice-archive` |
+| Intake        | `intake`, `mark-intake-seen`, `send-intake-link`                                                                                               |
+| Enquiry       | `submit-enquiry`, `get-enquiry`, `mark-enquiry-treated`                                                                                        |
+| Calendar      | `sync-calendar`                                                                                                                                |
+| Certificates  | `send-certificates`                                                                                                                            |
+| Confirmations | `send-course-confirmation`                                                                                                                     |
+| Config        | `config`                                                                                                                                       |
 
 ## Local development
 

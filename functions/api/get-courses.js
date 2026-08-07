@@ -284,7 +284,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
         // overview and link to nothing in the invoice archive. The "invoice sent"
         // communications summary above still counts them as genuinely sent.
         continue;
-      } else {
+      } else if (!['cancelled', 'storno'].includes(inv.status)) {
+        // Cancelled originals and storno credit notes are inert — never open.
         const byStudent = (openInvoicesByCourseStudent[inv.course_id] ||= {});
         (byStudent[inv.student_id] ||= []).push(inv);
       }

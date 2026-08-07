@@ -1,9 +1,15 @@
 /* ── Invoice Archive ─────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
 import { esc } from '../core/helpers.js';
+import { openStornoModal } from './invoices.js';
 
 const ARCHIVE_START_YEAR = 2024;
+// Inert end states: no remind / mark-paid / delete / cancel on these rows.
+const INERT_STATUSES = ['cancelled', 'storno'];
 let activeYear = new Date().getFullYear();
+// Rows of the currently displayed year, keyed by invoice number (filename
+// minus .pdf) — the cancel action needs the full row to prefill the modal.
+let currentFilesByNumber = new Map();
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -26,6 +32,7 @@ function renderYearFilters(year) {
 }
 
 function renderFiles(files) {
+  currentFilesByNumber = new Map(files.map((f) => [f.name.replace(/\.pdf$/i, ''), f]));
   const container = document.getElementById('archive-list');
   if (!container) return;
   if (!files.length) {
@@ -44,10 +51,12 @@ function renderFiles(files) {
         f.total_amount !== null && f.total_amount !== undefined
           ? esc(`${Number(f.total_amount).toFixed(2)} ${f.currency || 'CHF'}`)
           : '';
-      const knownStatusClasses = ['draft', 'sent', 'paid', 'cancelled', 'overdue'];
+      const isInert = INERT_STATUSES.includes(f.status);
+      const knownStatusClasses = ['draft', 'sent', 'paid', 'cancelled', 'storno', 'overdue'];
       const statusClass = knownStatusClasses.includes(f.status) ? f.status : 'draft';
       const statusLabel = esc(f.status || '—');
       const isOverdue =
+        !isInert &&
         f.status !== 'paid' &&
         f.status !== 'overdue' &&
         f.due_date &&
@@ -56,10 +65,16 @@ function renderFiles(files) {
       const reminderFlag = f.reminder_sent_at
         ? `<span class="inv-status reminder">reminded</span>`
         : '';
+      const notifiedFlag =
+        f.status === 'storno' && f.sent_at
+          ? `<span class="inv-status reminder">notified ${esc(formatDate(f.sent_at))}</span>`
+          : '';
       const canRemind = ['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded'].includes(
         f.status
       );
-      const canMarkPaid = f.invoice_id && f.status !== 'paid';
+      const canMarkPaid = f.invoice_id && f.status !== 'paid' && !isInert;
+      const canCancel = f.invoice_id && !isInert;
+      const canDelete = !isInert;
       const view = f.signed_url
         ? `<li><a class="status-opt-btn status-opt-btn--view" href="${esc(f.signed_url)}" target="_blank" rel="noopener noreferrer">view</a></li>`
         : `<li><span class="status-opt-btn status-opt-btn--disabled">unavailable</span></li>`;
@@ -69,21 +84,32 @@ function renderFiles(files) {
       const markPaid = canMarkPaid
         ? `<li><button class="status-opt-btn status-opt-btn--paid" data-action="markArchivedInvoicePaid" data-args="${esc(f.invoice_id)}">mark paid</button></li>`
         : '';
-      const remove = `<li class="status-dropdown-divider"></li><li><button class="status-opt-btn status-opt-btn--delete" data-action="deleteInvoice" data-args="${name}">delete</button></li>`;
+      const cancel = canCancel
+        ? `<li><button class="status-opt-btn status-opt-btn--delete" data-action="cancelArchivedInvoice" data-args="${name}">cancel (storno)</button></li>`
+        : '';
+      const remove = canDelete
+        ? `<li class="status-dropdown-divider"></li><li><button class="status-opt-btn status-opt-btn--delete" data-action="deleteInvoice" data-args="${name}">delete</button></li>`
+        : '';
+      const rowClass =
+        f.status === 'storno'
+          ? ' invoice-row--storno'
+          : f.status === 'cancelled'
+            ? ' invoice-row--cancelled'
+            : '';
       return `
-        <div class="invoice-row">
+        <div class="invoice-row${rowClass}">
           <div class="invoice-summary">
             <span class="inv-number">${name}</span>
             <span class="inv-student">${student}</span>
             <span class="inv-course">${course}</span>
             <span class="inv-amount">${amount}</span>
             <span class="inv-date"><span>${date}</span>${dueDate ? `<span>${esc(dueDate)}</span>` : ''}</span>
-            <span class="inv-status-wrap"><span class="inv-status ${statusClass}">${statusLabel}</span>${overdueFlag}${reminderFlag}</span>
+            <span class="inv-status-wrap"><span class="inv-status ${statusClass}">${statusLabel}</span>${overdueFlag}${reminderFlag}${notifiedFlag}</span>
             <span class="inv-action">
               <span class="invoice-action-wrap">
                 <button class="invoice-action-toggle" data-action="toggleInvoiceActions" data-args="${name}">view</button>
                 <ul class="status-dropdown invoice-action-dropdown is-hidden" id="invoice-actions-${name}">
-                  ${view}${remind}${markPaid}${remove}
+                  ${view}${remind}${markPaid}${cancel}${remove}
                 </ul>
               </span>
             </span>
@@ -91,6 +117,12 @@ function renderFiles(files) {
         </div>`;
     })
     .join('');
+}
+
+export function cancelArchivedInvoice(invoiceNumber) {
+  const row = currentFilesByNumber.get(invoiceNumber);
+  if (!row) return;
+  openStornoModal(row, () => loadInvoiceArchive(activeYear));
 }
 
 export async function loadInvoiceArchive(year) {

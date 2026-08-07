@@ -38,39 +38,64 @@ async function listYearFiles(env, year) {
   return res.json();
 }
 
+// Invoice columns whose migrations are applied by hand and may not exist yet;
+// they are dropped from the select (and the query retried) when PostgREST
+// reports them missing.
+const BASE_INVOICE_COLUMNS = [
+  'id',
+  'invoice_number',
+  'status',
+  'total_amount',
+  'currency',
+  'due_date',
+  'issued_date',
+  'student_id',
+  'course_id',
+];
+const OPTIONAL_INVOICE_COLUMNS = [
+  'reminder_sent_at',
+  'sent_at',
+  'invoice_language',
+  'cancels_invoice_id',
+  'cancelled_at',
+  'item_subject',
+  'item_quantity',
+  'item_unit_price',
+];
+
 async function fetchInvoiceRecords(env, invoiceNumbers) {
   if (invoiceNumbers.length === 0) return [];
   const list = invoiceNumbers.map((n) => encodeURIComponent(n)).join(',');
   const url = `${env.SUPABASE_URL}/rest/v1/invoices?invoice_number=in.(${list})`;
-  let res = await fetch(
-    `${url}&select=id,invoice_number,status,total_amount,currency,due_date,reminder_sent_at,student_id,course_id`,
-    { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-  );
-  if (!res.ok) {
+  let columns = [...BASE_INVOICE_COLUMNS, ...OPTIONAL_INVOICE_COLUMNS];
+  for (;;) {
+    const res = await fetch(`${url}&select=${columns.join(',')}`, {
+      headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+    });
+    if (res.ok) return res.json();
     const errorText = await res.text();
-    if (!errorText.includes('reminder_sent_at')) {
+    // \b keeps e.g. a missing sent_at from also matching reminder_sent_at.
+    const missing = OPTIONAL_INVOICE_COLUMNS.filter(
+      (col) => columns.includes(col) && new RegExp(`\\b${col}\\b`).test(errorText)
+    );
+    if (!missing.length) {
       console.error('invoice-archive DB fetch failed:', errorText);
       return [];
     }
-    res = await fetch(
-      `${url}&select=id,invoice_number,status,total_amount,currency,due_date,student_id,course_id`,
-      { headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY) }
-    );
+    columns = columns.filter((col) => !missing.includes(col));
   }
-  if (!res.ok) {
-    console.error('invoice-archive DB fetch failed:', await res.text());
-    return [];
-  }
-  return res.json();
 }
 
-async function fetchRelatedRecords(env, table, ids, select) {
+async function fetchRelatedRecords(env, table, ids, select, fallbackSelect = null) {
   const uniqueIds = [...new Set(ids.filter(Boolean))];
   if (uniqueIds.length === 0) return {};
   const list = uniqueIds.map((id) => encodeURIComponent(id)).join(',');
-  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?id=in.(${list})&select=${select}`, {
-    headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
-  });
+  const query = (sel) =>
+    fetch(`${env.SUPABASE_URL}/rest/v1/${table}?id=in.(${list})&select=${sel}`, {
+      headers: supabaseHeaders(env.SUPABASE_SERVICE_KEY),
+    });
+  let res = await query(select);
+  if (!res.ok && fallbackSelect) res = await query(fallbackSelect);
   if (!res.ok) {
     console.error(`invoice-archive ${table} fetch failed:`, await res.text());
     return {};
@@ -128,17 +153,22 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const signedMap = Object.fromEntries(
     signed.map((s) => [s.path, s.signedURL ? `${env.SUPABASE_URL}/storage/v1${s.signedURL}` : null])
   );
+  // Students: everything the Storno modal needs to rebuild the recipient block
+  // and notification email. The fallback select drops the billing-gender
+  // columns (their migration may not be applied yet), matching get-courses.js.
   const [studentMap, courseMap] = await Promise.all([
     fetchRelatedRecords(
       env,
       'students',
       records.map((r) => r.student_id),
-      'id,first_name,last_name'
+      'id,first_name,last_name,gender,gender_note,email,customer_reference,street,street_number,postcode,city,billing_name,billing_gender,billing_gender_note,billing_email,billing_street,billing_street_number,billing_postcode,billing_city',
+      'id,first_name,last_name,gender,gender_note,email,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_street,billing_street_number,billing_postcode,billing_city'
     ),
     fetchRelatedRecords(
       env,
       'courses',
       records.map((r) => r.course_id),
+      'id,course_code,subject,level,course_type,group_type,session_length_minutes,sessions_total',
       'id,course_code,subject,level'
     ),
   ]);
@@ -159,15 +189,26 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       status: record.status ?? null,
       invoice_id: record.id ?? null,
       due_date: record.due_date ?? null,
+      issued_date: record.issued_date ?? null,
+      sent_at: record.sent_at ?? null,
       reminder_sent_at: record.reminder_sent_at ?? null,
+      invoice_language: record.invoice_language ?? null,
+      cancels_invoice_id: record.cancels_invoice_id ?? null,
+      cancelled_at: record.cancelled_at ?? null,
+      item_subject: record.item_subject ?? null,
+      item_quantity: record.item_quantity ?? null,
+      item_unit_price: record.item_unit_price ?? null,
       total_amount: record.total_amount ?? null,
       currency: record.currency ?? 'CHF',
+      student_id: record.student_id ?? null,
+      student: student ?? null,
       student_name: student
         ? [student.first_name, student.last_name].filter(Boolean).join(' ').trim() || null
         : null,
       course_code: course?.course_code ?? null,
       course_subject: course?.subject ?? null,
       course_level: course?.level ?? null,
+      course: course ?? null,
     };
   });
 

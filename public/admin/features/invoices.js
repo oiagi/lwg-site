@@ -536,8 +536,10 @@ function defaultUnitPrice(course) {
   return 0;
 }
 
-function priceUnitLabel(lang = 'de') {
-  const minutes = Number(currentCourse?.session_length_minutes || 60);
+function priceUnitLabel(
+  lang = 'de',
+  minutes = Number(currentCourse?.session_length_minutes || 60)
+) {
   return lang === 'en' ? `Price per ${minutes}min CHF` : `Preis pro ${minutes}min CHF`;
 }
 
@@ -708,6 +710,8 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
       : val('inv-recipient-email'),
     recipientLines: billingAddressLines(student),
     courseCode: currentCourse?.course_code || '',
+    isShared: isSharedCourse(currentCourse),
+    sessionLengthMinutes: Number(currentCourse?.session_length_minutes || 60),
   };
 }
 
@@ -754,6 +758,20 @@ function invoiceStrings(lang, isGroup = false) {
         ? 'Please transfer the amount before the start of the course, at the latest within 30 days.'
         : 'Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch innerhalb von 30 Tagen.',
     closing: isEN ? 'Kind regards,' : 'Herzliche Grüsse',
+    stornoTitle: isEN ? 'Credit Note' : 'Stornorechnung',
+    stornoTotalLabel: isEN ? 'Credit note total' : 'Storno-Rechnungsbetrag',
+    stornoReference: (nr, date) =>
+      isEN
+        ? `Please find below the credit note for the invoice with invoice no. ${nr} dated ${date}:`
+        : `Wir erlauben uns, Ihnen folgende Gutschrift zur Rechnung mit der Rechnungs-Nr. ${nr} vom ${date} zuzustellen:`,
+    stornoClosing: (originalPaid) =>
+      originalPaid
+        ? isEN
+          ? 'We will transfer the amount back to you within the next 7 working days.'
+          : 'Wir überweisen Ihnen den Betrag innerhalb der nächsten 7 Werktage.'
+        : isEN
+          ? 'This invoice is therefore void. No payment is required.'
+          : 'Diese Rechnung ist damit gegenstandslos. Es ist keine Zahlung erforderlich.',
     footnote: isGroup
       ? isEN
         ? '*Once a group course is scheduled, individual lessons cannot be cancelled. Missed lessons are not refunded, credited toward another course, or converted to private lessons.'
@@ -766,23 +784,35 @@ function invoiceStrings(lang, isGroup = false) {
 
 function buildPreviewHtml(data) {
   const lang = data.language || 'de';
-  const s = invoiceStrings(lang, isSharedCourse(currentCourse));
+  const s = invoiceStrings(lang, data.isShared);
   const recipient = data.recipientLines.map((line) => esc(line)).join('<br>');
   const greeting = formalGreeting(data);
-  const qrAttachment = activeQrAttachment(currentStudent);
-  const qrPreview =
-    qrAttachment.fileType === 'pdf'
+  // Storno documents carry no QR payment part — nothing is payable.
+  const qrAttachment = data.isStorno ? null : activeQrAttachment(currentStudent);
+  const qrPreview = !qrAttachment
+    ? ''
+    : qrAttachment.fileType === 'pdf'
       ? `<span>${qrAttachment.pdfBytes ? 'QR bill PDF will be attached as page 2' : 'Loading QR bill PDF...'}</span>`
       : qrAttachment.dataUrl
         ? `<img src="${qrAttachment.dataUrl}" alt="">`
         : '<span>QR bill PDF</span>';
   const qrPdfPreview =
-    qrAttachment.fileType === 'pdf' && qrAttachment.pdfObjectUrl
+    qrAttachment && qrAttachment.fileType === 'pdf' && qrAttachment.pdfObjectUrl
       ? `<div class="inv-prev-pdf-page">
           <p class="inv-prev-pdf-label">QR bill page preview</p>
           <iframe src="${esc(qrAttachment.pdfObjectUrl)}" title="QR bill PDF preview"></iframe>
         </div>`
       : '';
+  const title = data.isStorno ? s.stornoTitle : data.subject || s.titleFallback;
+  const stornoSubjectLine =
+    data.isStorno && data.subject
+      ? `<p class="inv-prev-storno-subject">${esc(data.subject)}</p>`
+      : '';
+  const stornoReference = data.isStorno
+    ? `<p class="inv-prev-greeting">${esc(
+        s.stornoReference(data.originalNumber, chDate(data.originalDate, lang))
+      )}</p>`
+    : '';
   return `
     <div class="inv-prev-page">
       <div class="inv-prev-sender">
@@ -806,9 +836,11 @@ function buildPreviewHtml(data) {
         </div>
       </div>
       <p class="inv-prev-date">${esc(longDate(data.invoiceDate, lang))}</p>
-      <h3>${esc(data.subject || s.titleFallback)}</h3>
+      <h3>${esc(title)}</h3>
+      ${stornoSubjectLine}
       <p class="inv-prev-classtype">${esc(s.classType)}</p>
       <p class="inv-prev-greeting">${esc(greeting)}</p>
+      ${stornoReference}
       <table>
         <colgroup>
           <col class="invoice-col-subject">
@@ -820,7 +852,7 @@ function buildPreviewHtml(data) {
           <tr>
             <th>${esc(s.colSubject)}</th>
             <th>${esc(s.colLessons)}</th>
-            <th>${esc(priceUnitLabel(lang))}</th>
+            <th>${esc(priceUnitLabel(lang, data.sessionLengthMinutes))}</th>
             <th>${esc(s.colAmount)}</th>
           </tr>
         </thead>
@@ -832,17 +864,15 @@ function buildPreviewHtml(data) {
             <td>${esc(money(data.totalAmount))}</td>
           </tr>
           <tr>
-            <td colspan="3"><strong>Total CHF</strong></td>
+            <td colspan="3"><strong>${esc(data.isStorno ? s.stornoTotalLabel : 'Total CHF')}</strong></td>
             <td><strong>${esc(money(data.totalAmount))}</strong></td>
           </tr>
         </tbody>
       </table>
-      <p>${esc(s.paymentText())}</p>
+      <p>${esc(data.isStorno ? s.stornoClosing(data.originalPaid) : s.paymentText())}</p>
       <p>${esc(s.closing)}<br>Gioia Birukoff</p>
-      <div class="inv-prev-qr">
-        ${qrPreview}
-      </div>
-      <p class="inv-prev-note">${esc(s.footnote)}</p>
+      ${data.isStorno ? '' : `<div class="inv-prev-qr">${qrPreview}</div>`}
+      ${data.isStorno ? '' : `<p class="inv-prev-note">${esc(s.footnote)}</p>`}
     </div>
     ${qrPdfPreview}`;
 }
@@ -921,6 +951,8 @@ function arrayBufferToBase64(buffer) {
 }
 
 async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
+  // Storno documents carry no QR payment part — nothing is payable.
+  if (data.isStorno) qrAttachment = null;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210;
@@ -950,7 +982,7 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.text(`Email: ${SENDER.email}`, margin, 49);
 
   const lang = data.language || 'de';
-  const s = invoiceStrings(lang, isSharedCourse(currentCourse));
+  const s = invoiceStrings(lang, data.isShared);
 
   let y = 56;
   const metaStartY = y;
@@ -987,18 +1019,32 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   const headerH = 7;
   const totalH = 7;
   setFont(19, 'bold');
-  const titleLines = doc.splitTextToSize(data.subject || s.titleFallback, contentW);
+  const titleText = data.isStorno ? s.stornoTitle : data.subject || s.titleFallback;
+  const titleLines = doc.splitTextToSize(titleText, contentW);
+  setFont(11);
+  const stornoSubjectLines =
+    data.isStorno && data.subject ? doc.splitTextToSize(String(data.subject), contentW) : [];
+  setFont(10.5);
+  const referenceLines = data.isStorno
+    ? doc.splitTextToSize(
+        s.stornoReference(data.originalNumber, chDate(data.originalDate, lang)),
+        contentW
+      )
+    : [];
   setFont(9);
   const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
   const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
   setFont(10.5);
-  const paymentLines = doc.splitTextToSize(String(s.paymentText() || ''), contentW);
+  const afterTableText = data.isStorno ? s.stornoClosing(data.originalPaid) : s.paymentText();
+  const paymentLines = doc.splitTextToSize(String(afterTableText || ''), contentW);
   const blockH =
     9 +
     (titleLines.length - 1) * 8 +
     6.5 +
+    (stornoSubjectLines.length ? stornoSubjectLines.length * 5.5 + 2 : 0) +
     9 +
     8 +
+    (referenceLines.length ? referenceLines.length * 5.5 + 2.5 : 0) +
     headerH +
     itemH +
     totalH +
@@ -1018,12 +1064,24 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.text(titleLines, margin, y);
   y += (titleLines.length - 1) * 8 + 6.5;
 
+  if (stornoSubjectLines.length) {
+    setFont(11);
+    doc.text(stornoSubjectLines, margin, y);
+    y += stornoSubjectLines.length * 5.5 + 2;
+  }
+
   setFont(11, 'italic');
   doc.text(s.classType, margin, y);
   y += 9;
 
   setFont(10.5);
   doc.text(formalGreeting(data), margin, y);
+
+  if (referenceLines.length) {
+    y += 8;
+    doc.text(referenceLines, margin, y);
+    y += (referenceLines.length - 1) * 5.5 + 2.5;
+  }
 
   y += 8;
   const tableTop = y;
@@ -1038,7 +1096,12 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.2);
   setFont(9, 'bold');
-  [s.colSubject, s.colLessons, priceUnitLabel(lang), s.colAmount].forEach((label, i) => {
+  [
+    s.colSubject,
+    s.colLessons,
+    priceUnitLabel(lang, data.sessionLengthMinutes),
+    s.colAmount,
+  ].forEach((label, i) => {
     doc.rect(xs[i], tableTop, widths[i], headerH);
     const headerLines = doc.splitTextToSize(label, widths[i] - 4);
     doc.text(headerLines, xs[i] + 2, tableTop + 4.5);
@@ -1059,12 +1122,12 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.rect(margin, totalTop, tableW, totalH);
   doc.line(xs[3], totalTop, xs[3], totalTop + totalH);
   setFont(9, 'bold');
-  doc.text('Total CHF', xs[0] + 2, totalTop + 4.5);
+  doc.text(data.isStorno ? s.stornoTotalLabel : 'Total CHF', xs[0] + 2, totalTop + 4.5);
   textRight(money(data.totalAmount), xs[3] + widths[3] - 3, totalTop + 4.5);
 
   y = totalTop + totalH + 8;
   setFont(10.5);
-  y = addWrappedText(doc, s.paymentText(), margin, y, contentW, 5.5);
+  y = addWrappedText(doc, afterTableText, margin, y, contentW, 5.5);
   y += 7;
   doc.text(s.closing, margin, y);
   doc.text('Gioia Birukoff', margin, y + 5.5);
@@ -1077,8 +1140,10 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     }
   }
 
-  setFont(7.2);
-  addWrappedText(doc, s.footnote, margin, pageH - 22, contentW, 3.6);
+  if (!data.isStorno) {
+    setFont(7.2);
+    addWrappedText(doc, s.footnote, margin, pageH - 22, contentW, 3.6);
+  }
 
   return await mergeWithQrPdf(doc.output('arraybuffer'), qrAttachment);
 }
@@ -1404,5 +1469,311 @@ export async function downloadInvoice() {
     btn.textContent = originalLabel;
     btn.disabled = false;
     if (sendBtn) sendBtn.disabled = isBulk ? selectedBulkRecipients().length === 0 : false;
+  }
+}
+
+/* ── Storno (cancellation) modal ─────────────────────────────────── */
+// Opened from the invoice overview. Builds a Swiss-style Stornorechnung
+// (credit note) that mirrors the original invoice with negated amounts, then
+// posts it to /api/cancel-invoice which records the storno, archives its PDF,
+// and flips the original to 'cancelled'.
+
+const STORNO_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
+let stornoRow = null;
+let stornoOnDone = null;
+let stornoListenersBound = false;
+
+function stornoStudent() {
+  return stornoRow?.student || null;
+}
+
+function stornoNotifyEmail() {
+  const student = stornoStudent();
+  return student ? student.billing_email || student.email || '' : '';
+}
+
+function stornoDocumentLanguage() {
+  return (
+    document.querySelector('input[name="storno-language"]:checked')?.value ||
+    (stornoRow?.invoice_language === 'en' ? 'en' : 'de')
+  );
+}
+
+export function openStornoModal(row, onDone) {
+  if (!row?.invoice_id) {
+    alert('This file has no invoice record, so it cannot be cancelled here.');
+    return;
+  }
+  if (['cancelled', 'storno'].includes(row.status)) return;
+
+  stornoRow = row;
+  stornoOnDone = onDone || null;
+  const originalNumber = row.name.replace(/\.pdf$/i, '');
+  stornoRow._originalNumber = originalNumber;
+
+  document.getElementById('storno-title').textContent = `cancel invoice — ${originalNumber}`;
+  const msg = document.getElementById('storno-msg');
+  msg.classList.remove('is-visible-block');
+  msg.textContent = '';
+  const btn = document.getElementById('storno-submit');
+  btn.textContent = 'cancel invoice';
+  btn.disabled = false;
+
+  // Prefill line items from the stored item_* columns; invoices logged before
+  // the cancellation migration have none, so fall back to current course data
+  // and warn that the values must be checked against the original PDF.
+  const course = row.course || null;
+  const language = row.invoice_language === 'en' ? 'en' : 'de';
+  const itemsStored =
+    row.item_subject !== null && row.item_quantity !== null && row.item_unit_price !== null;
+  const quantity = itemsStored ? Number(row.item_quantity) : courseQuantity(course);
+  const unitPrice = itemsStored
+    ? Number(row.item_unit_price)
+    : row.total_amount && quantity
+      ? Number((Number(row.total_amount) / quantity).toFixed(2))
+      : 0;
+  const subject = itemsStored
+    ? row.item_subject
+    : course
+      ? formalCourseLabel(course, language)
+      : originalNumber;
+
+  setVal('storno-number', '');
+  setVal('storno-date', formatDateInput(new Date()));
+  setVal('storno-subject', subject);
+  setVal('storno-quantity', quantity);
+  setVal('storno-unit-price', unitPrice.toFixed(2));
+
+  const warning = document.getElementById('storno-warning');
+  if (warning) {
+    if (itemsStored) {
+      warning.classList.add('is-hidden');
+      warning.innerHTML = '';
+    } else {
+      const link = row.signed_url
+        ? ` <a href="${esc(row.signed_url)}" target="_blank" rel="noopener noreferrer">original PDF</a>`
+        : ' original PDF';
+      warning.classList.remove('is-hidden');
+      warning.innerHTML =
+        'The line items of this invoice were not stored (it predates the cancellation migration). ' +
+        'The values below are prefilled from the current course data — check them against the' +
+        link +
+        ' before generating the storno.';
+    }
+  }
+
+  const notifyBox = document.getElementById('storno-notify');
+  notifyBox.checked = false;
+  const followupBox = document.getElementById('storno-followup');
+  if (followupBox) followupBox.checked = true;
+  const canNotify = Boolean(stornoNotifyEmail());
+  notifyBox.disabled = !canNotify;
+  const notifyHint = document.getElementById('storno-notify-hint');
+  if (notifyHint) notifyHint.classList.toggle('is-hidden', canNotify);
+  const langInput = document.querySelector(`input[name="storno-language"][value="${language}"]`);
+  if (langInput) langInput.checked = true;
+  updateStornoLanguageVisibility();
+
+  bindStornoListeners();
+  updateStornoTotal();
+  updateStornoPreview();
+  document.getElementById('storno-modal').classList.add('open');
+
+  loadNextInvoiceNumber().then((invoiceNumber) => {
+    if (invoiceNumber && !val('storno-number')) {
+      setVal('storno-number', invoiceNumber);
+      updateStornoPreview();
+    }
+  });
+}
+
+export function closeStornoModal() {
+  document.getElementById('storno-modal').classList.remove('open');
+  stornoRow = null;
+  stornoOnDone = null;
+}
+
+function updateStornoLanguageVisibility() {
+  const wrap = document.getElementById('storno-language-row');
+  if (wrap) {
+    wrap.classList.toggle('is-hidden', !document.getElementById('storno-notify')?.checked);
+  }
+}
+
+function bindStornoListeners() {
+  if (stornoListenersBound) return;
+  stornoListenersBound = true;
+  [
+    'storno-number',
+    'storno-date',
+    'storno-subject',
+    'storno-quantity',
+    'storno-unit-price',
+  ].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      updateStornoTotal();
+      updateStornoPreview();
+    });
+  });
+  document.getElementById('storno-notify')?.addEventListener('change', (e) => {
+    if (!e.target.checked) {
+      // The hidden selector must not keep a stale override: without an email
+      // the document falls back to the language the invoice was stored with.
+      const language = stornoRow?.invoice_language === 'en' ? 'en' : 'de';
+      const langInput = document.querySelector(
+        `input[name="storno-language"][value="${language}"]`
+      );
+      if (langInput) langInput.checked = true;
+    }
+    updateStornoLanguageVisibility();
+    updateStornoPreview();
+  });
+  document.querySelectorAll('input[name="storno-language"]').forEach((el) => {
+    el.addEventListener('change', updateStornoPreview);
+  });
+}
+
+function updateStornoTotal() {
+  const total = numVal('storno-quantity') * numVal('storno-unit-price');
+  setVal('storno-total', total ? (-total).toFixed(2) : '');
+}
+
+function getStornoData() {
+  const student = stornoStudent();
+  const course = stornoRow?.course || null;
+  const recipient = student
+    ? invoiceRecipient(student)
+    : { name: '', firstName: '', lastName: '', gender: '', genderNote: '', email: '' };
+  const quantity = numVal('storno-quantity');
+  const unitPrice = numVal('storno-unit-price');
+  return {
+    isStorno: true,
+    language: stornoDocumentLanguage(),
+    invoiceNumber: val('storno-number'),
+    customerReference: student?.customer_reference || '',
+    invoiceDate: val('storno-date'),
+    dueDate: '',
+    subject: val('storno-subject'),
+    quantity,
+    unitPrice,
+    totalAmount: -Number((quantity * unitPrice).toFixed(2)),
+    currency: stornoRow?.currency || 'CHF',
+    recipientName: recipient.name,
+    recipientFirstName: recipient.firstName,
+    recipientLastName: recipient.lastName,
+    recipientGender: recipient.gender,
+    recipientGenderNote: recipient.genderNote,
+    recipientEmail: stornoNotifyEmail(),
+    recipientLines: student ? billingAddressLines(student) : [],
+    courseCode: course?.course_code || '',
+    isShared: isSharedCourse(course || {}),
+    sessionLengthMinutes: Number(course?.session_length_minutes || 60),
+    originalNumber: stornoRow?._originalNumber || '',
+    originalDate: stornoRow?.issued_date || '',
+    originalPaid: stornoRow?.status === 'paid',
+  };
+}
+
+function updateStornoPreview() {
+  const container = document.getElementById('storno-preview');
+  if (!container || !stornoRow) return;
+  container.innerHTML = buildPreviewHtml(getStornoData());
+}
+
+export async function submitStorno() {
+  if (!stornoRow) return;
+  const btn = document.getElementById('storno-submit');
+  const msg = document.getElementById('storno-msg');
+  msg.classList.remove('is-visible-block');
+
+  const showError = (text) => {
+    msg.textContent = text;
+    msg.className = 'modal-msg err';
+    msg.classList.add('is-visible-block');
+  };
+
+  const data = getStornoData();
+  const notify = Boolean(document.getElementById('storno-notify')?.checked);
+  if (!STORNO_NUMBER_RE.test(data.invoiceNumber)) {
+    showError('The storno needs its own invoice number in the format LWG-YYYY-0001.');
+    return;
+  }
+  if (data.invoiceNumber === data.originalNumber) {
+    showError('The storno must not reuse the original invoice number.');
+    return;
+  }
+  if (!data.quantity || !data.unitPrice || !(data.totalAmount < 0)) {
+    showError('Please fill lessons and unit price — the storno total must be negative.');
+    return;
+  }
+  if (!data.originalDate) {
+    showError('The original invoice has no issued date on record — cannot reference it.');
+    return;
+  }
+  if (notify && !data.recipientEmail) {
+    showError('This student has no email address — untick "notify student".');
+    return;
+  }
+  if (
+    !confirm(
+      `Cancel invoice ${data.originalNumber} with storno ${data.invoiceNumber}?` +
+        (notify ? ' The student will be notified by email.' : ' No email will be sent.')
+    )
+  ) {
+    return;
+  }
+
+  btn.textContent = 'preparing pdf…';
+  btn.disabled = true;
+
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      throw new Error('PDF library not loaded — please reload the page.');
+    }
+    const pdfBase64 = await buildInvoicePdf(data, null);
+    btn.textContent = 'cancelling…';
+    const res = await apiFetch('/api/cancel-invoice', {
+      method: 'POST',
+      body: {
+        original_invoice_number: data.originalNumber,
+        language: data.language,
+        notify,
+        new_invoice_follows: notify && Boolean(document.getElementById('storno-followup')?.checked),
+        email: data.recipientEmail,
+        name: data.recipientName,
+        first_name: data.recipientFirstName,
+        last_name: data.recipientLastName,
+        gender: data.recipientGender,
+        invoice: {
+          invoice_number: data.invoiceNumber,
+          subject: data.subject,
+          quantity: data.quantity,
+          unit_price: data.unitPrice,
+          total_amount: data.totalAmount,
+          currency: data.currency,
+          invoice_date: data.invoiceDate,
+        },
+        pdf_base64: pdfBase64,
+      },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+
+    msg.textContent = body.message || (body.success ? 'Invoice cancelled.' : 'Partially failed.');
+    msg.className = body.success ? 'modal-msg success' : 'modal-msg err';
+    msg.classList.add('is-visible-block');
+    const onDone = stornoOnDone;
+    if (body.success) {
+      btn.textContent = 'cancelled';
+      setTimeout(() => closeStornoModal(), MESSAGE_TIMEOUT_MS);
+    } else {
+      btn.textContent = 'cancel invoice';
+      btn.disabled = false;
+    }
+    onDone?.();
+  } catch (err) {
+    showError('Error: ' + (err.message || err));
+    btn.textContent = 'cancel invoice';
+    btn.disabled = false;
   }
 }

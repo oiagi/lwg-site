@@ -55,6 +55,8 @@ import {
   downloadInvoice,
   prevBulkPreview,
   nextBulkPreview,
+  closeStornoModal,
+  submitStorno,
 } from './features/invoices.js';
 import {
   loadStudents,
@@ -101,6 +103,7 @@ import {
   sendInvoiceReminder,
   markArchivedInvoicePaid,
   deleteInvoice,
+  cancelArchivedInvoice,
 } from './features/invoice-archive.js';
 import {
   loadCompanies,
@@ -227,6 +230,9 @@ const actions = {
   sendInvoiceReminder,
   markArchivedInvoicePaid,
   deleteInvoice,
+  cancelArchivedInvoice,
+  closeStornoModal,
+  submitStorno,
   // Companies
   selectCompany,
   saveCompanyName,

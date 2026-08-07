@@ -2019,12 +2019,36 @@ html[data-device='mobile'] .student-detail-pane {
 .inv-status.cancelled {
   color: #c0392b;
 }
+.inv-status.storno {
+  color: #8e44ad;
+}
 .inv-status.overdue {
   color: #c0392b;
   font-weight: 600;
 }
 .inv-status.reminder {
   color: #888;
+}
+/* Cancelled original + its storno form a visually recognisable pair. */
+.invoice-row--cancelled {
+  border-left: 3px solid #c0392b;
+  padding-left: 0.5rem;
+}
+.invoice-row--cancelled .inv-number,
+.invoice-row--cancelled .inv-amount {
+  text-decoration: line-through;
+  color: #888;
+}
+.invoice-row--storno {
+  border-left: 3px solid #8e44ad;
+  padding-left: 0.5rem;
+}
+.storno-warning {
+  background: #fdf3d8;
+  border: 1px solid #e6c860;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+  color: #7a5c00;
 }
 .inv-action {
   text-align: right;
@@ -3380,6 +3404,9 @@ html[data-device='mobile'] .blocked-dates-range {
   line-height: 1.1;
   margin: 0 0 0.35rem;
   padding: 0;
+}
+.inv-prev-storno-subject {
+  margin: 0 0 0.35rem;
 }
 .inv-prev-classtype {
   font-style: italic;

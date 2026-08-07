@@ -28,49 +28,17 @@ import {
   logInvoice,
 } from './_invoices.js';
 import { sendResendEmail } from './_email.js';
+import {
+  esc,
+  cleanFilenamePart,
+  formatDate,
+  invoiceGreeting,
+  emailShell,
+  bodyParagraph,
+} from './_invoice-email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const ALLOWED_LANGUAGES = ['de', 'en'];
-
-function esc(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function cleanFilenamePart(value, fallback) {
-  return String(value || fallback)
-    .trim()
-    .replace(/[^a-z0-9._-]+/gi, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-}
-
-function surnameFromName(name) {
-  const parts = String(name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  return parts.length > 1 ? parts[parts.length - 1] : '';
-}
-
-function fullNameFromParts(firstName, lastName, fallbackName = '') {
-  return [firstName, lastName].filter(Boolean).join(' ') || fallbackName;
-}
-
-function invoiceGreeting({ language, name, first_name, last_name, gender }) {
-  if (language === 'en') return `Hello ${first_name || name || 'there'},`;
-  if (first_name) return `Liebe ${first_name}`;
-  const surname = last_name || surnameFromName(name);
-  if (gender === 'female' && surname) return `Liebe Frau ${surname}`;
-  if (gender === 'male' && surname) return `Lieber Herr ${surname}`;
-  const fullName = fullNameFromParts(first_name, last_name, name);
-  return fullName ? `Guten Tag ${fullName}` : 'Guten Tag';
-}
 
 function buildEmail({ language, name, first_name, last_name, gender, invoice }) {
   const isEN = language === 'en';
@@ -99,64 +67,27 @@ function buildEmail({ language, name, first_name, last_name, gender, invoice }) 
     : 'Falls etwas unklar ist, antworte einfach direkt auf diese E-Mail.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
-  const html = `<!DOCTYPE html>
-<html lang="${isEN ? 'en' : 'de'}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:600px;width:100%;">
-        <tr>
-          <td style="background:#1a1a1a;padding:32px 40px;">
-            <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px 40px 16px;">
-            <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              ${isEN ? 'Invoice' : 'Rechnung'} ${esc(invoiceNo)}
-            </p>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
-              ${esc(intro)}
-            </p>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
-              ${esc(invoiceLine)}
-            </p>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
-              ${isEN ? 'Amount' : 'Betrag'}: <strong>${esc(amount)}</strong><br>
-              ${esc(paymentLine)}
-            </p>
-            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(questionLine)}</p>
-            <p style="margin:0 0 4px;font-size:15px;line-height:1.7;color:#333;">${esc(sign)}</p>
-            <p style="margin:0;font-size:15px;line-height:1.7;color:#333;">Gioia</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
-            <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const bodyHtml = [
+    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>`,
+    bodyParagraph(intro),
+    bodyParagraph(invoiceLine),
+    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
+      ${isEN ? 'Amount' : 'Betrag'}: <strong>${esc(amount)}</strong><br>
+      ${esc(paymentLine)}
+    </p>`,
+    bodyParagraph(questionLine, '0 0 24px'),
+    bodyParagraph(sign, '0 0 4px'),
+    bodyParagraph('Gioia', '0'),
+  ].join('\n');
 
-  return { subject, html };
-}
-
-function formatDate(value, language) {
-  if (!value) return '';
-  const date = new Date(value + 'T12:00:00');
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(language === 'en' ? 'en-GB' : 'de-CH', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  return {
+    subject,
+    html: emailShell({
+      language,
+      title: `${isEN ? 'Invoice' : 'Rechnung'} ${invoiceNo}`,
+      bodyHtml,
+    }),
+  };
 }
 
 function validate(body) {
