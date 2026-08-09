@@ -59,7 +59,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 
 Single-page app at `/admin/`. Login via Supabase Auth (email/password — users are managed in the Supabase dashboard, not in env vars).
 
-Covers: students, courses, enrolments, sessions, attendance, invoices, companies, teacher availability, certificates, and course confirmations.
+Covers: students, courses, enrolments, sessions, attendance, invoices, companies, teacher availability, 15-minute call windows and bookings, certificates, and course confirmations.
 
 ## API endpoints
 
@@ -75,6 +75,7 @@ All endpoints live at `/api/*`. Shared helpers are prefixed with `_` and not rou
 | Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`, `group-course-slots`, `group-course-access-code`                                    |
 | Companies     | `get-companies`, `save-company`, `send-company-booking-code`, `company-intake`, `send-company-intake-link`                                     |
 | Teachers      | `get-teachers`, `get-teacher-availability`                                                                                                     |
+| Calls         | `call-slots`, `book-call`, `call-availability`, `call-bookings`                                                                                |
 | Invoices      | `get-next-invoice-number`, `mark-invoice-paid`, `send-invoice`, `send-invoice-reminder`, `cancel-invoice`, `delete-invoice`, `invoice-archive` |
 | Intake        | `intake`, `mark-intake-seen`, `send-intake-link`                                                                                               |
 | Enquiry       | `submit-enquiry`, `get-enquiry`, `mark-enquiry-treated`                                                                                        |

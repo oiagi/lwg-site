@@ -115,6 +115,168 @@ export async function createCourseCalendarEvent({
 }
 
 /**
+ * Query Google FreeBusy for a single calendar.
+ *
+ * Used to keep the public 15-minute call picker in step with the teacher's
+ * real calendar. Note that Google only reports events marked *busy*: events
+ * set to "free" — which is the default for all-day events — come back as
+ * available, so a half-day absence has to be entered as a busy event (or as
+ * a blocked date).
+ *
+ * Never returns [] on failure: an empty busy list reads as "everything is
+ * free", which is exactly how a visitor ends up booked over a lesson.
+ *
+ * @param {object} opts
+ * @param {string} opts.accessToken
+ * @param {string} opts.calendarId
+ * @param {string} opts.timeMin — ISO
+ * @param {string} opts.timeMax — ISO, less than ~3 months after timeMin
+ * @returns {Promise<{start: string, end: string}[]>} busy intervals
+ */
+export async function fetchFreeBusy({ accessToken, calendarId, timeMin, timeMax }) {
+  const res = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({
+      timeMin,
+      timeMax,
+      timeZone: 'Europe/Zurich',
+      items: [{ id: calendarId }],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error('FreeBusy error:', res.status, body);
+    const error = new Error(`FreeBusy API error (${res.status}): ${body.slice(0, 200)}`);
+    error.statusCode = res.status >= 500 ? 502 : res.status;
+    throw error;
+  }
+
+  const data = await res.json();
+  // Google normalises 'primary' to the real address, so the key does not
+  // always match what auth-callback stored — fall back to the only entry.
+  const entry = data.calendars?.[calendarId] || Object.values(data.calendars || {})[0];
+  if (!entry) {
+    const error = new Error('FreeBusy returned no calendar entry');
+    error.statusCode = 502;
+    throw error;
+  }
+  if (entry.errors?.length) {
+    const reason = entry.errors.map((e) => e.reason).join(', ');
+    console.error('FreeBusy calendar error:', reason);
+    const error = new Error(`FreeBusy calendar error: ${reason}`);
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return entry.busy || [];
+}
+
+/**
+ * Create a 15-minute intro call on the teacher's calendar with the visitor
+ * as an attendee and an auto-generated Google Meet link.
+ *
+ * `sendUpdates: 'all'` is what makes Google email the visitor a real
+ * invitation they can accept or decline. Pass 'none' from test scripts to
+ * create the event silently.
+ *
+ * Meet creation can fail on account types where Meet is disabled — Google
+ * still returns the event, just without a conference. Callers must treat a
+ * null meetLink as normal.
+ *
+ * @param {object} opts
+ * @param {string} opts.accessToken
+ * @param {string} opts.calendarId
+ * @param {string} opts.bookingId — call_bookings.id; doubles as Google's
+ *   conference idempotency key, so a retry reuses the same Meet room.
+ * @param {string} opts.startIso
+ * @param {number} [opts.durationMinutes]
+ * @param {string} opts.visitorName
+ * @param {string} opts.visitorEmail
+ * @param {string} [opts.visitorPhone]
+ * @param {string} [opts.topic]
+ * @param {string} [opts.language]
+ * @param {string} [opts.teacherName]
+ * @param {string} [opts.sendUpdates]
+ * @returns {Promise<{eventId: string, meetLink: string|null, htmlLink: string|null}>}
+ */
+export async function createCallCalendarEvent({
+  accessToken,
+  calendarId,
+  bookingId,
+  startIso,
+  durationMinutes = 15,
+  visitorName,
+  visitorEmail,
+  visitorPhone,
+  topic,
+  language = 'en',
+  teacherName = 'learning with gioia',
+  sendUpdates = 'all',
+}) {
+  const startTime = new Date(startIso);
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+
+  const eventBody = {
+    summary: `${durationMinutes}min call — ${visitorName} <> ${teacherName}`,
+    description:
+      `Intro call (${durationMinutes} min)\n` +
+      `Name: ${visitorName}\n` +
+      `Email: ${visitorEmail}\n` +
+      (visitorPhone ? `Phone: ${visitorPhone}\n` : '') +
+      `Language: ${language.toUpperCase()}\n` +
+      (topic ? `Topic: ${topic}\n` : '') +
+      `\nBooked via learningwithgioia.ch\nBooking: ${bookingId}`,
+    start: { dateTime: startTime.toISOString(), timeZone: 'Europe/Zurich' },
+    end: { dateTime: endTime.toISOString(), timeZone: 'Europe/Zurich' },
+    attendees: [{ email: visitorEmail, displayName: visitorName }],
+    guestsCanInviteOthers: false,
+    guestsCanModify: false,
+    guestsCanSeeOtherGuests: false,
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: 'email', minutes: 60 },
+        { method: 'popup', minutes: 10 },
+      ],
+    },
+    conferenceData: {
+      createRequest: {
+        requestId: bookingId,
+        conferenceSolutionKey: { type: 'hangoutsMeet' },
+      },
+    },
+  };
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events` +
+      `?conferenceDataVersion=1&sendUpdates=${encodeURIComponent(sendUpdates)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify(eventBody),
+    }
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error('Call calendar error:', res.status, body);
+    const error = new Error(`Could not create call event (${res.status})`);
+    error.statusCode = res.status >= 500 ? 502 : res.status;
+    throw error;
+  }
+
+  const data = await res.json();
+  const meetLink =
+    data.hangoutLink ||
+    data.conferenceData?.entryPoints?.find((e) => e.entryPointType === 'video')?.uri ||
+    null;
+
+  return { eventId: data.id, meetLink, htmlLink: data.htmlLink || null };
+}
+
+/**
  * Fetch expanded single events from Google Calendar matching a course code.
  *
  * Starts from 90 days ago so we don't blow past the 250-event cap with
