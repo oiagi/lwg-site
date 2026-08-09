@@ -194,6 +194,106 @@ export async function openScheduleModal(courseId) {
   });
 }
 
+/* Mirrors FEEDBACK_FIELDS in functions/api/_feedback.js — preview only;
+   the email and the form both build their copy server-side. */
+const FEEDBACK_QUESTION_PREVIEW = [
+  'Overall satisfaction',
+  'Organisation',
+  'Clarity of explanations',
+  'Comfort asking questions',
+  'Pace of the course',
+  'Course materials',
+  'Speaking time',
+  'Everyday vocabulary',
+  'Confidence when speaking',
+];
+
+export async function openFeedbackRequestModal(courseId) {
+  let course = coursesCache.find((c) => String(c.id) === String(courseId));
+  if (!course) {
+    alert('Course not found. Please reload and try again.');
+    return;
+  }
+  try {
+    course = await refreshCourseInCache(courseId);
+  } catch (err) {
+    alert(err.message || 'Could not refresh course data.');
+    return;
+  }
+
+  const withEmail = (course.students || []).filter((s) => s.email);
+  if (!withEmail.length) {
+    alert('No enrolled students with an email address.');
+    return;
+  }
+  const pending = withEmail.filter((s) => !s.feedback_submitted_at);
+  if (!pending.length) {
+    alert('Every student in this course has already given feedback.');
+    return;
+  }
+
+  // Students who already answered stay visible but unticked, so it is clear
+  // why they are not being emailed again.
+  const recipients = withEmail.map((s) => ({
+    student_id: s.id,
+    name: studentDisplayName(s) + (s.feedback_submitted_at ? ' (already answered)' : ''),
+    email: s.email,
+    selected: !s.feedback_submitted_at,
+  }));
+
+  const alreadyAsked = pending.filter((s) => s.feedback_requested_at).length;
+  const contentHtml = `
+    <p class="cs-section-label">feedback questions (rated 1–5)</p>
+    <ol class="cs-session-list">
+      ${FEEDBACK_QUESTION_PREVIEW.map((q) => `<li>${esc(q)}</li>`).join('')}
+    </ol>
+    <p class="cs-section-label">plus, all optional</p>
+    <ul class="cs-detail-list">
+      <li>Which course and how many lessons they attended</li>
+      <li>How likely they are to recommend us (0–10)</li>
+      <li>Progress made and which activities helped most</li>
+      <li>Open questions: what they enjoyed, what to improve, what was difficult,
+        the one thing they would change, whether they want another course, and
+        whether we may quote them</li>
+    </ul>
+    <p class="cs-section-label">also included</p>
+    <ul class="cs-detail-list">
+      <li>A private link per student, valid for 90 days, one submission each</li>
+      <li>The form takes about 3–5 minutes</li>
+      ${alreadyAsked ? `<li>${alreadyAsked} of these students were already asked — they keep their original link</li>` : ''}
+    </ul>
+  `;
+
+  openConfirmSend({
+    title: 'request course feedback',
+    recipients,
+    subject: `Wie war dein Kurs? / How was your course?${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
+    contentHtml,
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    selectableRecipients: true,
+    onConfirm: async ({ language, recipients: selectedRecipients }) => {
+      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
+      const msg = document.getElementById('feedback-msg-' + courseId);
+      const res = await apiFetch('/api/send-feedback-request', {
+        method: 'POST',
+        body: {
+          course_id: courseId,
+          student_ids: selectedRecipients.map((r) => r.student_id),
+          language,
+        },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
+      if (msg) showMessage(msg, label);
+    },
+  });
+}
+
 export function openCertificateModal(courseId) {
   return openCertificates(courseId, coursesCache);
 }

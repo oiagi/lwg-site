@@ -24,6 +24,7 @@
     '/konjunktionen.html': 'konjunktionen',
     '/niveaus.html': 'niveaus',
     '/intake.html': 'intake',
+    '/feedback.html': 'feedback',
   };
   const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
     acc[slug] = page;
@@ -918,6 +919,55 @@
         },
       },
     },
+    '/feedback.html': {
+      title: {
+        en: 'Course Feedback - Learning with Gioia',
+        de: 'Kursfeedback - Learning with Gioia',
+      },
+      text: {
+        '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
+        '#feedback-content h1': { en: 'your feedback', de: 'Dein Feedback' },
+        '.intake-intro': {
+          en: 'Thank you for taking the time to share your feedback. Your honest opinion helps improve future lessons - there are no right or wrong answers, so please be as open as you like. Only your teacher reads your answers.',
+          de: 'Danke, dass du dir Zeit für dein Feedback nimmst. Deine ehrliche Meinung hilft uns, den Unterricht besser zu machen - es gibt keine richtigen oder falschen Antworten, sag also ruhig offen, was du denkst. Deine Antworten liest nur deine Lehrperson.',
+        },
+        '#feedback-time': {
+          en: 'estimated time: 3-5 minutes',
+          de: 'Dauer: 3-5 Minuten',
+        },
+        '#feedback-submit-btn': { en: 'send feedback ->', de: 'Feedback senden ->' },
+        '#submit-error': {
+          en: 'Something went wrong - please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Etwas ist schiefgelaufen - bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        },
+        '#feedback-thanks h1': { en: 'thank you.', de: 'Danke.' },
+        '#feedback-thanks p': {
+          en: 'Your honest feedback helps us improve our lessons for everyone. We read every response carefully and genuinely appreciate both the compliments and the suggestions.',
+          de: 'Dein ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
+        },
+        '#feedback-done h1': { en: 'already answered.', de: 'Bereits beantwortet.' },
+        '#feedback-done p': {
+          en: 'This feedback has already been submitted - thank you. If you would like to add something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Dieses Feedback wurde bereits abgeschickt - danke. Wenn du noch etwas ergänzen möchtest, schreib einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        },
+        '#feedback-unavailable h1': {
+          en: 'not right now.',
+          de: 'Gerade nicht möglich.',
+        },
+        '#feedback-unavailable p': {
+          en: 'We could not load your feedback form just now - your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Wir konnten dein Feedback-Formular gerade nicht laden - dein Link ist weiterhin gültig. Bitte versuche es in ein paar Minuten noch einmal oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        },
+        '#feedback-error h1': {
+          en: 'link expired or invalid.',
+          de: 'Link abgelaufen oder ungültig.',
+        },
+        '#feedback-error p': {
+          en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+          de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        },
+      },
+    },
     '/modalpartikeln.html': {
       title: { en: 'Modal particles', de: 'Modalpartikeln' },
       text: {
@@ -993,6 +1043,17 @@
   });
 
   const runtime = {
+    feedbackRatingRequired: {
+      en: 'Please choose a rating.',
+      de: 'Bitte wähle eine Bewertung.',
+    },
+    feedbackChoiceRequired: {
+      en: 'Please choose an answer.',
+      de: 'Bitte wähle eine Antwort.',
+    },
+    feedbackOtherPlaceholder: { en: 'please tell us', de: 'Sag uns gerne, was' },
+    feedbackSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
+    feedbackOptional: { en: 'optional', de: 'optional' },
     groupCoursesLoading: { en: 'loading courses...', de: 'Kurse werden geladen...' },
     groupCoursesLoadError: {
       en: 'Could not load group courses right now.',

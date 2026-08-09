@@ -6,6 +6,9 @@ Disallow: /admin/
 Disallow: /intake.html
 Disallow: /en/intake
 Disallow: /de/intake
+Disallow: /feedback.html
+Disallow: /en/feedback
+Disallow: /de/feedback
 Disallow: /thankyou.html
 Disallow: /en/thankyou
 Disallow: /de/thankyou
