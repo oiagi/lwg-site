@@ -200,7 +200,6 @@ html[data-touch='true'] .call-slot[aria-pressed='true'] {
 
 .call-form .btn {
   align-self: flex-start;
-  cursor: pointer;
 }
 
 /* ── Success ─────────────────────────────────────────────────── */
