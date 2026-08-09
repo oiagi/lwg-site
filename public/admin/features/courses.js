@@ -337,6 +337,42 @@ function sentCommunicationsBlock(course) {
     </div>`;
 }
 
+/* Summary only — the responses themselves are fetched on demand by
+   loadCourseFeedback in features/feedback.js, so the course list stays lean. */
+function feedbackBlock(course) {
+  const summary = course.feedback_summary;
+  if (!summary?.requested) return '';
+
+  const nps =
+    summary.nps?.score !== null && summary.nps?.score !== undefined
+      ? `<li>NPS ${esc(String(summary.nps.score))} · <span class="detail-muted">${esc(String(summary.nps.average))}/10 from ${summary.nps.responses}</span></li>`
+      : '';
+  const averageItems = (summary.averages || [])
+    .filter((a) => a.value !== null && a.value !== undefined)
+    .map(
+      (a) =>
+        `<li>${esc(a.label)} · <span class="detail-muted">${esc(String(a.value))}/5</span></li>`
+    )
+    .join('');
+
+  const viewButton = summary.submitted
+    ? `<button class="save-btn feedback-view-btn" data-action="loadCourseFeedback"
+         data-args="${course.id}">view responses</button>`
+    : '';
+
+  return `
+    <div class="sent-status">
+      <p class="detail-meta">feedback</p>
+      <ul class="sent-status-list">
+        <li>${summary.submitted} of ${summary.requested} responded</li>
+        ${nps}
+        ${averageItems}
+      </ul>
+      ${viewButton}
+      <div class="course-feedback-responses" id="course-feedback-${course.id}"></div>
+    </div>`;
+}
+
 function pendingBookingBlocks(course) {
   const bookings = course.pending_bookings || [];
   if (!bookings.length) return '';
@@ -611,6 +647,11 @@ function renderCourses(courses) {
                 : s.contract_sent_at
                   ? `<span class="sent-tag">contract sent · ${esc(fmtDate(s.contract_sent_at))}</span>`
                   : '',
+              s.feedback_submitted_at
+                ? `<span class="sent-tag paid-tag">feedback given · ${esc(fmtDate(s.feedback_submitted_at))}</span>`
+                : s.feedback_requested_at
+                  ? `<span class="sent-tag">feedback requested · ${esc(fmtDate(s.feedback_requested_at))}</span>`
+                  : '',
             ]
               .filter(Boolean)
               .join('');
@@ -753,8 +794,14 @@ function renderCourses(courses) {
                     data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
                   <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
                 </div>
+                <div class="detail-action-row">
+                  <button class="save-btn"
+                    data-action="openFeedbackRequestModal" data-args="${c.id}">request feedback</button>
+                  <span class="saved-msg" id="feedback-msg-${c.id}">sent</span>
+                </div>
               </div>
               ${sentCommunicationsBlock(c)}
+              ${feedbackBlock(c)}
             </div>
           </div>
           <p class="detail-meta mb-medium">students & progress</p>

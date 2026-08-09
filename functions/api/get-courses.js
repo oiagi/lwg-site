@@ -12,6 +12,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 import { groupCourseInvoices } from './_invoices.js';
+import { FEEDBACK_SUMMARY_COLUMNS, labelledAverages, summariseFeedback } from './_feedback.js';
 
 const DB_SORTS = {
   created_at: {
@@ -103,6 +104,20 @@ const BASE_INVOICE_COLUMNS = [
   'course_id',
 ];
 const OPTIONAL_INVOICE_COLUMNS = ['sent_at', 'cancels_invoice_id', 'cancelled_at'];
+
+// Feedback requests, for the sent-tags and the per-course summary. The
+// comment text is deliberately left out — the course list stays lean and
+// get-feedback.js serves the full responses on demand. Returns [] when the
+// add_course_feedback migration has not been applied yet.
+async function fetchCourseFeedback(supabaseUrl, headers, courseFilter) {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/course_feedback?or=(${courseFilter})&select=student_id,course_id,requested_at,submitted_at,${FEEDBACK_SUMMARY_COLUMNS.join(',')}`,
+    { headers }
+  );
+  if (res.ok) return res.json();
+  console.error('get-courses feedback fetch failed:', await res.text());
+  return [];
+}
 
 async function fetchCourseInvoices(supabaseUrl, headers, courseIds) {
   const filter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
@@ -242,6 +257,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       ? await fetchCourseInvoices(SUPABASE_URL, H, courseIds)
       : [];
 
+    // ── Batch fetch feedback requests for these courses ───────────────
+    const allFeedback = await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
+
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
     for (const s of allSessions) {
@@ -278,6 +296,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       if (!byStudent[c.student_id]) byStudent[c.student_id] = c;
     }
 
+    const feedbackByCourse = {};
+    const feedbackByCourseStudent = {};
+    for (const f of allFeedback) {
+      (feedbackByCourse[f.course_id] ||= []).push(f);
+      (feedbackByCourseStudent[f.course_id] ||= {})[f.student_id] = f;
+    }
+
     const studentsById = {};
     for (const s of allStudents) {
       studentsById[s.id] = s;
@@ -308,6 +333,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const contractByStudent = contractByCourseStudent[course.id] || {};
       const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
+      const feedbackByStudent = feedbackByCourseStudent[course.id] || {};
       const students = [...(studentIdsByCourse[course.id] || [])]
         .map((id) => {
           const s = studentsById[id];
@@ -327,12 +353,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             contract_sent_at: contractByStudent[id]?.sent_at || null,
             contract_signed_at: contractByStudent[id]?.signed_uploaded_at || null,
             invoice_sent_at: invoiceSentByStudent[id] || null,
+            feedback_requested_at: feedbackByStudent[id]?.requested_at || null,
+            feedback_submitted_at: feedbackByStudent[id]?.submitted_at || null,
           };
         })
         .filter(Boolean);
+      const feedbackSummary = summariseFeedback(feedbackByCourse[course.id] || []);
       return {
         ...course,
         company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
+        feedback_summary: {
+          ...feedbackSummary,
+          averages: labelledAverages(feedbackSummary.averages),
+        },
         sessions: sessionsByCourse[course.id] || [],
         pending_bookings: pendingBookingsByCourse[course.id] || [],
         participant_names: students.map(enrolmentDisplayName).filter(Boolean),

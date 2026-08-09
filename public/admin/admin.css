@@ -3937,3 +3937,83 @@ html[data-device='mobile'] .cert-prev-footer {
 .review-admin-msg.error-text {
   color: #b3564d;
 }
+
+/* ── Feedback tab + course-detail responses ──────────────────────── */
+.feedback-summary {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.feedback-card {
+  border: 1px solid #e3e8ee;
+  border-left: 3px solid #7ba889;
+  background: #fff;
+  padding: 14px 18px 12px;
+  margin-bottom: 12px;
+  max-width: 760px;
+}
+
+.feedback-card--pending {
+  border-left-color: #d8b26e;
+}
+
+.feedback-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.feedback-card-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.feedback-card-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.feedback-rating-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+.feedback-comment {
+  margin-top: 8px;
+}
+
+.feedback-comment-label {
+  margin: 0 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.feedback-comment-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Inside a course detail the cards sit in the narrower sent-status box. */
+.feedback-view-btn {
+  margin-top: 0.5rem;
+}
+
+.course-feedback-responses:not(:empty) {
+  margin-top: 0.6rem;
+}
+
+.course-feedback-responses .feedback-card {
+  max-width: none;
+  padding: 10px 12px 8px;
+}

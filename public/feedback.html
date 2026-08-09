@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Feedback — Learning with Gioia</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/enquiry.css">
+  <link rel="stylesheet" href="/intake.css">
+  <link rel="stylesheet" href="/feedback.css">
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">skip to content</a>
+
+  <div class="form-container" id="main">
+    <div id="feedback-loading" class="loading-state">loading…</div>
+
+    <div id="feedback-content" class="is-hidden">
+      <h1>your feedback</h1>
+      <p class="intake-intro">
+        Thank you for taking the time to share your feedback. Your honest opinion helps improve
+        future lessons — there are no right or wrong answers, so please be as open as you like.
+        Only your teacher reads your answers.
+      </p>
+      <p class="feedback-time" id="feedback-time">estimated time: 3–5 minutes</p>
+
+      <div class="field-summary" id="feedback-course"></div>
+
+      <div id="feedback-sections"></div>
+
+      <button class="submit" id="feedback-submit-btn">send feedback →</button>
+      <div class="error submit-error" id="submit-error">
+        Something went wrong — please try again or email us at
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </div>
+    </div>
+
+    <div id="feedback-thanks" class="is-hidden text-center">
+      <h1>thank you.</h1>
+      <p>Your honest feedback helps us improve our lessons for everyone. We read every response
+        carefully and genuinely appreciate both the compliments and the suggestions.</p>
+    </div>
+
+    <div id="feedback-done" class="is-hidden text-center">
+      <h1>already answered.</h1>
+      <p>This feedback has already been submitted — thank you. If you would like to add
+        something, just email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+
+    <div id="feedback-unavailable" class="is-hidden text-center">
+      <h1>not right now.</h1>
+      <p>We could not load your feedback form just now — your link is still fine. Please try
+        again in a few minutes, or email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+
+    <div id="feedback-error" class="is-hidden text-center">
+      <h1>link expired or invalid.</h1>
+      <p>Please contact your teacher for a new link, or email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+  </div>
+
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
+  <script src="/feedback.js"></script>
+</body>
+</html>

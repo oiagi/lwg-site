@@ -33,6 +33,7 @@ import {
 import {
   sendCourseConfirmation,
   openScheduleModal,
+  openFeedbackRequestModal,
   openCertificateModal,
   openContractModal,
   openInvoiceModal,
@@ -138,6 +139,7 @@ import {
   toggleReviewApproval,
   deleteReview,
 } from './features/reviews.js';
+import { loadFeedback, filterFeedback, loadCourseFeedback } from './features/feedback.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -169,6 +171,8 @@ const actions = {
   submitAddParticipant,
   sendCourseConfirmation,
   openScheduleModal,
+  openFeedbackRequestModal,
+  loadCourseFeedback,
   openCertificateModal,
   closeCertificateModal,
   openContractModal,
@@ -263,6 +267,8 @@ const actions = {
   saveReview,
   toggleReviewApproval,
   deleteReview,
+  // Feedback
+  filterFeedback,
   // Tab switching
   switchTab,
 };
@@ -391,6 +397,7 @@ async function switchTab(tab, options = {}) {
   if (tab === 'invoices') loadInvoiceArchive();
   if (tab === 'companies') loadCompanies();
   if (tab === 'reviews') loadReviews();
+  if (tab === 'feedback') loadFeedback();
 }
 
 document.addEventListener('admin:switchTab', (e) => {
