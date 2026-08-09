@@ -1,0 +1,231 @@
+/* ── 15-minute call booking panel (homepage #start section) ────── */
+
+.call-panel {
+  max-width: 44rem;
+  margin: 3rem auto 0;
+  padding: 2rem;
+  border: 1px solid var(--rule);
+  text-align: left;
+}
+
+/* .call-days is display:grid and .call-form is display:flex, both of which
+   would otherwise beat the hidden attribute. */
+.call-panel [hidden] {
+  display: none !important;
+}
+
+.call-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.call-panel__title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.call-panel__title:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 4px;
+}
+.call-panel__close {
+  border: 0;
+  background: none;
+  padding: 0.2rem;
+  font-family: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  cursor: pointer;
+}
+.call-panel__close:hover {
+  color: var(--ink);
+}
+.call-panel__note {
+  margin: 0.6rem 0 1.6rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+/* ── Status line ─────────────────────────────────────────────── */
+.call-status {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  padding: 0.6rem 0;
+}
+.call-status a {
+  color: var(--ink);
+}
+
+/* ── Slot grid ───────────────────────────────────────────────── */
+.call-days {
+  display: grid;
+  gap: 1.4rem;
+  margin-bottom: 1.8rem;
+}
+.call-day__date {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.call-day__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.call-slot {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--rule);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.call-slot:hover {
+  border-color: var(--ink);
+}
+.call-slot[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+html[data-touch='true'] .call-slot:hover {
+  border-color: var(--rule);
+}
+html[data-touch='true'] .call-slot[aria-pressed='true'] {
+  border-color: var(--ink);
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.call-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule);
+}
+.call-selected {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.call-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.call-row .call-field {
+  flex: 1 1 12rem;
+}
+.call-field {
+  display: flex;
+  flex-direction: column;
+}
+.call-field label {
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.4rem;
+}
+.call-field input,
+.call-field textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.45rem 0;
+  border-radius: 0;
+}
+.call-field textarea {
+  resize: vertical;
+  border: 1px solid var(--rule);
+  padding: 0.6rem;
+}
+.call-field input:focus,
+.call-field textarea:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+.call-field input[aria-invalid='true'],
+.call-field textarea[aria-invalid='true'] {
+  border-color: #b3564d;
+}
+
+/* index.css does not load group-courses.css, which is where the base rule
+   normally lives — .is-visible-block from shared.css does the revealing. */
+.error {
+  display: none;
+  font-size: 0.8rem;
+  color: #b3564d;
+  margin-top: 0.4rem;
+}
+
+.call-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.call-consent input {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+.call-consent a {
+  color: var(--ink);
+}
+
+/* Honeypot: off-screen rather than display:none so bots still fill it. */
+.call-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.call-form .btn {
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+/* ── Success ─────────────────────────────────────────────────── */
+.call-success h4 {
+  margin: 0 0 0.6rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+.call-success p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.call-success a {
+  color: var(--ink);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+html[data-device='mobile'] .call-panel {
+  padding: 1.4rem;
+  margin-top: 2rem;
+}
+html[data-device='mobile'] .call-row {
+  flex-direction: column;
+  gap: 1rem;
+}

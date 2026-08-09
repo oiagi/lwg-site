@@ -304,6 +304,42 @@
         },
         '#closing-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
         '#closing-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
+        '#closing-cta-call': { en: 'book a 15min call', de: 'Kurzgespräch buchen (15 Min.)' },
+        '#call-panel-title': {
+          en: 'Book a free 15-minute call',
+          de: 'Kostenloses 15-Minuten-Gespräch buchen',
+        },
+        '#call-cancel': { en: 'close', de: 'schliessen' },
+        '#call-panel-note': {
+          en: 'Pick a time that suits you. All times are Zürich time (CET/CEST).',
+          de: 'Wähle eine passende Zeit. Alle Zeiten in Zürcher Zeit (MEZ/MESZ).',
+        },
+        'label[for="cb-first-name"]': { en: 'first name *', de: 'Vorname *' },
+        'label[for="cb-last-name"]': { en: 'last name *', de: 'Nachname *' },
+        'label[for="cb-email"]': { en: 'email *', de: 'E-Mail *' },
+        'label[for="cb-phone"]': { en: 'phone', de: 'Telefon' },
+        'label[for="cb-topic"]': {
+          en: 'what would you like to talk about?',
+          de: 'Worüber möchtest du sprechen?',
+        },
+        '#err-cb-first-name': {
+          en: 'Please enter a first name.',
+          de: 'Bitte gib einen Vornamen ein.',
+        },
+        '#err-cb-last-name': {
+          en: 'Please enter a last name.',
+          de: 'Bitte gib einen Nachnamen ein.',
+        },
+        '#err-cb-email': {
+          en: 'Please enter a valid email address.',
+          de: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+        },
+        '#err-cb-consent': {
+          en: 'Please accept the terms and conditions.',
+          de: 'Bitte akzeptiere die AGB.',
+        },
+        '#cb-submit': { en: 'book the call', de: 'Gespräch buchen' },
+        '#call-success-title': { en: "You're booked in!", de: 'Dein Termin steht!' },
       },
     },
     '/enquiry.html': {
@@ -1145,6 +1181,47 @@
     groupCoursesSuccessBody: {
       en: 'Your booking request has been received. We will confirm your request shortly.',
       de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deine Anfrage so schnell wie möglich.',
+    },
+    callLoading: {
+      en: 'loading available times…',
+      de: 'Verfügbare Zeiten werden geladen…',
+    },
+    callLoadError: {
+      en: 'Available times could not be loaded right now.',
+      de: 'Verfügbare Zeiten konnten gerade nicht geladen werden.',
+    },
+    callNoSlots: {
+      en: 'No free slots in the next three weeks.',
+      de: 'In den nächsten drei Wochen sind keine Termine frei.',
+    },
+    callEnquiryLink: { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
+    callSelected: {
+      en: (date, time) => `Selected: ${date} at ${time} (Zürich time)`,
+      de: (date, time) => `Gewählt: ${date} um ${time} (Zürcher Zeit)`,
+    },
+    callChooseSlot: {
+      en: 'Please choose a time first.',
+      de: 'Bitte wähle zuerst eine Zeit.',
+    },
+    callSubmitting: { en: 'booking…', de: 'Wird gebucht…' },
+    callSubmit: { en: 'book the call', de: 'Gespräch buchen' },
+    callTaken: {
+      en: 'That time was just taken. Please choose another one.',
+      de: 'Dieser Termin wurde gerade vergeben. Bitte wähle einen anderen.',
+    },
+    callServerError: {
+      en: 'Something went wrong. Please try again later.',
+      de: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
+    },
+    callSuccessMeet: {
+      en: (when) =>
+        `We've emailed you a calendar invitation with the video link. See you on ${when}.`,
+      de: (when) =>
+        `Wir haben dir eine Kalendereinladung mit dem Videolink geschickt. Bis ${when}.`,
+    },
+    callSuccessEmail: {
+      en: (when) => `We've emailed you the details for ${when}. See you then!`,
+      de: (when) => `Wir haben dir die Details für ${when} per E-Mail geschickt. Bis dann!`,
     },
     enquiryPhone: { en: 'phone', de: 'Telefon' },
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },

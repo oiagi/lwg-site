@@ -8,6 +8,47 @@
 <div id="availability-content">
   <div class="empty-state">select a teacher to view their schedule</div>
 </div>
+<div class="call-availability">
+  <h3 class="blocked-dates-title">15-minute call windows</h3>
+  <p class="blocked-dates-note">
+    Recurring weekly windows offered on the website as bookable 15-minute intro calls, in Zürich
+    time. They are sliced into 15-minute slots; blocked dates, busy times in the teacher's Google
+    Calendar and calls already booked are removed automatically.
+  </p>
+  <div id="call-availability-list"><div class="empty-state">select a teacher to edit their call windows</div></div>
+  <div class="blocked-dates-form">
+    <div class="modal-field modal-field--compact">
+      <label for="call-window-weekday">Weekday</label>
+      <select id="call-window-weekday">
+        <option value="1">Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+        <option value="7">Sunday</option>
+      </select>
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="call-window-start">From</label>
+      <input type="time" id="call-window-start" step="900" value="09:00" />
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="call-window-end">To</label>
+      <input type="time" id="call-window-end" step="900" value="12:00" />
+    </div>
+    <button class="action-btn" data-action="addCallWindow">Add</button>
+  </div>
+  <p id="call-availability-error" class="blocked-dates-error is-hidden"></p>
+</div>
+<div class="call-bookings">
+  <h3 class="blocked-dates-title">Booked calls</h3>
+  <p class="blocked-dates-note">
+    Upcoming 15-minute calls booked through the website. To cancel one, delete the event in Google
+    Calendar and reply to the visitor.
+  </p>
+  <div id="call-bookings-list"><div class="loading-state">loading…</div></div>
+</div>
 <div class="blocked-dates">
   <h3 class="blocked-dates-title">Blocked dates</h3>
   <p class="blocked-dates-note">

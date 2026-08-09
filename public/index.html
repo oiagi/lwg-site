@@ -27,6 +27,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shared.css">
   <link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/call-booking.css?v=20260809-call">
   <script src="/device-detect.js"></script>
   <!-- ── Structured data ──────────────────────────────────────────── -->
   <script src="/index-structured-data.js"></script>
@@ -218,7 +219,63 @@
         <div class="closing-actions reveal">
           <a class="btn btn--solid" id="closing-cta-enquiry" href="/enquiry">make an enquiry</a>
           <a class="btn btn--ghost" id="closing-cta-courses" href="/group-courses.html">open group courses</a>
+          <button type="button" class="btn btn--ghost" id="closing-cta-call" aria-expanded="false" aria-controls="call-panel">book a 15min call</button>
         </div>
+
+        <!-- Deliberately not .reveal: the panel starts hidden, and the
+             IntersectionObserver in index.js would leave it at opacity 0. -->
+        <section class="call-panel" id="call-panel" hidden aria-labelledby="call-panel-title">
+          <div class="call-panel__head">
+            <h3 class="call-panel__title" id="call-panel-title" tabindex="-1">Book a free 15-minute call</h3>
+            <button type="button" class="call-panel__close" id="call-cancel">close</button>
+          </div>
+          <p class="call-panel__note" id="call-panel-note">Pick a time that suits you. All times are Zürich time (CET/CEST).</p>
+
+          <div class="call-status" id="call-status" role="status" aria-live="polite">loading available times…</div>
+          <div class="call-days" id="call-days" hidden></div>
+
+          <form class="call-form" id="call-form" novalidate hidden>
+            <p class="call-selected" id="call-selected"></p>
+            <div class="call-row">
+              <div class="call-field">
+                <label for="cb-first-name">first name *</label>
+                <input type="text" id="cb-first-name" autocomplete="given-name" />
+                <div class="error" id="err-cb-first-name">Please enter a first name.</div>
+              </div>
+              <div class="call-field">
+                <label for="cb-last-name">last name *</label>
+                <input type="text" id="cb-last-name" autocomplete="family-name" />
+                <div class="error" id="err-cb-last-name">Please enter a last name.</div>
+              </div>
+            </div>
+            <div class="call-field">
+              <label for="cb-email">email *</label>
+              <input type="email" id="cb-email" autocomplete="email" />
+              <div class="error" id="err-cb-email">Please enter a valid email address.</div>
+            </div>
+            <div class="call-field">
+              <label for="cb-phone">phone</label>
+              <input type="tel" id="cb-phone" autocomplete="tel" />
+            </div>
+            <div class="call-field">
+              <label for="cb-topic">what would you like to talk about?</label>
+              <textarea id="cb-topic" rows="3" maxlength="1000"></textarea>
+            </div>
+            <input class="call-hp" type="text" id="cb-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <label class="call-consent">
+              <input type="checkbox" id="cb-consent" />
+              <span data-agb-consent></span>
+            </label>
+            <div class="error" id="err-cb-consent">Please accept the terms and conditions.</div>
+            <button type="submit" class="btn btn--solid" id="cb-submit">book the call</button>
+            <div class="error" id="err-cb-submit"></div>
+          </form>
+
+          <div class="call-success" id="call-success" hidden>
+            <h4 id="call-success-title">You're booked in!</h4>
+            <p id="call-success-body"></p>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -227,6 +284,7 @@
   <script src="/i18n.js"></script>
   <script src="/nav.js"></script>
   <script src="/index.js"></script>
+  <script type="module" src="/call-booking.js?v=20260809-call"></script>
 
 </body>
 </html>

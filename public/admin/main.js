@@ -95,6 +95,7 @@ import {
   addBlockedDate,
   deleteBlockedDate,
 } from './features/availability.js';
+import { addCallWindow, deleteCallWindow, toggleCallWindow } from './features/call-availability.js';
 import { trapFocus, releaseFocus } from './core/helpers.js';
 import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js';
 import {
@@ -229,6 +230,10 @@ const actions = {
   onTeacherSelect,
   addBlockedDate,
   deleteBlockedDate,
+  // Call availability
+  addCallWindow,
+  deleteCallWindow,
+  toggleCallWindow,
   // Invoice archive
   switchArchiveYear,
   filterInvoices,

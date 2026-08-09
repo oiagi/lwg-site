@@ -2,12 +2,14 @@
 import { apiFetch } from '../core/api.js';
 import { esc } from '../core/helpers.js';
 import { loadTeachers } from './teachers.js';
+import { loadCallAvailability, loadCallBookings } from './call-availability.js';
 
 let availabilityTeachers = null;
 let blockedPeriods = null;
 
 export async function loadAvailability() {
   loadBlockedDates();
+  loadCallBookings();
   const container = document.getElementById('availability-content');
   const sel = document.getElementById('avail-teacher');
 
@@ -26,6 +28,7 @@ export async function loadAvailability() {
   }
 
   // If a teacher is already selected, reload their schedule
+  loadCallAvailability(sel.value);
   if (sel.value) {
     loadTeacherSchedule(sel.value);
   } else {
@@ -35,6 +38,7 @@ export async function loadAvailability() {
 
 export function onTeacherSelect() {
   const teacherId = document.getElementById('avail-teacher').value;
+  loadCallAvailability(teacherId);
   if (teacherId) {
     loadTeacherSchedule(teacherId);
   } else {
