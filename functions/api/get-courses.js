@@ -11,6 +11,7 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+import { groupCourseInvoices } from './_invoices.js';
 
 const DB_SORTS = {
   created_at: {
@@ -86,6 +87,41 @@ function sortEnrichedCourses(courses, sort, dir) {
 
 function enrolmentDisplayName(student) {
   return [student.first_name, student.last_name].filter(Boolean).join(' ') || student.email || '';
+}
+
+// Invoice columns whose migrations are applied by hand and may not exist yet;
+// they are dropped from the select (and the query retried) when PostgREST
+// reports them missing, matching invoice-archive.js.
+const BASE_INVOICE_COLUMNS = [
+  'id',
+  'invoice_number',
+  'total_amount',
+  'currency',
+  'status',
+  'issued_date',
+  'student_id',
+  'course_id',
+];
+const OPTIONAL_INVOICE_COLUMNS = ['sent_at', 'cancels_invoice_id', 'cancelled_at'];
+
+async function fetchCourseInvoices(supabaseUrl, headers, courseIds) {
+  const filter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
+  const url = `${supabaseUrl}/rest/v1/invoices?or=(${filter})`;
+  let columns = [...BASE_INVOICE_COLUMNS, ...OPTIONAL_INVOICE_COLUMNS];
+  for (;;) {
+    const res = await fetch(`${url}&select=${columns.join(',')}`, { headers });
+    if (res.ok) return res.json();
+    const errorText = await res.text();
+    // \b keeps e.g. a missing sent_at from also matching cancelled_at.
+    const missing = OPTIONAL_INVOICE_COLUMNS.filter(
+      (col) => columns.includes(col) && new RegExp(`\\b${col}\\b`).test(errorText)
+    );
+    if (!missing.length) {
+      console.error('get-courses invoice fetch failed:', errorText);
+      return [];
+    }
+    columns = columns.filter((col) => !missing.includes(col));
+  }
 }
 
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
@@ -200,24 +236,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     }
 
     // ── Batch fetch all invoices for these courses ───────────────────
-    // Includes paid invoices so the certificate can show the amount paid.
-    let allInvoices = [];
-    if (courseIds.length) {
-      const invFilter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
-      const invRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,sent_at,student_id,course_id`,
-        { headers: H }
-      );
-      if (!invRes.ok && invRes.status === 400) {
-        const compatInvRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/invoices?or=(${invFilter})&select=id,invoice_number,total_amount,currency,status,issued_date,student_id,course_id`,
-          { headers: H }
-        );
-        allInvoices = compatInvRes.ok ? await compatInvRes.json() : [];
-      } else {
-        allInvoices = invRes.ok ? await invRes.json() : [];
-      }
-    }
+    // Includes paid invoices so the certificate can show the amount paid, and
+    // cancelled/storno rows so the overview can report cancellations.
+    const allInvoices = courseIds.length
+      ? await fetchCourseInvoices(SUPABASE_URL, H, courseIds)
+      : [];
 
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
@@ -260,36 +283,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       studentsById[s.id] = s;
     }
 
-    // openInvoicesByCourseStudent / paidInvoicesByCourseStudent
-    const openInvoicesByCourseStudent = {};
-    const paidInvoicesByCourseStudent = {};
-    const invoiceSentByCourseStudent = {};
-    for (const inv of allInvoices) {
-      if (['sent', 'paid'].includes(inv.status)) {
-        const byStudent = (invoiceSentByCourseStudent[inv.course_id] ||= {});
-        const sentAt = inv.sent_at || inv.issued_date;
-        if (
-          sentAt &&
-          (!byStudent[inv.student_id] || String(sentAt) > String(byStudent[inv.student_id]))
-        ) {
-          byStudent[inv.student_id] = sentAt;
-        }
-      }
-      if (inv.status === 'paid') {
-        const byStudent = (paidInvoicesByCourseStudent[inv.course_id] ||= {});
-        (byStudent[inv.student_id] ||= []).push(inv);
-      } else if (inv.status === 'sent' && !inv.sent_at) {
-        // Pre-archive invoices: sent before the PDF archive existed, so they have
-        // no archived file and no sent_at. Skip them — they only clutter the
-        // overview and link to nothing in the invoice archive. The "invoice sent"
-        // communications summary above still counts them as genuinely sent.
-        continue;
-      } else if (!['cancelled', 'storno'].includes(inv.status)) {
-        // Cancelled originals and storno credit notes are inert — never open.
-        const byStudent = (openInvoicesByCourseStudent[inv.course_id] ||= {});
-        (byStudent[inv.student_id] ||= []).push(inv);
-      }
-    }
+    const {
+      open: openInvoicesByCourseStudent,
+      paid: paidInvoicesByCourseStudent,
+      cancelled: cancelledInvoicesByCourseStudent,
+      sentAt: invoiceSentByCourseStudent,
+      cancelledAt: invoiceCancelledByCourseStudent,
+    } = groupCourseInvoices(allInvoices);
 
     const pendingBookingsByCourse = {};
     for (const booking of pendingBookings) {
@@ -300,6 +300,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const enriched = courses.map((course) => {
       const invByStudent = openInvoicesByCourseStudent[course.id] || {};
       const paidInvByStudent = paidInvoicesByCourseStudent[course.id] || {};
+      const cancelledInvByStudent = cancelledInvoicesByCourseStudent[course.id] || {};
+      const invoiceCancelledByStudent = invoiceCancelledByCourseStudent[course.id] || {};
       const confSentByStudent = confirmationSentByCourseStudent[course.id] || {};
       const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
@@ -316,6 +318,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             joined_at: enrolmentByStudent[id]?.joined_at ?? null,
             open_invoices: invByStudent[id] || [],
             paid_invoices: paidInvByStudent[id] || [],
+            cancelled_invoices: cancelledInvByStudent[id] || [],
+            invoice_cancelled_at: invoiceCancelledByStudent[id] || null,
             confirmation_sent_at: confSentByStudent[id] || null,
             schedule_sent_at: schedSentByStudent[id] || null,
             certificate_sent_at: certSentByStudent[id] || null,

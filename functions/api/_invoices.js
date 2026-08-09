@@ -109,6 +109,86 @@ export async function archiveInvoicePdf(env, invoiceNumber, pdfBase64) {
   return true;
 }
 
+// Buckets a flat list of invoice rows (already scoped to a set of courses) into
+// the per-course/per-student shapes the course overview renders:
+//   open        — still actionable: not paid, not cancelled, not a storno
+//   paid        — settled and not later cancelled
+//   cancelled   — cancelled originals, each carrying the storno that voided it
+//   sentAt      — latest send timestamp per student (communications summary)
+//   cancelledAt — latest cancellation timestamp per student
+//
+// A storno row is never listed on its own — it is folded into the original it
+// cancels as storno_invoice_number / storno_total_amount / storno_issued_date,
+// so the overview shows one "cancelled" line per invoice rather than a pair.
+// An original with a storno pointing at it counts as cancelled even when its
+// own status update failed: cancel-invoice.js reports that partial failure, but
+// the overview must not keep offering a voided invoice as open.
+//
+// Cancelled invoices are deliberately kept out of sentAt: a voided invoice no
+// longer counts towards "invoice sent to N of M", it is reported as cancelled.
+export function groupCourseInvoices(invoices) {
+  const open = {};
+  const paid = {};
+  const cancelled = {};
+  const sentAt = {};
+  const cancelledAt = {};
+
+  // Requires cancels_invoice_id. On databases without that column yet, stornos
+  // simply stay unlinked and their original shows as cancelled on its own.
+  const stornoByOriginalId = {};
+  for (const inv of invoices) {
+    if (inv.status === 'storno' && inv.cancels_invoice_id) {
+      stornoByOriginalId[inv.cancels_invoice_id] = inv;
+    }
+  }
+
+  const push = (map, inv, value) => {
+    const byStudent = (map[inv.course_id] ||= {});
+    (byStudent[inv.student_id] ||= []).push(value);
+  };
+  const stampLatest = (map, inv, value) => {
+    if (!value) return;
+    const byStudent = (map[inv.course_id] ||= {});
+    const current = byStudent[inv.student_id];
+    if (!current || String(value) > String(current)) byStudent[inv.student_id] = value;
+  };
+
+  for (const inv of invoices) {
+    if (inv.status === 'storno') continue;
+
+    const storno = stornoByOriginalId[inv.id] || null;
+    if (inv.status === 'cancelled' || storno) {
+      push(cancelled, inv, {
+        ...inv,
+        status: 'cancelled',
+        storno_invoice_number: storno?.invoice_number ?? null,
+        storno_total_amount: storno?.total_amount ?? null,
+        storno_issued_date: storno?.issued_date ?? null,
+      });
+      stampLatest(cancelledAt, inv, inv.cancelled_at || storno?.issued_date || null);
+      continue;
+    }
+
+    if (inv.status === 'sent' || inv.status === 'paid') {
+      stampLatest(sentAt, inv, inv.sent_at || inv.issued_date);
+    }
+
+    if (inv.status === 'paid') {
+      push(paid, inv, inv);
+    } else if (inv.status === 'sent' && !inv.sent_at) {
+      // Pre-archive invoices: sent before the PDF archive existed, so they have
+      // no archived file and no sent_at. Skip them — they only clutter the
+      // overview and link to nothing in the invoice archive. The "invoice sent"
+      // communications summary still counts them as genuinely sent.
+      continue;
+    } else {
+      push(open, inv, inv);
+    }
+  }
+
+  return { open, paid, cancelled, sentAt, cancelledAt };
+}
+
 // Inserts an invoice row, trying each status candidate until the database's
 // status check constraint accepts one. Optional columns the database does not
 // have yet are stripped and the insert retried, so the code keeps working

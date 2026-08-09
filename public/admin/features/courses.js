@@ -252,6 +252,9 @@ function sentCommunicationsBlock(course) {
   const contractSent = students.filter((s) => s.contract_sent_at);
   const contractSigned = students.filter((s) => s.contract_signed_at);
   const invoiceSent = students.filter((s) => s.invoice_sent_at);
+  // Keyed off the list, not invoice_cancelled_at: a database without the
+  // cancelled_at column still reports the cancellation, just without a date.
+  const invoiceCancelled = students.filter((s) => s.cancelled_invoices?.length);
 
   if (
     !confirmedAt &&
@@ -259,7 +262,8 @@ function sentCommunicationsBlock(course) {
     !scheduleSent.length &&
     !certSent.length &&
     !contractSent.length &&
-    !invoiceSent.length
+    !invoiceSent.length &&
+    !invoiceCancelled.length
   ) {
     return '';
   }
@@ -315,6 +319,14 @@ function sentCommunicationsBlock(course) {
       `<li>invoice sent to ${invoiceSent.length} of ${total} · <span class="detail-muted">last ${esc(
         fmtDate(last)
       )}</span></li>`
+    );
+  }
+  if (invoiceCancelled.length) {
+    const count = invoiceCancelled.reduce((sum, s) => sum + s.cancelled_invoices.length, 0);
+    const last = latest(invoiceCancelled, 'invoice_cancelled_at');
+    const when = last ? ` · <span class="detail-muted">last ${esc(fmtDate(last))}</span>` : '';
+    items.push(
+      `<li class="sent-status-cancelled">${count} invoice${count === 1 ? '' : 's'} cancelled (storno)${when}</li>`
     );
   }
 
@@ -545,9 +557,32 @@ function renderCourses(courses) {
                 return `<li class="course-invoice-row"><span><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · ${status}</span></span></li>`;
               })
               .join('');
-            const invoiceBlock = openInvoices
-              ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
-              : '';
+            // Cancelled originals carry the storno that voided them, so the pair
+            // reads as one line instead of two rows with opposite amounts.
+            const cancelledInvoices = (s.cancelled_invoices || [])
+              .slice()
+              .sort((a, b) =>
+                String(b.issued_date || '').localeCompare(String(a.issued_date || ''))
+              )
+              .map((inv) => {
+                const amount =
+                  inv.total_amount !== null && inv.total_amount !== undefined
+                    ? `${Number(inv.total_amount).toFixed(2)} ${esc(inv.currency || 'CHF')}`
+                    : '—';
+                const num = esc(inv.invoice_number || '—');
+                const storno = inv.storno_invoice_number
+                  ? `<span class="course-invoice-storno">storno ${esc(inv.storno_invoice_number)}</span>`
+                  : '';
+                return `<li class="course-invoice-row course-invoice-row--cancelled"><span><span class="course-invoice-number">${num}</span> <span class="detail-muted">${amount} · cancelled</span> ${storno}</span></li>`;
+              })
+              .join('');
+            const invoiceBlock =
+              (openInvoices
+                ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">open invoices</p><ul>${openInvoices}</ul></div>`
+                : '') +
+              (cancelledInvoices
+                ? `<div class="course-invoice-list"><p class="detail-muted course-invoice-list-label">cancelled invoices</p><ul>${cancelledInvoices}</ul></div>`
+                : '');
             const paidInvoiceTags = (s.paid_invoices || [])
               .slice()
               .sort((a, b) =>
