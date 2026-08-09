@@ -1941,6 +1941,21 @@ html[data-device='mobile'] .student-detail-pane {
   color: #fff;
 }
 
+/* ── Invoice status filters ────────────────────────────────────── */
+.invoice-status-filters {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+/* The year row above uses the same buttons — this label says which is which. */
+.invoice-filter-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #777;
+}
+
 /* ── Invoice rows ──────────────────────────────────────────────── */
 .invoice-row {
   border-top: 1px solid #ccc;
@@ -2716,6 +2731,21 @@ html[data-device='mobile'] .blocked-dates-range {
 .course-invoice-number {
   font-weight: 500;
   letter-spacing: 0.04em;
+}
+/* Cancelled original + the storno that voided it, mirroring the archive rows. */
+.course-invoice-row--cancelled .course-invoice-number {
+  color: #888;
+  text-decoration: line-through;
+}
+.course-invoice-storno {
+  color: #8e44ad;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sent-status-cancelled {
+  color: #c0392b;
 }
 .inline-link-btn {
   background: transparent;

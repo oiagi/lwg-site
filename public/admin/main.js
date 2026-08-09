@@ -99,6 +99,7 @@ import { closeConfirmSend, submitConfirmSend } from './features/confirm-send.js'
 import {
   loadInvoiceArchive,
   switchArchiveYear,
+  filterInvoices,
   toggleInvoiceActions,
   sendInvoiceReminder,
   markArchivedInvoicePaid,
@@ -226,6 +227,7 @@ const actions = {
   deleteBlockedDate,
   // Invoice archive
   switchArchiveYear,
+  filterInvoices,
   toggleInvoiceActions,
   sendInvoiceReminder,
   markArchivedInvoicePaid,

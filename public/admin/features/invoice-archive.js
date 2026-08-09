@@ -6,7 +6,27 @@ import { openStornoModal } from './invoices.js';
 const ARCHIVE_START_YEAR = 2024;
 // Inert end states: no remind / mark-paid / delete / cancel on these rows.
 const INERT_STATUSES = ['cancelled', 'storno'];
+const REMINDABLE_STATUSES = ['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded'];
+
+// Status filters, in display order. `active` is the default: a cancellation
+// produces two rows (the cancelled original and its storno credit note), which
+// would otherwise dominate the list, so both are hidden until asked for.
+const INVOICE_FILTERS = [
+  { key: 'active', label: 'active', match: (f) => !isInert(f) },
+  { key: 'open', label: 'awaiting payment', match: (f) => !isInert(f) && f.status !== 'paid' },
+  { key: 'overdue', label: 'overdue', match: isOverdue },
+  { key: 'paid', label: 'paid', match: (f) => f.status === 'paid' },
+  { key: 'cancelled', label: 'cancelled', match: isInert },
+  { key: 'all', label: 'all', match: () => true },
+];
+const DEFAULT_FILTER = 'active';
+
 let activeYear = new Date().getFullYear();
+let activeFilter = DEFAULT_FILTER;
+let searchTerm = '';
+let searchAttached = false;
+// Every row of the currently loaded year, before filtering.
+let currentFiles = [];
 // Rows of the currently displayed year, keyed by invoice number (filename
 // minus .pdf) — the cancel action needs the full row to prefill the modal.
 let currentFilesByNumber = new Map();
@@ -18,6 +38,85 @@ function formatDate(iso) {
     month: 'short',
     year: 'numeric',
   });
+}
+
+function isInert(file) {
+  return INERT_STATUSES.includes(file.status);
+}
+
+// Past its due date and still owed. Cancelled/storno rows are never overdue,
+// and 'overdue' rows already carry the status so they are not double-flagged.
+function isOverdue(file) {
+  return Boolean(
+    !isInert(file) &&
+    file.status !== 'paid' &&
+    file.status !== 'overdue' &&
+    file.due_date &&
+    new Date(file.due_date) < new Date()
+  );
+}
+
+function matchesSearch(file, term) {
+  if (!term) return true;
+  const haystack = [
+    file.name?.replace(/\.pdf$/i, ''),
+    file.student_name,
+    file.course_code,
+    file.course_subject,
+    file.course_level,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(term);
+}
+
+// The whole visibility rule for one row: status filter AND search. Used both
+// for the list itself and for the counts on the filter buttons, so a button
+// can never promise a different number of rows than it shows.
+export function matchesInvoiceFilter(file, filterKey, term = '') {
+  const filter = INVOICE_FILTERS.find((f) => f.key === filterKey) || INVOICE_FILTERS[0];
+  return filter.match(file) && matchesSearch(file, term.trim().toLowerCase());
+}
+
+function visibleFiles() {
+  return currentFiles.filter((f) => matchesInvoiceFilter(f, activeFilter, searchTerm));
+}
+
+function renderStatusFilters() {
+  const container = document.getElementById('archive-status-filters');
+  if (!container) return;
+  container.innerHTML = INVOICE_FILTERS.map((f) => {
+    const count = currentFiles.filter((file) =>
+      matchesInvoiceFilter(file, f.key, searchTerm)
+    ).length;
+    return `<button class="filter-btn${f.key === activeFilter ? ' active' : ''}" data-action="filterInvoices" data-args="${f.key}">${f.label} (${count})</button>`;
+  }).join('');
+}
+
+function attachSearch() {
+  if (searchAttached) return;
+  const input = document.getElementById('invoice-search');
+  if (!input) return;
+  searchAttached = true;
+  input.value = searchTerm;
+  let timer = null;
+  input.addEventListener('input', () => {
+    searchTerm = input.value;
+    clearTimeout(timer);
+    timer = setTimeout(renderArchive, 200);
+  });
+}
+
+// Re-renders from the already-loaded year — filtering never refetches.
+function renderArchive() {
+  renderStatusFilters();
+  renderFiles(visibleFiles());
+}
+
+export function filterInvoices(status) {
+  activeFilter = INVOICE_FILTERS.some((f) => f.key === status) ? status : DEFAULT_FILTER;
+  renderArchive();
 }
 
 function renderYearFilters(year) {
@@ -32,11 +131,18 @@ function renderYearFilters(year) {
 }
 
 function renderFiles(files) {
-  currentFilesByNumber = new Map(files.map((f) => [f.name.replace(/\.pdf$/i, ''), f]));
+  const countEl = document.getElementById('archive-count');
+  if (countEl) {
+    countEl.textContent = currentFiles.length
+      ? `${files.length} of ${currentFiles.length} invoice${currentFiles.length === 1 ? '' : 's'}`
+      : '';
+  }
   const container = document.getElementById('archive-list');
   if (!container) return;
   if (!files.length) {
-    container.innerHTML = '<div class="loading-state">No archived invoices for this year.</div>';
+    container.innerHTML = currentFiles.length
+      ? '<div class="loading-state">No invoices match this filter.</div>'
+      : '<div class="loading-state">No archived invoices for this year.</div>';
     return;
   }
   container.innerHTML = files
@@ -51,17 +157,11 @@ function renderFiles(files) {
         f.total_amount !== null && f.total_amount !== undefined
           ? esc(`${Number(f.total_amount).toFixed(2)} ${f.currency || 'CHF'}`)
           : '';
-      const isInert = INERT_STATUSES.includes(f.status);
+      const inert = isInert(f);
       const knownStatusClasses = ['draft', 'sent', 'paid', 'cancelled', 'storno', 'overdue'];
       const statusClass = knownStatusClasses.includes(f.status) ? f.status : 'draft';
       const statusLabel = esc(f.status || '—');
-      const isOverdue =
-        !isInert &&
-        f.status !== 'paid' &&
-        f.status !== 'overdue' &&
-        f.due_date &&
-        new Date(f.due_date) < new Date();
-      const overdueFlag = isOverdue ? `<span class="inv-status overdue">overdue</span>` : '';
+      const overdueFlag = isOverdue(f) ? `<span class="inv-status overdue">overdue</span>` : '';
       const reminderFlag = f.reminder_sent_at
         ? `<span class="inv-status reminder">reminded</span>`
         : '';
@@ -69,12 +169,10 @@ function renderFiles(files) {
         f.status === 'storno' && f.sent_at
           ? `<span class="inv-status reminder">notified ${esc(formatDate(f.sent_at))}</span>`
           : '';
-      const canRemind = ['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded'].includes(
-        f.status
-      );
-      const canMarkPaid = f.invoice_id && f.status !== 'paid' && !isInert;
-      const canCancel = f.invoice_id && !isInert;
-      const canDelete = !isInert;
+      const canRemind = REMINDABLE_STATUSES.includes(f.status);
+      const canMarkPaid = f.invoice_id && f.status !== 'paid' && !inert;
+      const canCancel = f.invoice_id && !inert;
+      const canDelete = !inert;
       const view = f.signed_url
         ? `<li><a class="status-opt-btn status-opt-btn--view" href="${esc(f.signed_url)}" target="_blank" rel="noopener noreferrer">view</a></li>`
         : `<li><span class="status-opt-btn status-opt-btn--disabled">unavailable</span></li>`;
@@ -129,15 +227,22 @@ export async function loadInvoiceArchive(year) {
   year = year ? Number(year) : activeYear;
   activeYear = year;
   renderYearFilters(year);
+  attachSearch();
   const container = document.getElementById('archive-list');
   if (container) container.innerHTML = '<div class="loading-state">loading…</div>';
   try {
     const res = await apiFetch(`/api/invoice-archive?year=${year}`);
     if (!res.ok) throw new Error(await res.text());
     const { files } = await res.json();
-    renderFiles(files);
+    currentFiles = files;
+    // Keyed over every row, not just the visible ones, so the cancel action
+    // still finds its row when the filter changes underneath it.
+    currentFilesByNumber = new Map(files.map((f) => [f.name.replace(/\.pdf$/i, ''), f]));
+    renderArchive();
   } catch (err) {
     console.error('Invoice archive load error:', err);
+    currentFiles = [];
+    currentFilesByNumber = new Map();
     if (container) container.innerHTML = '<div class="loading-state">Failed to load archive.</div>';
   }
 }
