@@ -7,6 +7,9 @@ import {
   exdateLine,
   planWeeklySchedule,
   extendSeries,
+  excludedSlotKeys,
+  isSlotExcluded,
+  slotKey,
 } from './_blocked-dates.js';
 
 /**
@@ -276,41 +279,59 @@ export async function createCallCalendarEvent({
   return { eventId: data.id, meetLink, htmlLink: data.htmlLink || null };
 }
 
+// How far back fetchCourseEvents looks. Events older than this are not
+// reported, so callers must treat the window as "what Google was asked
+// about" rather than "everything that exists" — see the `since` field of
+// the return value.
+const EVENT_WINDOW_DAYS = 90;
+
 /**
  * Fetch expanded single events from Google Calendar matching a course code.
  *
- * Starts from 90 days ago so we don't blow past the 250-event cap with
+ * Starts from 90 days ago so we don't blow past the per-page cap with
  * legacy sessions, and matches the course code as a prefix followed by a
  * non-alphanumeric boundary — otherwise "12345" would false-positive on a
  * summary starting with "123456".
+ *
+ * Follows nextPageToken to the end: a truncated list looks exactly like a
+ * set of deleted events to a caller that reconciles by absence, and silently
+ * dropping the tail of a long course is worse than one extra request.
  *
  * @param {object} opts
  * @param {string} opts.accessToken
  * @param {string} opts.calendarId
  * @param {string} opts.courseCode
- * @returns {Promise<{active: object[], cancelled: object[]}>}
+ * @returns {Promise<{active: object[], cancelled: object[], since: string}>}
+ *   `since` is the ISO lower bound of the window that was searched; nothing
+ *   before it was considered, so its absence proves nothing.
  */
 export async function fetchCourseEvents({ accessToken, calendarId, courseCode }) {
-  const timeMin = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  const timeMin = new Date(Date.now() - EVENT_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
-      `q=${encodeURIComponent(courseCode)}` +
-      `&singleEvents=true&orderBy=startTime&maxResults=250` +
-      `&timeMin=${encodeURIComponent(timeMin)}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
+  const items = [];
+  let pageToken = null;
+  do {
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
+        `q=${encodeURIComponent(courseCode)}` +
+        `&singleEvents=true&orderBy=startTime&maxResults=250` +
+        `&timeMin=${encodeURIComponent(timeMin)}` +
+        (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''),
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error('Calendar fetch error:', err);
-    const error = new Error(`Calendar API error (${res.status}): ${err.slice(0, 200)}`);
-    error.statusCode = res.status >= 500 ? 502 : res.status;
-    throw error;
-  }
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Calendar fetch error:', err);
+      const error = new Error(`Calendar API error (${res.status}): ${err.slice(0, 200)}`);
+      error.statusCode = res.status >= 500 ? 502 : res.status;
+      throw error;
+    }
 
-  const data = await res.json();
-  const items = data.items || [];
+    const data = await res.json();
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken || null;
+  } while (pageToken);
 
   const matches = (e) => {
     const s = e.summary || '';
@@ -322,6 +343,7 @@ export async function fetchCourseEvents({ accessToken, calendarId, courseCode })
   return {
     active: items.filter((e) => matches(e) && e.status !== 'cancelled'),
     cancelled: items.filter((e) => matches(e) && e.status === 'cancelled'),
+    since: timeMin,
   };
 }
 
@@ -337,15 +359,62 @@ export async function fetchCourseEvents({ accessToken, calendarId, courseCode })
  * left alone — only instances of the recurring series are touched, and
  * only strictly-future ones.
  *
+ * This runs on every sync, so it has to be idempotent, and two things that
+ * look harmless individually are what stopped it from being:
+ *
+ *  1. It re-excluded slots the recurrence already excluded. Extending COUNT
+ *     for an exclusion that was already paid for appends one extra
+ *     occurrence, and since the trigger does not go away the next sync does
+ *     it again — the series grew by a session per sync, which is why the
+ *     tail of a blocked course showed duplicates.
+ *  2. It excluded instances the teacher had moved by hand. Those are
+ *     overrides keyed by their *original* slot, so the exclusion names a
+ *     date that is not the blocked one; Google's handling of an EXDATE that
+ *     collides with an override is not specified, and both outcomes are
+ *     wrong here — either a deliberate reschedule silently disappears, or it
+ *     survives and feeds loop (1) forever.
+ *
+ * So: only genuinely new exclusions count, and manually moved instances are
+ * reported rather than rewritten. Google's own guidance for dropping a
+ * single occurrence is to cancel the instance resource, not to edit the
+ * parent's EXDATE, which is the right shape for a future change here.
+ *
+ * Telling the two apart is the subtle part — see isMovedInstance below.
+ *
  * @param {object} opts
  * @param {string} opts.accessToken
  * @param {string} opts.calendarId
  * @param {string} opts.masterEventId — courses.calendar_event_id
  * @param {object[]} opts.activeEvents — expanded instances from fetchCourseEvents
  * @param {object[]} opts.blockedPeriods
- * @returns {Promise<{recurrenceRule: string, excludedCount: number}|null>}
- *   null when nothing needed patching.
+ * @returns {Promise<{patched: boolean, recurrenceRule: string|null,
+ *   excludedCount: number, movedOntoBlockedDates: string[]}>}
+ *   `patched` says whether the master event was rewritten; the caller should
+ *   only re-read the series and persist recurrenceRule when it is true.
+ *   `movedOntoBlockedDates` lists the dates of hand-moved instances now
+ *   sitting on a blocked date, for the admin to resolve.
  */
+/**
+ * Whether an expanded instance sits somewhere other than the slot its
+ * recurrence generated — i.e. a teacher dragged it.
+ *
+ * `originalStartTime` is *not* the marker: Google sets it on every instance
+ * of a recurring event, moved or not, so its mere presence classifies the
+ * whole series as hand-moved. That is what silently switched blocked-date
+ * enforcement off — nothing was ever a candidate for exclusion, and every
+ * blocked occurrence was reported to the admin as an untouchable manual
+ * reschedule instead.
+ *
+ * The times are compared as instants, since Google is free to report the
+ * same moment as a UTC 'Z' stamp in one field and a Zurich offset in the
+ * other.
+ */
+function isMovedInstance(ev) {
+  const original = ev.originalStartTime?.dateTime;
+  if (!original) return false;
+  return new Date(original).getTime() !== new Date(ev.start.dateTime).getTime();
+}
+
 export async function applyBlockedDatesToSeries({
   accessToken,
   calendarId,
@@ -353,21 +422,30 @@ export async function applyBlockedDatesToSeries({
   activeEvents,
   blockedPeriods,
 }) {
-  if (!blockedPeriods.length) return null;
+  const unchanged = (movedOntoBlockedDates = []) => ({
+    patched: false,
+    recurrenceRule: null,
+    excludedCount: 0,
+    movedOntoBlockedDates,
+  });
+
+  if (!blockedPeriods.length) return unchanged();
   const today = zurichParts(new Date()).date;
 
-  // Future instances of this series sitting on blocked dates. EXDATE must
-  // reference the original series slot, so use originalStartTime for
-  // instances a teacher has manually moved (their moved date is what
-  // decides whether they are blocked).
-  const newExclusions = [];
+  // Strictly-future instances of this series sitting on a blocked date.
+  const candidates = [];
+  const movedOntoBlockedDates = [];
   for (const ev of activeEvents) {
     if (ev.recurringEventId !== masterEventId || !ev.start?.dateTime) continue;
     const actualDate = zurichParts(ev.start.dateTime).date;
     if (actualDate <= today || !isDateBlocked(actualDate, blockedPeriods)) continue;
-    newExclusions.push(zurichParts(ev.originalStartTime?.dateTime || ev.start.dateTime));
+    if (isMovedInstance(ev)) {
+      movedOntoBlockedDates.push(actualDate);
+      continue;
+    }
+    candidates.push(zurichParts(ev.start.dateTime));
   }
-  if (!newExclusions.length) return null;
+  if (!candidates.length) return unchanged(movedOntoBlockedDates);
 
   // Load the master event for the authoritative recurrence array.
   const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(masterEventId)}`;
@@ -380,7 +458,28 @@ export async function applyBlockedDatesToSeries({
   const master = await masterRes.json();
   const recurrence = master.recurrence || [];
   const rruleIndex = recurrence.findIndex((line) => line.startsWith('RRULE:'));
-  if (rruleIndex === -1) return null;
+  if (rruleIndex === -1) return unchanged(movedOntoBlockedDates);
+
+  // Drop anything the recurrence already excludes, and anything listed twice
+  // in this batch, so COUNT is only ever extended for occurrences that are
+  // actually being given up now.
+  const alreadyExcluded = excludedSlotKeys(recurrence);
+  const seen = new Set();
+  const newExclusions = candidates.filter((slot) => {
+    if (isSlotExcluded(slot, alreadyExcluded) || seen.has(slotKey(slot))) return false;
+    seen.add(slotKey(slot));
+    return true;
+  });
+  if (!newExclusions.length) {
+    // An instance is on a blocked date yet its slot is already excluded:
+    // Google is still serving an occurrence the recurrence says is gone.
+    // Leave it be — re-excluding is what used to inflate the series.
+    console.warn(
+      'Blocked dates: already-excluded occurrences still present on',
+      candidates.map((s) => s.date).join(', ')
+    );
+    return unchanged(movedOntoBlockedDates);
+  }
 
   let rrule = recurrence[rruleIndex];
   const countMatch = rrule.match(/COUNT=(\d+)/);
@@ -413,5 +512,10 @@ export async function applyBlockedDatesToSeries({
     throw new Error(`Could not update recurring event (${patchRes.status})`);
   }
 
-  return { recurrenceRule: rrule.replace('RRULE:', ''), excludedCount: newExclusions.length };
+  return {
+    patched: true,
+    recurrenceRule: rrule.replace('RRULE:', ''),
+    excludedCount: newExclusions.length,
+    movedOntoBlockedDates,
+  };
 }

@@ -65,6 +65,53 @@ export function exdateLine(slots) {
   return `EXDATE;TZID=${TIME_ZONE}:${values.join(',')}`;
 }
 
+/** Comparable key for a slot, matching what excludedSlotKeys() returns. */
+export function slotKey(slot) {
+  return `${slot.date}T${slot.time}`;
+}
+
+const EXDATE_VALUE = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z?))?$/;
+
+/**
+ * The slots a recurrence array already excludes, as a Set of keys comparable
+ * with slotKey() — plus bare 'YYYY-MM-DD' keys for date-only EXDATEs, which
+ * exclude every time on that day.
+ *
+ * Google rewrites EXDATE on save, so what comes back is not necessarily the
+ * `TZID=Europe/Zurich` wall-clock form exdateLine() sent: it can be a UTC
+ * instant or a bare date. All three have to collapse onto the same key,
+ * otherwise a caller cannot tell an exclusion it already made from a new one
+ * and will keep re-excluding the same slot.
+ */
+export function excludedSlotKeys(recurrence = []) {
+  const keys = new Set();
+  for (const line of recurrence) {
+    if (!line.startsWith('EXDATE')) continue;
+    // Split on the first ':' — the parameters (TZID=Europe/Zurich) contain
+    // '/' and '=' but never ':'.
+    const colon = line.indexOf(':');
+    if (colon === -1) continue;
+    for (const raw of line.slice(colon + 1).split(',')) {
+      const m = raw.trim().match(EXDATE_VALUE);
+      if (!m) continue;
+      const [, year, month, day, hour, minute, second, utc] = m;
+      if (!hour) {
+        keys.add(`${year}-${month}-${day}`);
+      } else if (utc) {
+        keys.add(slotKey(zurichParts(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`)));
+      } else {
+        keys.add(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+      }
+    }
+  }
+  return keys;
+}
+
+/** Whether `slot` is already covered by keys from excludedSlotKeys(). */
+export function isSlotExcluded(slot, excludedKeys) {
+  return excludedKeys.has(slotKey(slot)) || excludedKeys.has(slot.date);
+}
+
 /**
  * Plan a weekly series starting at firstSessionAt that yields sessionsTotal
  * actual sessions while skipping blocked dates. Skipped occurrences remain

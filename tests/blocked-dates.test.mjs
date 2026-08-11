@@ -8,6 +8,9 @@ import {
   exdateLine,
   planWeeklySchedule,
   extendSeries,
+  excludedSlotKeys,
+  isSlotExcluded,
+  slotKey,
 } from '../functions/api/_blocked-dates.js';
 
 const periods = [
@@ -55,6 +58,48 @@ test('exdateLine formats TZID wall-clock exclusions', () => {
     { date: '2026-04-13', time: '18:30:00' },
   ]);
   assert.equal(line, 'EXDATE;TZID=Europe/Zurich:20260406T183000,20260413T183000');
+});
+
+test('excludedSlotKeys round-trips what exdateLine produces', () => {
+  const slots = [
+    { date: '2026-04-06', time: '18:30:00' },
+    { date: '2026-04-13', time: '18:30:00' },
+  ];
+  const keys = excludedSlotKeys([exdateLine(slots)]);
+  for (const slot of slots) assert.equal(isSlotExcluded(slot, keys), true);
+  assert.equal(isSlotExcluded({ date: '2026-04-20', time: '18:30:00' }, keys), false);
+  // Same day, different lesson time — a distinct occurrence.
+  assert.equal(isSlotExcluded({ date: '2026-04-06', time: '10:00:00' }, keys), false);
+});
+
+test('excludedSlotKeys reads the forms Google rewrites EXDATE into', () => {
+  // A UTC instant: 16:30Z in April is 18:30 Zurich (CEST).
+  const utc = excludedSlotKeys(['EXDATE;VALUE=DATE-TIME:20260406T163000Z']);
+  assert.equal(isSlotExcluded({ date: '2026-04-06', time: '18:30:00' }, utc), true);
+
+  // A bare date excludes every time that day.
+  const dateOnly = excludedSlotKeys(['EXDATE;VALUE=DATE:20260406']);
+  assert.equal(isSlotExcluded({ date: '2026-04-06', time: '18:30:00' }, dateOnly), true);
+  assert.equal(isSlotExcluded({ date: '2026-04-06', time: '07:15:00' }, dateOnly), true);
+  assert.equal(isSlotExcluded({ date: '2026-04-07', time: '18:30:00' }, dateOnly), false);
+});
+
+test('excludedSlotKeys collects every EXDATE line and ignores the rest', () => {
+  const keys = excludedSlotKeys([
+    'RRULE:FREQ=WEEKLY;BYDAY=MO;COUNT=12',
+    'EXDATE;TZID=Europe/Zurich:20260406T183000',
+    'EXDATE;TZID=Europe/Zurich:20260413T183000,20260420T183000',
+    'RDATE;TZID=Europe/Zurich:20260501T183000',
+  ]);
+  assert.deepEqual([...keys].sort(), [
+    '2026-04-06T18:30:00',
+    '2026-04-13T18:30:00',
+    '2026-04-20T18:30:00',
+  ]);
+});
+
+test('slotKey matches the keys excludedSlotKeys emits', () => {
+  assert.equal(slotKey({ date: '2026-04-06', time: '18:30:00' }), '2026-04-06T18:30:00');
 });
 
 test('planWeeklySchedule extends COUNT to cover blocked occurrences', () => {

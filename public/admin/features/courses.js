@@ -570,7 +570,7 @@ function renderCourses(courses) {
         ${
           s.status === 'scheduled'
             ? `
-          <button class="cancel-btn" data-action="cancelSession" data-args="${s.id},${c.id}">cancel</button>
+          <button class="cancel-btn" data-action="cancelSession" data-args="${s.id}">cancel</button>
         `
             : ''
         }
@@ -842,7 +842,20 @@ export async function syncCalendar(courseId) {
       if (typeof body.completed === 'number') parts.push(`${body.completed} completed`);
       if (body.blocked_sessions_moved)
         parts.push(`${body.blocked_sessions_moved} moved off blocked dates`);
+      if (body.deduplicated) parts.push(`${body.deduplicated} duplicates removed`);
       showMessage(msg, parts.length ? 'synced · ' + parts.join(', ') : 'synced');
+    }
+    // Sessions the teacher moved by hand onto a blocked date are left exactly
+    // where they were put — rewriting them would throw away a deliberate
+    // reschedule — so they need deciding on rather than reporting silently.
+    const conflicts = body.moved_onto_blocked_dates || [];
+    if (conflicts.length) {
+      alert(
+        'These sessions were moved by hand onto blocked dates and were left ' +
+          'untouched:\n\n' +
+          conflicts.join('\n') +
+          '\n\nMove them in Google Calendar, or remove the blocked period.'
+      );
     }
     loadCourses(currentCourseFilter);
   } catch (err) {
@@ -851,7 +864,7 @@ export async function syncCalendar(courseId) {
   }
 }
 
-export async function cancelSession(sessionId, courseId) {
+export async function cancelSession(sessionId) {
   if (!confirm('Cancel this session? The Google Calendar event and invite will be removed.'))
     return;
   try {
@@ -860,24 +873,11 @@ export async function cancelSession(sessionId, courseId) {
       body: { session_id: sessionId },
     });
     if (!res.ok) throw new Error();
-    const row = document.getElementById('sess-' + sessionId);
-    if (row) row.remove();
-    const courseRow = document.getElementById('course-' + courseId);
-    if (courseRow) {
-      const countEl = courseRow.querySelector('.course-sessions');
-      if (countEl) {
-        const text = countEl.firstChild.textContent;
-        const match = text.match(/(\d+) \/ (\d+) sessions/);
-        if (match) {
-          const total = parseInt(match[2]);
-          const newDone = parseInt(match[1]);
-          // The nominal minutes total is unaffected by cancelling a session
-          const minPart = text.match(/ · \d+(?: \/ \d+)? min/);
-          countEl.firstChild.textContent =
-            newDone + ' / ' + (total - 1) + ' sessions' + (minPart ? minPart[0] : '');
-        }
-      }
-    }
+    // Re-read from the server rather than patching the counter by hand. The
+    // old shortcut decremented the booked total, which cancel-session never
+    // changes, so the row claimed a lesson had been deducted until the next
+    // reload put it back.
+    loadCourses(currentCourseFilter);
   } catch {
     alert('Could not cancel session. Please try again.');
   }
