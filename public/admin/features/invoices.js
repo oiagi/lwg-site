@@ -742,6 +742,7 @@ function invoiceStrings(lang, isGroup = false) {
     invoiceNoLabel: isEN ? 'Invoice no.:' : 'Rechnungsnummer:',
     customerNoLabel: isEN ? 'Customer no.:' : 'Kundennummer:',
     vatLabel: isEN ? 'VAT no.:' : 'MWST-Nummer:',
+    amountLabel: isEN ? 'Amount:' : 'Betrag:',
     titleFallback: isEN ? 'Invoice' : 'Rechnung',
     classType: isGroup
       ? isEN
@@ -828,7 +829,7 @@ function buildPreviewHtml(data) {
           <p>${esc(s.invoiceNoLabel)} ${esc(data.invoiceNumber)}</p>
           <p>${esc(s.customerNoLabel)} ${esc(data.customerReference || '—')}</p>
           <p>${esc(s.vatLabel)} ${esc(SENDER.vat)}</p>
-          <p>Amount: CHF ${esc(money(data.totalAmount))}</p>
+          <p>${esc(s.amountLabel)} CHF ${esc(money(data.totalAmount))}</p>
         </div>
         <div class="inv-prev-address">
           <p class="inv-prev-address-sender">${esc(SENDER.name)} ${esc(SENDER.street)} ${esc(SENDER.city)}</p>
@@ -967,11 +968,14 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     doc.setFontSize(size);
   };
   const textRight = (text, x, y) => doc.text(String(text || ''), x, y, { align: 'right' });
-  const drawLabelValue = (label, value, x, y, valueX) => {
+  // Value follows the bold label after a single space, so the gap stays even
+  // whatever the label width is in the invoice language.
+  const drawLabelValue = (label, value, x, y) => {
     setFont(8.5, 'bold');
     doc.text(label, x, y);
+    const gap = doc.getTextWidth(`${label} `);
     setFont(8.5);
-    doc.text(String(value || '-'), valueX, y);
+    doc.text(String(value || '-'), x + gap, y);
   };
 
   setFont(9.5);
@@ -986,15 +990,17 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
 
   let y = 56;
   const metaStartY = y;
-  drawLabelValue(s.dateLabel, chDate(data.invoiceDate, lang), margin, y, margin + 24);
-  y += 6;
-  drawLabelValue(s.invoiceNoLabel, data.invoiceNumber, margin, y, margin + 31);
-  y += 6;
-  drawLabelValue(s.customerNoLabel, data.customerReference || '-', margin, y, margin + 29);
-  y += 6;
-  drawLabelValue(s.vatLabel, SENDER.vat, margin, y, margin + 27);
-  y += 6;
-  drawLabelValue('Amount:', `CHF ${money(data.totalAmount)}`, margin, y, margin + 18);
+  const metaRows = [
+    [s.dateLabel, chDate(data.invoiceDate, lang)],
+    [s.invoiceNoLabel, data.invoiceNumber],
+    [s.customerNoLabel, data.customerReference || '-'],
+    [s.vatLabel, SENDER.vat],
+    [s.amountLabel, `CHF ${money(data.totalAmount)}`],
+  ];
+  metaRows.forEach(([label, value], i) => {
+    if (i) y += 6;
+    drawLabelValue(label, value, margin, y);
+  });
   const metaEndY = y;
 
   y = metaStartY;
