@@ -106,7 +106,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
         intro: `anbei der aktuelle Lektionsplan für deinen ${label}. Wir freuen uns, dass du dabei bist.`,
         sessions: 'Geplante Lektionen',
         cancellation: 'Absage und Verschiebung',
-        questions: 'Bei Fragen erreichen Sie uns unter',
+        questions: 'Bei Fragen erreichst du uns unter',
       };
   return {
     subject: copy.subject,

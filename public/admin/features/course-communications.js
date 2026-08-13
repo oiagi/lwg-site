@@ -44,7 +44,17 @@ function fmtScheduleSession(session, course) {
   return duration ? `${label} (${duration} min)` : label;
 }
 
-export async function sendCourseConfirmation(courseId) {
+/* Both consolidated course-info emails run through /api/send-course-confirmation
+   and differ only in framing, so the modal is built once and the variant
+   supplies the wording. */
+async function openCourseOverviewSend({
+  courseId,
+  variant,
+  title,
+  subjectFor,
+  includedHtml,
+  msgId,
+}) {
   let course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
     alert('Course not found. Please reload and try again.');
@@ -90,17 +100,13 @@ export async function sendCourseConfirmation(courseId) {
     <p class="cs-section-label">scheduled lessons (${sessions.length})</p>
     ${sessionListHtml}
     <p class="cs-section-label">also included</p>
-    <ul class="cs-detail-list">
-      <li>24-hour cancellation policy</li>
-      <li>AGB / terms &amp; conditions</li>
-      <li>English confirmations include both English and German AGB</li>
-    </ul>
+    ${includedHtml}
   `;
 
   openConfirmSend({
-    title: 'send course confirmation',
+    title,
     recipients,
-    subject: `Kursbestätigung / Course confirmation - ${course.course_code || 'course'} · learning with gioia`,
+    subject: subjectFor(course),
     contentHtml,
     languageOptions: [
       { value: 'de', label: 'Deutsch' },
@@ -110,13 +116,14 @@ export async function sendCourseConfirmation(courseId) {
     selectableRecipients: true,
     onConfirm: async ({ language, recipients: selectedRecipients }) => {
       if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById('confirm-msg-' + courseId);
+      const msg = document.getElementById(msgId + courseId);
       const res = await apiFetch('/api/send-course-confirmation', {
         method: 'POST',
         body: {
           course_id: courseId,
           student_ids: selectedRecipients.map((r) => r.student_id),
           language,
+          variant,
         },
       });
       const body = await res.json().catch(() => ({}));
@@ -124,6 +131,40 @@ export async function sendCourseConfirmation(courseId) {
       const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
       if (msg) showMessage(msg, label);
     },
+  });
+}
+
+export function sendCourseConfirmation(courseId) {
+  return openCourseOverviewSend({
+    courseId,
+    variant: 'confirmation',
+    title: 'send course confirmation',
+    msgId: 'confirm-msg-',
+    subjectFor: (course) =>
+      `Kursbestätigung / Course confirmation - ${course.course_code || 'course'} · learning with gioia`,
+    includedHtml: `
+    <ul class="cs-detail-list">
+      <li>24-hour cancellation policy</li>
+      <li>AGB / terms &amp; conditions</li>
+      <li>English confirmations include both English and German AGB</li>
+    </ul>`,
+  });
+}
+
+export function openStartingSoonModal(courseId) {
+  return openCourseOverviewSend({
+    courseId,
+    variant: 'starting_soon',
+    title: 'send course starting soon',
+    msgId: 'starting-soon-msg-',
+    subjectFor: (course) =>
+      `Dein Kurs startet bald / Your course starts soon - ${course.course_code || 'course'} · learning with gioia`,
+    includedHtml: `
+    <ul class="cs-detail-list">
+      <li>The date of the next lesson, named in the intro</li>
+      <li>24-hour cancellation policy</li>
+      <li>No AGB — they already came with the confirmation</li>
+    </ul>`,
   });
 }
 

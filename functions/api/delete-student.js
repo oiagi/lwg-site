@@ -50,7 +50,7 @@ function buildGdprDeletionEmail(student) {
         <tr><td style="padding:40px 40px 32px;">
           <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">Hi ${esc(name)}</p>
           <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">We have received your data deletion request and have deleted your personal data from our records.</p>
-          <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#555;border-top:1px solid #eee;padding-top:18px;">Wir haben Ihre Anfrage zur Datenlöschung erhalten und Ihre personenbezogenen Daten aus unseren Unterlagen gelöscht.</p>
+          <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:#555;border-top:1px solid #eee;padding-top:18px;">Wir haben deine Anfrage zur Datenlöschung erhalten und deine personenbezogenen Daten aus unseren Unterlagen gelöscht.</p>
           <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
             Questions? Write to <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>
           </p>

@@ -43,6 +43,8 @@ const STUDENT_SELECT =
 const STUDENT_SELECT_COMPAT =
   'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
 const ENROLMENT_SELECT =
+  'student_id,course_id,confirmation_sent_at,starting_soon_sent_at,schedule_sent_at,invoice_lesson_count,joined_at';
+const ENROLMENT_SELECT_WITHOUT_STARTING_SOON =
   'student_id,course_id,confirmation_sent_at,schedule_sent_at,invoice_lesson_count,joined_at';
 const ENROLMENT_SELECT_WITHOUT_CONFIRMATION =
   'student_id,course_id,schedule_sent_at,invoice_lesson_count,joined_at';
@@ -210,18 +212,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const comps = await companyRes.json();
       for (const c of comps) companyNameMap[c.id] = c.name;
     }
+    // Each tier drops the newest column, so a database that is one migration
+    // behind keeps everything the tier above it already had.
     let enrolRes = initialEnrolRes;
-    if (!enrolRes.ok && enrolRes.status === 400) {
+    for (const select of [
+      ENROLMENT_SELECT_WITHOUT_STARTING_SOON,
+      ENROLMENT_SELECT_WITHOUT_CONFIRMATION,
+      ENROLMENT_SELECT_COMPAT,
+    ]) {
+      if (enrolRes.ok || enrolRes.status !== 400) break;
       enrolRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT_WITHOUT_CONFIRMATION}`,
+        `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${select}`,
         { headers: H }
       );
-      if (!enrolRes.ok && enrolRes.status === 400) {
-        enrolRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/enrolments?or=(${courseFilter})&select=${ENROLMENT_SELECT_COMPAT}`,
-          { headers: H }
-        );
-      }
     }
     const allEnrolments = enrolRes.ok ? await enrolRes.json() : [];
     const allCertificates = certRes.ok ? await certRes.json() : [];
@@ -268,6 +271,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
     const studentIdsByCourse = {};
     const confirmationSentByCourseStudent = {};
+    const startingSoonSentByCourseStudent = {};
     const scheduleSentByCourseStudent = {};
     const enrolmentByCourseStudent = {};
     for (const e of allEnrolments) {
@@ -276,6 +280,10 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       if (e.confirmation_sent_at) {
         (confirmationSentByCourseStudent[e.course_id] ||= {})[e.student_id] =
           e.confirmation_sent_at;
+      }
+      if (e.starting_soon_sent_at) {
+        (startingSoonSentByCourseStudent[e.course_id] ||= {})[e.student_id] =
+          e.starting_soon_sent_at;
       }
       if (e.schedule_sent_at) {
         (scheduleSentByCourseStudent[e.course_id] ||= {})[e.student_id] = e.schedule_sent_at;
@@ -328,6 +336,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const cancelledInvByStudent = cancelledInvoicesByCourseStudent[course.id] || {};
       const invoiceCancelledByStudent = invoiceCancelledByCourseStudent[course.id] || {};
       const confSentByStudent = confirmationSentByCourseStudent[course.id] || {};
+      const startingSoonSentByStudent = startingSoonSentByCourseStudent[course.id] || {};
       const schedSentByStudent = scheduleSentByCourseStudent[course.id] || {};
       const certSentByStudent = certificateSentByCourseStudent[course.id] || {};
       const contractByStudent = contractByCourseStudent[course.id] || {};
@@ -347,6 +356,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             cancelled_invoices: cancelledInvByStudent[id] || [],
             invoice_cancelled_at: invoiceCancelledByStudent[id] || null,
             confirmation_sent_at: confSentByStudent[id] || null,
+            starting_soon_sent_at: startingSoonSentByStudent[id] || null,
             schedule_sent_at: schedSentByStudent[id] || null,
             certificate_sent_at: certSentByStudent[id] || null,
             contract_id: contractByStudent[id]?.id || null,

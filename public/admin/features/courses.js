@@ -247,6 +247,7 @@ function sentCommunicationsBlock(course) {
 
   const confirmedAt = course.course_confirmation_sent_at;
   const confirmationSent = students.filter((s) => s.confirmation_sent_at);
+  const startingSoonSent = students.filter((s) => s.starting_soon_sent_at);
   const scheduleSent = students.filter((s) => s.schedule_sent_at);
   const certSent = students.filter((s) => s.certificate_sent_at);
   const contractSent = students.filter((s) => s.contract_sent_at);
@@ -259,6 +260,7 @@ function sentCommunicationsBlock(course) {
   if (
     !confirmedAt &&
     !confirmationSent.length &&
+    !startingSoonSent.length &&
     !scheduleSent.length &&
     !certSent.length &&
     !contractSent.length &&
@@ -286,6 +288,14 @@ function sentCommunicationsBlock(course) {
   } else if (confirmedAt) {
     items.push(
       `<li>confirmation sent · <span class="detail-muted">${esc(fmtDate(confirmedAt))}</span></li>`
+    );
+  }
+  if (startingSoonSent.length) {
+    const last = latest(startingSoonSent, 'starting_soon_sent_at');
+    items.push(
+      `<li>starting-soon sent to ${startingSoonSent.length} of ${total} · <span class="detail-muted">last ${esc(
+        fmtDate(last)
+      )}</span></li>`
     );
   }
   if (scheduleSent.length) {
@@ -773,6 +783,11 @@ function renderCourses(courses) {
                   <button class="save-btn"
                     data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
                   <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+                </div>
+                <div class="detail-action-row">
+                  <button class="save-btn"
+                    data-action="openStartingSoonModal" data-args="${c.id}">send starting soon</button>
+                  <span class="saved-msg" id="starting-soon-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"

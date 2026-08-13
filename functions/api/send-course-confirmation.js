@@ -1,11 +1,15 @@
 // functions/api/send-course-confirmation.js
 // POST /api/send-course-confirmation
-// Body: { course_id, student_id?, student_ids?, language? }
+// Body: { course_id, student_id?, student_ids?, language?, variant? }
 //
-// Sends a course confirmation email (course overview, scheduled sessions,
-// 24-hour cancellation notice, AGB) to each enrolled student with an email
-// address. If `student_id` or `student_ids` is provided, only matching
-// students are emailed.
+// Sends one of the two consolidated course-info emails to each enrolled
+// student with an email address:
+//   variant 'confirmation'  (default) — course overview, scheduled sessions,
+//                                       24-hour cancellation notice, AGB
+//   variant 'starting_soon'           — the same overview shortly before the
+//                                       first lesson, without the AGB repeat
+// If `student_id` or `student_ids` is provided, only matching students are
+// emailed.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
@@ -19,242 +23,15 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { getCancellationPolicy, getGroupCancellationPolicy, renderAgbEmailHtml } from './_agb.js';
+import { buildConfirmationEmail, COURSE_EMAIL_VARIANTS } from './_course-confirmation-email.js';
 import { sendResendEmail } from './_email.js';
 
 const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 
-function esc(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function fmtDate(iso, language = 'de', durationMinutes = null) {
-  const locale = language === 'en' ? 'en-GB' : 'de-CH';
-  const tz = 'Europe/Zurich';
-  const start = new Date(iso);
-  const duration = Number(durationMinutes);
-  const base = start.toLocaleString(locale, {
-    timeZone: tz,
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  if (!Number.isFinite(duration) || duration <= 0) return base;
-  const end = new Date(start.getTime() + duration * 60000);
-  const endTime = end.toLocaleString(locale, { timeZone: tz, hour: '2-digit', minute: '2-digit' });
-  return `${base} - ${endTime} (${duration} min)`;
-}
-
-function formatPrice(amount, currency) {
-  if (amount === null || amount === undefined) return '—';
-  return `${Number(amount).toFixed(2)} ${currency || 'CHF'}`;
-}
-
-function numberOrNull(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-
-function bookingLessonCount(course, sessions) {
-  return numberOrNull(course.sessions_total) || sessions.length || null;
-}
-
-function studentBookingTotal(course, sessions) {
-  const pricePer60 = numberOrNull(course.price_per_person_per_60min);
-  const lessons = bookingLessonCount(course, sessions);
-  if (pricePer60 === null || lessons === null) return null;
-
-  const sessionLength = numberOrNull(course.session_length_minutes) || 60;
-  return pricePer60 * lessons * (sessionLength / 60);
-}
-
-function formatLocation(course) {
-  const company = course.location_company;
-  const line1 = [course.location_street, course.location_street_number].filter(Boolean).join(' ');
-  const line2 = [course.location_postal_code, course.location_city].filter(Boolean).join(' ');
-  const address = [company, line1, line2].filter(Boolean).join(', ');
-  return address || course.location || '—';
-}
-
-function courseDetailRows(course, sessions, language = 'de') {
-  const lessons = bookingLessonCount(course, sessions);
-  const total = studentBookingTotal(course, sessions);
-  const label = {
-    de: {
-      code: 'Kurscode',
-      subject: 'Fach',
-      level: 'Niveau',
-      format: 'Format',
-      lessons: 'Anzahl Lektionen',
-      duration: 'Lektionsdauer',
-      price: 'Preis pro Person / 60 Min.',
-      total: 'Ihr Preis für die gesamte Buchung',
-      location: 'Ort',
-      open: 'offen',
-    },
-    en: {
-      code: 'Course code',
-      subject: 'Subject',
-      level: 'Level',
-      format: 'Format',
-      lessons: 'Number of lessons',
-      duration: 'Lesson duration',
-      price: 'Price per person / 60 min',
-      total: 'Your price for the full booking',
-      location: 'Location',
-      open: 'open',
-    },
-  }[language === 'en' ? 'en' : 'de'];
-  const rows = [
-    [label.code, course.course_code || '-'],
-    [label.subject, course.subject || '-'],
-    [label.level, course.level || '-'],
-    [label.format, course.group_type || '-'],
-    [label.lessons, lessons !== null ? String(lessons) : label.open],
-    [label.duration, course.session_length_minutes ? `${course.session_length_minutes} min` : '-'],
-    [label.price, formatPrice(course.price_per_person_per_60min, course.currency)],
-    [label.total, formatPrice(total, course.currency)],
-    [label.location, formatLocation(course)],
-  ];
-  return rows
-    .map(
-      ([k, v]) => `
-      <tr>
-        <td style="padding:6px 0;color:#888;font-size:13px;vertical-align:top;white-space:nowrap;">${esc(k)}</td>
-        <td style="padding:6px 0 6px 24px;font-size:13px;">${esc(v)}</td>
-      </tr>`
-    )
-    .join('');
-}
-
-function sessionDuration(session, course) {
-  return session.duration_minutes ?? course.session_length_minutes ?? null;
-}
-
-function sessionListRows(sessions, course, language = 'de') {
-  if (!sessions.length) {
-    const empty =
-      language === 'en' ? 'No lessons have been scheduled yet.' : 'Noch keine Lektionen geplant.';
-    return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">${empty}</td></tr>`;
-  }
-  return sessions
-    .map(
-      (s, i) => `
-      <tr>
-        <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, sessionDuration(s, course)))}</td>
-      </tr>`
-    )
-    .join('');
-}
-
-function buildConfirmationEmail({ course, sessions, studentFirstName, language }) {
-  const isEnglish = language === 'en';
-  const greetingName = studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
-  const copy = isEnglish
-    ? {
-        subject: `Course confirmation - ${course.course_code || 'your course'} · learning with gioia`,
-        htmlLang: 'en',
-        title: 'Course confirmation',
-        intro: `Thank you for your registration, ${greetingName} :) We look forward to learning with you soon. Below you will find all the important information about your course. Any questions? Just write to us at info@learningwithgioia.ch`,
-        details: 'Course details',
-        sessions: 'Scheduled lessons',
-        cancellation: 'Cancellation and postponement',
-        questions: 'If you have any questions, you can reach us at',
-      }
-    : {
-        subject: `Kursbestätigung - ${course.course_code || 'dein Kurs'} · learning with gioia`,
-        htmlLang: 'de',
-        title: 'Kursbestätigung',
-        intro: `Vielen Dank für deine Anmeldung, ${greetingName} :) Wir freuen uns darauf, bald mit dir zu lernen. Unten findest du alle wichtigen Infos zu deinem Kurs. Noch Fragen? Dann schreib uns einfach auf info@learningwithgioia.ch`,
-        details: 'Kursdetails',
-        sessions: 'Geplante Lektionen',
-        cancellation: 'Absage und Verschiebung',
-        questions: 'Bei Fragen erreichen Sie uns unter',
-      };
-  return {
-    subject: copy.subject,
-    html: `<!DOCTYPE html>
-<html lang="${copy.htmlLang}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:600px;width:100%;">
-        <tr>
-          <td style="background:#1a1a1a;padding:32px 40px;">
-            <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px 40px 16px;">
-            <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              ${esc(copy.title)}
-            </p>
-            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
-              ${esc(copy.intro)}
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.details)}</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${courseDetailRows(course, sessions, language)}
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionListRows(sessions, course, language)}
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
-              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
-              <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(['duo', 'group'].includes(String(course.group_type || '').toLowerCase()) ? getGroupCancellationPolicy(language) : getCancellationPolicy(language))}
-              </p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 32px;border-top:1px solid #eee;padding-top:24px;">
-            ${renderAgbEmailHtml(language)}
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
-            <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-              ${esc(copy.questions)}
-              <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
-            </p>
-            <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-              <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`,
-  };
-}
+const SENT_AT_COLUMN = {
+  confirmation: 'confirmation_sent_at',
+  starting_soon: 'starting_soon_sent_at',
+};
 
 async function loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, courseId) {
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
@@ -290,6 +67,36 @@ async function loadCourseBundle(SUPABASE_URL, SUPABASE_SERVICE_KEY, courseId) {
   return { course: courses[0], sessions, students };
 }
 
+/* Stamps the per-student send column. A database that has not run the
+   matching migration yet is tolerated: the 400 naming the column is swallowed
+   so a successful send is never reported as an error. */
+async function markEnrolmentsSent(env, courseId, studentIds, column, sentAt) {
+  if (!studentIds.length) return;
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const idFilter = studentIds.map((id) => `student_id.eq.${id}`).join(',');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${courseId}&or=(${idFilter})`,
+      {
+        method: 'PATCH',
+        headers: {
+          ...supabaseHeaders(SUPABASE_SERVICE_KEY),
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ [column]: sentAt }),
+      }
+    );
+    if (!res.ok) {
+      const errorText = await res.text();
+      if (!errorText.includes(column)) {
+        console.error(`Failed to record enrolment ${column}:`, errorText);
+      }
+    }
+  } catch (err) {
+    console.error(`Failed to record enrolment ${column}:`, err?.message || err);
+  }
+}
+
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
 
@@ -309,7 +116,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     ? body.student_ids.map((id) => String(id)).filter(Boolean)
     : [];
   const language = normalizePageLanguage(body.language, 'de');
+  const variant = body.variant || 'confirmation';
   if (!course_id) return errorResponse('Missing course_id', 400);
+  if (!COURSE_EMAIL_VARIANTS.includes(variant)) return errorResponse('Invalid variant', 400);
   if (body.student_ids !== undefined && !studentIds.length) {
     return errorResponse('No selected students', 400);
   }
@@ -342,6 +151,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         sessions,
         studentFirstName: student.first_name || '',
         language,
+        variant,
       });
       try {
         const res = await sendResendEmail(RESEND_API_KEY, {
@@ -351,11 +161,11 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           html: email.html,
         });
         if (!res.ok) {
-          console.error(`Confirmation email failed for ${student.email}:`, await res.text());
+          console.error(`Course ${variant} email failed for ${student.email}:`, await res.text());
         }
         return { email: student.email, student_id: student.id, ok: res.ok };
       } catch (err) {
-        console.error(`Confirmation email error for ${student.email}:`, err?.message || err);
+        console.error(`Course ${variant} email error for ${student.email}:`, err?.message || err);
         return { email: student.email, student_id: student.id, ok: false };
       }
     })
@@ -366,44 +176,24 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   if (sent > 0) {
     const sentAt = new Date().toISOString();
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
-        method: 'PATCH',
-        headers: {
-          ...supabaseHeaders(SUPABASE_SERVICE_KEY),
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({ course_confirmation_sent_at: sentAt }),
-      });
-    } catch (err) {
-      console.error('Failed to record confirmation_sent_at:', err?.message || err);
+    // The course-level stamp only ever tracked the confirmation.
+    if (variant === 'confirmation') {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${course_id}`, {
+          method: 'PATCH',
+          headers: {
+            ...supabaseHeaders(SUPABASE_SERVICE_KEY),
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ course_confirmation_sent_at: sentAt }),
+        });
+      } catch (err) {
+        console.error('Failed to record confirmation_sent_at:', err?.message || err);
+      }
     }
 
     const sentStudentIds = results.filter((r) => r.ok).map((r) => r.student_id);
-    if (sentStudentIds.length) {
-      const idFilter = sentStudentIds.map((id) => `student_id.eq.${id}`).join(',');
-      try {
-        const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${course_id}&or=(${idFilter})`,
-          {
-            method: 'PATCH',
-            headers: {
-              ...supabaseHeaders(SUPABASE_SERVICE_KEY),
-              Prefer: 'return=minimal',
-            },
-            body: JSON.stringify({ confirmation_sent_at: sentAt }),
-          }
-        );
-        if (!res.ok) {
-          const errorText = await res.text();
-          if (!errorText.includes('confirmation_sent_at')) {
-            console.error('Failed to record enrolment confirmation_sent_at:', errorText);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to record enrolment confirmation_sent_at:', err?.message || err);
-      }
-    }
+    await markEnrolmentsSent(env, course_id, sentStudentIds, SENT_AT_COLUMN[variant], sentAt);
   }
 
   return jsonResponse({ success: failed === 0, sent, failed, recipients: results });
