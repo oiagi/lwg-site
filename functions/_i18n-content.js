@@ -277,6 +277,16 @@ export const pages = {
         en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
         de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
       },
+      '#offer-online h3': { en: 'Online lessons', de: 'Online-Unterricht' },
+      '#offer-online p': {
+        en: 'German and Swiss German by video, taught live by a native speaker. The same courses we teach in Zürich, at the same price, wherever you are.',
+        de: 'Deutsch und Schweizerdeutsch per Video, live unterrichtet von einer Muttersprachlerin. Dieselben Kurse wie in Zürich, zum selben Preis, egal wo du bist.',
+      },
+      '#offer-private h3': { en: 'Private lessons', de: 'Einzelunterricht' },
+      '#offer-private p': {
+        en: 'One teacher, one learner, and a course built from nothing but what you need — for a fixed exam date, a professional vocabulary, or a schedule that will not hold a weekly slot.',
+        de: 'Eine Lehrperson, eine lernende Person und ein Kurs, der nur aus dem besteht, was du brauchst — für einen fixen Prüfungstermin, einen Fachwortschatz oder einen Terminplan, der keinen Wochentermin hergibt.',
+      },
       '#offer-english h3': { en: 'English courses', de: 'Englischkurse' },
       '#offer-english p': {
         en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university.',
@@ -409,9 +419,13 @@ export const pages = {
         en: 'Experience &amp; background',
         de: 'Erfahrung &amp; Hintergrund',
       },
-      '.about-text': {
-        en: 'tbc',
-        de: 'tbc',
+      '#about-lead': {
+        en: 'Learning with Gioia was founded by Gioia, born and raised in Zürich and a native speaker of both Swiss German and German. That is why Swiss German is on this list at all: it has no standard written form and cannot be learnt from a textbook, so it has to come from someone who grew up speaking it.',
+        de: 'Learning with Gioia wurde von Gioia gegründet — in Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Genau deshalb steht Schweizerdeutsch überhaupt auf dieser Liste: Es hat keine einheitliche Schriftform und lässt sich nicht aus einem Lehrbuch lernen, sondern nur von jemandem, der damit aufgewachsen ist.',
+      },
+      '#about-more': {
+        en: 'Alongside her, a small circle of associate teachers with linguistics degrees and formal teaching qualifications covers the remaining courses and tutoring, and German is taught exclusively by native speakers. Groups stay small — a maximum of five — because a course prepared for the people in the room only works if you know who they are. <a href="/about.html">More about us and how we teach →</a>',
+        de: 'Daneben deckt ein kleiner Kreis von Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation die übrigen Kurse und die Nachhilfe ab; Deutsch wird ausschliesslich von Muttersprachlerinnen und Muttersprachlern unterrichtet. Die Gruppen bleiben klein — höchstens fünf Personen — weil ein Kurs, der für die Menschen im Raum vorbereitet wird, nur funktioniert, wenn man weiss, wer sie sind. <a href="/about.html">Mehr über uns und unseren Unterricht →</a>',
       },
       '#start .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
       '.closing-text': {
@@ -821,392 +835,6 @@ export const courseFacts = {
   '#course-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 };
 
-function coursePage(entry) {
-  return {
-    title: entry.title,
-    description: entry.description,
-    text: Object.assign(
-      { h1: entry.h1, '#course-intro': entry.intro },
-      courseFacts,
-      entry.facts || {}
-    ),
-  };
-}
-
-Object.assign(pages, {
-  '/german-courses.html': coursePage({
-    title: {
-      en: 'German Courses in Zürich — Learning with Gioia',
-      de: 'Deutschkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'German courses in Zürich from A0 to C2, taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Deutschkurse in Zürich von A0 bis C2, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'German courses', de: 'Deutschkurse' },
-    intro: {
-      en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers with linguistics degrees and formal teaching qualifications.',
-      de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
-    },
-  }),
-  '/swiss-german.html': coursePage({
-    title: {
-      en: 'Swiss German Courses in Zürich — Learning with Gioia',
-      de: 'Schweizerdeutschkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Swiss German courses in Zürich taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Schweizerdeutschkurse in Zürich, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'Swiss German', de: 'Schweizerdeutsch' },
-    intro: {
-      en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
-      de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
-    },
-  }),
-  '/gymivorbereitung.html': coursePage({
-    title: {
-      en: 'Gymivorbereitung in Zürich — Learning with Gioia',
-      de: 'Gymivorbereitung in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 12 lessons of 90 minutes over 3 months — CHF 80 per person per 60 minutes in a group, CHF 120 one-to-one.',
-      de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 12 Lektionen à 90 Minuten in 3 Monaten — CHF 80 pro Person pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
-    },
-    h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-    intro: {
-      en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
-      de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
-    },
-    facts: {
-      '#fact-duration-value': { en: '3 months', de: '3 Monate' },
-      '#fact-lessons-label': { en: 'lessons of 90 min', de: 'Lektionen à 90 Min.' },
-      '#fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
-      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
-      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-    },
-  }),
-  '/english-courses.html': coursePage({
-    title: {
-      en: 'English Courses in Zürich — Learning with Gioia',
-      de: 'Englischkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'English courses and tutoring in Zürich, from beginner (A1) to advanced (C2). 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Englischkurse und Nachhilfe in Zürich, von A1 bis C2. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'English courses', de: 'Englischkurse' },
-    intro: {
-      en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university, always tailored to what you need next.',
-      de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität, immer abgestimmt auf das, was als Nächstes ansteht.',
-    },
-  }),
-  '/exam-preparation.html': coursePage({
-    title: {
-      en: 'Exam Preparation in Zürich — Learning with Gioia',
-      de: 'Prüfungsvorbereitung in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams in Zürich. 40 lessons of 60 minutes over 5 months — CHF 2000 in a group, CHF 4800 one-to-one.',
-      de: 'Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe in Zürich. 40 Lektionen à 60 Minuten in 5 Monaten — CHF 2000 in der Gruppe, CHF 4800 im Einzelunterricht.',
-    },
-    h1: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-    intro: {
-      en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
-      de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
-    },
-    facts: { '#fact-duration-value': { en: '5 months', de: '5 Monate' } },
-  }),
-  '/company-courses.html': coursePage({
-    title: {
-      en: 'Company Language Courses in Zürich — Learning with Gioia',
-      de: 'Firmenkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Language courses for companies and teams in Zürich, at your offices or ours. Around 100 lessons per level, suggested 2 × 60 minutes per week — pricing on request.',
-      de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. Rund 100 Lektionen pro Niveau, empfohlen 2 × 60 Minuten pro Woche — Preis auf Anfrage.',
-    },
-    h1: { en: 'Company courses', de: 'Firmenkurse' },
-    intro: {
-      en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face — from client meetings to small talk in the corridor.',
-      de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen — vom Kundengespräch bis zum Small Talk auf dem Gang.',
-    },
-    facts: {
-      '#fact-lessons-label': { en: 'suggested lessons', de: 'Empfohlene Lektionen' },
-      '#fact-lessons-value': { en: 'approx. 100', de: 'ca. 100' },
-      '#fact-lessons-unit': { en: 'per level', de: 'pro Niveau' },
-      '#fact-frequency-label': { en: 'suggested frequency', de: 'Empfohlener Rhythmus' },
-      '#fact-frequency-value': { en: '2 × 60 min', de: '2 × 60 Min.' },
-      '#fact-frequency-unit': { en: 'per week', de: 'pro Woche' },
-      '#fact-price-label': { en: 'pricing', de: 'Preis' },
-      '#fact-price-value': { en: 'on request', de: 'auf Anfrage' },
-      '#course-structure-note': {
-        en: 'Not sure how many lessons your team needs? Our <a href="/index.html#offer-details">guidance on course structure</a> shows how a full level breaks down.',
-        de: 'Unsicher, wie viele Lektionen euer Team braucht? Unsere <a href="/index.html#offer-details">Hinweise zur Kursstruktur</a> zeigen, wie sich ein vollständiges Niveau aufteilt.',
-      },
-    },
-  }),
-  '/lunch-time-german.html': coursePage({
-    title: {
-      en: 'Build Your Own German Course in Zürich — Learning with Gioia',
-      de: 'Build Your Own: Deutschkurs nach Mass in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Build your own German course in Zürich: lunchtime German, intensive German, Swiss German and German combined, business English — tailored to your needs and availability. Lessons of 60, 90 or 120 minutes — CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
-      de: 'Dein Kurs nach Mass in Zürich: Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch — abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60, 90 oder 120 Minuten — CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
-    },
-    h1: { en: 'Build your own', de: 'Build your own' },
-    intro: {
-      en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-      de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
-    },
-    facts: {
-      '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
-      '#fact-lessons-label': { en: 'lesson length', de: 'Lektionsdauer' },
-      '#fact-lessons-value': { en: '60, 90, 120 min', de: '60, 90, 120 Min.' },
-      '#fact-lessons-unit': { en: 'or as you need it', de: 'oder wie du es brauchst' },
-      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
-      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-    },
-  }),
-});
-
-Object.assign(pages, {
-  '/intake.html': {
-    title: {
-      en: 'Student Intake — Learning with Gioia',
-      de: 'Schülerangaben — Learning with Gioia',
-    },
-    text: {
-      '#intake-loading': { en: 'loading...', de: 'Wird geladen...' },
-      '#intake-content h1': { en: 'your details', de: 'Deine Angaben' },
-      '.intake-intro': {
-        en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
-        de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
-      },
-      '#intake-label-student': {
-        en: 'student information',
-        de: 'Schülerangaben',
-      },
-      'label[for="if-first-name"]': { en: 'first name *', de: 'Vorname *' },
-      'label[for="if-last-name"]': { en: 'last name *', de: 'Nachname *' },
-      'label[for="if-gender"]': { en: 'salutation *', de: 'Anrede *' },
-      '#if-gender option[value="female"]': { en: 'Ms', de: 'Frau' },
-      '#if-gender option[value="male"]': { en: 'Mr', de: 'Herr' },
-      '#if-gender option[value="other"]': { en: 'Other', de: 'Andere' },
-      'label[for="if-gender-note"]': { en: 'please specify *', de: 'bitte angeben *' },
-      'label[for="if-email"]': { en: 'email *', de: 'E-Mail *' },
-      'label[for="if-phone"]': { en: 'phone *', de: 'Telefon *' },
-      'label[for="if-street"]': { en: 'street *', de: 'Strasse *' },
-      'label[for="if-street-number"]': { en: 'number *', de: 'Nummer *' },
-      'label[for="if-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
-      'label[for="if-city"]': { en: 'city *', de: 'Ort *' },
-      '#intake-label-emergency': {
-        en: 'emergency contact',
-        de: 'Notfallkontakt',
-      },
-      'label[for="if-ec-name"]': { en: 'name', de: 'Name' },
-      'label[for="if-ec-relationship"]': { en: 'relationship', de: 'Beziehung' },
-      '#if-ec-relationship': {
-        en: 'e.g. partner, parent',
-        de: 'z. B. Partner/in, Elternteil',
-        attr: 'placeholder',
-      },
-      'label[for="if-ec-phone"]': { en: 'phone', de: 'Telefon' },
-      'label[for="if-ec-email"]': { en: 'email', de: 'E-Mail' },
-      '#intake-label-billing': {
-        en: 'billing',
-        de: 'Rechnung',
-      },
-      '.intake-checkbox span': {
-        en: 'billing address differs from personal address',
-        de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
-      },
-      'label[for="if-billing-first-name"]': {
-        en: 'billing first name *',
-        de: 'Rechnungsvorname *',
-      },
-      'label[for="if-billing-last-name"]': {
-        en: 'billing last name *',
-        de: 'Rechnungsnachname *',
-      },
-      'label[for="if-billing-email"]': {
-        en: 'billing email *',
-        de: 'Rechnungs-E-Mail *',
-      },
-      'label[for="if-billing-street"]': { en: 'street *', de: 'Strasse *' },
-      'label[for="if-billing-street-number"]': { en: 'number *', de: 'Nummer *' },
-      'label[for="if-billing-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
-      'label[for="if-billing-city"]': { en: 'city *', de: 'Ort *' },
-      '#err-first-name': {
-        en: 'Please enter a first name.',
-        de: 'Bitte gib einen Vornamen ein.',
-      },
-      '#err-last-name': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
-      '#err-gender': {
-        en: 'Please select a salutation.',
-        de: 'Bitte wähle eine Anrede aus.',
-      },
-      '#err-gender-note': {
-        en: 'Please specify your salutation.',
-        de: 'Bitte gib deine Anrede an.',
-      },
-      '#intake-submit-btn': { en: 'save details ->', de: 'Angaben speichern ->' },
-      '#submit-error': {
-        en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-      '#intake-thanks h1': { en: 'thank you.', de: 'Danke.' },
-      '#intake-thanks p': {
-        en: "Your details have been saved. We'll be in touch shortly.",
-        de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
-      },
-      '#intake-error h1': {
-        en: 'link expired or invalid.',
-        de: 'Link abgelaufen oder ungültig.',
-      },
-      '#intake-error p': {
-        en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-    },
-  },
-  '/feedback.html': {
-    title: {
-      en: 'Course Feedback — Learning with Gioia',
-      de: 'Kursfeedback — Learning with Gioia',
-    },
-    text: {
-      '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
-      '#feedback-content h1': { en: 'your feedback', de: 'Dein Feedback' },
-      '.intake-intro': {
-        en: 'Thank you for taking the time to share your feedback. Your honest opinion helps improve future lessons — there are no right or wrong answers, so please be as open as you like. Only your teacher reads your answers.',
-        de: 'Danke, dass du dir Zeit für dein Feedback nimmst. Deine ehrliche Meinung hilft uns, den Unterricht besser zu machen — es gibt keine richtigen oder falschen Antworten, sag also ruhig offen, was du denkst. Deine Antworten liest nur deine Lehrperson.',
-      },
-      '#feedback-time': {
-        en: 'estimated time: 3-5 minutes',
-        de: 'Dauer: 3-5 Minuten',
-      },
-      '#feedback-submit-btn': { en: 'send feedback ->', de: 'Feedback senden ->' },
-      '#submit-error': {
-        en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-      '#feedback-thanks h1': { en: 'thank you.', de: 'Danke.' },
-      '#feedback-thanks p': {
-        en: 'Your honest feedback helps us improve our lessons for everyone. We read every response carefully and genuinely appreciate both the compliments and the suggestions.',
-        de: 'Dein ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
-      },
-      '#feedback-done h1': { en: 'already answered.', de: 'Bereits beantwortet.' },
-      '#feedback-done p': {
-        en: 'This feedback has already been submitted — thank you. If you would like to add something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Dieses Feedback wurde bereits abgeschickt — danke. Wenn du noch etwas ergänzen möchtest, schreib einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-      '#feedback-unavailable h1': {
-        en: 'not right now.',
-        de: 'Gerade nicht möglich.',
-      },
-      '#feedback-unavailable p': {
-        en: 'We could not load your feedback form just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Wir konnten dein Feedback-Formular gerade nicht laden — dein Link ist weiterhin gültig. Bitte versuche es in ein paar Minuten noch einmal oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-      '#feedback-error h1': {
-        en: 'link expired or invalid.',
-        de: 'Link abgelaufen oder ungültig.',
-      },
-      '#feedback-error p': {
-        en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-      },
-    },
-  },
-  '/modalpartikeln.html': {
-    title: {
-      en: 'German Modal Particles Explained | Learning with Gioia',
-      de: 'Modalpartikeln — Deutsch lernen | Learning with Gioia',
-    },
-    description: {
-      en: 'Learn German modal particles interactively: reference with examples, quiz and cheat sheet. A free learning resource from Learning with Gioia.',
-      de: 'Lerne deutsche Modalpartikeln interaktiv: Übersicht mit Beispielen, Quiz und Spickzettel. Kostenloses Lernmittel von Learning with Gioia.',
-    },
-    text: {
-      '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },
-      '.page-header p': {
-        en: 'The little words that make German come alive.',
-        de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
-      },
-      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
-      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
-      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
-      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
-      '.position-note p': {
-        en: 'Modal particles always stand in the <strong>middle field</strong> of the sentence — usually before <em>auch</em> or <em>nicht</em>, before modal and local details, and before words or information that belong directly to the verb.',
-        de: 'Modalpartikeln stehen immer im <strong>Mittelfeld</strong> des Satzes — meist vor <em>auch</em> oder <em>nicht</em>, bzw. vor Modal- und Lokalangaben und vor den <em>Verbgefährten</em> (Wörter und Informationen, die direkt zum Verb gehören oder direkt mit ihm verbunden sind).',
-      },
-    },
-  },
-  '/subjunktionen.html': {
-    title: {
-      en: 'German Subjunctions (Subordinating Conjunctions) | Learning with Gioia',
-      de: 'Subjunktionen — Deutsch lernen | Learning with Gioia',
-    },
-    description: {
-      en: 'Learn German subjunctions interactively: meaning, subordinate-clause word order, examples, quiz and cheat sheet.',
-      de: 'Lerne deutsche Subjunktionen interaktiv: Bedeutung, Nebensatzstellung, Beispiele, Quiz und Spickzettel.',
-    },
-    text: {
-      '.page-header h1': { en: 'Subjunctions', de: 'Subjunktionen' },
-      '.page-header p': {
-        en: 'The words that open subordinate clauses and connect thoughts.',
-        de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
-      },
-      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
-      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
-      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
-      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
-      '.position-note p': {
-        en: 'Subjunctions introduce <strong>subordinate clauses</strong>. The finite verb normally goes <strong>to the end</strong> of the subordinate clause: <em>Ich bleibe, weil ich lernen muss.</em> When the subordinate clause comes first, the finite verb follows directly in the main clause: <em>Weil ich lernen muss, bleibe ich.</em>',
-        de: 'Subjunktionen leiten <strong>Nebensätze</strong> ein. Das finite Verb steht im Nebensatz normalerweise <strong>am Ende</strong>: <em>Ich bleibe, weil ich lernen muss.</em> Wenn der Nebensatz vorne steht, folgt im Hauptsatz direkt das finite Verb: <em>Weil ich lernen muss, bleibe ich.</em>',
-      },
-    },
-  },
-  '/niveaus.html': {
-    title: {
-      en: 'German Language Levels (CEFR) | Learning with Gioia',
-      de: 'Sprachniveaus (GER) — Deutsch lernen | Learning with Gioia',
-    },
-    description: {
-      en: 'The six CEFR levels A1 to C2 explained — plus an interactive self-assessment checklist to find your German level.',
-      de: 'Die sechs Sprachniveaus A1 bis C2 des GER erklärt – mit interaktivem Selbsteinschätzungsraster für Deutsch.',
-    },
-  },
-  '/konjunktionen.html': {
-    title: {
-      en: 'German Conjunctions: aber, denn, und, sondern, oder | Learning with Gioia',
-      de: 'Konjunktionen — Deutsch lernen | Learning with Gioia',
-    },
-    description: {
-      en: 'Learn the five German conjunctions aber, denn, und, sondern and oder interactively: meaning, word order, examples, quiz and cheat sheet.',
-      de: 'Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel.',
-    },
-    text: {
-      '.page-header h1': { en: 'Conjunctions', de: 'Konjunktionen' },
-      '.page-header p': {
-        en: 'The five words that connect equal parts.',
-        de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
-      },
-      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
-      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
-      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
-      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
-      '.position-note p': {
-        en: 'These five conjunctions usually connect <strong>equal</strong> words, phrases, or main clauses. Unlike subjunctions, they normally do <strong>not</strong> introduce subordinate clauses and do <strong>not</strong> send the finite verb to the end: <em>Ich lerne, und sie liest.</em> Compare: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
-        de: 'Diese fünf Konjunktionen verbinden meist <strong>gleichrangige</strong> Wörter, Satzteile oder Hauptsätze. Anders als Subjunktionen leiten sie normalerweise <strong>keinen Nebensatz</strong> ein und schicken das finite Verb <strong>nicht ans Ende</strong>: <em>Ich lerne, und sie liest.</em> Vergleiche: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
-      },
-    },
-  },
-});
-
 // ── FAQ ──────────────────────────────────────────────────────────
 //
 // One source for both the rendered Q&A blocks and the FAQPage schema, so the
@@ -1466,6 +1094,802 @@ export function faqHtml(items, lang) {
 function linkCard(href, title, blurb) {
   return `<a class="content-link" href="${href}"><strong>${title}</strong><span>${blurb}</span></a>`;
 }
+
+// The section block shared by the five standard course pages. Only the
+// "what a lesson looks like" copy and the cross-links differ per course; the
+// online paragraph and the FAQ group are the same everywhere, and repeating
+// them by hand is how they drift apart.
+function courseSections({ lessonTitle, lessonBody, lessonList, online, links }) {
+  return {
+    '#course-lesson-title': lessonTitle || {
+      en: 'What a lesson looks like',
+      de: 'Wie eine Lektion abläuft',
+    },
+    '#course-lesson-body': lessonBody,
+    '#course-lesson-list': lessonList,
+    '#course-online-title': { en: 'Also available online', de: 'Auch online verfügbar' },
+    '#course-online-body': online || {
+      en: 'Every course on this page can be taught online by live video, at the same price and with the same teachers. Lessons run at a fixed weekly slot in Zürich time, and materials are shared digitally before and after each one. Some people take the whole course online; others switch for a week when they are travelling. See <a href="/online-lessons.html">online lessons</a> for how it works.',
+      de: 'Jeder Kurs auf dieser Seite kann auch online per Live-Video stattfinden, zum selben Preis und mit denselben Lehrpersonen. Der Unterricht läuft zu einem festen wöchentlichen Termin nach Zürcher Zeit, die Materialien kommen digital vor und nach jeder Lektion. Manche belegen den ganzen Kurs online, andere wechseln nur für eine Reisewoche. Wie das abläuft, steht unter <a href="/online-lessons.html">Online-Unterricht</a>.',
+    },
+    '#course-faq-title': { en: 'Common questions', de: 'Häufige Fragen' },
+    '#course-faq-list': { en: faqHtml(FAQ.courses, 'en'), de: faqHtml(FAQ.courses, 'de') },
+    '#course-links-title': { en: 'Related', de: 'Passend dazu' },
+    '#course-links': links,
+  };
+}
+
+const GERMAN_SECTIONS = courseSections({
+  lessonBody: {
+    en: 'Sixty minutes, taught in German from the first lesson — including at A0, where it feels impossible for about two weeks and then stops feeling that way. The point is that you spend the hour using the language rather than being told about it.',
+    de: 'Sechzig Minuten, ab der ersten Lektion auf Deutsch — auch auf A0, wo sich das etwa zwei Wochen lang unmöglich anfühlt und dann nicht mehr. Der Sinn dahinter: Du verbringst die Stunde damit, die Sprache zu benutzen, statt über sie belehrt zu werden.',
+  },
+  lessonList: {
+    en: '<li>A short warm-up in the language, so the switch happens before the lesson proper starts.</li><li>One new structure at a time, introduced through examples rather than a rule to memorise.</li><li>Speaking practice in pairs or as a group — the reason the groups stay under five.</li><li>Material drawn from where you actually need the German: your work, your studies, your paperwork, your neighbours.</li><li>Homework that takes twenty minutes, not two hours, because the ones that take two hours do not get done.</li>',
+    de: '<li>Ein kurzer Einstieg in der Sprache, damit der Wechsel passiert, bevor die eigentliche Lektion beginnt.</li><li>Eine neue Struktur nach der anderen, eingeführt über Beispiele statt über eine Regel zum Auswendiglernen.</li><li>Sprechübungen zu zweit oder in der Gruppe — der Grund, weshalb die Gruppen unter fünf Personen bleiben.</li><li>Material von dort, wo du das Deutsch wirklich brauchst: Beruf, Studium, Behördenpost, Nachbarschaft.</li><li>Hausaufgaben, die zwanzig Minuten dauern und nicht zwei Stunden — denn die mit zwei Stunden werden nicht gemacht.</li>',
+  },
+  links: {
+    en:
+      linkCard(
+        '/swiss-german.html',
+        'Swiss German',
+        'The other half of actually living in Zürich.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Private lessons',
+        'One-to-one, at your pace and on your schedule.'
+      ) +
+      linkCard('/niveaus.html', 'Find your level', 'An interactive CEFR self-assessment.'),
+    de:
+      linkCard(
+        '/swiss-german.html',
+        'Schweizerdeutsch',
+        'Die andere Hälfte davon, wirklich in Zürich zu leben.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Einzelunterricht',
+        'Eins zu eins, in deinem Tempo und nach deinem Plan.'
+      ) +
+      linkCard('/niveaus.html', 'Niveau herausfinden', 'Interaktive Selbsteinschätzung nach GER.'),
+  },
+});
+
+const SWISS_SECTIONS = courseSections({
+  lessonBody: {
+    en: 'Almost entirely spoken. Swiss German has no standard written form, so there is no textbook to work through and no spelling to get right — which means the hour goes on listening and talking, with a teacher who grew up speaking Zürich German.',
+    de: 'Fast durchgehend gesprochen. Schweizerdeutsch hat keine einheitliche Schriftform, es gibt also kein Lehrbuch zum Durcharbeiten und keine Rechtschreibung, die man treffen muss — die Stunde geht deshalb ins Zuhören und Sprechen, mit einer Lehrperson, die mit Zürichdeutsch aufgewachsen ist.',
+  },
+  lessonList: {
+    en: '<li>Listening first: real speech at real speed, slowed down only where it breaks.</li><li>The sound changes that turn a German word you already know into a Swiss German one you do not.</li><li>The vocabulary that has no standard-German equivalent, and the false friends that do.</li><li>Situations you are actually in — the lunch table, the tram, the Apéro, the small talk before a meeting starts.</li><li>Dialect differences, so you can follow a colleague from Bern or Basel and not only one from Zürich.</li>',
+    de: '<li>Zuerst Hören: echte Sprache in echtem Tempo, nur dort verlangsamt, wo es kippt.</li><li>Die Lautverschiebungen, die aus einem deutschen Wort, das du kennst, ein schweizerdeutsches machen, das du nicht kennst.</li><li>Der Wortschatz, für den es kein hochdeutsches Gegenstück gibt — und die falschen Freunde, für die es eines gibt.</li><li>Situationen, in denen du wirklich bist: Mittagstisch, Tram, Apéro, Small Talk vor einer Sitzung.</li><li>Dialektunterschiede, damit du auch einer Kollegin aus Bern oder Basel folgen kannst und nicht nur einer aus Zürich.</li>',
+  },
+  links: {
+    en:
+      linkCard(
+        '/online-lessons.html',
+        'Swiss German online',
+        'A spoken language suits a video lesson particularly well.'
+      ) +
+      linkCard(
+        '/company-courses.html',
+        'Company courses',
+        'Swiss German for relocating and international teams.'
+      ) +
+      linkCard('/about.html', 'About us', 'Why the Swiss German here is native, not learnt.'),
+    de:
+      linkCard(
+        '/online-lessons.html',
+        'Schweizerdeutsch online',
+        'Eine gesprochene Sprache eignet sich besonders gut für Video.'
+      ) +
+      linkCard(
+        '/company-courses.html',
+        'Firmenkurse',
+        'Schweizerdeutsch für zuziehende und internationale Teams.'
+      ) +
+      linkCard('/about.html', 'Über uns', 'Warum das Schweizerdeutsch hier muttersprachlich ist.'),
+  },
+});
+
+const ENGLISH_SECTIONS = courseSections({
+  lessonBody: {
+    en: 'Sixty minutes built around what you need English for, which is rarely the same thing twice. A pupil catching up on school grammar and an adult preparing to present to a client need different hours, and get them.',
+    de: 'Sechzig Minuten rund um das, wofür du Englisch brauchst — und das ist selten zweimal dasselbe. Ein Kind, das Schulstoff aufholt, und eine erwachsene Person, die eine Kundenpräsentation vorbereitet, brauchen unterschiedliche Stunden und bekommen sie auch.',
+  },
+  lessonList: {
+    en: '<li>For school and tutoring: the current topic from class, retaught where it did not land, then practised until it holds.</li><li>For work: the meetings, emails and calls you actually have, in the vocabulary of your field.</li><li>For everyday life: speaking practice with the fluency and confidence that written exercises never build.</li><li>Correction that is specific — which mistakes matter, and which ones native speakers make too.</li>',
+    de: '<li>Für Schule und Nachhilfe: das aktuelle Thema aus dem Unterricht, neu erklärt, wo es nicht angekommen ist, und geübt, bis es sitzt.</li><li>Für den Beruf: die Sitzungen, E-Mails und Telefonate, die du wirklich hast, im Fachwortschatz deines Gebiets.</li><li>Für den Alltag: Sprechübungen mit der Sicherheit, die schriftliche Übungen nie aufbauen.</li><li>Konkrete Korrektur — welche Fehler zählen und welche auch Muttersprachlerinnen und Muttersprachler machen.</li>',
+  },
+  links: {
+    en:
+      linkCard(
+        '/exam-preparation.html',
+        'Exam preparation',
+        'Cambridge, TOEFL and IELTS with the real formats.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Private lessons',
+        'One-to-one tutoring, school to university.'
+      ) +
+      linkCard('/faq.html', 'FAQ', 'Levels, group sizes, prices, cancellation.'),
+    de:
+      linkCard(
+        '/exam-preparation.html',
+        'Prüfungsvorbereitung',
+        'Cambridge, TOEFL und IELTS mit den echten Formaten.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Einzelunterricht',
+        'Nachhilfe eins zu eins, von der Schule bis zur Uni.'
+      ) +
+      linkCard('/faq.html', 'Häufige Fragen', 'Niveaus, Gruppengrössen, Preise, Stornierung.'),
+  },
+});
+
+const EXAM_SECTIONS = courseSections({
+  lessonBody: {
+    en: 'Exam preparation is a different job from a language course: the target is not fluency in general but a specific mark on a specific paper on a specific date. The course is built backwards from that date.',
+    de: 'Prüfungsvorbereitung ist etwas anderes als ein Sprachkurs: Das Ziel ist nicht Sprachkompetenz im Allgemeinen, sondern ein bestimmtes Resultat in einer bestimmten Prüfung an einem bestimmten Datum. Der Kurs wird von diesem Datum her rückwärts geplant.',
+  },
+  lessonList: {
+    en: '<li>A diagnostic first: which of the four papers is actually costing you marks, because it is usually not the one you expect.</li><li>Work in the real exam format from early on — Cambridge, TOEFL, IELTS, TELC or Goethe, whichever you are sitting.</li><li>Timed practice, then going through what went wrong and why, which is where the marks come from.</li><li>The written and spoken tasks marked against the actual assessment criteria, not general impressions.</li><li>Exam-day technique: time budgeting, what to do when a question will not come, and how to leave marks on the table deliberately rather than by accident.</li>',
+    de: '<li>Zuerst eine Standortbestimmung: Welcher der vier Prüfungsteile kostet dich wirklich Punkte — meist nicht der, den man erwartet.</li><li>Von Anfang an Arbeit im echten Prüfungsformat: Cambridge, TOEFL, IELTS, TELC oder Goethe, je nachdem, was ansteht.</li><li>Übungen unter Zeitvorgabe und danach die Besprechung, was schiefging und warum — genau da entstehen die Punkte.</li><li>Schriftliche und mündliche Aufgaben, bewertet nach den echten Kriterien statt nach allgemeinem Eindruck.</li><li>Prüfungstechnik: Zeiteinteilung, was tun, wenn eine Aufgabe nicht kommen will, und wie man Punkte bewusst liegen lässt statt versehentlich.</li>',
+  },
+  links: {
+    en:
+      linkCard(
+        '/english-courses.html',
+        'English courses',
+        'If the language itself needs work first.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Private lessons',
+        'One-to-one, when the date is fixed and close.'
+      ) +
+      linkCard('/niveaus.html', 'Find your level', 'Check where you are before choosing an exam.'),
+    de:
+      linkCard(
+        '/english-courses.html',
+        'Englischkurse',
+        'Wenn zuerst die Sprache selbst dran ist.'
+      ) +
+      linkCard(
+        '/private-lessons.html',
+        'Einzelunterricht',
+        'Eins zu eins, wenn der Termin fix und nah ist.'
+      ) +
+      linkCard(
+        '/niveaus.html',
+        'Niveau herausfinden',
+        'Prüfe dein Niveau, bevor du eine Prüfung wählst.'
+      ),
+  },
+});
+
+const LUNCH_SECTIONS = courseSections({
+  lessonTitle: {
+    en: 'What "build your own" actually means',
+    de: 'Was «Build your own» konkret heisst',
+  },
+  lessonBody: {
+    en: 'Every other course on this site is a fixed shape: so many lessons, so long, at such a rhythm. This one is the shape you need. Tell us the constraint — the hour you have, the weeks you are free, the two languages you want at once — and we build around it.',
+    de: 'Jeder andere Kurs auf dieser Seite hat eine feste Form: so viele Lektionen, so lang, in diesem Rhythmus. Dieser hier hat die Form, die du brauchst. Sag uns die Rahmenbedingung — die eine Stunde, die du hast, die Wochen, in denen du frei bist, die zwei Sprachen, die du gleichzeitig willst — und wir bauen darum herum.',
+  },
+  lessonList: {
+    en: '<li><strong>Lunchtime German:</strong> 60 minutes inside a lunch break, at your office or online, so the commute does not eat the lesson.</li><li><strong>Intensive blocks:</strong> several lessons a week over a short period — a summer holiday, the weeks before a move, a gap between jobs.</li><li><strong>Swiss German and German combined:</strong> the standard German you need on paper and the Swiss German you need in the room, in one programme.</li><li><strong>Business English</strong> or any other specific purpose, built from your material rather than a course book.</li><li>Lessons of 60, 90 or 120 minutes, priced from CHF 50 per 60 minutes per person in a group and CHF 120 one-to-one.</li>',
+    de: '<li><strong>Lunchtime German:</strong> 60 Minuten in der Mittagspause, bei euch im Büro oder online, damit nicht der Arbeitsweg die Lektion auffrisst.</li><li><strong>Intensivblöcke:</strong> mehrere Lektionen pro Woche über einen kurzen Zeitraum — Sommerferien, die Wochen vor einem Umzug, die Lücke zwischen zwei Stellen.</li><li><strong>Schweizerdeutsch und Deutsch kombiniert:</strong> das Hochdeutsch, das du auf Papier brauchst, und das Schweizerdeutsch, das du im Raum brauchst, in einem Programm.</li><li><strong>Business-Englisch</strong> oder jeder andere konkrete Zweck, aufgebaut auf deinem Material statt auf einem Lehrbuch.</li><li>Lektionen à 60, 90 oder 120 Minuten, ab CHF 50 pro 60 Minuten pro Person in der Gruppe und CHF 120 im Einzelunterricht.</li>',
+  },
+  links: {
+    en:
+      linkCard(
+        '/private-lessons.html',
+        'Private lessons',
+        'The most tailored version of all of this.'
+      ) +
+      linkCard(
+        '/company-courses.html',
+        'Company courses',
+        'The same flexibility, for a whole team.'
+      ) +
+      linkCard(
+        '/online-lessons.html',
+        'Online lessons',
+        'Fits a lunch break better than a commute does.'
+      ),
+    de:
+      linkCard(
+        '/private-lessons.html',
+        'Einzelunterricht',
+        'Die massgeschneidertste Variante von alldem.'
+      ) +
+      linkCard(
+        '/company-courses.html',
+        'Firmenkurse',
+        'Dieselbe Flexibilität, für ein ganzes Team.'
+      ) +
+      linkCard(
+        '/online-lessons.html',
+        'Online-Unterricht',
+        'Passt besser in eine Mittagspause als ein Arbeitsweg.'
+      ),
+  },
+});
+
+// `facts` overrides the shared fact tiles; `sections` carries the long-form
+// body below them, for the pages that have one.
+function coursePage(entry) {
+  return {
+    title: entry.title,
+    description: entry.description,
+    text: Object.assign(
+      { h1: entry.h1, '#course-intro': entry.intro },
+      courseFacts,
+      entry.facts || {},
+      entry.sections || {}
+    ),
+  };
+}
+
+Object.assign(pages, {
+  '/german-courses.html': coursePage({
+    title: {
+      en: 'German Courses in Zürich — Learning with Gioia',
+      de: 'Deutschkurse in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'German courses in Zürich from A0 to C2, taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
+      de: 'Deutschkurse in Zürich von A0 bis C2, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+    },
+    h1: { en: 'German courses', de: 'Deutschkurse' },
+    intro: {
+      en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers with linguistics degrees and formal teaching qualifications.',
+      de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
+    },
+    sections: GERMAN_SECTIONS,
+  }),
+  '/swiss-german.html': coursePage({
+    title: {
+      en: 'Swiss German Courses in Zürich — Learning with Gioia',
+      de: 'Schweizerdeutschkurse in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'Swiss German courses in Zürich taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
+      de: 'Schweizerdeutschkurse in Zürich, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+    },
+    h1: { en: 'Swiss German', de: 'Schweizerdeutsch' },
+    intro: {
+      en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
+      de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
+    },
+    sections: SWISS_SECTIONS,
+  }),
+  '/gymivorbereitung.html': coursePage({
+    title: {
+      en: 'Gymivorbereitung in Zürich — Learning with Gioia',
+      de: 'Gymivorbereitung in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 12 lessons of 90 minutes over 3 months — CHF 80 per person per 60 minutes in a group, CHF 120 one-to-one.',
+      de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 12 Lektionen à 90 Minuten in 3 Monaten — CHF 80 pro Person pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
+    },
+    h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+    intro: {
+      en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
+      de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+    },
+    facts: {
+      '#fact-duration-value': { en: '3 months', de: '3 Monate' },
+      '#fact-lessons-label': { en: 'lessons of 90 min', de: 'Lektionen à 90 Min.' },
+      '#fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
+      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
+      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+    },
+    sections: {
+      '#gymi-exam-title': {
+        en: 'What the Gymiprüfung asks for',
+        de: 'Was die Gymiprüfung verlangt',
+      },
+      '#gymi-exam-body': {
+        en: 'The entrance exam for the Gymnasium in canton Zürich tests German and mathematics, under time pressure, in a format most children have never sat before. That last part matters more than families expect: a child can know the material and still lose marks to the shape of the paper — how the questions are phrased, how long to spend on each one, when to move on and come back. Preparation has to cover the subject knowledge and the exam itself, because on the day they are the same problem.',
+        de: 'Die Aufnahmeprüfung ans Gymnasium im Kanton Zürich prüft Deutsch und Mathematik, unter Zeitdruck und in einem Format, das die meisten Kinder vorher nie geschrieben haben. Gerade dieser letzte Punkt wird oft unterschätzt: Ein Kind kann den Stoff beherrschen und trotzdem Punkte an die Form der Prüfung verlieren — wie die Fragen formuliert sind, wie lange man an einer Aufgabe bleibt, wann man weitergeht und später zurückkommt. Die Vorbereitung muss deshalb den Stoff und die Prüfung selbst abdecken, denn am Prüfungstag sind das dasselbe Problem.',
+      },
+
+      '#gymi-when-title': {
+        en: 'When to start',
+        de: 'Wann man beginnen sollte',
+      },
+      '#gymi-when-body': {
+        en: 'Earlier than most families think, and calmly rather than intensively. One block of our Gymivorbereitung is 12 lessons of 90 minutes across three months. Families who start a year out typically take more than one block, using the first to close gaps in the underlying material and the later ones for exam practice proper. Starting a few weeks before the exam is still worth doing, but at that point the work is triage: we pick the two or three things that will move the mark most and leave the rest.',
+        de: 'Früher, als die meisten Familien denken — und in Ruhe statt im Intensivmodus. Ein Block unserer Gymivorbereitung umfasst 12 Lektionen à 90 Minuten über drei Monate. Familien, die ein Jahr im Voraus beginnen, buchen meist mehr als einen Block: Der erste schliesst Lücken im Stoff, die späteren dienen dem eigentlichen Prüfungstraining. Auch wenige Wochen vor der Prüfung lohnt sich der Einstieg noch, dann arbeiten wir aber nach Dringlichkeit: Wir wählen die zwei, drei Dinge, die am meisten Punkte bringen, und lassen den Rest.',
+      },
+
+      '#gymi-lesson-title': {
+        en: 'What a lesson looks like',
+        de: 'Wie eine Lektion abläuft',
+      },
+      '#gymi-lesson-body': {
+        en: 'Ninety minutes, with the balance between the three parts set for the individual child rather than for the group as a whole.',
+        de: 'Neunzig Minuten, wobei die Gewichtung der drei Teile auf das einzelne Kind abgestimmt wird und nicht auf die Gruppe als Ganzes.',
+      },
+      '#gymi-lesson-list': {
+        en: '<li><strong>Closing gaps.</strong> The underlying material, retaught where it did not land the first time.</li><li><strong>Exam practice.</strong> Past-paper style tasks under realistic timing, then going through what went wrong and why.</li><li><strong>Exam technique and nerves.</strong> How to budget the time, what to do when a question will not come, and how to arrive on the day without the panic that costs more marks than any gap in knowledge.</li>',
+        de: '<li><strong>Lücken schliessen.</strong> Der Stoff, neu erklärt dort, wo er beim ersten Mal nicht angekommen ist.</li><li><strong>Prüfungstraining.</strong> Aufgaben im Prüfungsformat unter realistischer Zeitvorgabe, danach die Besprechung, was schiefging und warum.</li><li><strong>Prüfungstechnik und Nerven.</strong> Wie man sich die Zeit einteilt, was man tut, wenn eine Aufgabe nicht kommen will, und wie man am Prüfungstag ankommt, ohne die Panik, die mehr Punkte kostet als jede Wissenslücke.</li>',
+      },
+
+      '#gymi-format-title': {
+        en: 'Group or one-to-one',
+        de: 'Gruppe oder Einzelunterricht',
+      },
+      '#gymi-format-body': {
+        en: 'Groups run from three to seven children and cost CHF 80 per person per 60 minutes. They work well when a child is broadly on track and mainly needs practice and routine — and the presence of others working on the same paper is, for a lot of children, motivating rather than stressful. One-to-one is CHF 120 per 60 minutes and is the better choice when there are specific gaps to close, when a child needs a slower pace without an audience, or when exam anxiety is the main obstacle rather than the material.',
+        de: 'Gruppen umfassen drei bis sieben Kinder und kosten CHF 80 pro Person pro 60 Minuten. Sie eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und vor allem Übung und Routine braucht — und für viele Kinder wirkt es motivierend statt belastend, wenn andere an derselben Prüfung arbeiten. Einzelunterricht kostet CHF 120 pro 60 Minuten und ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind, wenn ein Kind ein langsameres Tempo ohne Publikum braucht oder wenn nicht der Stoff, sondern die Prüfungsangst das Haupthindernis ist.',
+      },
+      '#gymi-format-pull': {
+        en: 'A child who knows the material but freezes on the day has a different problem from a child who is calm but has gaps. They should not get the same course.',
+        de: 'Ein Kind, das den Stoff kann, aber am Prüfungstag blockiert, hat ein anderes Problem als ein Kind, das ruhig bleibt, aber Lücken hat. Beide sollten nicht denselben Kurs bekommen.',
+      },
+
+      '#gymi-parents-title': {
+        en: 'What parents can expect from us',
+        de: 'Was Eltern von uns erwarten können',
+      },
+      '#gymi-parents-body': {
+        en: 'An honest assessment at the start, including when we think the timeline is tight or the target is the wrong one — that conversation is more useful to you than an encouraging one. Then regular, specific feedback on how your child is actually doing: not "going well", but which topics are secure, which are not, and what is being done about it. We teach in small groups or one-to-one, always in German, and we will tell you if we think a different format would serve your child better.',
+        de: 'Eine ehrliche Einschätzung zu Beginn — auch dann, wenn wir den Zeitplan für knapp oder das Ziel für das falsche halten. Dieses Gespräch nützt euch mehr als ein aufmunterndes. Danach regelmässige, konkrete Rückmeldungen dazu, wie es eurem Kind wirklich geht: nicht «läuft gut», sondern welche Themen sitzen, welche nicht und was dagegen unternommen wird. Wir unterrichten in kleinen Gruppen oder einzeln, immer auf Deutsch, und sagen euch, wenn wir ein anderes Format für euer Kind für besser halten.',
+      },
+
+      '#gymi-faq-title': { en: 'Questions parents ask', de: 'Fragen von Eltern' },
+      '#gymi-faq-list': { en: faqHtml(FAQ.gymi, 'en'), de: faqHtml(FAQ.gymi, 'de') },
+
+      '#gymi-links-title': { en: 'Related', de: 'Passend dazu' },
+      '#gymi-links': {
+        en:
+          linkCard(
+            '/private-lessons.html',
+            'Private lessons',
+            'One-to-one, when a group is not the right fit.'
+          ) +
+          linkCard(
+            '/german-courses.html',
+            'German courses',
+            'If the German itself is the gap to close.'
+          ) +
+          linkCard('/faq.html', 'FAQ', 'Timelines, group sizes, cancellation terms.'),
+        de:
+          linkCard(
+            '/private-lessons.html',
+            'Einzelunterricht',
+            'Eins zu eins, wenn eine Gruppe nicht passt.'
+          ) +
+          linkCard(
+            '/german-courses.html',
+            'Deutschkurse',
+            'Wenn das Deutsch selbst die Lücke ist.'
+          ) +
+          linkCard('/faq.html', 'Häufige Fragen', 'Zeitpläne, Gruppengrössen, Stornobedingungen.'),
+      },
+    },
+  }),
+  '/english-courses.html': coursePage({
+    title: {
+      en: 'English Courses in Zürich — Learning with Gioia',
+      de: 'Englischkurse in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'English courses and tutoring in Zürich, from beginner (A1) to advanced (C2). 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
+      de: 'Englischkurse und Nachhilfe in Zürich, von A1 bis C2. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
+    },
+    h1: { en: 'English courses', de: 'Englischkurse' },
+    intro: {
+      en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university, always tailored to what you need next.',
+      de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität, immer abgestimmt auf das, was als Nächstes ansteht.',
+    },
+    sections: ENGLISH_SECTIONS,
+  }),
+  '/exam-preparation.html': coursePage({
+    title: {
+      en: 'Exam Preparation in Zürich — Learning with Gioia',
+      de: 'Prüfungsvorbereitung in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams in Zürich. 40 lessons of 60 minutes over 5 months — CHF 2000 in a group, CHF 4800 one-to-one.',
+      de: 'Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe in Zürich. 40 Lektionen à 60 Minuten in 5 Monaten — CHF 2000 in der Gruppe, CHF 4800 im Einzelunterricht.',
+    },
+    h1: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
+    intro: {
+      en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
+      de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
+    },
+    facts: { '#fact-duration-value': { en: '5 months', de: '5 Monate' } },
+    sections: EXAM_SECTIONS,
+  }),
+  '/company-courses.html': coursePage({
+    title: {
+      en: 'Company Language Courses in Zürich — Learning with Gioia',
+      de: 'Firmenkurse in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'Language courses for companies and teams in Zürich, at your offices or ours. Around 100 lessons per level, suggested 2 × 60 minutes per week — pricing on request.',
+      de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. Rund 100 Lektionen pro Niveau, empfohlen 2 × 60 Minuten pro Woche — Preis auf Anfrage.',
+    },
+    h1: { en: 'Company courses', de: 'Firmenkurse' },
+    intro: {
+      en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face — from client meetings to small talk in the corridor.',
+      de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen — vom Kundengespräch bis zum Small Talk auf dem Gang.',
+    },
+    facts: {
+      '#fact-lessons-label': { en: 'suggested lessons', de: 'Empfohlene Lektionen' },
+      '#fact-lessons-value': { en: 'approx. 100', de: 'ca. 100' },
+      '#fact-lessons-unit': { en: 'per level', de: 'pro Niveau' },
+      '#fact-frequency-label': { en: 'suggested frequency', de: 'Empfohlener Rhythmus' },
+      '#fact-frequency-value': { en: '2 × 60 min', de: '2 × 60 Min.' },
+      '#fact-frequency-unit': { en: 'per week', de: 'pro Woche' },
+      '#fact-price-label': { en: 'pricing', de: 'Preis' },
+      '#fact-price-value': { en: 'on request', de: 'auf Anfrage' },
+      '#course-structure-note': {
+        en: 'Not sure how many lessons your team needs? Our <a href="/index.html#offer-details">guidance on course structure</a> shows how a full level breaks down.',
+        de: 'Unsicher, wie viele Lektionen euer Team braucht? Unsere <a href="/index.html#offer-details">Hinweise zur Kursstruktur</a> zeigen, wie sich ein vollständiges Niveau aufteilt.',
+      },
+    },
+    sections: {
+      '#company-setup-title': {
+        en: 'How an in-house course is set up',
+        de: 'Wie ein Inhouse-Kurs aufgesetzt wird',
+      },
+      '#company-setup-body': {
+        en: 'Before we quote anything, we work out what your team actually needs. That conversation is free and usually takes one meeting: who is learning, at what level, for what, and what has to be true by when.',
+        de: 'Bevor wir eine Offerte machen, klären wir, was euer Team wirklich braucht. Dieses Gespräch ist kostenlos und dauert in der Regel ein Meeting: wer lernt, auf welchem Niveau, wofür, und was bis wann erreicht sein muss.',
+      },
+      '#company-setup-list': {
+        en: '<li><strong>Needs analysis.</strong> A short assessment per participant, so nobody sits in a course that is a level too easy or too hard.</li><li><strong>A proposal.</strong> Group split, lesson length, frequency, duration and what each block covers.</li><li><strong>Location.</strong> At your offices, in our classroom in Zürich, online, or a mix across the programme.</li><li><strong>The course itself,</strong> with material built for your context rather than a course book chapter.</li><li><strong>Progress reporting</strong> back to whoever is responsible for the budget, at intervals you set.</li>',
+        de: '<li><strong>Bedarfsanalyse.</strong> Eine kurze Einstufung pro Teilnehmenden, damit niemand in einem Kurs sitzt, der ein Niveau zu leicht oder zu schwer ist.</li><li><strong>Ein Vorschlag.</strong> Gruppeneinteilung, Lektionsdauer, Rhythmus, Dauer und was jeder Block abdeckt.</li><li><strong>Ort.</strong> Bei euch im Büro, in unserem Kursraum in Zürich, online oder gemischt über das Programm hinweg.</li><li><strong>Der Kurs selbst,</strong> mit Material für euren Kontext statt eines Lehrbuchkapitels.</li><li><strong>Fortschrittsberichte</strong> an die budgetverantwortliche Person, in den Abständen, die ihr festlegt.</li>',
+      },
+
+      '#company-content-title': {
+        en: 'Content built for your industry',
+        de: 'Inhalte, die zu eurer Branche passen',
+      },
+      '#company-content-body': {
+        en: 'A generic business-language course teaches the vocabulary of no particular business. We would rather spend the preparation time than have your team spend the lesson time on situations they will never be in. That means the emails they actually send, the meetings they actually sit in, the clients they actually talk to, and the terminology of your field.',
+        de: 'Ein generischer Business-Sprachkurs vermittelt den Wortschatz keiner bestimmten Branche. Wir investieren lieber die Vorbereitungszeit, als dass euer Team die Unterrichtszeit mit Situationen verbringt, in die es nie kommt. Das heisst: die E-Mails, die sie wirklich schreiben, die Sitzungen, in denen sie wirklich sitzen, die Kundschaft, mit der sie wirklich sprechen, und die Fachsprache eures Gebiets.',
+      },
+      '#company-content-pull': {
+        en: 'The measure of a company course is not how much grammar was covered. It is whether the next client meeting goes better than the last one.',
+        de: 'Der Massstab eines Firmenkurses ist nicht, wie viel Grammatik behandelt wurde. Sondern ob das nächste Kundengespräch besser läuft als das letzte.',
+      },
+
+      '#company-swiss-title': {
+        en: 'Swiss German for relocating and international teams',
+        de: 'Schweizerdeutsch für zuziehende und internationale Teams',
+      },
+      '#company-swiss-body': {
+        en: 'This is what companies ask us for most, and the one thing most language providers in Zürich cannot supply. Standard German gets a new arrival through the working day. Swiss German is what decides whether they are part of the lunch table, the corridor conversation and the team apéro, or standing slightly outside all three. It is taught by a native Swiss German speaker born and raised in Zürich — it is not a language you can learn from a textbook, because there is no standard written form to put in one. For teams that need both, we run Swiss German and standard German as a combined programme.',
+        de: 'Das ist die häufigste Anfrage von Firmen — und das Einzige, was die meisten Sprachanbieter in Zürich nicht liefern können. Mit Hochdeutsch kommt eine neu zugezogene Person durch den Arbeitstag. Schweizerdeutsch entscheidet darüber, ob sie beim Mittagstisch, im Gang und beim Team-Apéro dazugehört oder bei allen dreien knapp daneben steht. Unterrichtet wird von einer in Zürich geborenen und aufgewachsenen Muttersprachlerin — es ist keine Sprache, die man aus einem Lehrbuch lernt, weil es dafür keine einheitliche Schriftform gibt. Für Teams, die beides brauchen, kombinieren wir Schweizerdeutsch und Hochdeutsch in einem Programm.',
+      },
+
+      '#company-schedule-title': {
+        en: 'Scheduling around how your company actually runs',
+        de: 'Planung entlang eures echten Arbeitsalltags',
+      },
+      '#company-schedule-body': {
+        en: 'Two 60-minute lessons a week is the usual rhythm, and around 100 lessons covers a full level. But the rhythm is yours to set: lunch-break slots, early mornings before the day starts, intensive blocks around a quieter period, or a schedule that works around shift patterns and recurring meetings. If your team is split across sites, part of the group can join online while the rest are in the room.',
+        de: 'Zwei Lektionen à 60 Minuten pro Woche ist der übliche Rhythmus, und rund 100 Lektionen decken ein ganzes Niveau ab. Den Rhythmus bestimmt aber ihr: Termine in der Mittagspause, früh am Morgen vor Arbeitsbeginn, Intensivblöcke in ruhigeren Phasen oder eine Planung rund um Schichtmodelle und wiederkehrende Sitzungen. Ist euer Team auf mehrere Standorte verteilt, kann ein Teil online dazukommen, während der Rest im Raum sitzt.',
+      },
+
+      '#company-admin-title': {
+        en: 'Enrolment, invoicing and contracts',
+        de: 'Anmeldung, Rechnung und Verträge',
+      },
+      '#company-admin-body': {
+        en: 'We invoice the company directly — one invoice for the whole programme, or one per participant, whichever your finance team prefers. Companies can also be issued a booking code, which lets employees enrol themselves in the right course without every sign-up passing through an HR inbox. Terms, cancellation conditions and data handling are the same as for any other course and are set out in our <a href="/agb.html">terms and conditions</a>.',
+        de: 'Wir stellen der Firma direkt Rechnung — eine Rechnung für das ganze Programm oder eine pro Teilnehmenden, je nachdem, was eurer Buchhaltung lieber ist. Firmen können ausserdem einen Buchungscode erhalten: Damit melden sich Mitarbeitende selbst für den richtigen Kurs an, ohne dass jede Anmeldung über ein HR-Postfach läuft. Vertragsbedingungen, Stornoregelungen und Datenbearbeitung sind dieselben wie bei jedem anderen Kurs und stehen in unseren <a href="/agb.html">AGB</a>.',
+      },
+
+      '#company-faq-title': {
+        en: 'Questions companies ask',
+        de: 'Fragen von Firmen',
+      },
+      '#company-faq-list': { en: faqHtml(FAQ.company, 'en'), de: faqHtml(FAQ.company, 'de') },
+
+      '#company-links-title': { en: 'Related', de: 'Passend dazu' },
+      '#company-links': {
+        en:
+          linkCard(
+            '/swiss-german.html',
+            'Swiss German courses',
+            'The course relocating employees ask for by name.'
+          ) +
+          linkCard(
+            '/online-lessons.html',
+            'Online lessons',
+            'For teams split across sites or working remotely.'
+          ) +
+          linkCard('/about.html', 'About us', 'Who teaches, and why the Swiss German is native.'),
+        de:
+          linkCard(
+            '/swiss-german.html',
+            'Schweizerdeutschkurse',
+            'Der Kurs, nach dem zuziehende Mitarbeitende namentlich fragen.'
+          ) +
+          linkCard(
+            '/online-lessons.html',
+            'Online-Unterricht',
+            'Für Teams an mehreren Standorten oder im Homeoffice.'
+          ) +
+          linkCard(
+            '/about.html',
+            'Über uns',
+            'Wer unterrichtet und warum das Schweizerdeutsch muttersprachlich ist.'
+          ),
+      },
+    },
+  }),
+  '/lunch-time-german.html': coursePage({
+    title: {
+      en: 'Build Your Own German Course in Zürich — Learning with Gioia',
+      de: 'Build Your Own: Deutschkurs nach Mass in Zürich — Learning with Gioia',
+    },
+    description: {
+      en: 'Build your own German course in Zürich: lunchtime German, intensive German, Swiss German and German combined, business English — tailored to your needs and availability. Lessons of 60, 90 or 120 minutes — CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
+      de: 'Dein Kurs nach Mass in Zürich: Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch — abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60, 90 oder 120 Minuten — CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
+    },
+    h1: { en: 'Build your own', de: 'Build your own' },
+    intro: {
+      en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
+      de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+    },
+    facts: {
+      '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
+      '#fact-lessons-label': { en: 'lesson length', de: 'Lektionsdauer' },
+      '#fact-lessons-value': { en: '60, 90, 120 min', de: '60, 90, 120 Min.' },
+      '#fact-lessons-unit': { en: 'or as you need it', de: 'oder wie du es brauchst' },
+      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
+      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+    },
+    sections: LUNCH_SECTIONS,
+  }),
+});
+
+Object.assign(pages, {
+  '/intake.html': {
+    title: {
+      en: 'Student Intake — Learning with Gioia',
+      de: 'Schülerangaben — Learning with Gioia',
+    },
+    text: {
+      '#intake-loading': { en: 'loading...', de: 'Wird geladen...' },
+      '#intake-content h1': { en: 'your details', de: 'Deine Angaben' },
+      '.intake-intro': {
+        en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
+        de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
+      },
+      '#intake-label-student': {
+        en: 'student information',
+        de: 'Schülerangaben',
+      },
+      'label[for="if-first-name"]': { en: 'first name *', de: 'Vorname *' },
+      'label[for="if-last-name"]': { en: 'last name *', de: 'Nachname *' },
+      'label[for="if-gender"]': { en: 'salutation *', de: 'Anrede *' },
+      '#if-gender option[value="female"]': { en: 'Ms', de: 'Frau' },
+      '#if-gender option[value="male"]': { en: 'Mr', de: 'Herr' },
+      '#if-gender option[value="other"]': { en: 'Other', de: 'Andere' },
+      'label[for="if-gender-note"]': { en: 'please specify *', de: 'bitte angeben *' },
+      'label[for="if-email"]': { en: 'email *', de: 'E-Mail *' },
+      'label[for="if-phone"]': { en: 'phone *', de: 'Telefon *' },
+      'label[for="if-street"]': { en: 'street *', de: 'Strasse *' },
+      'label[for="if-street-number"]': { en: 'number *', de: 'Nummer *' },
+      'label[for="if-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
+      'label[for="if-city"]': { en: 'city *', de: 'Ort *' },
+      '#intake-label-emergency': {
+        en: 'emergency contact',
+        de: 'Notfallkontakt',
+      },
+      'label[for="if-ec-name"]': { en: 'name', de: 'Name' },
+      'label[for="if-ec-relationship"]': { en: 'relationship', de: 'Beziehung' },
+      '#if-ec-relationship': {
+        en: 'e.g. partner, parent',
+        de: 'z. B. Partner/in, Elternteil',
+        attr: 'placeholder',
+      },
+      'label[for="if-ec-phone"]': { en: 'phone', de: 'Telefon' },
+      'label[for="if-ec-email"]': { en: 'email', de: 'E-Mail' },
+      '#intake-label-billing': {
+        en: 'billing',
+        de: 'Rechnung',
+      },
+      '.intake-checkbox span': {
+        en: 'billing address differs from personal address',
+        de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
+      },
+      'label[for="if-billing-first-name"]': {
+        en: 'billing first name *',
+        de: 'Rechnungsvorname *',
+      },
+      'label[for="if-billing-last-name"]': {
+        en: 'billing last name *',
+        de: 'Rechnungsnachname *',
+      },
+      'label[for="if-billing-email"]': {
+        en: 'billing email *',
+        de: 'Rechnungs-E-Mail *',
+      },
+      'label[for="if-billing-street"]': { en: 'street *', de: 'Strasse *' },
+      'label[for="if-billing-street-number"]': { en: 'number *', de: 'Nummer *' },
+      'label[for="if-billing-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
+      'label[for="if-billing-city"]': { en: 'city *', de: 'Ort *' },
+      '#err-first-name': {
+        en: 'Please enter a first name.',
+        de: 'Bitte gib einen Vornamen ein.',
+      },
+      '#err-last-name': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
+      '#err-gender': {
+        en: 'Please select a salutation.',
+        de: 'Bitte wähle eine Anrede aus.',
+      },
+      '#err-gender-note': {
+        en: 'Please specify your salutation.',
+        de: 'Bitte gib deine Anrede an.',
+      },
+      '#intake-submit-btn': { en: 'save details ->', de: 'Angaben speichern ->' },
+      '#submit-error': {
+        en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#intake-thanks h1': { en: 'thank you.', de: 'Danke.' },
+      '#intake-thanks p': {
+        en: "Your details have been saved. We'll be in touch shortly.",
+        de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
+      },
+      '#intake-error h1': {
+        en: 'link expired or invalid.',
+        de: 'Link abgelaufen oder ungültig.',
+      },
+      '#intake-error p': {
+        en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+    },
+  },
+  '/feedback.html': {
+    title: {
+      en: 'Course Feedback — Learning with Gioia',
+      de: 'Kursfeedback — Learning with Gioia',
+    },
+    text: {
+      '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
+      '#feedback-content h1': { en: 'your feedback', de: 'Dein Feedback' },
+      '.intake-intro': {
+        en: 'Thank you for taking the time to share your feedback. Your honest opinion helps improve future lessons — there are no right or wrong answers, so please be as open as you like. Only your teacher reads your answers.',
+        de: 'Danke, dass du dir Zeit für dein Feedback nimmst. Deine ehrliche Meinung hilft uns, den Unterricht besser zu machen — es gibt keine richtigen oder falschen Antworten, sag also ruhig offen, was du denkst. Deine Antworten liest nur deine Lehrperson.',
+      },
+      '#feedback-time': {
+        en: 'estimated time: 3-5 minutes',
+        de: 'Dauer: 3-5 Minuten',
+      },
+      '#feedback-submit-btn': { en: 'send feedback ->', de: 'Feedback senden ->' },
+      '#submit-error': {
+        en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-thanks h1': { en: 'thank you.', de: 'Danke.' },
+      '#feedback-thanks p': {
+        en: 'Your honest feedback helps us improve our lessons for everyone. We read every response carefully and genuinely appreciate both the compliments and the suggestions.',
+        de: 'Dein ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
+      },
+      '#feedback-done h1': { en: 'already answered.', de: 'Bereits beantwortet.' },
+      '#feedback-done p': {
+        en: 'This feedback has already been submitted — thank you. If you would like to add something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Dieses Feedback wurde bereits abgeschickt — danke. Wenn du noch etwas ergänzen möchtest, schreib einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-unavailable h1': {
+        en: 'not right now.',
+        de: 'Gerade nicht möglich.',
+      },
+      '#feedback-unavailable p': {
+        en: 'We could not load your feedback form just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Wir konnten dein Feedback-Formular gerade nicht laden — dein Link ist weiterhin gültig. Bitte versuche es in ein paar Minuten noch einmal oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-error h1': {
+        en: 'link expired or invalid.',
+        de: 'Link abgelaufen oder ungültig.',
+      },
+      '#feedback-error p': {
+        en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+    },
+  },
+  '/modalpartikeln.html': {
+    title: {
+      en: 'German Modal Particles Explained | Learning with Gioia',
+      de: 'Modalpartikeln — Deutsch lernen | Learning with Gioia',
+    },
+    description: {
+      en: 'Learn German modal particles interactively: reference with examples, quiz and cheat sheet. A free learning resource from Learning with Gioia.',
+      de: 'Lerne deutsche Modalpartikeln interaktiv: Übersicht mit Beispielen, Quiz und Spickzettel. Kostenloses Lernmittel von Learning with Gioia.',
+    },
+    text: {
+      '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },
+      '.page-header p': {
+        en: 'The little words that make German come alive.',
+        de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
+      },
+      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
+      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
+      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
+      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
+      '.position-note p': {
+        en: 'Modal particles always stand in the <strong>middle field</strong> of the sentence — usually before <em>auch</em> or <em>nicht</em>, before modal and local details, and before words or information that belong directly to the verb.',
+        de: 'Modalpartikeln stehen immer im <strong>Mittelfeld</strong> des Satzes — meist vor <em>auch</em> oder <em>nicht</em>, bzw. vor Modal- und Lokalangaben und vor den <em>Verbgefährten</em> (Wörter und Informationen, die direkt zum Verb gehören oder direkt mit ihm verbunden sind).',
+      },
+    },
+  },
+  '/subjunktionen.html': {
+    title: {
+      en: 'German Subjunctions (Subordinating Conjunctions) | Learning with Gioia',
+      de: 'Subjunktionen — Deutsch lernen | Learning with Gioia',
+    },
+    description: {
+      en: 'Learn German subjunctions interactively: meaning, subordinate-clause word order, examples, quiz and cheat sheet.',
+      de: 'Lerne deutsche Subjunktionen interaktiv: Bedeutung, Nebensatzstellung, Beispiele, Quiz und Spickzettel.',
+    },
+    text: {
+      '.page-header h1': { en: 'Subjunctions', de: 'Subjunktionen' },
+      '.page-header p': {
+        en: 'The words that open subordinate clauses and connect thoughts.',
+        de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
+      },
+      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
+      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
+      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
+      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
+      '.position-note p': {
+        en: 'Subjunctions introduce <strong>subordinate clauses</strong>. The finite verb normally goes <strong>to the end</strong> of the subordinate clause: <em>Ich bleibe, weil ich lernen muss.</em> When the subordinate clause comes first, the finite verb follows directly in the main clause: <em>Weil ich lernen muss, bleibe ich.</em>',
+        de: 'Subjunktionen leiten <strong>Nebensätze</strong> ein. Das finite Verb steht im Nebensatz normalerweise <strong>am Ende</strong>: <em>Ich bleibe, weil ich lernen muss.</em> Wenn der Nebensatz vorne steht, folgt im Hauptsatz direkt das finite Verb: <em>Weil ich lernen muss, bleibe ich.</em>',
+      },
+    },
+  },
+  '/niveaus.html': {
+    title: {
+      en: 'German Language Levels (CEFR) | Learning with Gioia',
+      de: 'Sprachniveaus (GER) — Deutsch lernen | Learning with Gioia',
+    },
+    description: {
+      en: 'The six CEFR levels A1 to C2 explained — plus an interactive self-assessment checklist to find your German level.',
+      de: 'Die sechs Sprachniveaus A1 bis C2 des GER erklärt – mit interaktivem Selbsteinschätzungsraster für Deutsch.',
+    },
+  },
+  '/konjunktionen.html': {
+    title: {
+      en: 'German Conjunctions: aber, denn, und, sondern, oder | Learning with Gioia',
+      de: 'Konjunktionen — Deutsch lernen | Learning with Gioia',
+    },
+    description: {
+      en: 'Learn the five German conjunctions aber, denn, und, sondern and oder interactively: meaning, word order, examples, quiz and cheat sheet.',
+      de: 'Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel.',
+    },
+    text: {
+      '.page-header h1': { en: 'Conjunctions', de: 'Konjunktionen' },
+      '.page-header p': {
+        en: 'The five words that connect equal parts.',
+        de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
+      },
+      '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
+      '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
+      '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
+      '.position-note h2': { en: 'Position in the sentence', de: 'Stellung im Satz' },
+      '.position-note p': {
+        en: 'These five conjunctions usually connect <strong>equal</strong> words, phrases, or main clauses. Unlike subjunctions, they normally do <strong>not</strong> introduce subordinate clauses and do <strong>not</strong> send the finite verb to the end: <em>Ich lerne, und sie liest.</em> Compare: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
+        de: 'Diese fünf Konjunktionen verbinden meist <strong>gleichrangige</strong> Wörter, Satzteile oder Hauptsätze. Anders als Subjunktionen leiten sie normalerweise <strong>keinen Nebensatz</strong> ein und schicken das finite Verb <strong>nicht ans Ende</strong>: <em>Ich lerne, und sie liest.</em> Vergleiche: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
+      },
+    },
+  },
+});
 
 Object.assign(pages, {
   '/about.html': {
