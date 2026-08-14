@@ -10,6 +10,7 @@ import {
   pages,
   nav,
   pageForSlug,
+  pageForAnySlug,
   pagePath,
   templatePath,
   defaultLangFor,
@@ -22,18 +23,25 @@ import { navMarkup, footerMarkup } from '../functions/_nav-markup.js';
 import { buildSitemap } from '../functions/_sitemap.js';
 
 test('pageForSlug resolves every route, and the bare language prefix', () => {
-  for (const [page, slug] of Object.entries(ROUTES)) {
-    assert.equal(pageForSlug(slug), page, `slug ${slug}`);
+  for (const [page, slugs] of Object.entries(ROUTES)) {
+    for (const lang of SUPPORTED) {
+      assert.equal(pageForSlug(slugs[lang], lang), page, `${lang} slug ${slugs[lang]}`);
+    }
   }
   // /en and /en/ both arrive with no segments.
-  assert.equal(pageForSlug(''), '/index.html');
-  assert.equal(pageForSlug('/'), '/index.html');
+  for (const lang of SUPPORTED) {
+    assert.equal(pageForSlug('', lang), '/index.html');
+    assert.equal(pageForSlug('/', lang), '/index.html');
+  }
 });
 
 test('pageForSlug returns null for unknown slugs so the Function can 404', () => {
   for (const slug of ['nonexistent', 'german-course', 'admin', 'api/config', 'pages/index']) {
-    assert.equal(pageForSlug(slug), null, slug);
+    for (const lang of SUPPORTED) {
+      assert.equal(pageForSlug(slug, lang), null, `${lang} ${slug}`);
+    }
   }
+  assert.equal(pageForAnySlug('nonexistent'), null);
 });
 
 test('pagePath round-trips through pageForSlug for both languages', () => {
@@ -42,7 +50,43 @@ test('pagePath round-trips through pageForSlug for both languages', () => {
       const path = pagePath(page, lang);
       assert.ok(path.startsWith(`/${lang}/`), `${page} ${lang} -> ${path}`);
       const slug = path.slice(lang.length + 2);
-      assert.equal(pageForSlug(slug), page, path);
+      assert.equal(pageForSlug(slug, lang), page, path);
+    }
+  }
+});
+
+test('every slug is unique within its language, so no page shadows another', () => {
+  for (const lang of SUPPORTED) {
+    const seen = new Map();
+    for (const [page, slugs] of Object.entries(ROUTES)) {
+      const slug = slugs[lang];
+      assert.ok(
+        !seen.has(slug),
+        `${lang} slug "${slug}" used by both ${seen.get(slug)} and ${page}`
+      );
+      seen.set(slug, page);
+    }
+  }
+});
+
+test('a slug from the other language resolves, so _render.js can 301 rather than 404', () => {
+  // The case that matters: German URLs that existed before the slugs were
+  // localized must keep working.
+  assert.equal(pageForAnySlug('german-courses'), '/german-courses.html');
+  assert.equal(pageForAnySlug('deutschkurse'), '/german-courses.html');
+  assert.equal(pageForAnySlug('firmenkurse'), '/company-courses.html');
+
+  // And the redirect target is the same page in the requested language.
+  assert.equal(pagePath(pageForAnySlug('german-courses'), 'de'), '/de/deutschkurse');
+  assert.equal(pagePath(pageForAnySlug('deutschkurse'), 'en'), '/en/german-courses');
+});
+
+test('German slugs never contain characters that need URL-encoding', () => {
+  for (const [page, slugs] of Object.entries(ROUTES)) {
+    for (const lang of SUPPORTED) {
+      const slug = slugs[lang];
+      assert.match(slug, /^[a-z0-9-]*$/, `${page} ${lang} slug "${slug}" is not URL-safe`);
+      assert.equal(encodeURIComponent(slug), slug, `${page} ${lang} slug needs encoding`);
     }
   }
 });
@@ -132,7 +176,11 @@ test('DEFAULT_BY_PAGE and LEGACY_SLUG_REDIRECTS reference real pages and slugs',
     assert.ok(hasRoute(page), `DEFAULT_BY_PAGE has unknown page ${page}`);
   }
   for (const [slug, target] of Object.entries(LEGACY_SLUG_REDIRECTS)) {
-    assert.equal(pageForSlug(slug), null, `${slug} is both a live route and a legacy redirect`);
+    assert.equal(
+      pageForAnySlug(slug),
+      null,
+      `${slug} is both a live route and a legacy redirect, so the redirect would shadow the page`
+    );
     for (const lang of SUPPORTED) {
       assert.ok(target(lang).startsWith(`/${lang}/`), `${slug} -> ${target(lang)}`);
     }
@@ -140,11 +188,16 @@ test('DEFAULT_BY_PAGE and LEGACY_SLUG_REDIRECTS reference real pages and slugs',
 });
 
 test('localizeHref rewrites internal links and leaves everything else alone', () => {
-  assert.equal(localizeHref('/german-courses.html', 'de'), '/de/german-courses');
+  assert.equal(localizeHref('/german-courses.html', 'de'), '/de/deutschkurse');
+  assert.equal(localizeHref('/german-courses.html', 'en'), '/en/german-courses');
   assert.equal(localizeHref('/index.html#offer-details', 'de'), '/de/#offer-details');
   assert.equal(localizeHref('/enquiry.html?ref=x', 'en'), '/en/enquiry?ref=x');
+  assert.equal(localizeHref('/enquiry.html?ref=x', 'de'), '/de/anfrage?ref=x');
   // Already localised, and therefore unchanged.
-  assert.equal(localizeHref('/de/german-courses', 'de'), null);
+  assert.equal(localizeHref('/de/deutschkurse', 'de'), null);
+  // Written with the English slug under the German prefix: still resolves, and
+  // is corrected rather than left to 301 at request time.
+  assert.equal(localizeHref('/de/german-courses', 'de'), '/de/deutschkurse');
   // Not ours to touch.
   for (const href of [
     '#offer',
@@ -162,7 +215,8 @@ test('localizeHref rewrites internal links and leaves everything else alone', ()
 
 test('localizeHtmlLinks rewrites links inside injected copy', () => {
   const html = 'We offer <a href="/lunch-time-german.html">tailored programmes</a>.';
-  assert.match(localizeHtmlLinks(html, 'de'), /href="\/de\/lunch-time-german"/);
+  assert.match(localizeHtmlLinks(html, 'de'), /href="\/de\/kurs-nach-mass"/);
+  assert.match(localizeHtmlLinks(html, 'en'), /href="\/en\/lunch-time-german"/);
   const external = '<a href="https://example.com/a.html">x</a>';
   assert.equal(localizeHtmlLinks(external, 'de'), external);
 });
@@ -309,4 +363,21 @@ test('robots.txt disallows the template directory and the API', () => {
     assert.ok(robots.includes(`User-agent: ${bot}`), `robots.txt does not name ${bot}`);
   }
   assert.ok(robots.includes('Sitemap: https://learningwithgioia.ch/sitemap.xml'));
+});
+
+// public/i18n.js is an IIFE, not a module, so its ROUTES mirror cannot be
+// imported. Parse the literal out of the source instead: a stale mirror sends
+// JS-inserted links to the wrong language slug, which is silent in every other
+// test because the server never reads it.
+test('the ROUTES mirror in public/i18n.js matches the server map exactly', () => {
+  const source = readFileSync('public/i18n.js', 'utf8');
+  const match = source.match(/const ROUTES = (\{[\s\S]*?\n {2}\});/);
+  assert.ok(match, 'could not find the ROUTES literal in public/i18n.js');
+
+  const mirror = new Function(`return ${match[1]}`)();
+  assert.deepEqual(
+    mirror,
+    ROUTES,
+    'public/i18n.js ROUTES has drifted from functions/_i18n-content.js'
+  );
 });

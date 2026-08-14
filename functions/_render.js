@@ -16,6 +16,7 @@ import {
   LEGACY_SLUG_REDIRECTS,
   pages,
   pageForSlug,
+  pageForAnySlug,
   pagePath,
   defaultLangFor,
   templatePath,
@@ -98,8 +99,16 @@ export async function render(context, lang) {
   const legacy = LEGACY_SLUG_REDIRECTS[slug];
   if (legacy) return Response.redirect(SITE_ORIGIN + legacy(lang), 301);
 
-  const page = pageForSlug(slug);
-  if (!page) return new Response('Not found', { status: 404 });
+  const page = pageForSlug(slug, lang);
+  if (!page) {
+    // The slug belongs to the other language (/de/german-courses, or an old
+    // bookmark from before the German slugs were localized). Send it to the
+    // same page's slug in the language the prefix asked for, so the language
+    // the visitor chose is the one they get.
+    const foreign = pageForAnySlug(slug);
+    if (!foreign) return new Response('Not found', { status: 404 });
+    return Response.redirect(SITE_ORIGIN + pagePath(foreign, lang), 301);
+  }
 
   const url = new URL(request.url);
   const assetResponse = await env.ASSETS.fetch(new URL(templatePath(page), url.origin));

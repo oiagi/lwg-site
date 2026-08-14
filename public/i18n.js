@@ -10,34 +10,40 @@
 
   const SUPPORTED = ['en', 'de'];
 
-  // Kept in sync with functions/_i18n-content.js. Needed here only so that
-  // links inside dynamically inserted markup can be pointed at the right
-  // language prefix.
+  // Mirror of ROUTES in functions/_i18n-content.js, per language. Needed here
+  // only so that links inside dynamically inserted markup can be pointed at the
+  // right language prefix.
+  //
+  // tests/i18n-routing.test.mjs parses both files and fails if they disagree —
+  // do not edit one without the other.
   const ROUTES = {
-    '/index.html': '',
-    '/german-courses.html': 'german-courses',
-    '/swiss-german.html': 'swiss-german',
-    '/gymivorbereitung.html': 'gymivorbereitung',
-    '/english-courses.html': 'english-courses',
-    '/exam-preparation.html': 'exam-preparation',
-    '/company-courses.html': 'company-courses',
-    '/lunch-time-german.html': 'lunch-time-german',
-    '/group-courses.html': 'group-courses',
-    '/enquiry.html': 'enquiry',
-    '/thankyou.html': 'thankyou',
-    '/impressum.html': 'impressum',
-    '/datenschutzerklaerung.html': 'datenschutzerklaerung',
-    '/agb.html': 'agb',
-    '/modalpartikeln.html': 'modalpartikeln',
-    '/subjunktionen.html': 'subjunktionen',
-    '/konjunktionen.html': 'konjunktionen',
-    '/niveaus.html': 'niveaus',
-    '/intake.html': 'intake',
-    '/feedback.html': 'feedback',
+    '/index.html': { en: '', de: '' },
+    '/german-courses.html': { en: 'german-courses', de: 'deutschkurse' },
+    '/swiss-german.html': { en: 'swiss-german', de: 'schweizerdeutsch' },
+    '/gymivorbereitung.html': { en: 'gymivorbereitung', de: 'gymivorbereitung' },
+    '/english-courses.html': { en: 'english-courses', de: 'englischkurse' },
+    '/exam-preparation.html': { en: 'exam-preparation', de: 'pruefungsvorbereitung' },
+    '/company-courses.html': { en: 'company-courses', de: 'firmenkurse' },
+    '/lunch-time-german.html': { en: 'lunch-time-german', de: 'kurs-nach-mass' },
+    '/group-courses.html': { en: 'group-courses', de: 'gruppenkurse' },
+    '/enquiry.html': { en: 'enquiry', de: 'anfrage' },
+    '/thankyou.html': { en: 'thankyou', de: 'danke' },
+    '/impressum.html': { en: 'impressum', de: 'impressum' },
+    '/datenschutzerklaerung.html': { en: 'datenschutzerklaerung', de: 'datenschutzerklaerung' },
+    '/agb.html': { en: 'agb', de: 'agb' },
+    '/modalpartikeln.html': { en: 'modalpartikeln', de: 'modalpartikeln' },
+    '/subjunktionen.html': { en: 'subjunktionen', de: 'subjunktionen' },
+    '/konjunktionen.html': { en: 'konjunktionen', de: 'konjunktionen' },
+    '/niveaus.html': { en: 'niveaus', de: 'niveaus' },
+    '/intake.html': { en: 'intake', de: 'intake' },
+    '/feedback.html': { en: 'feedback', de: 'feedback' },
   };
-  const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
-    acc[slug] = page;
-    return acc;
+  const PAGE_BY_ROUTE = SUPPORTED.reduce((byLang, lang) => {
+    byLang[lang] = Object.entries(ROUTES).reduce((acc, [page, slugs]) => {
+      acc[slugs[lang]] = page;
+      return acc;
+    }, {});
+    return byLang;
   }, {});
 
   function hasRoute(page) {
@@ -53,7 +59,11 @@
   function normalisePageKey(pathname) {
     const cleanRoute = splitPath(pathname).route.replace(/\/$/, '');
     if (!cleanRoute) return '/index.html';
-    if (PAGE_BY_ROUTE[cleanRoute]) return PAGE_BY_ROUTE[cleanRoute];
+    // Check every language's slug set, so a link written with either
+    // language's slug still resolves to its page.
+    for (const lang of SUPPORTED) {
+      if (PAGE_BY_ROUTE[lang][cleanRoute]) return PAGE_BY_ROUTE[lang][cleanRoute];
+    }
     if (cleanRoute.endsWith('.html')) return '/' + cleanRoute;
     return '/' + cleanRoute + '.html';
   }
@@ -64,7 +74,9 @@
 
   function pagePath(page, lang) {
     const safeLang = SUPPORTED.includes(lang) ? lang : currentLang;
-    const slug = hasRoute(page) ? ROUTES[page] : page.replace(/^\//, '').replace(/\.html$/, '');
+    const slug = hasRoute(page)
+      ? ROUTES[page][safeLang]
+      : page.replace(/^\//, '').replace(/\.html$/, '');
     return '/' + safeLang + (slug ? '/' + slug : '/');
   }
 

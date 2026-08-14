@@ -10,32 +10,46 @@
 
 export const SUPPORTED = ['en', 'de'];
 
+// Slugs are per language. German buyers search in German, so the German URL
+// carries the German word — /de/deutschkurse, not /de/german-courses.
+//
+// English slugs are deliberately unchanged from what the site has always
+// served: they hold whatever ranking equity exists. The German ones cost
+// nothing to move, because until this branch every /de/ URL served English
+// HTML to crawlers anyway.
+//
+// A slug from the wrong language set is not a 404 — pageForAnySlug resolves it
+// and _render.js 301s to the same page's slug in the requested language.
 export const ROUTES = {
-  '/index.html': '',
-  '/german-courses.html': 'german-courses',
-  '/swiss-german.html': 'swiss-german',
-  '/gymivorbereitung.html': 'gymivorbereitung',
-  '/english-courses.html': 'english-courses',
-  '/exam-preparation.html': 'exam-preparation',
-  '/company-courses.html': 'company-courses',
-  '/lunch-time-german.html': 'lunch-time-german',
-  '/group-courses.html': 'group-courses',
-  '/enquiry.html': 'enquiry',
-  '/thankyou.html': 'thankyou',
-  '/impressum.html': 'impressum',
-  '/datenschutzerklaerung.html': 'datenschutzerklaerung',
-  '/agb.html': 'agb',
-  '/modalpartikeln.html': 'modalpartikeln',
-  '/subjunktionen.html': 'subjunktionen',
-  '/konjunktionen.html': 'konjunktionen',
-  '/niveaus.html': 'niveaus',
-  '/intake.html': 'intake',
-  '/feedback.html': 'feedback',
+  '/index.html': { en: '', de: '' },
+  '/german-courses.html': { en: 'german-courses', de: 'deutschkurse' },
+  '/swiss-german.html': { en: 'swiss-german', de: 'schweizerdeutsch' },
+  '/gymivorbereitung.html': { en: 'gymivorbereitung', de: 'gymivorbereitung' },
+  '/english-courses.html': { en: 'english-courses', de: 'englischkurse' },
+  '/exam-preparation.html': { en: 'exam-preparation', de: 'pruefungsvorbereitung' },
+  '/company-courses.html': { en: 'company-courses', de: 'firmenkurse' },
+  '/lunch-time-german.html': { en: 'lunch-time-german', de: 'kurs-nach-mass' },
+  '/group-courses.html': { en: 'group-courses', de: 'gruppenkurse' },
+  '/enquiry.html': { en: 'enquiry', de: 'anfrage' },
+  '/thankyou.html': { en: 'thankyou', de: 'danke' },
+  '/impressum.html': { en: 'impressum', de: 'impressum' },
+  '/datenschutzerklaerung.html': { en: 'datenschutzerklaerung', de: 'datenschutzerklaerung' },
+  '/agb.html': { en: 'agb', de: 'agb' },
+  '/modalpartikeln.html': { en: 'modalpartikeln', de: 'modalpartikeln' },
+  '/subjunktionen.html': { en: 'subjunktionen', de: 'subjunktionen' },
+  '/konjunktionen.html': { en: 'konjunktionen', de: 'konjunktionen' },
+  '/niveaus.html': { en: 'niveaus', de: 'niveaus' },
+  '/intake.html': { en: 'intake', de: 'intake' },
+  '/feedback.html': { en: 'feedback', de: 'feedback' },
 };
 
-export const PAGE_BY_ROUTE = Object.entries(ROUTES).reduce((acc, [page, slug]) => {
-  acc[slug] = page;
-  return acc;
+// One slug -> page lookup per language.
+export const PAGE_BY_ROUTE = SUPPORTED.reduce((byLang, lang) => {
+  byLang[lang] = Object.entries(ROUTES).reduce((acc, [page, slugs]) => {
+    acc[slugs[lang]] = page;
+    return acc;
+  }, {});
+  return byLang;
 }, {});
 
 // Pages whose primary audience reads German. Drives <html lang> when no
@@ -58,13 +72,15 @@ export const DEFAULT_BY_PAGE = {
 // whether _redirects or a Function wins for /en/* differs between the local dev
 // router and production, so the Function handles them too and the behaviour is
 // identical either way.
+// Targets go through pagePath so a retired slug lands on the localized URL in
+// one hop rather than redirecting into another redirect.
 export const LEGACY_SLUG_REDIRECTS = {
   info: (lang) => `/${lang}/#offer-details`,
-  'english-exams': (lang) => `/${lang}/english-courses`,
-  redepartikeln: (lang) => `/${lang}/modalpartikeln`,
-  contact: (lang) => `/${lang}/enquiry`,
-  booking: (lang) => `/${lang}/enquiry`,
-  scheduling: (lang) => `/${lang}/enquiry`,
+  'english-exams': (lang) => pagePath('/english-courses.html', lang),
+  redepartikeln: (lang) => pagePath('/modalpartikeln.html', lang),
+  contact: (lang) => pagePath('/enquiry.html', lang),
+  booking: (lang) => pagePath('/enquiry.html', lang),
+  scheduling: (lang) => pagePath('/enquiry.html', lang),
 };
 
 // Page templates live under public/pages/ rather than at the asset root.
@@ -91,19 +107,37 @@ export function hasRoute(page) {
   return Object.prototype.hasOwnProperty.call(ROUTES, page);
 }
 
-// Slug (no language prefix, no extension) -> '/file.html', or null if unknown.
-export function pageForSlug(slug) {
-  const clean = String(slug || '')
+function cleanSlug(slug) {
+  return String(slug || '')
     .replace(/^\/+/, '')
     .replace(/\/+$/, '');
+}
+
+// Slug (no language prefix, no extension) -> '/file.html' in that language's
+// slug set, or null if it is not a slug of that language.
+export function pageForSlug(slug, lang) {
+  const clean = cleanSlug(slug);
   if (!clean) return '/index.html';
-  if (Object.prototype.hasOwnProperty.call(PAGE_BY_ROUTE, clean)) return PAGE_BY_ROUTE[clean];
+  const table = PAGE_BY_ROUTE[lang] || {};
+  return Object.prototype.hasOwnProperty.call(table, clean) ? table[clean] : null;
+}
+
+// Same, but across every language. Lets a slug requested under the wrong
+// prefix (/de/german-courses) resolve to its page so the caller can 301 to the
+// right slug, rather than 404 on a URL that used to work.
+export function pageForAnySlug(slug) {
+  const clean = cleanSlug(slug);
+  if (!clean) return '/index.html';
+  for (const lang of SUPPORTED) {
+    const page = pageForSlug(clean, lang);
+    if (page) return page;
+  }
   return null;
 }
 
-// '/german-courses.html' + 'de' -> '/de/german-courses'
+// '/german-courses.html' + 'de' -> '/de/deutschkurse'
 export function pagePath(page, lang) {
-  const slug = hasRoute(page) ? ROUTES[page] : page.replace(/^\//, '').replace(/\.html$/, '');
+  const slug = hasRoute(page) ? ROUTES[page][lang] : page.replace(/^\//, '').replace(/\.html$/, '');
   return '/' + lang + (slug ? '/' + slug : '/');
 }
 
@@ -116,7 +150,10 @@ function normalisePageKey(pathname) {
   const route = parts.slice(SUPPORTED.includes(parts[0]) ? 1 : 0).join('/');
   const clean = route.replace(/\/$/, '');
   if (!clean) return '/index.html';
-  if (Object.prototype.hasOwnProperty.call(PAGE_BY_ROUTE, clean)) return PAGE_BY_ROUTE[clean];
+  // Any language's slug, so a link already written as /de/deutschkurse still
+  // resolves to its page.
+  const known = pageForAnySlug(clean);
+  if (known) return known;
   return clean.endsWith('.html') ? '/' + clean : '/' + clean + '.html';
 }
 
