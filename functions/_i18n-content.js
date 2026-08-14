@@ -534,8 +534,8 @@ export const pages = {
       de: 'Offene Gruppenkurse — Learning with Gioia',
     },
     description: {
-      en: 'Book open spots in small group language courses in Zürich.',
-      de: 'Freie Plätze in Kleingruppen-Sprachkursen in Zürich direkt anfragen.',
+      en: 'Currently bookable German, Swiss German and English group courses in Zürich and online. Maximum 5 people, running from 3, places first come first served.',
+      de: 'Aktuell buchbare Deutsch-, Schweizerdeutsch- und Englischkurse in Zürich und online. Maximal 5 Personen, Durchführung ab 3, Plätze nach Eingang der Anmeldungen.',
     },
     text: {
       h1: { en: 'open group courses', de: 'offene Gruppenkurse' },
@@ -701,7 +701,7 @@ export const pages = {
         de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#success-state .home-link': { en: 'back to home', de: 'Zurück zur Startseite' },
-      '#error-state h1': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
+      '#error-state h2': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
       '#error-state p': {
         en: 'Your enquiry may not have been received. Please try again or email us directly at <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Deine Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuche es erneut oder schreibe uns direkt an <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
@@ -745,8 +745,8 @@ export const pages = {
       de: 'Datenschutzerklärung — Learning with Gioia',
     },
     description: {
-      en: 'Privacy policy for Learning with Gioia / Birukoff World.',
-      de: 'Datenschutzerklärung von Learning with Gioia / Birukoff World.',
+      en: 'How Learning with Gioia collects, uses and stores personal data: which forms, which processors, how long data is kept, and your rights under Swiss law.',
+      de: 'Wie Learning with Gioia Personendaten erhebt, nutzt und speichert: welche Formulare, welche Dienstleister, Aufbewahrungsdauer und deine Rechte.',
     },
     text: {
       h1: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -808,8 +808,8 @@ export const pages = {
 pages['/agb.html'] = {
   title: { en: 'Terms & Conditions — Learning with Gioia', de: 'AGB — Learning with Gioia' },
   description: {
-    en: 'Terms and conditions of Learning with Gioia / Birukoff World.',
-    de: 'Allgemeine Geschäftsbedingungen von Learning with Gioia / Birukoff World.',
+    en: 'Terms and conditions for courses at Learning with Gioia: registration, course fees and payment, cancellation terms, minimum group size, and liability.',
+    de: 'AGB für Kurse bei Learning with Gioia: Anmeldung, Kursgebühren und Zahlung, Stornobedingungen, Mindestteilnehmerzahl und Haftung.',
   },
 };
 
@@ -1635,8 +1635,8 @@ Object.assign(pages, {
       de: 'Build Your Own: Deutschkurs nach Mass in Zürich — Learning with Gioia',
     },
     description: {
-      en: 'Build your own German course in Zürich: lunchtime German, intensive German, Swiss German and German combined, business English — tailored to your needs and availability. Lessons of 60, 90 or 120 minutes — CHF 50 per 60 minutes in a group, CHF 120 one-to-one.',
-      de: 'Dein Kurs nach Mass in Zürich: Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch — abgestimmt auf deine Bedürfnisse und deine Verfügbarkeit. Lektionen à 60, 90 oder 120 Minuten — CHF 50 pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
+      en: 'Lunchtime German, intensive blocks, Swiss German and German combined, business English — built around your schedule. From CHF 50 per 60 minutes per person.',
+      de: 'Mittagskurse, Intensivblöcke, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch — nach deinem Zeitplan. Ab CHF 50 pro 60 Minuten pro Person.',
     },
     h1: { en: 'Build your own', de: 'Build your own' },
     intro: {
@@ -1740,12 +1740,12 @@ Object.assign(pages, {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
-      '#intake-thanks h1': { en: 'thank you.', de: 'Danke.' },
+      '#intake-thanks h2': { en: 'thank you.', de: 'Danke.' },
       '#intake-thanks p': {
         en: "Your details have been saved. We'll be in touch shortly.",
         de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
       },
-      '#intake-error h1': {
+      '#intake-error h2': {
         en: 'link expired or invalid.',
         de: 'Link abgelaufen oder ungültig.',
       },
@@ -1776,17 +1776,17 @@ Object.assign(pages, {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
-      '#feedback-thanks h1': { en: 'thank you.', de: 'Danke.' },
+      '#feedback-thanks h2': { en: 'thank you.', de: 'Danke.' },
       '#feedback-thanks p': {
         en: 'Your honest feedback helps us improve our lessons for everyone. We read every response carefully and genuinely appreciate both the compliments and the suggestions.',
         de: 'Dein ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
       },
-      '#feedback-done h1': { en: 'already answered.', de: 'Bereits beantwortet.' },
+      '#feedback-done h2': { en: 'already answered.', de: 'Bereits beantwortet.' },
       '#feedback-done p': {
         en: 'This feedback has already been submitted — thank you. If you would like to add something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Dieses Feedback wurde bereits abgeschickt — danke. Wenn du noch etwas ergänzen möchtest, schreib einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
-      '#feedback-unavailable h1': {
+      '#feedback-unavailable h2': {
         en: 'not right now.',
         de: 'Gerade nicht möglich.',
       },
@@ -1794,7 +1794,7 @@ Object.assign(pages, {
         en: 'We could not load your feedback form just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Wir konnten dein Feedback-Formular gerade nicht laden — dein Link ist weiterhin gültig. Bitte versuche es in ein paar Minuten noch einmal oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
-      '#feedback-error h1': {
+      '#feedback-error h2': {
         en: 'link expired or invalid.',
         de: 'Link abgelaufen oder ungültig.',
       },
@@ -1898,8 +1898,8 @@ Object.assign(pages, {
       de: 'Über Learning with Gioia — Sprachunterricht in Zürich',
     },
     description: {
-      en: 'Learning with Gioia is a Zürich language school founded by Gioia, born and raised in Zürich and a native speaker of both Swiss German and German. Small groups, private lessons, in-house company training and Gymivorbereitung.',
-      de: 'Learning with Gioia ist eine Zürcher Sprachschule, gegründet von Gioia — in Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Kleine Gruppen, Einzelunterricht, Inhouse-Firmenkurse und Gymivorbereitung.',
+      en: 'A Zürich language school founded by Gioia, born and raised in Zürich and a native speaker of Swiss German and German. Who teaches, and how we teach.',
+      de: 'Zürcher Sprachschule, gegründet von Gioia — in Zürich aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Wer unterrichtet und wie.',
     },
     text: {
       '#about-kicker': { en: 'about us', de: 'Über uns' },
@@ -2008,8 +2008,8 @@ Object.assign(pages, {
       de: 'Deutsch & Schweizerdeutsch online lernen — Learning with Gioia',
     },
     description: {
-      en: 'Online German and Swiss German lessons with a native speaker born and raised in Zürich. Same rates as in-person: CHF 1600 per person for a 32-lesson group course, CHF 3840 one-to-one.',
-      de: 'Deutsch und Schweizerdeutsch online lernen bei einer in Zürich geborenen und aufgewachsenen Muttersprachlerin. Gleiche Preise wie vor Ort: CHF 1600 pro Person für 32 Lektionen in der Gruppe, CHF 3840 im Einzelunterricht.',
+      en: 'Online German and Swiss German with a native speaker born and raised in Zürich. Same rates as in person: CHF 1600 in a group, CHF 3840 one-to-one.',
+      de: 'Deutsch und Schweizerdeutsch online bei einer Zürcher Muttersprachlerin. Gleiche Preise wie vor Ort: CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
     },
     text: {
       '#online-kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },

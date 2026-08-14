@@ -23,7 +23,8 @@ body.nav-active {
 }
 
 /* ── Page heading ───────────────────────────────────────────── */
-h1 {
+h1,
+.state-title {
   font-size: 2rem;
   font-weight: 300;
   letter-spacing: 0.08em;
@@ -207,7 +208,8 @@ button.submit:hover {
 }
 
 @media (max-width: 500px) {
-  h1 {
+  h1,
+  .state-title {
     font-size: 1.6rem;
     margin-bottom: 1.8rem;
   }
@@ -217,7 +219,8 @@ button.submit:hover {
   }
 }
 
-html[data-device='mobile'] h1 {
+html[data-device='mobile'] h1,
+html[data-device='mobile'] .state-title {
   font-size: 1.5rem;
   margin-bottom: 1.6rem;
 }
@@ -230,7 +233,8 @@ html[data-device='mobile'] button.submit {
   font-size: 0.78rem;
   min-height: 48px;
 }
-html[data-device='tablet'] h1 {
+html[data-device='tablet'] h1,
+html[data-device='tablet'] .state-title {
   font-size: 1.75rem;
 }
 html[data-device='tablet'] .form-container {
@@ -248,7 +252,8 @@ html[data-device='desktop'] .form-container {
   width: min(80vw, 620px);
   margin-top: 1.4rem;
 }
-html[data-device='desktop'] h1 {
+html[data-device='desktop'] h1,
+html[data-device='desktop'] .state-title {
   font-size: 2.4rem;
   margin-bottom: 3.2rem;
 }

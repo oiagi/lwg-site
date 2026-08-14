@@ -1,14 +1,10 @@
-# scheduling.html removed — redirect to enquiry
-/scheduling.html  /enquiry.html  301
-
-# booking.html renamed to enquiry.html
-/booking.html  /enquiry.html  301
-
-# contact.html removed — redirect to enquiry
-/contact.html  /enquiry.html  301
-
-# redepartikeln.html renamed to modalpartikeln.html
-/redepartikeln.html  /modalpartikeln.html  301
+# Retired pages. These point at the final language-prefixed URL rather than at
+# the .html file that would 301 again: a redirect chain costs a round trip for
+# a visitor and dilutes the signal for a crawler.
+/scheduling.html  /en/enquiry  301
+/booking.html  /en/enquiry  301
+/contact.html  /en/enquiry  301
+/redepartikeln.html  /de/modalpartikeln  301
 
 # info page merged into the scrollable homepage — must stay above the
 # /en/:page and /de/:page catch-all rewrites below, or /en/info would be

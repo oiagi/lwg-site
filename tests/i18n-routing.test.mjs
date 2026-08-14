@@ -502,3 +502,41 @@ test('unset schema facts are omitted from the graph, never emitted empty', () =>
     else assert.ok(!(key in node), `${key} is unset but present in the graph`);
   }
 });
+
+test('every page template has exactly one h1', () => {
+  // The flow pages carry several mutually-exclusive state panels; only the
+  // first is the page heading, the rest are h2.state-title.
+  for (const file of readdirSync('public/pages')) {
+    const html = readFileSync(`public/pages/${file}`, 'utf8');
+    const count = (html.match(/<h1[\s>]/g) || []).length;
+    assert.equal(count, 1, `public/pages/${file} has ${count} <h1> elements`);
+  }
+});
+
+test('descriptions are long enough to be used as a snippet, and not truncated', () => {
+  const noindex = new Set(['/intake.html', '/feedback.html', '/thankyou.html']);
+  for (const page of Object.keys(ROUTES)) {
+    if (noindex.has(page)) continue;
+    for (const lang of SUPPORTED) {
+      const d = pages[page].description[lang];
+      assert.ok(d.length >= 70, `${page} ${lang} description is only ${d.length} chars: ${d}`);
+      assert.ok(d.length <= 200, `${page} ${lang} description is ${d.length} chars, will be cut`);
+    }
+  }
+});
+
+test('_redirects sends retired pages straight to their final URL', () => {
+  // A rule whose target is itself redirected costs the visitor a round trip
+  // and dilutes the signal for a crawler.
+  const lines = readFileSync('public/_redirects', 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'));
+
+  const sources = new Set(lines.map((l) => l.split(/\s+/)[0]));
+  for (const line of lines) {
+    const [from, to] = line.split(/\s+/);
+    const target = to.split('#')[0];
+    assert.ok(!sources.has(target), `${from} redirects to ${target}, which is itself redirected`);
+  }
+});
