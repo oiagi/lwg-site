@@ -72,6 +72,8 @@ export function navMarkup(page, lang) {
       link('/exam-preparation.html', 'examPreparation'),
       link('/company-courses.html', 'companyCourses'),
       link('/lunch-time-german.html', 'lunchTimeGerman'),
+      link('/online-lessons.html', 'onlineLessons'),
+      link('/private-lessons.html', 'privateLessons'),
     ]) +
     link('/index.html', 'courseStructure', 'offer-details') +
     navSection(link('/index.html', 'levels', 'levels'), [link('/niveaus.html', 'niveaus')]) +
@@ -81,7 +83,10 @@ export function navMarkup(page, lang) {
       link('/subjunktionen.html', 'subjunktionen'),
     ]) +
     link('/index.html', 'reviews', 'reviews') +
-    link('/index.html', 'about', 'about') +
+    // Points at the About page now that one exists; the homepage #about
+    // section is a summary that links onward to it.
+    link('/about.html', 'about') +
+    link('/faq.html', 'faq') +
     navSection(link('/index.html', 'start', 'start'), [
       link('/group-courses.html', 'groupCourses'),
     ]) +

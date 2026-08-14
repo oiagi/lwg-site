@@ -17,6 +17,7 @@ import {
   localizeHref,
   localizeHtmlLinks,
   hasRoute,
+  FAQ,
 } from '../functions/_i18n-content.js';
 import { schemaFor, COURSES } from '../functions/_schema.js';
 import { navMarkup, footerMarkup } from '../functions/_nav-markup.js';
@@ -285,8 +286,14 @@ test('course pages carry a Course node offered both onsite and online', () => {
     const course = graph.find((node) => node['@type'] === 'Course');
     assert.ok(course, `${page} has no Course node`);
     const modes = new Set(course.hasCourseInstance.map((i) => i.courseMode));
-    assert.ok(modes.has('onsite'), `${page} missing onsite instance`);
+    // Every course is bookable online. Only the online-lessons page is online
+    // *only* — it must not claim a Zürich classroom slot it does not offer.
     assert.ok(modes.has('online'), `${page} missing online instance`);
+    if (page === '/online-lessons.html') {
+      assert.ok(!modes.has('onsite'), 'the online-lessons page must not claim an onsite instance');
+    } else {
+      assert.ok(modes.has('onsite'), `${page} missing onsite instance`);
+    }
     for (const instance of course.hasCourseInstance) {
       assert.match(instance.courseWorkload, /^PT\d+H$/, `${page} bad workload`);
     }
@@ -380,4 +387,54 @@ test('the ROUTES mirror in public/i18n.js matches the server map exactly', () =>
     ROUTES,
     'public/i18n.js ROUTES has drifted from functions/_i18n-content.js'
   );
+});
+
+test('FAQ markup only claims answers that are rendered on the page', () => {
+  // Marking up an answer that is not visible is a Google violation and gives
+  // assistants text a visitor cannot find. Both come from FAQ in
+  // _i18n-content.js, so this checks the wiring rather than the wording.
+  const faqPages = {
+    '/faq.html': [
+      '#faq-courses-list',
+      '#faq-online-list',
+      '#faq-gymi-list',
+      '#faq-company-list',
+      '#faq-booking-list',
+    ],
+    '/online-lessons.html': ['#online-faq-list'],
+    '/private-lessons.html': ['#private-faq-list'],
+  };
+
+  for (const [page, selectors] of Object.entries(faqPages)) {
+    for (const lang of SUPPORTED) {
+      const rendered = selectors.map((s) => pages[page].text[s][lang]).join('');
+      const node = JSON.parse(schemaFor(page, lang))['@graph'].find(
+        (n) => n['@type'] === 'FAQPage'
+      );
+      assert.ok(node, `${page} has no FAQPage node`);
+      assert.ok(node.mainEntity.length > 0, `${page} FAQPage is empty`);
+      for (const q of node.mainEntity) {
+        assert.ok(
+          rendered.includes(q.name),
+          `${page} ${lang}: "${q.name}" is marked up but not rendered`
+        );
+        assert.ok(
+          rendered.includes(q.acceptedAnswer.text),
+          `${page} ${lang}: answer to "${q.name}" is marked up but not rendered`
+        );
+      }
+    }
+  }
+});
+
+test('every FAQ entry has a question and an answer in both languages', () => {
+  for (const [group, items] of Object.entries(FAQ)) {
+    assert.ok(items.length, `FAQ group ${group} is empty`);
+    for (const item of items) {
+      for (const lang of SUPPORTED) {
+        assert.ok(item.q?.[lang]?.length > 5, `${group}: missing ${lang} question`);
+        assert.ok(item.a?.[lang]?.length > 20, `${group}: thin ${lang} answer for "${item.q?.en}"`);
+      }
+    }
+  }
 });

@@ -7,7 +7,7 @@
 // One @graph per document with stable @ids, so the nodes reference each other
 // instead of repeating themselves.
 
-import { pages, pagePath, ROUTES, nav } from './_i18n-content.js';
+import { pages, pagePath, ROUTES, nav, FAQ } from './_i18n-content.js';
 
 export const SITE_ORIGIN = 'https://learningwithgioia.ch';
 
@@ -15,8 +15,9 @@ const BUSINESS_ID = `${SITE_ORIGIN}/#business`;
 const PERSON_ID = `${SITE_ORIGIN}/#gioia`;
 const WEBSITE_ID = `${SITE_ORIGIN}/#website`;
 
-// Verified facts only. Everything marked TODO needs confirmation from Gioia
-// before it is published — do not guess these.
+// Verified facts only. Anything still null is awaiting confirmation and is
+// omitted from the output rather than guessed — a wrong fact in structured data
+// is worse than a missing one, because assistants repeat it verbatim.
 export const BUSINESS = {
   name: 'Learning with Gioia',
   legalName: 'Birukoff World', // impressum.html
@@ -27,10 +28,28 @@ export const BUSINESS = {
   country: 'CH',
   vatID: 'CHE-396.783.072', // impressum.html
   priceRange: 'CHF 50–4800',
-  founderName: 'Gioia', // TODO: full name for the Person node?
-  telephone: null, // TODO: publish a phone number? Strong local-SEO signal.
-  sameAs: [], // TODO: Instagram / LinkedIn / Google Business Profile URLs.
-  geo: null, // TODO: lat/lng, once the address is confirmed as publishable.
+  // First name only, deliberately: Gioia chose not to publish a full legal
+  // name. Do not "complete" this from the Impressum.
+  founderName: 'Gioia',
+  // Approved for publication; awaiting the number itself. E.164, e.g. '+41…'.
+  telephone: null, // TODO(gioia): phone number
+  // No social profiles published by choice, so sameAs is omitted entirely —
+  // an empty sameAs is not a weaker claim, it is a malformed one.
+  geo: null, // Optional: lat/lng for the Zürich address.
+};
+
+// Approved for publication; awaiting the facts themselves. Each is omitted
+// from the Person node while null.
+export const CREDENTIALS = {
+  // e.g. { en: 'MA in Linguistics', de: 'MA in Sprachwissenschaft' }
+  degree: null, // TODO(gioia): what you studied
+  // e.g. { '@type': 'CollegeOrUniversity', name: 'Universität Zürich' }
+  alumniOf: null, // TODO(gioia): where you studied
+  // e.g. 'SVEB 1' or a teaching diploma.
+  teachingQualification: null, // TODO(gioia): teaching qualification
+  // Year teaching started, as a number, e.g. 2016. Rendered as a duration so
+  // the copy never goes stale.
+  teachingSince: null, // TODO(gioia): year you started teaching
 };
 
 const DESCRIPTION = {
@@ -100,6 +119,13 @@ export const COURSES = {
     priceGroup: '50',
     priceSolo: '120',
   },
+  // Online only: no onsite CourseInstance, so the page cannot be read as
+  // offering a Zürich classroom slot it does not have.
+  '/online-lessons.html': {
+    name: 'Online German and Swiss German lessons',
+    language: 'de',
+    onlineOnly: true,
+  },
 };
 
 function place() {
@@ -139,7 +165,25 @@ function personNode(lang) {
     ],
     worksFor: { '@id': BUSINESS_ID },
   };
-  if (BUSINESS.sameAs.length) node.sameAs = BUSINESS.sameAs;
+
+  const credentials = [];
+  if (CREDENTIALS.degree) {
+    credentials.push({
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: 'degree',
+      name: CREDENTIALS.degree[lang],
+    });
+  }
+  if (CREDENTIALS.teachingQualification) {
+    credentials.push({
+      '@type': 'EducationalOccupationalCredential',
+      credentialCategory: 'certification',
+      name: CREDENTIALS.teachingQualification,
+    });
+  }
+  if (credentials.length) node.hasCredential = credentials;
+  if (CREDENTIALS.alumniOf) node.alumniOf = CREDENTIALS.alumniOf;
+
   return node;
 }
 
@@ -182,7 +226,6 @@ function businessNode(lang) {
     },
   };
   if (BUSINESS.telephone) node.telephone = BUSINESS.telephone;
-  if (BUSINESS.sameAs.length) node.sameAs = BUSINESS.sameAs;
   if (BUSINESS.geo) node.geo = BUSINESS.geo;
   return node;
 }
@@ -224,18 +267,26 @@ function courseNode(page, lang) {
     return node;
   };
 
-  const instances = data.priceOnRequest
-    ? [instance('onsite')]
-    : [
+  const instances = [];
+  if (!data.onlineOnly) {
+    if (data.priceOnRequest) {
+      instances.push(instance('onsite'));
+    } else {
+      instances.push(
         instance('onsite', data.priceGroup, data.categoryGroup),
-        instance('onsite', data.priceSolo, data.categorySolo),
-      ];
-  if (data.online) {
-    instances.push(
-      data.priceOnRequest
-        ? instance('online')
-        : instance('online', data.priceSolo, data.categorySolo)
-    );
+        instance('onsite', data.priceSolo, data.categorySolo)
+      );
+    }
+  }
+  if (data.online || data.onlineOnly) {
+    if (data.priceOnRequest) {
+      instances.push(instance('online'));
+    } else {
+      instances.push(
+        instance('online', data.priceGroup, data.categoryGroup),
+        instance('online', data.priceSolo, data.categorySolo)
+      );
+    }
   }
 
   return {
@@ -306,11 +357,90 @@ function stripTags(value) {
 }
 
 // Builds the full @graph for a page. Returns a JSON string ready to inline.
+// Only questions that are actually rendered on the page may be marked up —
+// Google treats hidden FAQ markup as a violation, and an assistant that quotes
+// an answer the visitor cannot find is worse than one that quotes nothing. The
+// two come from one source (FAQ in _i18n-content.js) so they cannot diverge.
+const FAQ_GROUPS_BY_PAGE = {
+  '/faq.html': ['courses', 'online', 'gymi', 'company', 'booking'],
+  '/online-lessons.html': ['online'],
+  '/private-lessons.html': ['booking'],
+  '/company-courses.html': ['company'],
+  '/gymivorbereitung.html': ['gymi'],
+};
+
+function faqNode(page, lang) {
+  const groups = FAQ_GROUPS_BY_PAGE[page];
+  if (!groups) return null;
+  const items = groups.flatMap((group) => FAQ[group] || []);
+  if (!items.length) return null;
+
+  return {
+    '@type': 'FAQPage',
+    '@id': `${SITE_ORIGIN}${pagePath(page, lang)}#faq`,
+    inLanguage: lang,
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.q[lang],
+      acceptedAnswer: { '@type': 'Answer', text: item.a[lang] },
+    })),
+  };
+}
+
+function aboutNode(lang) {
+  return {
+    '@type': 'AboutPage',
+    '@id': `${SITE_ORIGIN}${pagePath('/about.html', lang)}#about`,
+    inLanguage: lang,
+    name: pages['/about.html'].title[lang],
+    description: pages['/about.html'].description[lang],
+    // The point of the page: it is the document that describes the Person.
+    mainEntity: { '@id': PERSON_ID },
+    about: [{ '@id': PERSON_ID }, { '@id': BUSINESS_ID }],
+    isPartOf: { '@id': WEBSITE_ID },
+  };
+}
+
+// The one-to-one offering, which until now existed only as a price tile.
+function privateLessonsNode(lang) {
+  return {
+    '@type': 'Service',
+    '@id': `${SITE_ORIGIN}${pagePath('/private-lessons.html', lang)}#service`,
+    serviceType:
+      lang === 'de' ? 'Einzelunterricht für Sprachen' : 'Private one-to-one language lessons',
+    name: pages['/private-lessons.html'].title[lang],
+    description: pages['/private-lessons.html'].description[lang],
+    provider: { '@id': BUSINESS_ID },
+    areaServed: [
+      { '@type': 'City', name: 'Zürich' },
+      { '@type': 'Place', name: 'Online, worldwide' },
+    ],
+    availableLanguage: ['de', 'gsw', 'en'],
+    offers: {
+      '@type': 'Offer',
+      price: '120',
+      priceCurrency: 'CHF',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '120',
+        priceCurrency: 'CHF',
+        unitText: lang === 'de' ? 'pro 60 Minuten' : 'per 60 minutes',
+      },
+      availability: 'https://schema.org/InStock',
+    },
+  };
+}
+
 export function schemaFor(page, lang) {
   const graph = [businessNode(lang), personNode(lang), websiteNode(lang)];
 
   if (COURSES[page]) graph.push(courseNode(page, lang));
   if (LEARNING_RESOURCES.includes(page)) graph.push(learningResourceNode(page, lang));
+  if (page === '/about.html') graph.push(aboutNode(lang));
+  if (page === '/private-lessons.html') graph.push(privateLessonsNode(lang));
+
+  const faq = faqNode(page, lang);
+  if (faq) graph.push(faq);
 
   const breadcrumb = breadcrumbNode(page, lang);
   if (breadcrumb) graph.push(breadcrumb);
