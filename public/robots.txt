@@ -81,3 +81,7 @@ Disallow: /admin/
 Disallow: /api/
 
 Sitemap: https://learningwithgioia.ch/sitemap.xml
+
+# Plain-Markdown summary of the site for answer engines and LLM crawlers.
+# Not a standard directive — crawlers that do not know it will ignore this line.
+# LLMs-txt: https://learningwithgioia.ch/llms.txt

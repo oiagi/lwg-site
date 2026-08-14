@@ -19,9 +19,10 @@ import {
   hasRoute,
   FAQ,
 } from '../functions/_i18n-content.js';
-import { schemaFor, COURSES } from '../functions/_schema.js';
+import { schemaFor, COURSES, BUSINESS, CREDENTIALS } from '../functions/_schema.js';
 import { navMarkup, footerMarkup } from '../functions/_nav-markup.js';
 import { buildSitemap } from '../functions/_sitemap.js';
+import { buildLlmsTxt } from '../functions/_llms.js';
 
 test('pageForSlug resolves every route, and the bare language prefix', () => {
   for (const [page, slugs] of Object.entries(ROUTES)) {
@@ -436,5 +437,68 @@ test('every FAQ entry has a question and an answer in both languages', () => {
         assert.ok(item.a?.[lang]?.length > 20, `${group}: thin ${lang} answer for "${item.q?.en}"`);
       }
     }
+  }
+});
+
+test('llms.txt lists real URLs and states the facts an assistant is asked for', () => {
+  const txt = buildLlmsTxt('en');
+
+  // Every linked URL must be one the router actually serves.
+  const urls = [...txt.matchAll(/\]\(https:\/\/learningwithgioia\.ch(\/[^)]*)\)/g)].map(
+    (m) => m[1]
+  );
+  assert.ok(urls.length > 15, `only ${urls.length} page links in llms.txt`);
+  const served = new Set(
+    Object.keys(ROUTES).flatMap((page) => SUPPORTED.map((lang) => pagePath(page, lang)))
+  );
+  for (const url of urls) {
+    assert.ok(served.has(url), `llms.txt links ${url}, which is not a route`);
+  }
+
+  // The commercially important pages must not be missing from it.
+  for (const page of [
+    '/company-courses.html',
+    '/swiss-german.html',
+    '/gymivorbereitung.html',
+    '/online-lessons.html',
+    '/private-lessons.html',
+    '/faq.html',
+    '/about.html',
+  ]) {
+    assert.ok(urls.includes(pagePath(page, 'en')), `llms.txt omits ${page}`);
+  }
+
+  // The positioning fact the whole site rests on.
+  assert.match(txt, /native speaker of both Swiss German and German/);
+  assert.match(txt, /info@learningwithgioia\.ch/);
+  assert.ok(!txt.includes('undefined'), 'llms.txt contains an undefined value');
+});
+
+test('llms.txt omits the telephone line until a number is published', () => {
+  // Guards the pattern rather than the value: an unset fact must be absent,
+  // never rendered as an empty or undefined line.
+  const txt = buildLlmsTxt('en');
+  if (BUSINESS.telephone) {
+    assert.ok(txt.includes(`- Telephone: ${BUSINESS.telephone}`));
+  } else {
+    assert.ok(!/- Telephone:/.test(txt), 'telephone line rendered with no number set');
+  }
+});
+
+test('unset schema facts are omitted from the graph, never emitted empty', () => {
+  const graph = JSON.parse(schemaFor('/about.html', 'en'))['@graph'];
+  const business = graph.find((n) => String(n['@type']).includes('LocalBusiness'));
+  const person = graph.find((n) => n['@type'] === 'Person');
+
+  // sameAs was dropped by choice: no social profiles are published.
+  assert.ok(!('sameAs' in business), 'sameAs should be omitted, not empty');
+  assert.ok(!('sameAs' in person), 'sameAs should be omitted, not empty');
+
+  for (const [node, key, fact] of [
+    [business, 'telephone', BUSINESS.telephone],
+    [person, 'alumniOf', CREDENTIALS.alumniOf],
+  ]) {
+    if (fact) assert.ok(key in node, `${key} is set but missing from the graph`);
+    else assert.ok(!(key in node), `${key} is unset but present in the graph`);
   }
 });
