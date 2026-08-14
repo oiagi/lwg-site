@@ -7,6 +7,13 @@
 /admin/*
   Cache-Control: no-cache
 
+# Untranslated page templates, read by functions/_render.js via env.ASSETS.
+# Reachable but never a destination: _render.js strips this header from the
+# rendered page it returns.
+/pages/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-cache
+
 /*.png
   Cache-Control: public, max-age=604800
 

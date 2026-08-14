@@ -274,6 +274,8 @@ button[data-loading]::after {
   text-transform: uppercase;
   transition: opacity 0.2s ease;
 }
+/* The inactive language is a link, the active one a span, so both languages are
+   crawlable; neither should look like body-copy link text. */
 .language-option {
   border: 0;
   background: transparent;
@@ -282,6 +284,10 @@ button[data-loading]::after {
   letter-spacing: inherit;
   padding: 0;
   opacity: 0.45;
+  text-decoration: none;
+}
+a.language-option {
+  cursor: pointer;
 }
 .language-option.active,
 .language-option:hover {

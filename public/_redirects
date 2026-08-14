@@ -49,16 +49,13 @@
 /konjunktionen.html  /de/konjunktionen  301
 /niveaus.html  /de/niveaus  301
 
-# Language-prefixed public pages. These serve the same static HTML files;
-# i18n.js reads /en or /de from the URL and applies the matching language.
-/en   /  200
-/en/  /  200
-/de   /  200
-/de/  /  200
-/en/:page   /:page  200
-/de/:page   /:page  200
-/en/:page/  /:page  200
-/de/:page/  /:page  200
+# /en/* and /de/* are served by functions/en/[[path]].js and functions/de/[[path]].js,
+# which resolve the slug and render the page in the right language server-side.
+# They need no rewrite rules here — and must not have any, because a 200 rewrite
+# could shadow the Function and serve the untranslated file.
+
+# One canonical homepage URL instead of three (/, /en, /en/).
+/  /en/  301
 
 # Legacy /admin.html bookmarks — the admin SPA routes tabs via #hash now.
 /admin.html      /admin  301

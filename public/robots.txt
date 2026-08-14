@@ -1,8 +1,15 @@
 User-agent: *
 Allow: /
 
-# Flow and admin pages — not useful for search
+# Untranslated templates read server-side by functions/_render.js. The rendered
+# pages live at /en/* and /de/*; these are the raw inputs.
+Disallow: /pages/
+
+# API endpoints and the admin app
 Disallow: /admin/
+Disallow: /api/
+
+# Flow pages — not useful for search
 Disallow: /intake.html
 Disallow: /en/intake
 Disallow: /de/intake
@@ -12,5 +19,65 @@ Disallow: /de/feedback
 Disallow: /thankyou.html
 Disallow: /en/thankyou
 Disallow: /de/thankyou
+Disallow: /contract-upload.html
+
+# ── AI crawlers and answer engines ───────────────────────────────────
+# Named explicitly so the permission is unambiguous rather than inherited.
+# These fetch raw HTML and do not execute JavaScript, which is why the pages
+# are rendered server-side.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /pages/
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://learningwithgioia.ch/sitemap.xml
