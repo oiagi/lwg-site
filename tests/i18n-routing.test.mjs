@@ -540,3 +540,99 @@ test('_redirects sends retired pages straight to their final URL', () => {
     assert.ok(!sources.has(target), `${from} redirects to ${target}, which is itself redirected`);
   }
 });
+
+// public/i18n.js is an IIFE with no exports, and group-courses.js and
+// call-booking.js call localizeInternalLinks(document) on every homepage and
+// group-courses load. The switcher is the one link on the page that points at
+// the *other* language, so a document-wide rewrite to the current language
+// silently turns EN/DE into a self-link and the toggle stops working. Run the
+// real function over the real nav markup rather than trusting a comment.
+function loadI18nWithLinks(pathname, anchors) {
+  const source = readFileSync('public/i18n.js', 'utf8');
+  const documentStub = {
+    readyState: 'complete',
+    documentElement: { lang: pathname.split('/')[1] || 'en' },
+    addEventListener() {},
+    dispatchEvent() {},
+    // Only ever called with 'a[href]' by the code under test.
+    querySelectorAll: () => anchors,
+  };
+  const windowStub = {
+    location: { pathname, origin: 'https://learningwithgioia.ch' },
+  };
+  new Function('window', 'document', 'CustomEvent', source)(
+    windowStub,
+    documentStub,
+    class CustomEvent {}
+  );
+  return windowStub.LWG_I18N;
+}
+
+function parseAnchors(html) {
+  return [...html.matchAll(/<a\s([^>]*)>/g)].map((tag) => {
+    const attrs = {};
+    for (const [, name, value] of tag[1].matchAll(/([\w-]+)="([^"]*)"/g)) attrs[name] = value;
+    return {
+      attrs,
+      getAttribute(name) {
+        return Object.prototype.hasOwnProperty.call(this.attrs, name) ? this.attrs[name] : null;
+      },
+      hasAttribute(name) {
+        return Object.prototype.hasOwnProperty.call(this.attrs, name);
+      },
+      get href() {
+        return this.attrs.href;
+      },
+      set href(value) {
+        this.attrs.href = value;
+      },
+    };
+  });
+}
+
+test('localizeInternalLinks leaves the EN/DE switcher pointing at the other language', () => {
+  for (const page of ['/index.html', '/group-courses.html']) {
+    for (const lang of SUPPORTED) {
+      const other = lang === 'en' ? 'de' : 'en';
+      const anchors = parseAnchors(navMarkup(page, lang) + footerMarkup(page, lang));
+      const switcher = anchors.find((a) => a.getAttribute('data-lang') === other);
+      assert.ok(switcher, `no ${other} switcher link in the ${lang} nav for ${page}`);
+
+      loadI18nWithLinks(pagePath(page, lang), anchors).localizeInternalLinks();
+
+      assert.equal(
+        switcher.href,
+        pagePath(page, other),
+        `the ${other} switcher on ${pagePath(page, lang)} was rewritten to ${switcher.href}`
+      );
+    }
+  }
+});
+
+test('translation never rewrites an element id, so the reader keeps their place across a switch', () => {
+  // nav.js holds the reader's position across a language switch as "this far
+  // into this section", keyed by the section's id. That only works because the
+  // ids come from the template and are identical in both languages — the copy
+  // dictionary replaces text, not structure. An `attr: 'id'` entry, or a
+  // selector translating an id into German, would silently drop the switch
+  // back to a top-of-page landing on exactly the page it matters most.
+  const structural = new Set(['id', 'href', 'name', 'class']);
+  for (const [page, entry] of Object.entries(pages)) {
+    for (const [selector, copy] of Object.entries(entry.text || {})) {
+      if (!copy.attr) continue;
+      assert.ok(
+        !structural.has(copy.attr),
+        `${page} ${selector} translates the ${copy.attr} attribute, which is structural`
+      );
+    }
+  }
+});
+
+test('the homepage sections the switcher restores against are uniquely identified', () => {
+  // A duplicate id makes getElementById pick the first match, so a reader
+  // switching language halfway down would be restored against the wrong one.
+  const html = readFileSync('public/pages/index.html', 'utf8');
+  const ids = [...html.matchAll(/<section[^>]*\sid="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 5, 'the homepage should still be a multi-section scroll page');
+  assert.equal(new Set(ids).size, ids.length, 'duplicate section ids on the homepage');
+});

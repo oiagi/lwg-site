@@ -259,6 +259,12 @@
   function localizeInternalLinks(root) {
     const scope = root || document;
     scope.querySelectorAll('a[href]').forEach((link) => {
+      // A link that names its own target language — the EN/DE switcher — is the
+      // one link on the page that must NOT point at the current language.
+      // group-courses.js and call-booking.js call this with document scope, so
+      // without this guard the switcher's /de/… href is rewritten to /en/… on
+      // load and clicking DE reloads the same English page.
+      if (link.hasAttribute('hreflang') || link.hasAttribute('data-lang')) return;
       const href = link.getAttribute('href');
       if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:'))
         return;

@@ -14,6 +14,19 @@
     return;
   }
 
+  // On a language switch nav.js has already restored the reader's position by
+  // the time this runs, so everything they were looking at is sitting at
+  // opacity 0 waiting to be revealed. Settle it synchronously — the
+  // .lwg-restoring class suppresses the transition for this frame — rather
+  // than leaving it to the observer, whose first callback lands a frame or two
+  // later and would fade the reader's own screen back in at them.
+  if (document.documentElement.classList.contains('lwg-restoring')) {
+    revealed.forEach(function (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) el.classList.add('in-view');
+    });
+  }
+
   const observer = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {
@@ -105,6 +118,12 @@
       loadedReviews = reviews;
       renderReviews();
       applyReviewClamps();
+      // #about and #start sit below #reviews, so filling the grid pushes them
+      // down after first paint. nav.js holds the reader's place across a
+      // language switch; re-apply it now that the page is its final height.
+      // It is a no-op unless a switch just happened and the reader has not
+      // moved since.
+      if (window.__lwgRestorePlace) window.__lwgRestorePlace();
     })
     .catch(function () {
       /* keep the static fallback reviews */
