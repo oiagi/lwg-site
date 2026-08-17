@@ -34,6 +34,12 @@ html[data-device='tablet'] body {
   opacity: 1;
   transform: translateY(0);
 }
+/* A language switch restores the reader mid-page (see nav.js). What was
+   already on their screen must appear exactly as they left it — replaying the
+   fade-and-rise for it is the one thing that still felt like a page load. */
+html.lwg-restoring .reveal {
+  transition: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;

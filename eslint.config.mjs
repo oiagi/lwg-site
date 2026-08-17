@@ -21,9 +21,9 @@ export default [
     },
   },
   {
-    files: ['functions/api/**/*.js'],
+    files: ['functions/**/*.js'],
     languageOptions: {
-      globals: { ...globals.node, caches: 'readonly' },
+      globals: { ...globals.node, caches: 'readonly', HTMLRewriter: 'readonly' },
     },
   },
   {

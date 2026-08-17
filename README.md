@@ -5,6 +5,8 @@ Language courses, exam preparation, and tutoring in Zurich.
 ## Architecture
 
 - **Frontend:** Static HTML/CSS/vanilla JS in `public/` — no framework, no build step
+- **Rendering:** page templates in `public/pages/` are rendered per language at the
+  edge by `functions/{en,de}/[[path]].js` — see [Language rendering](#language-rendering)
 - **Backend:** Cloudflare Pages Functions (serverless, `functions/api/`)
 - **Database:** Supabase (PostgreSQL)
 - **Email:** Resend (transactional)
@@ -15,10 +17,10 @@ Language courses, exam preparation, and tutoring in Zurich.
 ```
 .
 ├── public/                  # Static files served by Cloudflare Pages
-│   ├── *.html               # 13 pages (see Pages below)
+│   ├── pages/               # Page templates — rendered per language, never linked directly
 │   ├── shared.css           # Global styles, navigation, animations
-│   ├── nav.js               # Navigation component injected into all pages
-│   ├── i18n.js              # EN/DE language switching for public pages
+│   ├── nav.js               # Nav behaviour (the markup is server-rendered)
+│   ├── i18n.js              # Runtime strings for JS-rendered UI only
 │   ├── device-detect.js     # Sets responsive device class on <body>
 │   └── admin/               # Admin dashboard (single-page app)
 │       ├── index.html       # SPA shell
@@ -27,6 +29,15 @@ Language courses, exam preparation, and tutoring in Zurich.
 │       ├── features/        # One module per domain (courses, students, teachers, invoices, …)
 │       ├── pages/           # Full-page views: course-edit, course-new, student-form
 │       └── panels/          # Tab panel HTML: courses, students, teachers, invoices, companies
+├── functions/
+│   ├── en/[[path]].js       # Renders /en/* — thin wrapper over _render.js
+│   ├── de/[[path]].js       # Renders /de/*
+│   ├── sitemap.xml.js       # Generated sitemap (no hand-maintained file)
+│   ├── _render.js           # HTMLRewriter pipeline: head, copy, nav, footer, JSON-LD
+│   ├── _i18n-content.js     # All page copy + routing tables — single source of truth
+│   ├── _nav-markup.js       # Server-rendered nav, footer, language switcher
+│   ├── _schema.js           # JSON-LD graph (LocalBusiness, Person, Course, …)
+│   └── _sitemap.js
 ├── functions/api/           # Cloudflare Pages Functions
 │   ├── _utils.js            # Auth, CORS, rate limiting, error handling
 │   ├── _validate.js         # Request body validation schemas
@@ -92,7 +103,36 @@ cp .dev.vars.example .dev.vars   # fill in secrets
 npm run dev                      # serve on http://localhost:8788
 ```
 
-Wrangler serves `public/` as static files and executes `functions/api/` locally.
+Wrangler serves `public/` as static files and executes `functions/` locally.
+
+## Language rendering
+
+Every public page is served twice, at `/en/<slug>` and `/de/<slug>`, from a single
+template in `public/pages/`. `functions/{en,de}/[[path]].js` resolves the slug,
+fetches the template through `env.ASSETS`, and pipes it through `_render.js`,
+which applies the language: `<html lang>`, title, meta description, canonical,
+hreflang, body copy, navigation, footer, internal links and JSON-LD. The result is
+complete HTML for clients that do not run JavaScript — which includes every AI
+crawler. `public/i18n.js` is left with only the strings for content that appears
+after a fetch (course cards, call slots, form states).
+
+To change copy, edit `functions/_i18n-content.js`. To change page structure, edit
+the template in `public/pages/`. Selectors in the copy dictionary must stay within
+the subset HTMLRewriter supports — tag, `#id`, `.class`, `[attr=…]` and descendant
+combinators. A pseudo-class such as `:nth-of-type` is accepted silently and then
+never matches, so `tests/i18n-routing.test.mjs` fails the build on one.
+
+Two constraints worth knowing before changing the routing:
+
+- **`_redirects` does not apply to paths served by a Function.** A root
+  `functions/_middleware.js` would match `/*` and silently disable the whole file,
+  including the `.html` → clean-URL 301s. That is why the Functions are scoped to
+  the two language prefixes.
+- **`env.ASSETS.fetch()` goes through the same asset router, so it sees
+  `_redirects` too.** Templates live in `public/pages/` precisely so their paths
+  carry no redirect rule. `/pages/*` is `Disallow`ed in `robots.txt` and carries
+  `X-Robots-Tag: noindex` from `_headers`, which `_render.js` strips from the page
+  it returns.
 
 ## Environment variables
 
