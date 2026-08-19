@@ -4,7 +4,13 @@
 // directly: it touches the DOM only inside functions, never at import time.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+// Imported rather than used as a global: the ESLint config does not declare
+// Node globals for this directory.
+import process from 'node:process';
 import { buildInvoiceCsv } from '../public/admin/features/invoice-export.js';
+
+const MODULE_URL = new URL('../public/admin/features/invoice-export.js', import.meta.url).href;
 
 const BOM = '\uFEFF';
 const HEADER =
@@ -143,4 +149,23 @@ test('a row with no student record at all still exports', () => {
   assert.equal(c[0], 'LWG-2026-0001');
   assert.equal(c[8], '');
   assert.equal(c[9], '');
+});
+
+// Guards the plain-date parsing: `new Date('2026-03-04')` is UTC midnight, so
+// west of Greenwich a naive implementation writes 03.03.2026 and books the
+// invoice to the wrong day. Run in a child process because the timezone has
+// to be set before the module is loaded.
+test('a plain date is not shifted a day by the local timezone', () => {
+  const script = `
+    import { buildInvoiceCsv } from ${JSON.stringify(MODULE_URL)};
+    const row = buildInvoiceCsv([{ name: 'X.pdf', issued_date: '2026-03-04' }]).split('\\r\\n')[1];
+    console.log(row.split(';')[2]);
+  `;
+  for (const tz of ['Pacific/Honolulu', 'UTC', 'Europe/Zurich', 'Pacific/Kiritimati']) {
+    const out = execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+      env: { ...process.env, TZ: tz },
+      encoding: 'utf8',
+    }).trim();
+    assert.equal(out, '04.03.2026', `issued date shifted in ${tz}`);
+  }
 });

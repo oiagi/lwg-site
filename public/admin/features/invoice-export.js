@@ -93,11 +93,19 @@ const CSV_COLUMNS = [
 
 // DD.MM.YYYY. Not helpers.js fmtDate — that one appends a time component,
 // which turns an accounting date column into a timestamp column.
+//
+// A plain YYYY-MM-DD is read component by component: `new Date('2026-03-04')`
+// is UTC midnight, so west of Greenwich the local getters would report the
+// third and book the invoice to the wrong day. Timestamps keep going through
+// Date, reduced to the calendar day they fell on locally.
 function csvDate(value) {
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '';
   const pad = (n) => String(n).padStart(2, '0');
+  if (!value) return '';
+  const str = String(value);
+  const plain = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
+  if (plain) return `${plain[3]}.${plain[2]}.${plain[1]}`;
+  const d = new Date(str);
+  if (Number.isNaN(d.getTime())) return '';
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
