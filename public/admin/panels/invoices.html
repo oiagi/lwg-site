@@ -2,6 +2,12 @@
   <div class="course-filter-row" id="archive-year-filters">
     <!-- Year filter buttons injected by JS -->
   </div>
+  <!-- Both exports always cover the whole selected year, never the current
+       status filter or search — the labels name the year to make that plain. -->
+  <div class="students-header-actions">
+    <button class="secondary-btn" id="invoice-zip-btn" data-action="downloadInvoicePdfZip" disabled>download PDFs (zip)</button>
+    <button class="secondary-btn" id="invoice-csv-btn" data-action="exportInvoiceCsv" disabled>export CSV</button>
+  </div>
 </div>
 <div class="invoice-status-filters">
   <span class="invoice-filter-label">show</span>
@@ -12,6 +18,7 @@
 <div class="list-toolbar" aria-label="Invoice list tools">
   <input type="search" id="invoice-search" class="list-search" placeholder="Search invoice number, student or course…" autocomplete="off">
   <span class="detail-muted" id="archive-count"></span>
+  <span class="detail-muted" id="invoice-export-status" aria-live="polite"></span>
 </div>
 <div id="archive-list">
   <div class="loading-state">loading…</div>

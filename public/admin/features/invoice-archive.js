@@ -83,6 +83,17 @@ function visibleFiles() {
   return currentFiles.filter((f) => matchesInvoiceFilter(f, activeFilter, searchTerm));
 }
 
+// Read by invoice-export.js. Deliberately every row of the loaded year, not
+// visibleFiles(): a bookkeeping export must not depend on which filter the
+// admin happened to leave selected.
+export function getArchiveRows() {
+  return currentFiles;
+}
+
+export function getArchiveYear() {
+  return activeYear;
+}
+
 function renderStatusFilters() {
   const container = document.getElementById('archive-status-filters');
   if (!container) return;
@@ -108,9 +119,25 @@ function attachSearch() {
   });
 }
 
+// The export buttons sit next to the filters but always act on the whole year,
+// so their labels name the year rather than the current filter. Disabled while
+// the year is empty or still loading, so neither can produce an empty file.
+function renderExportButtons() {
+  for (const [id, label] of [
+    ['invoice-zip-btn', `download ${activeYear} PDFs (zip)`],
+    ['invoice-csv-btn', `export ${activeYear} CSV`],
+  ]) {
+    const btn = document.getElementById(id);
+    if (!btn) continue;
+    btn.textContent = label;
+    btn.disabled = currentFiles.length === 0;
+  }
+}
+
 // Re-renders from the already-loaded year — filtering never refetches.
 function renderArchive() {
   renderStatusFilters();
+  renderExportButtons();
   renderFiles(visibleFiles());
 }
 
@@ -228,6 +255,8 @@ export async function loadInvoiceArchive(year) {
   activeYear = year;
   renderYearFilters(year);
   attachSearch();
+  currentFiles = [];
+  renderExportButtons();
   const container = document.getElementById('archive-list');
   if (container) container.innerHTML = '<div class="loading-state">loading…</div>';
   try {
@@ -243,6 +272,7 @@ export async function loadInvoiceArchive(year) {
     console.error('Invoice archive load error:', err);
     currentFiles = [];
     currentFilesByNumber = new Map();
+    renderExportButtons();
     if (container) container.innerHTML = '<div class="loading-state">Failed to load archive.</div>';
   }
 }
