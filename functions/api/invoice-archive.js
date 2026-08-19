@@ -15,27 +15,36 @@ import {
 
 const BUCKET = 'invoice-archive';
 const SIGNED_URL_TTL = 3600;
+const LIST_PAGE_SIZE = 500;
 
 function currentYear() {
   return new Date().getFullYear();
 }
 
+// Storage list responses are capped per request, so page through them until a
+// short page arrives. Without this a busy year silently loses its oldest
+// invoices — from the overview and from the bulk exports built on top of it.
 async function listYearFiles(env, year) {
-  const res = await fetch(`${env.SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      prefix: `${year}/`,
-      limit: 500,
-      offset: 0,
-      sortBy: { column: 'name', order: 'desc' },
-    }),
-  });
-  if (!res.ok) throw new Error(`Storage list failed: ${await res.text()}`);
-  return res.json();
+  const all = [];
+  for (let offset = 0; ; offset += LIST_PAGE_SIZE) {
+    const res = await fetch(`${env.SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prefix: `${year}/`,
+        limit: LIST_PAGE_SIZE,
+        offset,
+        sortBy: { column: 'name', order: 'desc' },
+      }),
+    });
+    if (!res.ok) throw new Error(`Storage list failed: ${await res.text()}`);
+    const page = await res.json();
+    all.push(...page);
+    if (page.length < LIST_PAGE_SIZE) return all;
+  }
 }
 
 // Invoice columns whose migrations are applied by hand and may not exist yet;

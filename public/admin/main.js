@@ -109,6 +109,7 @@ import {
   deleteInvoice,
   cancelArchivedInvoice,
 } from './features/invoice-archive.js';
+import { downloadInvoicePdfZip, exportInvoiceCsv } from './features/invoice-export.js';
 import {
   loadCompanies,
   selectCompany,
@@ -246,6 +247,8 @@ const actions = {
   cancelArchivedInvoice,
   closeStornoModal,
   submitStorno,
+  downloadInvoicePdfZip,
+  exportInvoiceCsv,
   // Companies
   selectCompany,
   saveCompanyName,
