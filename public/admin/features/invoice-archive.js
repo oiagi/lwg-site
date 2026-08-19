@@ -125,7 +125,7 @@ function attachSearch() {
 function renderExportButtons() {
   for (const [id, label] of [
     ['invoice-zip-btn', `download ${activeYear} PDFs (zip)`],
-    ['invoice-xlsx-btn', `export ${activeYear} Excel`],
+    ['invoice-csv-btn', `export ${activeYear} CSV`],
   ]) {
     const btn = document.getElementById(id);
     if (!btn) continue;

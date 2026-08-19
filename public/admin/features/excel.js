@@ -1,9 +1,12 @@
 /* ── Excel import/export for students ─────────────────────────────── */
 import { apiFetch } from '../core/api.js';
 import { esc } from '../core/helpers.js';
-import { loadSheetJS } from '../core/sheetjs.js';
 import { loadStudents, getCurrentStudentFilter } from './students.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+
+// Vendored SheetJS build (npm/jsdelivr line is frozen at vulnerable 0.18.5;
+// patched builds ship only via cdn.sheetjs.com, which the CSP blocks).
+const SHEETJS_SRC = '/admin/vendor/xlsx.full.min.js';
 
 // Columns surfaced in exports and accepted on import. Kept in sync with the
 // student modal + the save-student allow-list on the backend.
@@ -37,7 +40,21 @@ const COLUMNS = [
   'status',
 ];
 
+let sheetJsPromise = null;
 let parsedImportRows = null;
+
+function loadSheetJS() {
+  if (sheetJsPromise) return sheetJsPromise;
+  sheetJsPromise = new Promise((resolve, reject) => {
+    if (window.XLSX) return resolve(window.XLSX);
+    const s = document.createElement('script');
+    s.src = SHEETJS_SRC;
+    s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('XLSX not loaded')));
+    s.onerror = () => reject(new Error('Failed to load SheetJS'));
+    document.head.appendChild(s);
+  });
+  return sheetJsPromise;
+}
 
 /* ── Export ──────────────────────────────────────────────────────── */
 

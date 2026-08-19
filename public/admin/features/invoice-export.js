@@ -1,11 +1,10 @@
-/* ── Invoice bulk export: ZIP of PDFs + bookkeeping spreadsheet ────────
+/* ── Invoice bulk export: ZIP of PDFs + bookkeeping CSV ────────────────
    Both exports always cover the whole selected year, deliberately ignoring
    the status filter and the search box: an export handed to a bookkeeper
    must never silently omit invoices because of the UI state it was
    triggered from. Cancelled and storno rows are included — a credit note is
    an accounting document and belongs in the books. */
 import { apiFetch } from '../core/api.js';
-import { loadSheetJS } from '../core/sheetjs.js';
 import { getArchiveRows, getArchiveYear } from './invoice-archive.js';
 
 // UMD build; exposes window.fflate. Loaded from the same CDN as jsPDF and
@@ -59,151 +58,117 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-/* ── Spreadsheet ─────────────────────────────────────────────────── */
+/* ── CSV ─────────────────────────────────────────────────────────── */
 
-// Dates and amounts are written as real Excel dates and numbers rather than
-// as text, so the accountant can sort, filter and sum them. These are the
-// display formats Excel applies to them.
-const DATE_FORMAT = 'DD.MM.YYYY';
-const AMOUNT_FORMAT = '#,##0.00';
+// Swiss/German Excel dialect: semicolon separator, CRLF rows and a UTF-8 BOM,
+// so double-clicking the file opens it in columns with umlauts intact instead
+// of dropping into the text-import wizard.
+const CSV_SEPARATOR = ';';
+const CSV_NEWLINE = '\r\n';
+const CSV_BOM = '\uFEFF';
 
-// Dates on a plain YYYY-MM-DD string must not go through Date's UTC parsing:
-// west of Greenwich that would shift an invoice onto the previous day.
-// Timestamps are reduced to the calendar day they fell on locally — an
-// accounting date column is a date, not an instant.
-function excelDate(value) {
-  if (!value) return null;
-  const plain = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
-  if (plain && !/[T ]\d/.test(String(value))) {
-    return new Date(Number(plain[1]), Number(plain[2]) - 1, Number(plain[3]));
-  }
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function excelAmount(value) {
-  if (value === null || value === undefined || value === '') return null;
-  const n = Number(value);
-  return Number.isNaN(n) ? null : n;
-}
-
-function text(value) {
-  return value === null || value === undefined ? '' : String(value);
-}
-
-// One definition per column drives the header, the cell value and the number
-// format, so the three can never drift apart. `ctx` carries lookups that need
-// the whole set, such as resolving a storno back to the invoice it reverses.
-const COLUMNS = [
-  { label: 'invoice number', type: 'text', width: 17, value: (f) => invoiceNumberOf(f) },
-  { label: 'status', type: 'text', width: 11, value: (f) => text(f.status) },
-  { label: 'issued', type: 'date', width: 12, value: (f) => excelDate(f.issued_date) },
-  { label: 'due', type: 'date', width: 12, value: (f) => excelDate(f.due_date) },
-  { label: 'sent', type: 'date', width: 12, value: (f) => excelDate(f.sent_at) },
-  { label: 'reminded', type: 'date', width: 12, value: (f) => excelDate(f.reminder_sent_at) },
-  { label: 'cancelled', type: 'date', width: 12, value: (f) => excelDate(f.cancelled_at) },
-  {
-    label: 'cancels invoice',
-    type: 'text',
-    width: 17,
-    value: (f, ctx) => (f.cancels_invoice_id ? text(ctx.numberById.get(f.cancels_invoice_id)) : ''),
-  },
-  {
-    label: 'billing name',
-    type: 'text',
-    width: 24,
-    value: (f) => text(f.student?.billing_name || f.student_name || ''),
-  },
-  { label: 'student', type: 'text', width: 22, value: (f) => text(f.student_name) },
-  {
-    label: 'customer reference',
-    type: 'text',
-    width: 18,
-    value: (f) => text(f.student?.customer_reference),
-  },
-  {
-    label: 'billing email',
-    type: 'text',
-    width: 26,
-    value: (f) => text(f.student?.billing_email || f.student?.email || ''),
-  },
-  { label: 'course code', type: 'text', width: 14, value: (f) => text(f.course_code) },
-  { label: 'subject', type: 'text', width: 14, value: (f) => text(f.course_subject) },
-  { label: 'level', type: 'text', width: 8, value: (f) => text(f.course_level) },
-  { label: 'item', type: 'text', width: 30, value: (f) => text(f.item_subject) },
-  { label: 'quantity', type: 'amount', width: 10, value: (f) => excelAmount(f.item_quantity) },
-  { label: 'unit price', type: 'amount', width: 12, value: (f) => excelAmount(f.item_unit_price) },
-  { label: 'total', type: 'amount', width: 12, value: (f) => excelAmount(f.total_amount) },
-  { label: 'currency', type: 'text', width: 9, value: (f) => text(f.currency || 'CHF') },
-  { label: 'language', type: 'text', width: 9, value: (f) => text(f.invoice_language) },
+const CSV_COLUMNS = [
+  'invoice_number',
+  'status',
+  'issued_date',
+  'due_date',
+  'sent_at',
+  'reminder_sent_at',
+  'cancelled_at',
+  'cancels_invoice',
+  'billing_name',
+  'student_name',
+  'customer_reference',
+  'billing_email',
+  'course_code',
+  'course_subject',
+  'course_level',
+  'item_subject',
+  'item_quantity',
+  'item_unit_price',
+  'total_amount',
+  'currency',
+  'language',
 ];
 
-// Pure: no DOM, no SheetJS, no network. Unit-tested in
-// tests/invoice-export.test.mjs. Returns the header plus a row of real
-// JS values (string | number | Date | null) per invoice.
-export function buildInvoiceRows(rows) {
+// DD.MM.YYYY. Not helpers.js fmtDate — that one appends a time component,
+// which turns an accounting date column into a timestamp column.
+function csvDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+function csvAmount(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const n = Number(value);
+  return Number.isNaN(n) ? '' : n.toFixed(2);
+}
+
+function csvField(value) {
+  const s = value === null || value === undefined ? '' : String(value);
+  return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Pure: no DOM, no network. Unit-tested in tests/invoice-csv.test.mjs.
+export function buildInvoiceCsv(rows) {
   const list = Array.isArray(rows) ? rows : [];
   // A storno row points at the invoice it reverses by id; bookkeeping needs
   // the human-readable number instead.
-  const ctx = {
-    numberById: new Map(
-      list.filter((f) => f.invoice_id).map((f) => [f.invoice_id, invoiceNumberOf(f)])
-    ),
-  };
+  const numberById = new Map(
+    list.filter((f) => f.invoice_id).map((f) => [f.invoice_id, invoiceNumberOf(f)])
+  );
+
   const sorted = [...list].sort((a, b) => invoiceNumberOf(a).localeCompare(invoiceNumberOf(b)));
-  return {
-    header: COLUMNS.map((c) => c.label),
-    rows: sorted.map((f) => COLUMNS.map((c) => c.value(f, ctx))),
-  };
+
+  const lines = [CSV_COLUMNS.join(CSV_SEPARATOR)];
+  for (const f of sorted) {
+    const student = f.student || {};
+    const values = [
+      invoiceNumberOf(f),
+      f.status ?? '',
+      csvDate(f.issued_date),
+      csvDate(f.due_date),
+      csvDate(f.sent_at),
+      csvDate(f.reminder_sent_at),
+      csvDate(f.cancelled_at),
+      f.cancels_invoice_id ? (numberById.get(f.cancels_invoice_id) ?? '') : '',
+      student.billing_name || f.student_name || '',
+      f.student_name ?? '',
+      student.customer_reference ?? '',
+      student.billing_email || student.email || '',
+      f.course_code ?? '',
+      f.course_subject ?? '',
+      f.course_level ?? '',
+      f.item_subject ?? '',
+      csvAmount(f.item_quantity),
+      csvAmount(f.item_unit_price),
+      csvAmount(f.total_amount),
+      f.currency || 'CHF',
+      f.invoice_language ?? '',
+    ];
+    lines.push(values.map(csvField).join(CSV_SEPARATOR));
+  }
+  return CSV_BOM + lines.join(CSV_NEWLINE) + CSV_NEWLINE;
 }
 
-export async function exportInvoiceXlsx(btn) {
-  const invoices = getArchiveRows();
+export function exportInvoiceCsv(btn) {
+  const rows = getArchiveRows();
   const year = getArchiveYear();
-  if (!invoices.length) {
+  if (!rows.length) {
     setStatus(`No archived invoices for ${year}.`);
     return;
   }
   if (btn) btn.disabled = true;
-  setStatus('building spreadsheet…');
   try {
-    const XLSX = await loadSheetJS();
-    const { header, rows } = buildInvoiceRows(invoices);
-    // No cellDates: that stores dates as ISO strings (cell type "d"), which
-    // Excel reads poorly. Left off, the Date objects become ordinary date
-    // serials carrying the format below — what every spreadsheet expects.
-    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-
-    // Number formats are per cell, so stamp each data cell in a typed column.
-    // Blank cells are simply absent from the sheet and are skipped.
-    COLUMNS.forEach((col, c) => {
-      const fmt = col.type === 'date' ? DATE_FORMAT : col.type === 'amount' ? AMOUNT_FORMAT : null;
-      if (!fmt) return;
-      for (let r = 1; r <= rows.length; r++) {
-        const cell = ws[XLSX.utils.encode_cell({ c, r })];
-        if (cell) cell.z = fmt;
-      }
-    });
-
-    ws['!cols'] = COLUMNS.map((c) => ({ wch: c.width }));
-    // Header filter dropdowns, so a year can be sliced by status or student
-    // without touching the data. (Freeze panes are not in this SheetJS build.)
-    ws['!autofilter'] = {
-      ref: XLSX.utils.encode_range({
-        s: { c: 0, r: 0 },
-        e: { c: COLUMNS.length - 1, r: rows.length },
-      }),
-    };
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, String(year));
-    XLSX.writeFile(wb, `invoices-${year}.xlsx`);
-    setStatus(`Exported ${rows.length} invoice${rows.length === 1 ? '' : 's'} to Excel.`);
+    const csv = buildInvoiceCsv(rows);
+    downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `invoices-${year}.csv`);
+    setStatus(`Exported ${rows.length} invoice${rows.length === 1 ? '' : 's'} to CSV.`);
   } catch (err) {
-    console.error('Invoice Excel export error:', err);
-    setStatus('Excel export failed: ' + err.message);
-    alert('Could not build the spreadsheet: ' + err.message);
+    console.error('Invoice CSV export error:', err);
+    setStatus('CSV export failed: ' + err.message);
   } finally {
     if (btn) btn.disabled = false;
   }
