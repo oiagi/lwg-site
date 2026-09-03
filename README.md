@@ -51,20 +51,20 @@ Language courses, exam preparation, and tutoring in Zurich.
 
 ## Pages
 
-| Page                 | File                         | Notes                                                            |
-| -------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| Home                 | `index.html`                 | Includes courses and pricing (`#offer-details`)                  |
-| Group courses        | `group-courses.html`         | Public listing + booking form                                    |
-| Enquiry              | `enquiry.html`               | Contact form                                                     |
-| Thank you            | `thankyou.html`              | Post-submission landing page                                     |
-| Modal particles      | `modalpartikeln.html`        | Interactive German grammar tool                                  |
-| Subjunctions         | `subjunktionen.html`         | Interactive German grammar tool                                  |
-| Conjunctions         | `konjunktionen.html`         | Interactive German grammar tool                                  |
-| Language levels      | `niveaus.html`               | CEFR levels (A1–C2) overview                                     |
-| AGB                  | `agb.html`                   | Terms and conditions (DE default)                                |
-| Impressum            | `impressum.html`             | Legal notice (DE default)                                        |
-| Datenschutzerklärung | `datenschutzerklaerung.html` | Privacy policy (DE default)                                      |
-| Intake               | `intake.html`                | Student intake form — linked from admin email, not in public nav |
+| Page                 | File                         | Notes                                                                                                                                                                                                                                 |
+| -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home                 | `index.html`                 | One scroll page: courses (`#language-courses`, `#tutoring`), course structure (`#offer-details`), about (`#about`), FAQ (`#faq`), enquiry and call booking (`#enquiry`). The former course, about and FAQ pages 301 to these anchors. |
+| Group courses        | `group-courses.html`         | Public listing + booking form                                                                                                                                                                                                         |
+| Enquiry              | `enquiry.html`               | Contact form                                                                                                                                                                                                                          |
+| Thank you            | `thankyou.html`              | Post-submission landing page                                                                                                                                                                                                          |
+| Modal particles      | `modalpartikeln.html`        | Interactive German grammar tool                                                                                                                                                                                                       |
+| Subjunctions         | `subjunktionen.html`         | Interactive German grammar tool                                                                                                                                                                                                       |
+| Conjunctions         | `konjunktionen.html`         | Interactive German grammar tool                                                                                                                                                                                                       |
+| Language levels      | `niveaus.html`               | CEFR levels (A1–C2) overview                                                                                                                                                                                                          |
+| AGB                  | `agb.html`                   | Terms and conditions (DE default)                                                                                                                                                                                                     |
+| Impressum            | `impressum.html`             | Legal notice (DE default)                                                                                                                                                                                                             |
+| Datenschutzerklärung | `datenschutzerklaerung.html` | Privacy policy (DE default)                                                                                                                                                                                                           |
+| Intake               | `intake.html`                | Student intake form — linked from admin email, not in public nav                                                                                                                                                                      |
 
 ## Admin dashboard
 

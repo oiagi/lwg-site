@@ -22,17 +22,6 @@ export const SUPPORTED = ['en', 'de'];
 // and _render.js 301s to the same page's slug in the requested language.
 export const ROUTES = {
   '/index.html': { en: '', de: '' },
-  '/german-courses.html': { en: 'german-courses', de: 'deutschkurse' },
-  '/swiss-german.html': { en: 'swiss-german', de: 'schweizerdeutsch' },
-  '/gymivorbereitung.html': { en: 'gymivorbereitung', de: 'gymivorbereitung' },
-  '/english-courses.html': { en: 'english-courses', de: 'englischkurse' },
-  '/exam-preparation.html': { en: 'exam-preparation', de: 'pruefungsvorbereitung' },
-  '/company-courses.html': { en: 'company-courses', de: 'firmenkurse' },
-  '/lunch-time-german.html': { en: 'lunch-time-german', de: 'kurs-nach-mass' },
-  '/online-lessons.html': { en: 'online-lessons', de: 'online-unterricht' },
-  '/private-lessons.html': { en: 'private-lessons', de: 'einzelunterricht' },
-  '/about.html': { en: 'about', de: 'ueber-uns' },
-  '/faq.html': { en: 'faq', de: 'faq' },
   '/group-courses.html': { en: 'group-courses', de: 'gruppenkurse' },
   '/enquiry.html': { en: 'enquiry', de: 'anfrage' },
   '/thankyou.html': { en: 'thankyou', de: 'danke' },
@@ -59,10 +48,6 @@ export const PAGE_BY_ROUTE = SUPPORTED.reduce((byLang, lang) => {
 // Pages whose primary audience reads German. Drives <html lang> when no
 // prefix resolves, and the hreflang x-default target.
 export const DEFAULT_BY_PAGE = {
-  // Gymivorbereitung is bought by German-speaking parents in canton Zürich, and
-  // _redirects + sitemap.xml already treat /de/ as its primary URL. Listing it
-  // here settles the three-way x-default contradiction in favour of German.
-  '/gymivorbereitung.html': 'de',
   '/impressum.html': 'de',
   '/datenschutzerklaerung.html': 'de',
   '/agb.html': 'de',
@@ -78,13 +63,41 @@ export const DEFAULT_BY_PAGE = {
 // identical either way.
 // Targets go through pagePath so a retired slug lands on the localized URL in
 // one hop rather than redirecting into another redirect.
+//
+// The course pages, the about page and the FAQ were folded into the homepage;
+// their slugs in both languages land on the section, in the language the
+// prefix asked for. Gymivorbereitung had /de/ as its primary URL, so the bare
+// .html form in _redirects goes to /de/#tutoring.
+const home = (hash) => (lang) => `/${lang}/#${hash}`;
+
 export const LEGACY_SLUG_REDIRECTS = {
-  info: (lang) => `/${lang}/#offer-details`,
-  'english-exams': (lang) => pagePath('/english-courses.html', lang),
+  info: home('offer-details'),
   redepartikeln: (lang) => pagePath('/modalpartikeln.html', lang),
   contact: (lang) => pagePath('/enquiry.html', lang),
   booking: (lang) => pagePath('/enquiry.html', lang),
   scheduling: (lang) => pagePath('/enquiry.html', lang),
+
+  'german-courses': home('language-courses'),
+  deutschkurse: home('language-courses'),
+  'swiss-german': home('language-courses'),
+  schweizerdeutsch: home('language-courses'),
+  'english-courses': home('language-courses'),
+  englischkurse: home('language-courses'),
+  'english-exams': home('language-courses'),
+  'exam-preparation': home('language-courses'),
+  pruefungsvorbereitung: home('language-courses'),
+  'company-courses': home('language-courses'),
+  firmenkurse: home('language-courses'),
+  'lunch-time-german': home('language-courses'),
+  'kurs-nach-mass': home('language-courses'),
+  'online-lessons': home('language-courses'),
+  'online-unterricht': home('language-courses'),
+  'private-lessons': home('language-courses'),
+  einzelunterricht: home('language-courses'),
+  gymivorbereitung: home('gymivorbereitung'),
+  about: home('about'),
+  'ueber-uns': home('about'),
+  faq: home('faq'),
 };
 
 // Page templates live under public/pages/ rather than at the asset root.
@@ -199,23 +212,19 @@ export const nav = {
   close: { en: 'close', de: 'Schliessen' },
   home: { en: 'Home', de: 'Start' },
   offer: { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
-  germanCourses: { en: 'German courses', de: 'Deutschkurse' },
-  swissGerman: { en: 'Swiss German', de: 'Schweizerdeutsch' },
+  languageCourses: { en: 'language courses', de: 'Sprachkurse' },
+  tutoring: { en: 'tutoring', de: 'Nachhilfe' },
   gymivorbereitung: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-  englishCourses: { en: 'English courses', de: 'Englischkurse' },
-  examPreparation: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-  companyCourses: { en: 'Company courses', de: 'Firmenkurse' },
-  lunchTimeGerman: { en: 'Build your own', de: 'Build your own' },
-  onlineLessons: { en: 'Online lessons', de: 'Online-Unterricht' },
-  privateLessons: { en: 'Private lessons', de: 'Einzelunterricht' },
   faq: { en: 'FAQ', de: 'Häufige Fragen' },
   courseStructure: { en: 'course structure', de: 'Kursstruktur' },
   levels: { en: 'your level', de: 'Dein Niveau' },
   reviews: { en: 'reviews', de: 'Stimmen' },
   about: { en: 'about', de: 'Über uns' },
-  start: { en: 'get started', de: 'Loslegen' },
-  groupCourses: { en: 'group courses', de: 'Gruppenkurse' },
+  // The section header, and the three ways in under it.
   enquiry: { en: 'enquiry', de: 'Anfrage' },
+  enquiryForm: { en: 'make an enquiry', de: 'Anfrage senden' },
+  groupCourses: { en: 'group courses', de: 'Gruppenkurse' },
+  bookCall: { en: 'book a call', de: 'Gespräch buchen' },
   materials: { en: 'learning materials', de: 'Lernmaterialien' },
   modalpartikeln: { en: 'modal particles', de: 'Modalpartikeln' },
   subjunktionen: { en: 'subjunctions', de: 'Subjunktionen' },
@@ -260,54 +269,177 @@ export const pages = {
       },
       '#hero-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#hero-cta-offer': { en: 'what we offer', de: 'Unser Angebot' },
-      '#offer .kicker': { en: 'what we offer', de: 'Unser Angebot' },
-      '#offer .section-title': { en: 'Courses &amp; tutoring', de: 'Kurse &amp; Nachhilfe' },
-      '#offer-german h3': { en: 'German courses', de: 'Deutschkurse' },
-      '#offer-german p': {
-        en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers.',
-        de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.',
+
+      // ── Language courses: what, in which format, where, and the rate ──
+      '#language-courses .kicker': { en: 'what we offer', de: 'Unser Angebot' },
+      '#language-courses .section-title': { en: 'Language courses', de: 'Sprachkurse' },
+      '#lc-intro': {
+        en: 'German, Swiss German and English, from complete beginner (A0) to advanced (C2), in the format and place that suit you.',
+        de: 'Deutsch, Schweizerdeutsch und Englisch, von A0 bis C2, im Format und am Ort, die zu dir passen.',
       },
-      '#offer-swiss h3': { en: 'Swiss German', de: 'Schweizerdeutsch' },
-      '#offer-swiss p': {
-        en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
-        de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
+      '#lc-languages-title': { en: 'Languages', de: 'Sprachen' },
+      '#lc-lang-german': {
+        en: '<strong>German</strong> <span>For everyday life, work and study, taught exclusively by native speakers.</span>',
+        de: '<strong>Deutsch</strong> <span>Für Alltag, Beruf und Studium, unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.</span>',
       },
-      '#offer-gymi h3': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-      '#offer-gymi p': {
-        en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
-        de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+      '#lc-lang-swiss': {
+        en: '<strong>Swiss German</strong> <span>Follow conversations, join in and feel at home in Swiss everyday life.</span>',
+        de: '<strong>Schweizerdeutsch</strong> <span>Gesprächen folgen, mitreden und sich im Schweizer Alltag zuhause fühlen.</span>',
       },
-      '#offer-online h3': { en: 'Online lessons', de: 'Online-Unterricht' },
-      '#offer-online p': {
-        en: 'German and Swiss German by video, taught live by a native speaker. The same courses we teach in Zürich, at the same price, wherever you are.',
-        de: 'Deutsch und Schweizerdeutsch per Video, live unterrichtet von einer Muttersprachlerin. Dieselben Kurse wie in Zürich, zum selben Preis, egal wo du bist.',
+      '#lc-lang-english': {
+        en: '<strong>English</strong> <span>For school, work and everyday life, from A1 to C2.</span>',
+        de: '<strong>Englisch</strong> <span>Für Schule, Beruf und Alltag, von A1 bis C2.</span>',
       },
-      '#offer-private h3': { en: 'Private lessons', de: 'Einzelunterricht' },
-      '#offer-private p': {
-        en: 'One teacher, one learner, and a course built from nothing but what you need — for a fixed exam date, a professional vocabulary, or a schedule that will not hold a weekly slot.',
-        de: 'Eine Lehrperson, eine lernende Person und ein Kurs, der nur aus dem besteht, was du brauchst — für einen fixen Prüfungstermin, einen Fachwortschatz oder einen Terminplan, der keinen Wochentermin hergibt.',
+      '#lc-lang-exams': {
+        en: '<strong>Exam preparation</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS and more, practised with the real exam formats.</span>',
+        de: '<strong>Prüfungsvorbereitung</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS und mehr, geübt mit den echten Prüfungsformaten.</span>',
       },
-      '#offer-english h3': { en: 'English courses', de: 'Englischkurse' },
-      '#offer-english p': {
-        en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university.',
-        de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität.',
+      '#lc-format-title': { en: 'Format', de: 'Format' },
+      '#lc-format-group': {
+        en: '<strong>Group</strong> <span>Three to five people, so everybody gets to speak.</span>',
+        de: '<strong>Gruppe</strong> <span>Drei bis fünf Personen, damit alle zu Wort kommen.</span>',
       },
-      '#offer-exams h3': { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-      '#offer-exams p': {
-        en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
-        de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
+      '#lc-format-private': {
+        en: '<strong>Private</strong> <span>One teacher, one learner, and a course built from what you need.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Eine Lehrperson, eine lernende Person und ein Kurs aus dem, was du brauchst.</span>',
       },
-      '#offer-company h3': { en: 'Company courses', de: 'Firmenkurse' },
-      '#offer-company p': {
-        en: 'Language training for teams, at your offices or ours. Built around your industry, your everyday work and the situations your people actually face.',
-        de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Abgestimmt auf eure Branche, euren Arbeitsalltag und die Situationen, die bei euch wirklich vorkommen.',
+      '#lc-format-company': {
+        en: '<strong>Company</strong> <span>Training for teams, built around your industry and your everyday work.</span>',
+        de: '<strong>Firmenkurse</strong> <span>Training für Teams, aufgebaut um eure Branche und euren Arbeitsalltag.</span>',
       },
-      '#offer-lunch h3': { en: 'Build your own', de: 'Build your own' },
-      '#offer-lunch p': {
-        en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-        de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
+      '#lc-format-tailored': {
+        en: '<strong>Build your own</strong> <span>Lunchtime German, intensive blocks, combined courses: fully tailored to your schedule.</span>',
+        de: '<strong>Build your own</strong> <span>Lunchtime German, Intensivblöcke, kombinierte Kurse: ganz auf deinen Zeitplan zugeschnitten.</span>',
       },
-      '#offer .offer-card__cta': { en: 'learn more →', de: 'mehr erfahren →' },
+      '#lc-location-title': { en: 'Location', de: 'Ort' },
+      '#lc-location-inperson': {
+        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
+        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
+      },
+      '#lc-location-online': {
+        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
+        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
+      },
+      '#lc-facts-title': {
+        en: 'Prices for standard language courses',
+        de: 'Preise für reguläre Sprachkurse',
+      },
+      '#lc-fact-group-label': { en: 'group (3-5)', de: 'Gruppe (3-5)' },
+      '#lc-fact-group-value': { en: 'CHF 50', de: 'CHF 50' },
+      '#lc-fact-group-unit': { en: 'per person per 60 min', de: 'pro Person pro 60 Min.' },
+      '#lc-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
+      '#lc-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
+      '#lc-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      '#lc-note': {
+        en: 'Company courses and tailored programmes are priced on request.',
+        de: 'Firmenkurse und massgeschneiderte Programme: Preis auf Anfrage.',
+      },
+      '#lc-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+      '#lc-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
+
+      // ── Tutoring ──
+      '#tutoring .kicker': { en: 'tutoring', de: 'Nachhilfe' },
+      '#tutoring .section-title': { en: 'Tutoring', de: 'Nachhilfe' },
+      '#tu-intro': {
+        en: 'Tutoring in all subjects taught in Swiss schools, from primary school to Matura.',
+        de: 'Nachhilfe in allen Fächern der Schweizer Schulen, von der Primarschule bis zur Matura.',
+      },
+      '#tu-levels-title': { en: 'Levels', de: 'Stufen' },
+      '#tu-level-primary': {
+        en: '<strong>Primary school</strong> <span>Building the basics and closing gaps early.</span>',
+        de: '<strong>Primarschule</strong> <span>Grundlagen aufbauen und Lücken früh schliessen.</span>',
+      },
+      '#tu-level-secondary': {
+        en: '<strong>Secondary school</strong> <span>Keeping up in the subjects that decide the next step.</span>',
+        de: '<strong>Sekundarschule</strong> <span>Am Ball bleiben in den Fächern, die über den nächsten Schritt entscheiden.</span>',
+      },
+      '#tu-level-gymnasium': {
+        en: '<strong>Gymnasium</strong> <span>Right through to the Matura exams.</span>',
+        de: '<strong>Gymnasium</strong> <span>Bis zur Matura.</span>',
+      },
+      '#tu-format-title': { en: 'Format', de: 'Format' },
+      '#tu-format-group': {
+        en: '<strong>Group</strong> <span>Three to seven pupils.</span>',
+        de: '<strong>Gruppe</strong> <span>Drei bis sieben Schülerinnen und Schüler.</span>',
+      },
+      '#tu-format-private': {
+        en: '<strong>Private</strong> <span>One teacher, one pupil, at your own pace.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Eine Lehrperson, ein Schüler, im eigenen Tempo.</span>',
+      },
+      '#tu-location-title': { en: 'Location', de: 'Ort' },
+      '#tu-location-inperson': {
+        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
+        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
+      },
+      '#tu-location-online': {
+        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
+        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
+      },
+      '#tu-facts-title': { en: 'Prices', de: 'Preise' },
+      '#tu-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
+      '#tu-fact-group-value': { en: 'CHF 80', de: 'CHF 80' },
+      '#tu-fact-group-unit': { en: 'per person per 60 min', de: 'pro Person pro 60 Min.' },
+      '#tu-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
+      '#tu-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
+      '#tu-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      '#tu-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+      '#tu-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
+
+      // ── Gymivorbereitung ──
+      '#gymivorbereitung .kicker': { en: 'gymivorbereitung', de: 'Gymivorbereitung' },
+      '#gymivorbereitung .section-title': {
+        en: 'Gymivorbereitung',
+        de: 'Gymivorbereitung',
+      },
+      '#gy-intro': {
+        en: 'Step by step to the Gymiprüfung, in small groups or one-to-one, always tailored to your child.',
+        de: 'Schritt für Schritt zur Gymiprüfung, in kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+      },
+      '#gy-practice-title': { en: 'What we practise', de: 'Was wir üben' },
+      '#gy-practice-gaps': {
+        en: '<strong>Closing gaps</strong> <span>In the material the exam is built on.</span>',
+        de: '<strong>Lücken schliessen</strong> <span>Im Stoff, auf dem die Prüfung aufbaut.</span>',
+      },
+      '#gy-practice-format': {
+        en: '<strong>The exam format</strong> <span>Practising with the format itself, not only the material.</span>',
+        de: '<strong>Das Prüfungsformat</strong> <span>Üben mit dem Format selbst, nicht nur mit dem Stoff.</span>',
+      },
+      '#gy-practice-calm': {
+        en: '<strong>Calm under pressure</strong> <span>The composure it takes to perform on the day.</span>',
+        de: '<strong>Ruhe unter Druck</strong> <span>Die Sicherheit, die es am Prüfungstag braucht.</span>',
+      },
+      '#gy-format-title': { en: 'Format', de: 'Format' },
+      '#gy-format-group': {
+        en: '<strong>Group</strong> <span>Three to seven children, when it is mainly about exam practice.</span>',
+        de: '<strong>Gruppe</strong> <span>Drei bis sieben Kinder, wenn es vor allem um Prüfungstraining geht.</span>',
+      },
+      '#gy-format-private': {
+        en: '<strong>Private</strong> <span>When there are specific gaps to close, or exam nerves are the main obstacle.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.</span>',
+      },
+      '#gy-location-title': { en: 'Location', de: 'Ort' },
+      '#gy-location-inperson': {
+        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
+        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
+      },
+      '#gy-location-online': {
+        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
+        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
+      },
+      '#gy-facts-title': { en: 'Prices', de: 'Preise' },
+      '#gy-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
+      '#gy-fact-group-value': { en: 'CHF 80', de: 'CHF 80' },
+      '#gy-fact-group-unit': { en: 'per person per 60 min', de: 'pro Person pro 60 Min.' },
+      '#gy-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
+      '#gy-fact-solo-value': { en: 'CHF 150', de: 'CHF 150' },
+      '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      '#gy-note': {
+        en: 'One block runs as 20 lessons of 90 minutes over five months. The earlier you start, the better.',
+        de: 'Ein Block umfasst 20 Lektionen à 90 Minuten über fünf Monate. Je früher du beginnst, desto besser.',
+      },
+      '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
+      '#gy-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
+
       '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
       '#offer-details .section-title': {
         en: 'Course structure',
@@ -333,8 +465,8 @@ export const pages = {
       '.structure-part__hours': { en: '32 h', de: '32 Std.' },
       '#structure-etc': { en: 'etc.', de: 'usw.' },
       '#structure-cta': {
-        en: 'We offer schedules and programmes tailored to your individual needs, do not hesitate to contact us about your desired course today!',
-        de: 'Wir bieten Stundenpläne und Programme, die auf deine individuellen Bedürfnisse zugeschnitten sind. Zögere nicht, uns noch heute für deinen Wunschkurs zu kontaktieren!',
+        en: 'We offer schedules and programmes tailored to your individual needs. Contact us about your desired course!',
+        de: 'Wir bieten Stundenpläne und Programme, die auf deine individuellen Bedürfnisse zugeschnitten sind. Kontaktier uns für deinen Wunschkurs!',
       },
       '#levels .kicker': { en: 'your level', de: 'Dein Niveau' },
       '#levels .section-title': {
@@ -342,8 +474,8 @@ export const pages = {
         de: 'Welches Niveau passt zu dir?',
       },
       '.levels-text': {
-        en: 'Not sure where to start? The six CEFR levels, A1 to C2, describe what you can do in a language. Our interactive self-assessment helps you find your current level, the perfect starting point for choosing the right course.',
-        de: 'Du weisst nicht, wo du starten sollst? Die sechs Niveaus des GER, A1 bis C2, beschreiben, was du in einer Sprache kannst. Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden, der perfekte Ausgangspunkt für den passenden Kurs.',
+        en: 'Not sure where to start? Our interactive self-assessment helps you find your current level.',
+        de: 'Du weisst nicht, wo anfangen? Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden.',
       },
       '#levels-cta': { en: 'find your level', de: 'Niveau herausfinden' },
       '#materials .kicker': { en: 'materials', de: 'Materialien' },
@@ -420,14 +552,47 @@ export const pages = {
         de: 'Erfahrung &amp; Hintergrund',
       },
       '#about-lead': {
-        en: 'Learning with Gioia was founded by Gioia, born and raised in Zürich and a native speaker of both Swiss German and German. That is why Swiss German is on this list at all: it has no standard written form and cannot be learnt from a textbook, so it has to come from someone who grew up speaking it.',
-        de: 'Learning with Gioia wurde von Gioia gegründet — in Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Genau deshalb steht Schweizerdeutsch überhaupt auf dieser Liste: Es hat keine einheitliche Schriftform und lässt sich nicht aus einem Lehrbuch lernen, sondern nur von jemandem, der damit aufgewachsen ist.',
+        en: 'Learning with Gioia was founded by Gioia, born and raised in Zürich and a native speaker of both Swiss German and German.',
+        de: 'Learning with Gioia wurde von Gioia gegründet — in Zürich geboren und aufgewachsen, muttersprachlich Schweizerdeutsch und Deutsch.',
       },
-      '#about-more': {
-        en: 'Alongside her, a small circle of associate teachers with linguistics degrees and formal teaching qualifications covers the remaining courses and tutoring, and German is taught exclusively by native speakers. Groups stay small — a maximum of five — because a course prepared for the people in the room only works if you know who they are. <a href="/about.html">More about us and how we teach →</a>',
-        de: 'Daneben deckt ein kleiner Kreis von Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation die übrigen Kurse und die Nachhilfe ab; Deutsch wird ausschliesslich von Muttersprachlerinnen und Muttersprachlern unterrichtet. Die Gruppen bleiben klein — höchstens fünf Personen — weil ein Kurs, der für die Menschen im Raum vorbereitet wird, nur funktioniert, wenn man weiss, wer sie sind. <a href="/about.html">Mehr über uns und unseren Unterricht →</a>',
+      // The former About page, in Gioia's own words.
+      '#about-gioia-body': {
+        en: 'I am Gioia, and I have loved languages for as long as I can remember. Along the way I have learnt English, French, Russian, Arabic and Spanish, and made a start on Italian, Chinese, Japanese and Farsi. So I understand what the first weeks of a new language feel like from the inside.',
+        de: 'Ich bin Gioia, und Sprachen haben mich fasziniert, seit ich denken kann. Ich habe Englisch, Französisch, Russisch, Arabisch und Spanisch gelernt und Italienisch, Chinesisch, Japanisch und Farsi angefangen. Wie sich die ersten Wochen einer neuen Sprache anfühlen, kann ich also sehr gut nachvollziehen.',
       },
-      '#start .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
+      '#about-gioia-body-2': {
+        en: 'I also know what it is to arrive in a foreign country and want to belong without giving up who you are. I studied Russian language and literature at UZH, then Russian Studies at UCL. I spent a lot of time in Eastern Europe throughout my studies and lived in London for seven years before coming home to Zürich. What I want most is that the language stays interesting to you after the lesson ends.',
+        de: 'Ich weiss auch, wie es ist, in einem fremden Land anzukommen und dazugehören zu wollen, ohne die eigene Identität aufzugeben. Ich habe an der UZH Russische Sprach- und Literaturwissenschaft studiert, danach Russian Studies am UCL. Während des Studiums war ich viel in Osteuropa unterwegs und habe sieben Jahre in London gelebt, bevor ich nach Zürich zurückgekehrt bin. Mein Ziel ist es, Freude am Erlernen der Sprache über den Unterricht hinaus zu vermitteln.',
+      },
+      // Closes the section: everyone has done this once already.
+      '#about-gioia-pull': {
+        en: 'Everyone has learnt a language once already, as a small child. And everyone can learn another one.',
+        de: 'Jeder hat schon einmal eine Sprache gelernt, und zwar als Kleinkind. Und jeder kann eine weitere Sprache lernen.',
+      },
+      '#about-gioia-cv': {
+        en: '<li>In progress: teaching diploma (Lehrdiplom), University of Zürich — Russian and Mathematics.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Language and Literature, University of Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, bilingual German and English.</li>',
+        de: '<li>Laufend: Lehrdiplom Universität Zürich — Russisch und Mathematik.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, zweisprachig Deutsch und Englisch.</li>',
+      },
+      '#about-approach-body': {
+        en: 'Every course is tailored to the people taking it. That is easier said than done. That is why the groups stay small.',
+        de: 'Jeder Kurs wird genau auf die Schüler zugeschnitten. Das ist einfacher gesagt als getan. Deshalb sind die Gruppen klein.',
+      },
+      '#about-approach-list': {
+        en: '<li>Small groups, so everybody gets to speak.</li><li>Material built around your work, your studies or your everyday life.</li><li>A clear structure: A1 to C2 of the CEFR, with each level split into blocks of 32 lessons.</li><li>Lessons in our classrooms, at your offices, at home, or online, whichever is most convenient.</li>',
+        de: '<li>Kleine Gruppen, damit alle zu Wort kommen.</li><li>Material rund um deinen Beruf, dein Studium oder deinen Alltag.</li><li>Klare Struktur: A1 bis C2 des GER, jedes Niveau unterteilt in Blöcke von 32 Lektionen.</li><li>Unterricht in unseren Kursräumen, direkt im Büro, zu Hause oder online, je nachdem, wie es bequem ist.</li>',
+      },
+      '#faq .kicker': { en: 'good to know', de: 'Gut zu wissen' },
+      '#faq .section-title': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
+      '#faq-intro': {
+        en: 'The questions we are asked most. Any other questions? Write us <a href="/enquiry.html">here</a>.',
+        de: 'Die häufigsten Fragen. Noch weitere Fragen? Schreib uns <a href="/enquiry.html">hier</a>.',
+      },
+      '#faq-courses-title': { en: 'Courses and levels', de: 'Kurse und Niveaus' },
+      '#faq-online-title': { en: 'Online lessons', de: 'Online-Unterricht' },
+      '#faq-gymi-title': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+      '#faq-company-title': { en: 'Company courses', de: 'Firmenkurse' },
+      // The Q&A lists themselves are added below, once FAQ is declared.
+      '#enquiry .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
       '.closing-text': {
         en: 'We want to give you confidence and motivation to use your knowledge beyond the classroom.',
         de: 'Wir wollen dich dabei unterstützen, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
@@ -813,43 +978,22 @@ pages['/agb.html'] = {
   },
 };
 
-// ── Course detail pages ─────────────────────────────────────────
-// They share the tailored-programme note and CTAs; heading, intro and
-// meta always differ. Courses with a non-standard structure (exam
-// preparation, lunch time German) pass `facts` to override individual
-// fact rows.
-export const courseFacts = {
-  '.kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
-  '#fact-duration-label': { en: 'course duration', de: 'Kursdauer' },
-  '#fact-duration-value': { en: '4 months', de: '4 Monate' },
-  '#fact-lessons-label': { en: 'lessons of 60 min', de: 'Lektionen à 60 Min.' },
-  '#fact-group-label': { en: 'group (3-5)', de: 'Gruppe (3-5)' },
-  '#fact-group-unit': { en: 'per person', de: 'pro Person' },
-  '#fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
-  '#fact-solo-unit': { en: 'total', de: 'gesamt' },
-  '#course-tailored': {
-    en: 'You prefer a different schedule or programme? We offer <a href="/lunch-time-german.html">fully tailored programmes</a>. Contact us today to find the best schedule for you.',
-    de: 'Du wünschst dir einen anderen Zeitplan oder ein anderes Programm? Wir bieten <a href="/lunch-time-german.html">vollständig massgeschneiderte Programme</a>. Kontaktiere uns noch heute, damit wir den passenden Plan für dich finden.',
-  },
-  '#course-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
-  '#course-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
-};
-
 // ── FAQ ──────────────────────────────────────────────────────────
 //
-// One source for both the rendered Q&A blocks and the FAQPage schema, so the
-// two can never disagree — Google treats marked-up answers that are not on the
-// page as a violation, and an assistant quoting a stale answer is worse still.
+// One source for both the rendered Q&A accordion on the homepage and the
+// FAQPage schema, so the two can never disagree — Google treats marked-up
+// answers that are not on the page as a violation, and an assistant quoting a
+// stale answer is worse still.
 //
 // Every answer here is taken from something the site already commits to: the
-// AGB (cancellation ladder, minimum group size), the course pages (prices,
-// lesson counts) or the homepage course-structure section (hours per level).
+// AGB (cancellation ladder, minimum group size), the offer section (formats,
+// exams, lesson counts) or the course-structure section (hours per level).
 export const FAQ = {
   courses: [
     {
       q: {
-        en: 'Which languages do you teach?',
-        de: 'Welche Sprachen unterrichtet ihr?',
+        en: 'What do you teach?',
+        de: 'Was unterrichtet ihr?',
       },
       a: {
         en: 'German, Swiss German and English, from complete beginner (A0) to advanced (C2). We also offer tutoring in school subjects and preparation for the Gymiprüfung.',
@@ -858,12 +1002,12 @@ export const FAQ = {
     },
     {
       q: {
-        en: 'How long does it take to complete a level?',
-        de: 'Wie lange dauert ein Sprachniveau?',
+        en: 'How long does it take to complete a level in a language course?',
+        de: 'Wie lange dauert ein Niveau in einem Sprachkurs?',
       },
       a: {
-        en: 'Moving through a full level, for example from A0 to A1, usually takes around 100 to 150 hours of guided learning, plus a similar amount of independent study. Our regular group courses split each level into three blocks of 32 hours.',
-        de: 'Ein vollständiges Niveau, zum Beispiel von A0 zu A1, braucht in der Regel etwa 100 bis 150 Stunden angeleitetes Lernen plus eine ähnliche Menge selbstständiges Lernen. Unsere regulären Gruppenkurse teilen jedes Niveau in drei Blöcke à 32 Stunden.',
+        en: 'Moving through a full level in a group course, for example from A0 to A1, on average takes around 100 to 150 hours of guided learning, plus a similar amount of independent study. Our regular group courses split each level into three blocks of 32 hours.',
+        de: 'Ein vollständiges Niveau in einem Gruppenkurs, zum Beispiel von A0 zu A1, braucht im Durchschnitt etwa 100 bis 150 Stunden angeleitetes Lernen plus eine ähnliche Menge selbstständiges Lernen. Unsere regulären Gruppenkurse teilen jedes Niveau in drei Blöcke à 32 Stunden.',
       },
     },
     {
@@ -882,7 +1026,7 @@ export const FAQ = {
         de: 'Wie gross sind die Gruppen?',
       },
       a: {
-        en: 'Open group courses take a maximum of five people, and run from three. Gymivorbereitung groups run from three to seven. If you want a group of exactly your colleagues or friends, we can set that up as a private group.',
+        en: 'Open group courses take a maximum of five people, and run from three. Gymivorbereitung groups run from three to seven people. If you want a group of exactly your colleagues or friends, we can set that up as a private group.',
         de: 'Offene Gruppenkurse haben maximal fünf Teilnehmende und finden ab drei statt. Gymivorbereitungsgruppen laufen mit drei bis sieben. Wenn ihr als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchtet, richten wir das als geschlossene Gruppe ein.',
       },
     },
@@ -892,8 +1036,8 @@ export const FAQ = {
         de: 'Was passiert, wenn sich weniger als drei Personen anmelden?',
       },
       a: {
-        en: 'A group course runs from three participants. If fewer sign up, we either merge the course, postpone it, or — if you agree — run it with fewer lessons, scaled to the monetary value of a three-person course. If the school cancels a course, the full amount is refunded.',
-        de: 'Ein Gruppenkurs findet ab drei Teilnehmenden statt. Bei weniger Anmeldungen legen wir Kurse zusammen, verschieben sie oder führen sie — mit deinem Einverständnis — mit weniger Lektionen durch, entsprechend dem Gegenwert eines Kurses mit drei Personen. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
+        en: 'A group course runs from three participants. If fewer sign up, we either merge the course, postpone it, or — if you agree — run it with fewer lessons. If the school cancels a course, the full amount is refunded.',
+        de: 'Ein Gruppenkurs findet ab drei Teilnehmenden statt. Bei weniger Anmeldungen legen wir Kurse zusammen, verschieben sie oder führen sie — mit deinem Einverständnis — mit weniger Lektionen durch. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
       },
     },
     {
@@ -902,8 +1046,8 @@ export const FAQ = {
         de: 'Auf welche Prüfungen bereitet ihr vor?',
       },
       a: {
-        en: 'Cambridge, TOEFL, IELTS, TELC and Goethe. We practise with the real exam formats, so nothing on the day is a surprise.',
-        de: 'Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit am Prüfungstag nichts überraschend kommt.',
+        en: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. We practise with the real exam formats, so nothing on the day is a surprise.',
+        de: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. Wir üben mit den echten Prüfungsformaten, damit am Prüfungstag nichts überraschend kommt.',
       },
     },
   ],
@@ -911,22 +1055,12 @@ export const FAQ = {
   online: [
     {
       q: {
-        en: 'Can I learn Swiss German online?',
-        de: 'Kann ich Schweizerdeutsch online lernen?',
+        en: 'Can I learn online?',
+        de: 'Kann ich online lernen?',
       },
       a: {
-        en: 'Yes. Swiss German is mainly a spoken language, which makes it a particularly good fit for one-to-one video lessons: almost all of the time is spent talking. Lessons are taught by a native Swiss German speaker.',
-        de: 'Ja. Schweizerdeutsch ist vor allem eine gesprochene Sprache und eignet sich deshalb besonders gut für Einzelunterricht per Video: Fast die ganze Zeit wird gesprochen. Unterrichtet wird von einer Muttersprachlerin.',
-      },
-    },
-    {
-      q: {
-        en: 'Are online lessons the same price as in-person lessons?',
-        de: 'Kosten Online-Lektionen gleich viel wie Unterricht vor Ort?',
-      },
-      a: {
-        en: 'Yes. The same rates apply whether you learn online, in a classroom, or at your company — CHF 1600 per person for a 32-lesson group course, CHF 3840 one-to-one.',
-        de: 'Ja. Es gelten dieselben Preise, ob online, im Kursraum oder bei euch in der Firma — CHF 1600 pro Person für einen Kurs mit 32 Lektionen, CHF 3840 im Einzelunterricht.',
+        en: 'Yes, any course we offer can also be taught online.',
+        de: 'Ja, jeder unserer Kurse kann auch online stattfinden.',
       },
     },
     {
@@ -935,8 +1069,8 @@ export const FAQ = {
         de: 'Ich bin nicht in der Schweiz. Kann ich trotzdem Unterricht nehmen?',
       },
       a: {
-        en: 'Yes. Online lessons are not bound to the canton. Lesson times are arranged in Zürich time, and we can usually find a slot that works across European time zones; for anything further afield, tell us your window and we will see what fits.',
-        de: 'Ja. Online-Unterricht ist nicht an den Kanton gebunden. Die Zeiten richten sich nach Zürcher Zeit, und innerhalb Europas findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen sag uns dein Zeitfenster, dann schauen wir, was möglich ist.',
+        en: 'Yes. Lesson times are arranged in Zürich time, and we can usually find a slot that works across European time zones. For anything further afield, tell us your window and we will aim to find a suitable time.',
+        de: 'Ja. Die Zeiten richten sich nach Zürcher Zeit, und innerhalb Europas findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen sag uns dein Zeitfenster, dann suchen wir eine passende Zeit.',
       },
     },
     {
@@ -945,8 +1079,8 @@ export const FAQ = {
         de: 'Was brauche ich für eine Online-Lektion?',
       },
       a: {
-        en: 'A stable internet connection, a device with a camera and microphone, and somewhere you can speak out loud. Materials are shared digitally before and after each lesson.',
-        de: 'Eine stabile Internetverbindung, ein Gerät mit Kamera und Mikrofon und einen Ort, an dem du laut sprechen kannst. Die Materialien erhältst du digital vor und nach jeder Lektion.',
+        en: 'A stable internet connection, a device with a camera and microphone, and somewhere you can speak out loud. Materials are shared digitally.',
+        de: 'Eine stabile Internetverbindung, ein Gerät mit Kamera und Mikrofon und einen Ort, an dem du laut sprechen kannst. Die Materialien erhältst du digital.',
       },
     },
   ],
@@ -958,8 +1092,8 @@ export const FAQ = {
         de: 'Wann sollten wir mit der Gymivorbereitung beginnen?',
       },
       a: {
-        en: 'The earlier the better — the road to Gymnasium starts long before exam day. Our Gymivorbereitung runs as 12 lessons of 90 minutes over three months, and many families take more than one block. Tell us your child’s school year and target exam date and we will suggest a timeline.',
-        de: 'Je früher, desto besser — der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Unsere Gymivorbereitung umfasst 12 Lektionen à 90 Minuten über drei Monate, und viele Familien buchen mehr als einen Block. Sag uns das Schuljahr deines Kindes und den Prüfungstermin, dann schlagen wir einen Zeitplan vor.',
+        en: 'The earlier the better. The road to Gymnasium starts long before exam day. One block of Gymivorbereitung runs as 20 lessons of 90 minutes over five months. Tell us your child’s school year and target exam date and we will suggest a timeline.',
+        de: 'Je früher, desto besser. Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Ein Block Gymivorbereitung umfasst 20 Lektionen à 90 Minuten über fünf Monate. Sag uns das Schuljahr deines Kindes und den Prüfungstermin, dann schlagen wir einen Zeitplan vor.',
       },
     },
     {
@@ -968,8 +1102,8 @@ export const FAQ = {
         de: 'Gruppe oder Einzelunterricht für die Gymivorbereitung?',
       },
       a: {
-        en: 'Groups of three to seven cost CHF 80 per person per 60 minutes and work well when a child is broadly on track and needs exam practice. One-to-one is CHF 120 per 60 minutes and is the better choice when there are specific gaps to close, or when exam nerves are the main obstacle.',
-        de: 'Gruppen mit drei bis sieben Kindern kosten CHF 80 pro Person pro 60 Minuten und eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und Prüfungstraining braucht. Einzelunterricht kostet CHF 120 pro 60 Minuten und ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.',
+        en: 'Groups work well when a child is broadly on track and needs exam practice. One-to-one is the better choice when there are specific gaps to close, or when exam nerves are the main obstacle.',
+        de: 'Gruppen eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und Prüfungstraining braucht. Einzelunterricht ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.',
       },
     },
     {
@@ -978,8 +1112,8 @@ export const FAQ = {
         de: 'Was wird in der Gymivorbereitung geübt?',
       },
       a: {
-        en: 'Closing gaps in the underlying material, practising with the exam format itself, and building the calm needed to perform under time pressure. The balance between those three is set per child, not per group.',
-        de: 'Lücken im Stoff schliessen, mit dem Prüfungsformat selbst üben und die Ruhe aufbauen, die es unter Zeitdruck braucht. Die Gewichtung dieser drei Teile richtet sich nach dem einzelnen Kind, nicht nach der Gruppe.',
+        en: 'Closing gaps in the underlying material, practising with the exam format itself, and building the calm needed to perform under time pressure. The balance between those three is set per child.',
+        de: 'Lücken im Stoff schliessen, mit dem Prüfungsformat selbst üben und die Ruhe aufbauen, die es unter Zeitdruck braucht. Die Gewichtung dieser drei Teile richtet sich nach dem einzelnen Kind.',
       },
     },
   ],
@@ -1011,7 +1145,7 @@ export const FAQ = {
         de: 'Können die Inhalte auf unsere Branche zugeschnitten werden?',
       },
       a: {
-        en: 'That is the point of an in-house course. We build the programme around your industry, your everyday work and the situations your people actually face — client meetings, phone calls, written correspondence, small talk in the corridor.',
+        en: 'That is the point of an in-house course. We build the programme around your industry, your everyday work and the situations your people actually face: client meetings, phone calls, written correspondence, small talk in the corridor.',
         de: 'Genau dafür ist ein Inhouse-Kurs da. Wir bauen das Programm um eure Branche, euren Arbeitsalltag und die Situationen, die bei euch wirklich vorkommen — Kundengespräche, Telefonate, Korrespondenz, Small Talk im Gang.',
       },
     },
@@ -1021,8 +1155,8 @@ export const FAQ = {
         de: 'Unterrichtet ihr Schweizerdeutsch für zuziehende Mitarbeitende?',
       },
       a: {
-        en: 'Yes, and it is one of the things we are asked for most. Standard German gets a new arrival through the working day; Swiss German is what makes the lunch table, the corridor and the team apéro stop being a wall. It is taught by a native Swiss German speaker born and raised in Zürich.',
-        de: 'Ja, und das ist eine der häufigsten Anfragen. Mit Hochdeutsch kommt man durch den Arbeitstag; Schweizerdeutsch sorgt dafür, dass Mittagstisch, Gang und Team-Apéro keine Mauer mehr sind. Unterrichtet wird von einer in Zürich geborenen und aufgewachsenen Muttersprachlerin.',
+        en: 'Yes, and it is one of the things we are asked for most. Standard German gets a new arrival through the working day. Swiss German is what opens the door to the lunch table, the corridor and the team apéro.',
+        de: 'Ja, und das ist eine der häufigsten Anfragen. Mit Hochdeutsch kommt man durch den Arbeitstag. Schweizerdeutsch öffnet die Tür zum Mittagstisch, zum Gang und zum Team-Apéro.',
       },
     },
     {
@@ -1036,623 +1170,28 @@ export const FAQ = {
       },
     },
   ],
-
-  booking: [
-    {
-      q: {
-        en: 'How do I book a course?',
-        de: 'Wie buche ich einen Kurs?',
-      },
-      a: {
-        en: 'Open group courses can be booked directly from the group courses page — places are handled first come, first served. For anything tailored, send an enquiry or book a free 15-minute call and we will put together a proposal.',
-        de: 'Offene Gruppenkurse kannst du direkt auf der Seite Gruppenkurse buchen — die Plätze werden nach Eingang vergeben. Für alles Massgeschneiderte sende uns eine Anfrage oder buche ein kostenloses 15-Minuten-Gespräch, dann erstellen wir dir einen Vorschlag.',
-      },
-    },
-    {
-      q: {
-        en: 'What are your cancellation terms?',
-        de: 'Wie sind die Stornobedingungen?',
-      },
-      a: {
-        en: 'Cancellations must be in writing. Up to 30 days before the course starts it is free; 29 to 15 days before, 50% of the fee; 14 to 7 days before, 75%; from 6 days before, or if you do not attend, the full fee. After the course has started, withdrawal is no longer possible. With a medical certificate we can issue a credit towards a later course.',
-        de: 'Abmeldungen müssen schriftlich erfolgen. Bis 30 Tage vor Kursbeginn ist die Stornierung kostenlos, 29 bis 15 Tage vorher kostet sie 50 % der Kursgebühr, 14 bis 7 Tage vorher 75 %, ab 6 Tagen vorher oder bei Nichterscheinen 100 %. Nach Kursbeginn ist ein Rücktritt nicht mehr möglich. Gegen Arztzeugnis kann eine Gutschrift für einen späteren Kurs gewährt werden.',
-      },
-    },
-    {
-      q: {
-        en: 'What if I miss a lesson?',
-        de: 'Was, wenn ich eine Lektion verpasse?',
-      },
-      a: {
-        en: 'Lessons that are not attended are not refunded and cannot be carried over to another course. In a one-to-one course we can usually move a lesson if you tell us in good time.',
-        de: 'Nicht besuchte Lektionen werden nicht rückerstattet und nicht auf einen anderen Kurs angerechnet. Im Einzelunterricht können wir eine Lektion in der Regel verschieben, wenn du dich rechtzeitig meldest.',
-      },
-    },
-    {
-      q: {
-        en: 'Is there a free trial or a first conversation?',
-        de: 'Gibt es ein kostenloses Kennenlernen?',
-      },
-      a: {
-        en: 'Yes — a free 15-minute call, bookable from the homepage. It is the fastest way to work out your level, what you actually need, and whether a group or one-to-one course fits.',
-        de: 'Ja — ein kostenloses 15-Minuten-Gespräch, buchbar auf der Startseite. Das ist der schnellste Weg, um dein Niveau zu klären, herauszufinden, was du wirklich brauchst, und ob ein Gruppen- oder Einzelkurs passt.',
-      },
-    },
-  ],
 };
 
-// Renders a group of Q&As. Used for the FAQ page and for the inline FAQ blocks
-// on the service pages.
+// Renders a group of Q&As as a native accordion, collapsed by default so the
+// homepage stays scannable. The answer is in the HTML either way, which is what
+// the FAQPage markup and the assistants that quote it need; a reader opens it
+// with one click and no JavaScript.
 export function faqHtml(items, lang) {
   return items
-    .map((item) => `<div class="faq-item"><h3>${item.q[lang]}</h3><p>${item.a[lang]}</p></div>`)
+    .map(
+      (item) =>
+        `<details class="faq-item"><summary><h3>${item.q[lang]}</h3></summary><p>${item.a[lang]}</p></details>`
+    )
     .join('');
 }
 
-// Cross-link card, so the internal link graph has edges between the leaves and
-// not just spokes to the homepage.
-function linkCard(href, title, blurb) {
-  return `<a class="content-link" href="${href}"><strong>${title}</strong><span>${blurb}</span></a>`;
-}
-
-// The section block shared by the five standard course pages. Only the
-// "what a lesson looks like" copy and the cross-links differ per course; the
-// online paragraph and the FAQ group are the same everywhere, and repeating
-// them by hand is how they drift apart.
-function courseSections({ lessonTitle, lessonBody, lessonList, online, links }) {
-  return {
-    '#course-lesson-title': lessonTitle || {
-      en: 'What a lesson looks like',
-      de: 'Wie eine Lektion abläuft',
-    },
-    '#course-lesson-body': lessonBody,
-    '#course-lesson-list': lessonList,
-    '#course-online-title': { en: 'Also available online', de: 'Auch online verfügbar' },
-    '#course-online-body': online || {
-      en: 'Every course on this page can be taught online by live video, at the same price and with the same teachers. Lessons run at a fixed weekly slot in Zürich time, and materials are shared digitally before and after each one. Some people take the whole course online; others switch for a week when they are travelling. See <a href="/online-lessons.html">online lessons</a> for how it works.',
-      de: 'Jeder Kurs auf dieser Seite kann auch online per Live-Video stattfinden, zum selben Preis und mit denselben Lehrpersonen. Der Unterricht läuft zu einem festen wöchentlichen Termin nach Zürcher Zeit, die Materialien kommen digital vor und nach jeder Lektion. Manche belegen den ganzen Kurs online, andere wechseln nur für eine Reisewoche. Wie das abläuft, steht unter <a href="/online-lessons.html">Online-Unterricht</a>.',
-    },
-    '#course-faq-title': { en: 'Common questions', de: 'Häufige Fragen' },
-    '#course-faq-list': { en: faqHtml(FAQ.courses, 'en'), de: faqHtml(FAQ.courses, 'de') },
-    '#course-links-title': { en: 'Related', de: 'Passend dazu' },
-    '#course-links': links,
-  };
-}
-
-const GERMAN_SECTIONS = courseSections({
-  lessonBody: {
-    en: 'Sixty minutes, taught in German from the first lesson — including at A0, where it feels impossible for about two weeks and then stops feeling that way. The point is that you spend the hour using the language rather than being told about it.',
-    de: 'Sechzig Minuten, ab der ersten Lektion auf Deutsch — auch auf A0, wo sich das etwa zwei Wochen lang unmöglich anfühlt und dann nicht mehr. Der Sinn dahinter: Du verbringst die Stunde damit, die Sprache zu benutzen, statt über sie belehrt zu werden.',
-  },
-  lessonList: {
-    en: '<li>A short warm-up in the language, so the switch happens before the lesson proper starts.</li><li>One new structure at a time, introduced through examples rather than a rule to memorise.</li><li>Speaking practice in pairs or as a group — the reason the groups stay under five.</li><li>Material drawn from where you actually need the German: your work, your studies, your paperwork, your neighbours.</li><li>Homework that takes twenty minutes, not two hours, because the ones that take two hours do not get done.</li>',
-    de: '<li>Ein kurzer Einstieg in der Sprache, damit der Wechsel passiert, bevor die eigentliche Lektion beginnt.</li><li>Eine neue Struktur nach der anderen, eingeführt über Beispiele statt über eine Regel zum Auswendiglernen.</li><li>Sprechübungen zu zweit oder in der Gruppe — der Grund, weshalb die Gruppen unter fünf Personen bleiben.</li><li>Material von dort, wo du das Deutsch wirklich brauchst: Beruf, Studium, Behördenpost, Nachbarschaft.</li><li>Hausaufgaben, die zwanzig Minuten dauern und nicht zwei Stunden — denn die mit zwei Stunden werden nicht gemacht.</li>',
-  },
-  links: {
-    en:
-      linkCard(
-        '/swiss-german.html',
-        'Swiss German',
-        'The other half of actually living in Zürich.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Private lessons',
-        'One-to-one, at your pace and on your schedule.'
-      ) +
-      linkCard('/niveaus.html', 'Find your level', 'An interactive CEFR self-assessment.'),
-    de:
-      linkCard(
-        '/swiss-german.html',
-        'Schweizerdeutsch',
-        'Die andere Hälfte davon, wirklich in Zürich zu leben.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Einzelunterricht',
-        'Eins zu eins, in deinem Tempo und nach deinem Plan.'
-      ) +
-      linkCard('/niveaus.html', 'Niveau herausfinden', 'Interaktive Selbsteinschätzung nach GER.'),
-  },
-});
-
-const SWISS_SECTIONS = courseSections({
-  lessonBody: {
-    en: 'Almost entirely spoken. Swiss German has no standard written form, so there is no textbook to work through and no spelling to get right — which means the hour goes on listening and talking, with a teacher who grew up speaking Zürich German.',
-    de: 'Fast durchgehend gesprochen. Schweizerdeutsch hat keine einheitliche Schriftform, es gibt also kein Lehrbuch zum Durcharbeiten und keine Rechtschreibung, die man treffen muss — die Stunde geht deshalb ins Zuhören und Sprechen, mit einer Lehrperson, die mit Zürichdeutsch aufgewachsen ist.',
-  },
-  lessonList: {
-    en: '<li>Listening first: real speech at real speed, slowed down only where it breaks.</li><li>The sound changes that turn a German word you already know into a Swiss German one you do not.</li><li>The vocabulary that has no standard-German equivalent, and the false friends that do.</li><li>Situations you are actually in — the lunch table, the tram, the Apéro, the small talk before a meeting starts.</li><li>Dialect differences, so you can follow a colleague from Bern or Basel and not only one from Zürich.</li>',
-    de: '<li>Zuerst Hören: echte Sprache in echtem Tempo, nur dort verlangsamt, wo es kippt.</li><li>Die Lautverschiebungen, die aus einem deutschen Wort, das du kennst, ein schweizerdeutsches machen, das du nicht kennst.</li><li>Der Wortschatz, für den es kein hochdeutsches Gegenstück gibt — und die falschen Freunde, für die es eines gibt.</li><li>Situationen, in denen du wirklich bist: Mittagstisch, Tram, Apéro, Small Talk vor einer Sitzung.</li><li>Dialektunterschiede, damit du auch einer Kollegin aus Bern oder Basel folgen kannst und nicht nur einer aus Zürich.</li>',
-  },
-  links: {
-    en:
-      linkCard(
-        '/online-lessons.html',
-        'Swiss German online',
-        'A spoken language suits a video lesson particularly well.'
-      ) +
-      linkCard(
-        '/company-courses.html',
-        'Company courses',
-        'Swiss German for relocating and international teams.'
-      ) +
-      linkCard('/about.html', 'About us', 'Why the Swiss German here is native, not learnt.'),
-    de:
-      linkCard(
-        '/online-lessons.html',
-        'Schweizerdeutsch online',
-        'Eine gesprochene Sprache eignet sich besonders gut für Video.'
-      ) +
-      linkCard(
-        '/company-courses.html',
-        'Firmenkurse',
-        'Schweizerdeutsch für zuziehende und internationale Teams.'
-      ) +
-      linkCard('/about.html', 'Über uns', 'Warum das Schweizerdeutsch hier muttersprachlich ist.'),
-  },
-});
-
-const ENGLISH_SECTIONS = courseSections({
-  lessonBody: {
-    en: 'Sixty minutes built around what you need English for, which is rarely the same thing twice. A pupil catching up on school grammar and an adult preparing to present to a client need different hours, and get them.',
-    de: 'Sechzig Minuten rund um das, wofür du Englisch brauchst — und das ist selten zweimal dasselbe. Ein Kind, das Schulstoff aufholt, und eine erwachsene Person, die eine Kundenpräsentation vorbereitet, brauchen unterschiedliche Stunden und bekommen sie auch.',
-  },
-  lessonList: {
-    en: '<li>For school and tutoring: the current topic from class, retaught where it did not land, then practised until it holds.</li><li>For work: the meetings, emails and calls you actually have, in the vocabulary of your field.</li><li>For everyday life: speaking practice with the fluency and confidence that written exercises never build.</li><li>Correction that is specific — which mistakes matter, and which ones native speakers make too.</li>',
-    de: '<li>Für Schule und Nachhilfe: das aktuelle Thema aus dem Unterricht, neu erklärt, wo es nicht angekommen ist, und geübt, bis es sitzt.</li><li>Für den Beruf: die Sitzungen, E-Mails und Telefonate, die du wirklich hast, im Fachwortschatz deines Gebiets.</li><li>Für den Alltag: Sprechübungen mit der Sicherheit, die schriftliche Übungen nie aufbauen.</li><li>Konkrete Korrektur — welche Fehler zählen und welche auch Muttersprachlerinnen und Muttersprachler machen.</li>',
-  },
-  links: {
-    en:
-      linkCard(
-        '/exam-preparation.html',
-        'Exam preparation',
-        'Cambridge, TOEFL and IELTS with the real formats.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Private lessons',
-        'One-to-one tutoring, school to university.'
-      ) +
-      linkCard('/faq.html', 'FAQ', 'Levels, group sizes, prices, cancellation.'),
-    de:
-      linkCard(
-        '/exam-preparation.html',
-        'Prüfungsvorbereitung',
-        'Cambridge, TOEFL und IELTS mit den echten Formaten.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Einzelunterricht',
-        'Nachhilfe eins zu eins, von der Schule bis zur Uni.'
-      ) +
-      linkCard('/faq.html', 'Häufige Fragen', 'Niveaus, Gruppengrössen, Preise, Stornierung.'),
-  },
-});
-
-const EXAM_SECTIONS = courseSections({
-  lessonBody: {
-    en: 'Exam preparation is a different job from a language course: the target is not fluency in general but a specific mark on a specific paper on a specific date. The course is built backwards from that date.',
-    de: 'Prüfungsvorbereitung ist etwas anderes als ein Sprachkurs: Das Ziel ist nicht Sprachkompetenz im Allgemeinen, sondern ein bestimmtes Resultat in einer bestimmten Prüfung an einem bestimmten Datum. Der Kurs wird von diesem Datum her rückwärts geplant.',
-  },
-  lessonList: {
-    en: '<li>A diagnostic first: which of the four papers is actually costing you marks, because it is usually not the one you expect.</li><li>Work in the real exam format from early on — Cambridge, TOEFL, IELTS, TELC or Goethe, whichever you are sitting.</li><li>Timed practice, then going through what went wrong and why, which is where the marks come from.</li><li>The written and spoken tasks marked against the actual assessment criteria, not general impressions.</li><li>Exam-day technique: time budgeting, what to do when a question will not come, and how to leave marks on the table deliberately rather than by accident.</li>',
-    de: '<li>Zuerst eine Standortbestimmung: Welcher der vier Prüfungsteile kostet dich wirklich Punkte — meist nicht der, den man erwartet.</li><li>Von Anfang an Arbeit im echten Prüfungsformat: Cambridge, TOEFL, IELTS, TELC oder Goethe, je nachdem, was ansteht.</li><li>Übungen unter Zeitvorgabe und danach die Besprechung, was schiefging und warum — genau da entstehen die Punkte.</li><li>Schriftliche und mündliche Aufgaben, bewertet nach den echten Kriterien statt nach allgemeinem Eindruck.</li><li>Prüfungstechnik: Zeiteinteilung, was tun, wenn eine Aufgabe nicht kommen will, und wie man Punkte bewusst liegen lässt statt versehentlich.</li>',
-  },
-  links: {
-    en:
-      linkCard(
-        '/english-courses.html',
-        'English courses',
-        'If the language itself needs work first.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Private lessons',
-        'One-to-one, when the date is fixed and close.'
-      ) +
-      linkCard('/niveaus.html', 'Find your level', 'Check where you are before choosing an exam.'),
-    de:
-      linkCard(
-        '/english-courses.html',
-        'Englischkurse',
-        'Wenn zuerst die Sprache selbst dran ist.'
-      ) +
-      linkCard(
-        '/private-lessons.html',
-        'Einzelunterricht',
-        'Eins zu eins, wenn der Termin fix und nah ist.'
-      ) +
-      linkCard(
-        '/niveaus.html',
-        'Niveau herausfinden',
-        'Prüfe dein Niveau, bevor du eine Prüfung wählst.'
-      ),
-  },
-});
-
-const LUNCH_SECTIONS = courseSections({
-  lessonTitle: {
-    en: 'What "build your own" actually means',
-    de: 'Was «Build your own» konkret heisst',
-  },
-  lessonBody: {
-    en: 'Every other course on this site is a fixed shape: so many lessons, so long, at such a rhythm. This one is the shape you need. Tell us the constraint — the hour you have, the weeks you are free, the two languages you want at once — and we build around it.',
-    de: 'Jeder andere Kurs auf dieser Seite hat eine feste Form: so viele Lektionen, so lang, in diesem Rhythmus. Dieser hier hat die Form, die du brauchst. Sag uns die Rahmenbedingung — die eine Stunde, die du hast, die Wochen, in denen du frei bist, die zwei Sprachen, die du gleichzeitig willst — und wir bauen darum herum.',
-  },
-  lessonList: {
-    en: '<li><strong>Lunchtime German:</strong> 60 minutes inside a lunch break, at your office or online, so the commute does not eat the lesson.</li><li><strong>Intensive blocks:</strong> several lessons a week over a short period — a summer holiday, the weeks before a move, a gap between jobs.</li><li><strong>Swiss German and German combined:</strong> the standard German you need on paper and the Swiss German you need in the room, in one programme.</li><li><strong>Business English</strong> or any other specific purpose, built from your material rather than a course book.</li><li>Lessons of 60, 90 or 120 minutes, priced from CHF 50 per 60 minutes per person in a group and CHF 120 one-to-one.</li>',
-    de: '<li><strong>Lunchtime German:</strong> 60 Minuten in der Mittagspause, bei euch im Büro oder online, damit nicht der Arbeitsweg die Lektion auffrisst.</li><li><strong>Intensivblöcke:</strong> mehrere Lektionen pro Woche über einen kurzen Zeitraum — Sommerferien, die Wochen vor einem Umzug, die Lücke zwischen zwei Stellen.</li><li><strong>Schweizerdeutsch und Deutsch kombiniert:</strong> das Hochdeutsch, das du auf Papier brauchst, und das Schweizerdeutsch, das du im Raum brauchst, in einem Programm.</li><li><strong>Business-Englisch</strong> oder jeder andere konkrete Zweck, aufgebaut auf deinem Material statt auf einem Lehrbuch.</li><li>Lektionen à 60, 90 oder 120 Minuten, ab CHF 50 pro 60 Minuten pro Person in der Gruppe und CHF 120 im Einzelunterricht.</li>',
-  },
-  links: {
-    en:
-      linkCard(
-        '/private-lessons.html',
-        'Private lessons',
-        'The most tailored version of all of this.'
-      ) +
-      linkCard(
-        '/company-courses.html',
-        'Company courses',
-        'The same flexibility, for a whole team.'
-      ) +
-      linkCard(
-        '/online-lessons.html',
-        'Online lessons',
-        'Fits a lunch break better than a commute does.'
-      ),
-    de:
-      linkCard(
-        '/private-lessons.html',
-        'Einzelunterricht',
-        'Die massgeschneidertste Variante von alldem.'
-      ) +
-      linkCard(
-        '/company-courses.html',
-        'Firmenkurse',
-        'Dieselbe Flexibilität, für ein ganzes Team.'
-      ) +
-      linkCard(
-        '/online-lessons.html',
-        'Online-Unterricht',
-        'Passt besser in eine Mittagspause als ein Arbeitsweg.'
-      ),
-  },
-});
-
-// `facts` overrides the shared fact tiles; `sections` carries the long-form
-// body below them, for the pages that have one.
-function coursePage(entry) {
-  return {
-    title: entry.title,
-    description: entry.description,
-    text: Object.assign(
-      { h1: entry.h1, '#course-intro': entry.intro },
-      courseFacts,
-      entry.facts || {},
-      entry.sections || {}
-    ),
-  };
-}
-
-Object.assign(pages, {
-  '/german-courses.html': coursePage({
-    title: {
-      en: 'German Courses in Zürich — Learning with Gioia',
-      de: 'Deutschkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'German courses in Zürich from A0 to C2, taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Deutschkurse in Zürich von A0 bis C2, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'German courses', de: 'Deutschkurse' },
-    intro: {
-      en: 'German for everyday life, work and study, from complete beginner (A0) to advanced (C2). Taught exclusively by native speakers with linguistics degrees and formal teaching qualifications.',
-      de: 'Deutsch für Alltag, Beruf und Studium, von A0 bis C2. Unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
-    },
-    sections: GERMAN_SECTIONS,
-  }),
-  '/swiss-german.html': coursePage({
-    title: {
-      en: 'Swiss German Courses in Zürich — Learning with Gioia',
-      de: 'Schweizerdeutschkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Swiss German courses in Zürich taught by native speakers. 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Schweizerdeutschkurse in Zürich, unterrichtet von Muttersprachlerinnen und Muttersprachlern. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'Swiss German', de: 'Schweizerdeutsch' },
-    intro: {
-      en: 'Our Swiss German courses taught by native speakers will help you follow conversations, join in… and finally feel at home in Swiss everyday life!',
-      de: 'Unsere Schweizerdeutschkurse, unterrichtet von Muttersprachlerinnen und Muttersprachlern, helfen dir, Gesprächen zu folgen, mitzureden … und dich im Schweizer Alltag endlich zuhause zu fühlen!',
-    },
-    sections: SWISS_SECTIONS,
-  }),
-  '/gymivorbereitung.html': coursePage({
-    title: {
-      en: 'Gymivorbereitung in Zürich — Learning with Gioia',
-      de: 'Gymivorbereitung in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Gymivorbereitung in Zürich, in small groups or one-to-one. 12 lessons of 90 minutes over 3 months — CHF 80 per person per 60 minutes in a group, CHF 120 one-to-one.',
-      de: 'Gymivorbereitung in Zürich, in kleinen Gruppen oder im Einzelunterricht. 12 Lektionen à 90 Minuten in 3 Monaten — CHF 80 pro Person pro 60 Minuten in der Gruppe, CHF 120 im Einzelunterricht.',
-    },
-    h1: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-    intro: {
-      en: 'The road to Gymnasium starts long before exam day. We prepare pupils step by step: closing gaps, practising with the exam format, and building the calm confidence it takes to perform on the day. In small groups or one-to-one, always tailored to your child.',
-      de: 'Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Wir bereiten Schülerinnen und Schüler Schritt für Schritt vor: Lücken schliessen, mit dem Prüfungsformat üben und die nötige Ruhe und Sicherheit aufbauen. In kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
-    },
-    facts: {
-      '#fact-duration-value': { en: '3 months', de: '3 Monate' },
-      '#fact-lessons-label': { en: 'lessons of 90 min', de: 'Lektionen à 90 Min.' },
-      '#fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
-      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
-      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-    },
-    sections: {
-      '#gymi-exam-title': {
-        en: 'What the Gymiprüfung asks for',
-        de: 'Was die Gymiprüfung verlangt',
-      },
-      '#gymi-exam-body': {
-        en: 'The entrance exam for the Gymnasium in canton Zürich tests German and mathematics, under time pressure, in a format most children have never sat before. That last part matters more than families expect: a child can know the material and still lose marks to the shape of the paper — how the questions are phrased, how long to spend on each one, when to move on and come back. Preparation has to cover the subject knowledge and the exam itself, because on the day they are the same problem.',
-        de: 'Die Aufnahmeprüfung ans Gymnasium im Kanton Zürich prüft Deutsch und Mathematik, unter Zeitdruck und in einem Format, das die meisten Kinder vorher nie geschrieben haben. Gerade dieser letzte Punkt wird oft unterschätzt: Ein Kind kann den Stoff beherrschen und trotzdem Punkte an die Form der Prüfung verlieren — wie die Fragen formuliert sind, wie lange man an einer Aufgabe bleibt, wann man weitergeht und später zurückkommt. Die Vorbereitung muss deshalb den Stoff und die Prüfung selbst abdecken, denn am Prüfungstag sind das dasselbe Problem.',
-      },
-
-      '#gymi-when-title': {
-        en: 'When to start',
-        de: 'Wann man beginnen sollte',
-      },
-      '#gymi-when-body': {
-        en: 'Earlier than most families think, and calmly rather than intensively. One block of our Gymivorbereitung is 12 lessons of 90 minutes across three months. Families who start a year out typically take more than one block, using the first to close gaps in the underlying material and the later ones for exam practice proper. Starting a few weeks before the exam is still worth doing, but at that point the work is triage: we pick the two or three things that will move the mark most and leave the rest.',
-        de: 'Früher, als die meisten Familien denken — und in Ruhe statt im Intensivmodus. Ein Block unserer Gymivorbereitung umfasst 12 Lektionen à 90 Minuten über drei Monate. Familien, die ein Jahr im Voraus beginnen, buchen meist mehr als einen Block: Der erste schliesst Lücken im Stoff, die späteren dienen dem eigentlichen Prüfungstraining. Auch wenige Wochen vor der Prüfung lohnt sich der Einstieg noch, dann arbeiten wir aber nach Dringlichkeit: Wir wählen die zwei, drei Dinge, die am meisten Punkte bringen, und lassen den Rest.',
-      },
-
-      '#gymi-lesson-title': {
-        en: 'What a lesson looks like',
-        de: 'Wie eine Lektion abläuft',
-      },
-      '#gymi-lesson-body': {
-        en: 'Ninety minutes, with the balance between the three parts set for the individual child rather than for the group as a whole.',
-        de: 'Neunzig Minuten, wobei die Gewichtung der drei Teile auf das einzelne Kind abgestimmt wird und nicht auf die Gruppe als Ganzes.',
-      },
-      '#gymi-lesson-list': {
-        en: '<li><strong>Closing gaps.</strong> The underlying material, retaught where it did not land the first time.</li><li><strong>Exam practice.</strong> Past-paper style tasks under realistic timing, then going through what went wrong and why.</li><li><strong>Exam technique and nerves.</strong> How to budget the time, what to do when a question will not come, and how to arrive on the day without the panic that costs more marks than any gap in knowledge.</li>',
-        de: '<li><strong>Lücken schliessen.</strong> Der Stoff, neu erklärt dort, wo er beim ersten Mal nicht angekommen ist.</li><li><strong>Prüfungstraining.</strong> Aufgaben im Prüfungsformat unter realistischer Zeitvorgabe, danach die Besprechung, was schiefging und warum.</li><li><strong>Prüfungstechnik und Nerven.</strong> Wie man sich die Zeit einteilt, was man tut, wenn eine Aufgabe nicht kommen will, und wie man am Prüfungstag ankommt, ohne die Panik, die mehr Punkte kostet als jede Wissenslücke.</li>',
-      },
-
-      '#gymi-format-title': {
-        en: 'Group or one-to-one',
-        de: 'Gruppe oder Einzelunterricht',
-      },
-      '#gymi-format-body': {
-        en: 'Groups run from three to seven children and cost CHF 80 per person per 60 minutes. They work well when a child is broadly on track and mainly needs practice and routine — and the presence of others working on the same paper is, for a lot of children, motivating rather than stressful. One-to-one is CHF 120 per 60 minutes and is the better choice when there are specific gaps to close, when a child needs a slower pace without an audience, or when exam anxiety is the main obstacle rather than the material.',
-        de: 'Gruppen umfassen drei bis sieben Kinder und kosten CHF 80 pro Person pro 60 Minuten. Sie eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und vor allem Übung und Routine braucht — und für viele Kinder wirkt es motivierend statt belastend, wenn andere an derselben Prüfung arbeiten. Einzelunterricht kostet CHF 120 pro 60 Minuten und ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind, wenn ein Kind ein langsameres Tempo ohne Publikum braucht oder wenn nicht der Stoff, sondern die Prüfungsangst das Haupthindernis ist.',
-      },
-      '#gymi-format-pull': {
-        en: 'A child who knows the material but freezes on the day has a different problem from a child who is calm but has gaps. They should not get the same course.',
-        de: 'Ein Kind, das den Stoff kann, aber am Prüfungstag blockiert, hat ein anderes Problem als ein Kind, das ruhig bleibt, aber Lücken hat. Beide sollten nicht denselben Kurs bekommen.',
-      },
-
-      '#gymi-parents-title': {
-        en: 'What parents can expect from us',
-        de: 'Was Eltern von uns erwarten können',
-      },
-      '#gymi-parents-body': {
-        en: 'An honest assessment at the start, including when we think the timeline is tight or the target is the wrong one — that conversation is more useful to you than an encouraging one. Then regular, specific feedback on how your child is actually doing: not "going well", but which topics are secure, which are not, and what is being done about it. We teach in small groups or one-to-one, always in German, and we will tell you if we think a different format would serve your child better.',
-        de: 'Eine ehrliche Einschätzung zu Beginn — auch dann, wenn wir den Zeitplan für knapp oder das Ziel für das falsche halten. Dieses Gespräch nützt euch mehr als ein aufmunterndes. Danach regelmässige, konkrete Rückmeldungen dazu, wie es eurem Kind wirklich geht: nicht «läuft gut», sondern welche Themen sitzen, welche nicht und was dagegen unternommen wird. Wir unterrichten in kleinen Gruppen oder einzeln, immer auf Deutsch, und sagen euch, wenn wir ein anderes Format für euer Kind für besser halten.',
-      },
-
-      '#gymi-faq-title': { en: 'Questions parents ask', de: 'Fragen von Eltern' },
-      '#gymi-faq-list': { en: faqHtml(FAQ.gymi, 'en'), de: faqHtml(FAQ.gymi, 'de') },
-
-      '#gymi-links-title': { en: 'Related', de: 'Passend dazu' },
-      '#gymi-links': {
-        en:
-          linkCard(
-            '/private-lessons.html',
-            'Private lessons',
-            'One-to-one, when a group is not the right fit.'
-          ) +
-          linkCard(
-            '/german-courses.html',
-            'German courses',
-            'If the German itself is the gap to close.'
-          ) +
-          linkCard('/faq.html', 'FAQ', 'Timelines, group sizes, cancellation terms.'),
-        de:
-          linkCard(
-            '/private-lessons.html',
-            'Einzelunterricht',
-            'Eins zu eins, wenn eine Gruppe nicht passt.'
-          ) +
-          linkCard(
-            '/german-courses.html',
-            'Deutschkurse',
-            'Wenn das Deutsch selbst die Lücke ist.'
-          ) +
-          linkCard('/faq.html', 'Häufige Fragen', 'Zeitpläne, Gruppengrössen, Stornobedingungen.'),
-      },
-    },
-  }),
-  '/english-courses.html': coursePage({
-    title: {
-      en: 'English Courses in Zürich — Learning with Gioia',
-      de: 'Englischkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'English courses and tutoring in Zürich, from beginner (A1) to advanced (C2). 32 lessons of 60 minutes over 4 months — CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Englischkurse und Nachhilfe in Zürich, von A1 bis C2. 32 Lektionen à 60 Minuten in 4 Monaten — CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    h1: { en: 'English courses', de: 'Englischkurse' },
-    intro: {
-      en: 'English for school, work and everyday life, from beginner (A1) to advanced (C2). Tutoring from primary school to university, always tailored to what you need next.',
-      de: 'Englisch für Schule, Beruf und Alltag, von A1 bis C2. Nachhilfe von der Primarschule bis zur Universität, immer abgestimmt auf das, was als Nächstes ansteht.',
-    },
-    sections: ENGLISH_SECTIONS,
-  }),
-  '/exam-preparation.html': coursePage({
-    title: {
-      en: 'Exam Preparation in Zürich — Learning with Gioia',
-      de: 'Prüfungsvorbereitung in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams in Zürich. 40 lessons of 60 minutes over 5 months — CHF 2000 in a group, CHF 4800 one-to-one.',
-      de: 'Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe in Zürich. 40 Lektionen à 60 Minuten in 5 Monaten — CHF 2000 in der Gruppe, CHF 4800 im Einzelunterricht.',
-    },
-    h1: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
-    intro: {
-      en: 'Targeted preparation for Cambridge, TOEFL, IELTS, TELC and Goethe exams. We practise with the real exam formats, so you walk in knowing exactly what to expect.',
-      de: 'Gezielte Vorbereitung auf Cambridge, TOEFL, IELTS, TELC und Goethe. Wir üben mit den echten Prüfungsformaten, damit du genau weisst, was dich erwartet.',
-    },
-    facts: { '#fact-duration-value': { en: '5 months', de: '5 Monate' } },
-    sections: EXAM_SECTIONS,
-  }),
-  '/company-courses.html': coursePage({
-    title: {
-      en: 'Company Language Courses in Zürich — Learning with Gioia',
-      de: 'Firmenkurse in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Language courses for companies and teams in Zürich, at your offices or ours. Around 100 lessons per level, suggested 2 × 60 minutes per week — pricing on request.',
-      de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro oder bei uns. Rund 100 Lektionen pro Niveau, empfohlen 2 × 60 Minuten pro Woche — Preis auf Anfrage.',
-    },
-    h1: { en: 'Company courses', de: 'Firmenkurse' },
-    intro: {
-      en: 'Language training for teams, at your offices or ours. We build the programme around your industry, your everyday work and the situations your people actually face — from client meetings to small talk in the corridor.',
-      de: 'Sprachtraining für Teams, bei euch im Büro oder bei uns. Wir bauen das Programm rund um eure Branche, euren Arbeitsalltag und die Situationen auf, die bei euch wirklich vorkommen — vom Kundengespräch bis zum Small Talk auf dem Gang.',
-    },
-    facts: {
-      '#fact-lessons-label': { en: 'suggested lessons', de: 'Empfohlene Lektionen' },
-      '#fact-lessons-value': { en: 'approx. 100', de: 'ca. 100' },
-      '#fact-lessons-unit': { en: 'per level', de: 'pro Niveau' },
-      '#fact-frequency-label': { en: 'suggested frequency', de: 'Empfohlener Rhythmus' },
-      '#fact-frequency-value': { en: '2 × 60 min', de: '2 × 60 Min.' },
-      '#fact-frequency-unit': { en: 'per week', de: 'pro Woche' },
-      '#fact-price-label': { en: 'pricing', de: 'Preis' },
-      '#fact-price-value': { en: 'on request', de: 'auf Anfrage' },
-      '#course-structure-note': {
-        en: 'Not sure how many lessons your team needs? Our <a href="/index.html#offer-details">guidance on course structure</a> shows how a full level breaks down.',
-        de: 'Unsicher, wie viele Lektionen euer Team braucht? Unsere <a href="/index.html#offer-details">Hinweise zur Kursstruktur</a> zeigen, wie sich ein vollständiges Niveau aufteilt.',
-      },
-    },
-    sections: {
-      '#company-setup-title': {
-        en: 'How an in-house course is set up',
-        de: 'Wie ein Inhouse-Kurs aufgesetzt wird',
-      },
-      '#company-setup-body': {
-        en: 'Before we quote anything, we work out what your team actually needs. That conversation is free and usually takes one meeting: who is learning, at what level, for what, and what has to be true by when.',
-        de: 'Bevor wir eine Offerte machen, klären wir, was euer Team wirklich braucht. Dieses Gespräch ist kostenlos und dauert in der Regel ein Meeting: wer lernt, auf welchem Niveau, wofür, und was bis wann erreicht sein muss.',
-      },
-      '#company-setup-list': {
-        en: '<li><strong>Needs analysis.</strong> A short assessment per participant, so nobody sits in a course that is a level too easy or too hard.</li><li><strong>A proposal.</strong> Group split, lesson length, frequency, duration and what each block covers.</li><li><strong>Location.</strong> At your offices, in our classroom in Zürich, online, or a mix across the programme.</li><li><strong>The course itself,</strong> with material built for your context rather than a course book chapter.</li><li><strong>Progress reporting</strong> back to whoever is responsible for the budget, at intervals you set.</li>',
-        de: '<li><strong>Bedarfsanalyse.</strong> Eine kurze Einstufung pro Teilnehmenden, damit niemand in einem Kurs sitzt, der ein Niveau zu leicht oder zu schwer ist.</li><li><strong>Ein Vorschlag.</strong> Gruppeneinteilung, Lektionsdauer, Rhythmus, Dauer und was jeder Block abdeckt.</li><li><strong>Ort.</strong> Bei euch im Büro, in unserem Kursraum in Zürich, online oder gemischt über das Programm hinweg.</li><li><strong>Der Kurs selbst,</strong> mit Material für euren Kontext statt eines Lehrbuchkapitels.</li><li><strong>Fortschrittsberichte</strong> an die budgetverantwortliche Person, in den Abständen, die ihr festlegt.</li>',
-      },
-
-      '#company-content-title': {
-        en: 'Content built for your industry',
-        de: 'Inhalte, die zu eurer Branche passen',
-      },
-      '#company-content-body': {
-        en: 'A generic business-language course teaches the vocabulary of no particular business. We would rather spend the preparation time than have your team spend the lesson time on situations they will never be in. That means the emails they actually send, the meetings they actually sit in, the clients they actually talk to, and the terminology of your field.',
-        de: 'Ein generischer Business-Sprachkurs vermittelt den Wortschatz keiner bestimmten Branche. Wir investieren lieber die Vorbereitungszeit, als dass euer Team die Unterrichtszeit mit Situationen verbringt, in die es nie kommt. Das heisst: die E-Mails, die sie wirklich schreiben, die Sitzungen, in denen sie wirklich sitzen, die Kundschaft, mit der sie wirklich sprechen, und die Fachsprache eures Gebiets.',
-      },
-      '#company-content-pull': {
-        en: 'The measure of a company course is not how much grammar was covered. It is whether the next client meeting goes better than the last one.',
-        de: 'Der Massstab eines Firmenkurses ist nicht, wie viel Grammatik behandelt wurde. Sondern ob das nächste Kundengespräch besser läuft als das letzte.',
-      },
-
-      '#company-swiss-title': {
-        en: 'Swiss German for relocating and international teams',
-        de: 'Schweizerdeutsch für zuziehende und internationale Teams',
-      },
-      '#company-swiss-body': {
-        en: 'This is what companies ask us for most, and the one thing most language providers in Zürich cannot supply. Standard German gets a new arrival through the working day. Swiss German is what decides whether they are part of the lunch table, the corridor conversation and the team apéro, or standing slightly outside all three. It is taught by a native Swiss German speaker born and raised in Zürich — it is not a language you can learn from a textbook, because there is no standard written form to put in one. For teams that need both, we run Swiss German and standard German as a combined programme.',
-        de: 'Das ist die häufigste Anfrage von Firmen — und das Einzige, was die meisten Sprachanbieter in Zürich nicht liefern können. Mit Hochdeutsch kommt eine neu zugezogene Person durch den Arbeitstag. Schweizerdeutsch entscheidet darüber, ob sie beim Mittagstisch, im Gang und beim Team-Apéro dazugehört oder bei allen dreien knapp daneben steht. Unterrichtet wird von einer in Zürich geborenen und aufgewachsenen Muttersprachlerin — es ist keine Sprache, die man aus einem Lehrbuch lernt, weil es dafür keine einheitliche Schriftform gibt. Für Teams, die beides brauchen, kombinieren wir Schweizerdeutsch und Hochdeutsch in einem Programm.',
-      },
-
-      '#company-schedule-title': {
-        en: 'Scheduling around how your company actually runs',
-        de: 'Planung entlang eures echten Arbeitsalltags',
-      },
-      '#company-schedule-body': {
-        en: 'Two 60-minute lessons a week is the usual rhythm, and around 100 lessons covers a full level. But the rhythm is yours to set: lunch-break slots, early mornings before the day starts, intensive blocks around a quieter period, or a schedule that works around shift patterns and recurring meetings. If your team is split across sites, part of the group can join online while the rest are in the room.',
-        de: 'Zwei Lektionen à 60 Minuten pro Woche ist der übliche Rhythmus, und rund 100 Lektionen decken ein ganzes Niveau ab. Den Rhythmus bestimmt aber ihr: Termine in der Mittagspause, früh am Morgen vor Arbeitsbeginn, Intensivblöcke in ruhigeren Phasen oder eine Planung rund um Schichtmodelle und wiederkehrende Sitzungen. Ist euer Team auf mehrere Standorte verteilt, kann ein Teil online dazukommen, während der Rest im Raum sitzt.',
-      },
-
-      '#company-admin-title': {
-        en: 'Enrolment, invoicing and contracts',
-        de: 'Anmeldung, Rechnung und Verträge',
-      },
-      '#company-admin-body': {
-        en: 'We invoice the company directly — one invoice for the whole programme, or one per participant, whichever your finance team prefers. Companies can also be issued a booking code, which lets employees enrol themselves in the right course without every sign-up passing through an HR inbox. Terms, cancellation conditions and data handling are the same as for any other course and are set out in our <a href="/agb.html">terms and conditions</a>.',
-        de: 'Wir stellen der Firma direkt Rechnung — eine Rechnung für das ganze Programm oder eine pro Teilnehmenden, je nachdem, was eurer Buchhaltung lieber ist. Firmen können ausserdem einen Buchungscode erhalten: Damit melden sich Mitarbeitende selbst für den richtigen Kurs an, ohne dass jede Anmeldung über ein HR-Postfach läuft. Vertragsbedingungen, Stornoregelungen und Datenbearbeitung sind dieselben wie bei jedem anderen Kurs und stehen in unseren <a href="/agb.html">AGB</a>.',
-      },
-
-      '#company-faq-title': {
-        en: 'Questions companies ask',
-        de: 'Fragen von Firmen',
-      },
-      '#company-faq-list': { en: faqHtml(FAQ.company, 'en'), de: faqHtml(FAQ.company, 'de') },
-
-      '#company-links-title': { en: 'Related', de: 'Passend dazu' },
-      '#company-links': {
-        en:
-          linkCard(
-            '/swiss-german.html',
-            'Swiss German courses',
-            'The course relocating employees ask for by name.'
-          ) +
-          linkCard(
-            '/online-lessons.html',
-            'Online lessons',
-            'For teams split across sites or working remotely.'
-          ) +
-          linkCard('/about.html', 'About us', 'Who teaches, and why the Swiss German is native.'),
-        de:
-          linkCard(
-            '/swiss-german.html',
-            'Schweizerdeutschkurse',
-            'Der Kurs, nach dem zuziehende Mitarbeitende namentlich fragen.'
-          ) +
-          linkCard(
-            '/online-lessons.html',
-            'Online-Unterricht',
-            'Für Teams an mehreren Standorten oder im Homeoffice.'
-          ) +
-          linkCard(
-            '/about.html',
-            'Über uns',
-            'Wer unterrichtet und warum das Schweizerdeutsch muttersprachlich ist.'
-          ),
-      },
-    },
-  }),
-  '/lunch-time-german.html': coursePage({
-    title: {
-      en: 'Build Your Own German Course in Zürich — Learning with Gioia',
-      de: 'Build Your Own: Deutschkurs nach Mass in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'Lunchtime German, intensive blocks, Swiss German and German combined, business English — built around your schedule. From CHF 50 per 60 minutes per person.',
-      de: 'Mittagskurse, Intensivblöcke, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch — nach deinem Zeitplan. Ab CHF 50 pro 60 Minuten pro Person.',
-    },
-    h1: { en: 'Build your own', de: 'Build your own' },
-    intro: {
-      en: 'Lunchtime German, intensive German, Swiss German and German combined, business English. You name it, we got you. A course experience tailored exactly to your needs and availability — lessons that fit into your lunch break, your summer holiday, or whatever your schedule looks like.',
-      de: 'Lunchtime German, Intensivdeutsch, Schweizerdeutsch und Deutsch kombiniert, Business-Englisch. Sag uns, was du brauchst — wir machen es möglich. Ein Kurserlebnis, das genau auf deine Bedürfnisse und deine Verfügbarkeit zugeschnitten ist — Unterricht, der in deine Mittagspause, deine Sommerferien oder deinen Zeitplan passt.',
-    },
-    facts: {
-      '#fact-duration-value': { en: 'flexible', de: 'flexibel' },
-      '#fact-lessons-label': { en: 'lesson length', de: 'Lektionsdauer' },
-      '#fact-lessons-value': { en: '60, 90, 120 min', de: '60, 90, 120 Min.' },
-      '#fact-lessons-unit': { en: 'or as you need it', de: 'oder wie du es brauchst' },
-      '#fact-group-unit': { en: 'per 60 min, per person', de: 'pro 60 Min., pro Person' },
-      '#fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-    },
-    sections: LUNCH_SECTIONS,
-  }),
+// The rendered lists live on the homepage. Added here rather than inside the
+// pages literal because they need FAQ, which is declared after it.
+Object.assign(pages['/index.html'].text, {
+  '#faq-courses-list': { en: faqHtml(FAQ.courses, 'en'), de: faqHtml(FAQ.courses, 'de') },
+  '#faq-online-list': { en: faqHtml(FAQ.online, 'en'), de: faqHtml(FAQ.online, 'de') },
+  '#faq-gymi-list': { en: faqHtml(FAQ.gymi, 'en'), de: faqHtml(FAQ.gymi, 'de') },
+  '#faq-company-list': { en: faqHtml(FAQ.company, 'en'), de: faqHtml(FAQ.company, 'de') },
 });
 
 Object.assign(pages, {
@@ -1887,411 +1426,6 @@ Object.assign(pages, {
         en: 'These five conjunctions usually connect <strong>equal</strong> words, phrases, or main clauses. Unlike subjunctions, they normally do <strong>not</strong> introduce subordinate clauses and do <strong>not</strong> send the finite verb to the end: <em>Ich lerne, und sie liest.</em> Compare: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
         de: 'Diese fünf Konjunktionen verbinden meist <strong>gleichrangige</strong> Wörter, Satzteile oder Hauptsätze. Anders als Subjunktionen leiten sie normalerweise <strong>keinen Nebensatz</strong> ein und schicken das finite Verb <strong>nicht ans Ende</strong>: <em>Ich lerne, und sie liest.</em> Vergleiche: <em>Ich lerne, weil ich morgen Prüfung habe.</em>',
       },
-    },
-  },
-});
-
-Object.assign(pages, {
-  '/about.html': {
-    title: {
-      en: 'About Learning with Gioia — Language Teaching in Zürich',
-      de: 'Über Learning with Gioia — Sprachunterricht in Zürich',
-    },
-    description: {
-      en: 'A Zürich language school founded by Gioia, born and raised in Zürich and a native speaker of Swiss German and German. Who teaches, and how we teach.',
-      de: 'Zürcher Sprachschule, gegründet von Gioia — in Zürich aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Wer unterrichtet und wie.',
-    },
-    text: {
-      '#about-kicker': { en: 'about us', de: 'Über uns' },
-      '#about-h1': { en: 'About Learning with Gioia', de: 'Über Learning with Gioia' },
-      '#about-intro': {
-        en: 'A small Zürich language school built on the opposite of a standard curriculum: lessons prepared for the people actually in the room.',
-        de: 'Eine kleine Zürcher Sprachschule, aufgebaut auf dem Gegenteil eines Standardlehrplans: Unterricht, der für die Menschen vorbereitet wird, die wirklich im Raum sitzen.',
-      },
-
-      '#about-origin-title': {
-        en: 'Born and raised in Zürich',
-        de: 'In Zürich geboren und aufgewachsen',
-      },
-      '#about-origin-body': {
-        en: 'Learning with Gioia was founded by Gioia, who was born and raised in Zürich and is a native speaker of both Swiss German and German. That is not a detail on a CV — it is the whole reason the Swiss German courses exist. Swiss German is not a subject most language schools can teach, because it is not written down in a textbook and it is not something you can learn from a curriculum. It is learnt from someone who grew up speaking it.',
-        de: 'Learning with Gioia wurde von Gioia gegründet — in Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch. Das ist kein Detail im Lebenslauf, sondern der Grund, weshalb es die Schweizerdeutschkurse überhaupt gibt. Schweizerdeutsch ist kein Fach, das die meisten Sprachschulen anbieten können: Es steht in keinem Lehrbuch und lässt sich nicht aus einem Lehrplan lernen. Man lernt es von jemandem, der damit aufgewachsen ist.',
-      },
-      '#about-origin-pull': {
-        en: 'Standard German gets you through the working day in Zürich. Swiss German is what makes the lunch table, the corridor and the apéro stop being a wall.',
-        de: 'Mit Hochdeutsch kommst du in Zürich durch den Arbeitstag. Schweizerdeutsch sorgt dafür, dass Mittagstisch, Gang und Apéro keine Mauer mehr sind.',
-      },
-
-      '#about-approach-title': {
-        en: 'How we teach',
-        de: 'Wie wir unterrichten',
-      },
-      '#about-approach-body': {
-        en: 'Every course is prepared for the people taking it. That is easy to claim and slow to do, which is why the groups stay small — a maximum of five people in an open group course — and why we ask a lot of questions before the first lesson rather than after it.',
-        de: 'Jeder Kurs wird für die Menschen vorbereitet, die ihn besuchen. Das ist leicht behauptet und aufwendig gemacht — deshalb bleiben die Gruppen klein, mit höchstens fünf Personen in einem offenen Gruppenkurs, und deshalb stellen wir viele Fragen vor der ersten Lektion statt danach.',
-      },
-      '#about-approach-list': {
-        en: '<li>Small groups, so nobody spends the lesson waiting for a turn to speak.</li><li>Material built around your work, your studies or your everyday life, not a generic course book chapter.</li><li>A clear structure underneath it: the CEFR levels A1 to C2, with each level split into blocks of 32 hours of guided learning.</li><li>Lessons in our classroom, at your offices, at the teacher’s home, or online — whichever removes the most friction.</li>',
-        de: '<li>Kleine Gruppen, damit niemand die Lektion damit verbringt, aufs Wort zu warten.</li><li>Material rund um deinen Beruf, dein Studium oder deinen Alltag statt eines beliebigen Lehrbuchkapitels.</li><li>Darunter eine klare Struktur: die Niveaus A1 bis C2 des GER, jedes Niveau unterteilt in Blöcke à 32 Stunden angeleitetes Lernen.</li><li>Unterricht in unserem Kursraum, bei euch im Büro, bei der Lehrperson zu Hause oder online — je nachdem, was am wenigsten im Weg steht.</li>',
-      },
-
-      '#about-teachers-title': {
-        en: 'Who teaches',
-        de: 'Wer unterrichtet',
-      },
-      '#about-teachers-body': {
-        en: 'Gioia teaches German, Swiss German and English, and is the school’s native Swiss German speaker. Alongside her, a small circle of associate teachers with linguistics degrees and formal teaching qualifications covers the remaining courses and tutoring. German is taught exclusively by native speakers.',
-        de: 'Gioia unterrichtet Deutsch, Schweizerdeutsch und Englisch und ist die Muttersprachlerin für Schweizerdeutsch der Schule. Daneben deckt ein kleiner Kreis von Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation die übrigen Kurse und die Nachhilfe ab. Deutsch wird ausschliesslich von Muttersprachlerinnen und Muttersprachlern unterrichtet.',
-      },
-
-      '#about-who-title': {
-        en: 'Who we work with',
-        de: 'Mit wem wir arbeiten',
-      },
-      '#about-who-body': {
-        en: 'Three groups, mostly: companies in and around Zürich who want language training built for their team, adults who want to learn German or Swiss German properly rather than approximately, and families preparing a child for the Gymiprüfung.',
-        de: 'Hauptsächlich mit drei Gruppen: Firmen in und um Zürich, die Sprachtraining für ihr Team wollen; Erwachsene, die Deutsch oder Schweizerdeutsch richtig lernen möchten statt ungefähr; und Familien, die ein Kind auf die Gymiprüfung vorbereiten.',
-      },
-      '#about-who-links': {
-        en:
-          linkCard(
-            '/company-courses.html',
-            'Company courses',
-            'In-house language training for teams, at your offices or ours.'
-          ) +
-          linkCard(
-            '/online-lessons.html',
-            'Online lessons',
-            'German and Swiss German by video, taught by a native speaker.'
-          ) +
-          linkCard(
-            '/private-lessons.html',
-            'Private lessons',
-            'One-to-one, built entirely around you.'
-          ) +
-          linkCard(
-            '/gymivorbereitung.html',
-            'Gymivorbereitung',
-            'Step-by-step preparation for the Gymiprüfung.'
-          ),
-        de:
-          linkCard(
-            '/company-courses.html',
-            'Firmenkurse',
-            'Inhouse-Sprachtraining für Teams, bei euch im Büro oder bei uns.'
-          ) +
-          linkCard(
-            '/online-lessons.html',
-            'Online-Unterricht',
-            'Deutsch und Schweizerdeutsch per Video, von einer Muttersprachlerin.'
-          ) +
-          linkCard(
-            '/private-lessons.html',
-            'Einzelunterricht',
-            'Eins zu eins, ganz auf dich zugeschnitten.'
-          ) +
-          linkCard(
-            '/gymivorbereitung.html',
-            'Gymivorbereitung',
-            'Schritt für Schritt auf die Gymiprüfung vorbereitet.'
-          ),
-      },
-
-      '#about-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
-      '#about-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
-    },
-  },
-
-  '/online-lessons.html': {
-    title: {
-      en: 'Online German & Swiss German Lessons — Learning with Gioia',
-      de: 'Deutsch & Schweizerdeutsch online lernen — Learning with Gioia',
-    },
-    description: {
-      en: 'Online German and Swiss German with a native speaker born and raised in Zürich. Same rates as in person: CHF 1600 in a group, CHF 3840 one-to-one.',
-      de: 'Deutsch und Schweizerdeutsch online bei einer Zürcher Muttersprachlerin. Gleiche Preise wie vor Ort: CHF 1600 in der Gruppe, CHF 3840 im Einzelunterricht.',
-    },
-    text: {
-      '#online-kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
-      '#online-h1': { en: 'Online lessons', de: 'Online-Unterricht' },
-      '#online-intro': {
-        en: 'German and Swiss German by video, taught live by a native speaker. The same courses we teach in Zürich, without the commute.',
-        de: 'Deutsch und Schweizerdeutsch per Video, live unterrichtet von einer Muttersprachlerin. Dieselben Kurse wie in Zürich, nur ohne Anfahrt.',
-      },
-
-      '#online-fact-1-label': { en: 'lessons', de: 'Lektionen' },
-      '#online-fact-1-value': { en: '32 × 60 min', de: '32 × 60 Min.' },
-      '#online-fact-1-unit': { en: 'over 4 months', de: 'in 4 Monaten' },
-      '#online-fact-2-label': { en: 'group (3-5)', de: 'Gruppe (3-5)' },
-      '#online-fact-2-value': { en: 'CHF 1600', de: 'CHF 1600' },
-      '#online-fact-2-unit': { en: 'per person', de: 'pro Person' },
-      '#online-fact-3-label': { en: 'one-to-one', de: 'Einzelunterricht' },
-      '#online-fact-3-value': { en: 'CHF 3840', de: 'CHF 3840' },
-      '#online-fact-3-unit': { en: 'total', de: 'total' },
-
-      '#online-native-title': {
-        en: 'Swiss German online, with a native speaker',
-        de: 'Schweizerdeutsch online, mit einer Muttersprachlerin',
-      },
-      '#online-native-body': {
-        en: 'Swiss German is the reason most people find this page. It is a spoken language with no standard written form, so it cannot be learnt from a textbook — which is exactly what makes it suit a live video lesson. Almost the entire hour is spent listening and speaking, with a teacher who grew up speaking Zürich German and can tell you what people actually say, not what a course book thinks they say.',
-        de: 'Schweizerdeutsch ist der Grund, weshalb die meisten auf dieser Seite landen. Es ist eine gesprochene Sprache ohne einheitliche Schriftform und lässt sich deshalb nicht aus einem Lehrbuch lernen — genau das macht es für eine Live-Lektion per Video so geeignet. Fast die ganze Stunde wird zugehört und gesprochen, mit einer Lehrperson, die mit Zürichdeutsch aufgewachsen ist und dir sagen kann, was man wirklich sagt, nicht was ein Lehrbuch dafür hält.',
-      },
-      '#online-native-pull': {
-        en: 'Online does not mean a recording, a chatbot or a worksheet. It means a live lesson, prepared for you, with a person on the other side.',
-        de: 'Online heisst nicht Aufzeichnung, Chatbot oder Arbeitsblatt. Es heisst: eine Live-Lektion, für dich vorbereitet, mit einem Menschen auf der anderen Seite.',
-      },
-
-      '#online-how-title': {
-        en: 'How online lessons run',
-        de: 'Wie der Online-Unterricht abläuft',
-      },
-      '#online-how-body': {
-        en: 'Structurally an online course is identical to one in our classroom: the same levels, the same lesson counts, the same teachers. What changes is only where everyone sits.',
-        de: 'Strukturell ist ein Online-Kurs identisch mit einem Kurs in unserem Raum: dieselben Niveaus, dieselbe Anzahl Lektionen, dieselben Lehrpersonen. Anders ist nur, wo alle sitzen.',
-      },
-      '#online-how-list': {
-        en: '<li>Live video lessons at a fixed weekly slot, arranged in Zürich time.</li><li>Materials shared digitally before and after each lesson, so nothing depends on a printer.</li><li>Group courses of three to five people, or one-to-one.</li><li>You need a stable connection, a camera and microphone, and somewhere you can speak out loud.</li>',
-        de: '<li>Live-Lektionen per Video zu einem festen wöchentlichen Termin, nach Zürcher Zeit.</li><li>Materialien digital vor und nach jeder Lektion, damit nichts von einem Drucker abhängt.</li><li>Gruppenkurse mit drei bis fünf Personen oder Einzelunterricht.</li><li>Du brauchst eine stabile Verbindung, Kamera und Mikrofon und einen Ort, an dem du laut sprechen kannst.</li>',
-      },
-
-      '#online-who-title': { en: 'Who learns online with us', de: 'Wer bei uns online lernt' },
-      '#online-who-body': {
-        en: 'Online lessons are not a compromise version of the course. For a lot of people they are simply the right format.',
-        de: 'Online-Unterricht ist keine abgespeckte Variante des Kurses. Für viele ist es schlicht das passende Format.',
-      },
-      '#online-who-list': {
-        en: '<li>People who have moved to Switzerland for work and want Swiss German before the next team lunch.</li><li>Employees whose company books in-house training but who work remotely or across sites.</li><li>Anyone outside Zürich, in Switzerland or abroad, who wants a Zürich-native teacher.</li><li>People whose schedule only allows a lunch break or an evening, and who cannot spend it commuting.</li>',
-        de: '<li>Menschen, die für die Arbeit in die Schweiz gezogen sind und Schweizerdeutsch können möchten, bevor das nächste Team-Mittagessen ansteht.</li><li>Mitarbeitende, deren Firma Inhouse-Schulungen bucht, die aber remote oder an anderen Standorten arbeiten.</li><li>Alle ausserhalb Zürichs, in der Schweiz oder im Ausland, die eine Lehrperson aus Zürich möchten.</li><li>Menschen, deren Zeitplan nur eine Mittagspause oder einen Abend hergibt — und die diese nicht im Zug verbringen wollen.</li>',
-      },
-
-      '#online-price-title': { en: 'What it costs', de: 'Was es kostet' },
-      '#online-price-body': {
-        en: 'The same as in person. A 32-lesson course over four months is CHF 1600 per person in a group of three to five, or CHF 3840 one-to-one. Shorter and more flexible formats — a lunchtime course, an intensive block, Swiss German and German combined — are priced from CHF 50 per 60 minutes per person in a group and CHF 120 one-to-one.',
-        de: 'Gleich viel wie vor Ort. Ein Kurs mit 32 Lektionen über vier Monate kostet CHF 1600 pro Person in einer Gruppe von drei bis fünf Personen oder CHF 3840 im Einzelunterricht. Kürzere und flexiblere Formate — Mittagskurs, Intensivblock, Schweizerdeutsch und Deutsch kombiniert — beginnen bei CHF 50 pro 60 Minuten pro Person in der Gruppe und CHF 120 im Einzelunterricht.',
-      },
-
-      '#online-faq-title': {
-        en: 'Questions about online lessons',
-        de: 'Fragen zum Online-Unterricht',
-      },
-      '#online-faq-list': {
-        en: faqHtml(FAQ.online, 'en'),
-        de: faqHtml(FAQ.online, 'de'),
-      },
-
-      '#online-links-title': { en: 'Related', de: 'Passend dazu' },
-      '#online-links': {
-        en:
-          linkCard(
-            '/swiss-german.html',
-            'Swiss German courses',
-            'The full course, in Zürich or online.'
-          ) +
-          linkCard(
-            '/private-lessons.html',
-            'Private lessons',
-            'One-to-one, entirely at your pace.'
-          ) +
-          linkCard('/faq.html', 'FAQ', 'Levels, group sizes, cancellation terms.'),
-        de:
-          linkCard(
-            '/swiss-german.html',
-            'Schweizerdeutschkurse',
-            'Der ganze Kurs, in Zürich oder online.'
-          ) +
-          linkCard(
-            '/private-lessons.html',
-            'Einzelunterricht',
-            'Eins zu eins, ganz in deinem Tempo.'
-          ) +
-          linkCard('/faq.html', 'Häufige Fragen', 'Niveaus, Gruppengrössen, Stornobedingungen.'),
-      },
-
-      '#online-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
-      '#online-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
-    },
-  },
-
-  '/private-lessons.html': {
-    title: {
-      en: 'Private One-to-One Language Lessons in Zürich — Learning with Gioia',
-      de: 'Einzelunterricht für Sprachen in Zürich — Learning with Gioia',
-    },
-    description: {
-      en: 'One-to-one German, Swiss German and English lessons in Zürich and online. CHF 3840 for a 32-lesson course, or CHF 120 per 60 minutes for flexible bookings.',
-      de: 'Einzelunterricht in Deutsch, Schweizerdeutsch und Englisch in Zürich und online. CHF 3840 für einen Kurs mit 32 Lektionen oder CHF 120 pro 60 Minuten bei flexibler Buchung.',
-    },
-    text: {
-      '#private-kicker': { en: 'courses & tutoring', de: 'Kurse & Nachhilfe' },
-      '#private-h1': { en: 'Private lessons', de: 'Einzelunterricht' },
-      '#private-intro': {
-        en: 'One teacher, one learner, and a course built from nothing but what you need. In Zürich or online.',
-        de: 'Eine Lehrperson, eine lernende Person und ein Kurs, der aus nichts anderem besteht als dem, was du brauchst. In Zürich oder online.',
-      },
-
-      '#private-fact-1-label': { en: 'course', de: 'Kurs' },
-      '#private-fact-1-value': { en: 'CHF 3840', de: 'CHF 3840' },
-      '#private-fact-1-unit': { en: '32 × 60 min', de: '32 × 60 Min.' },
-      '#private-fact-2-label': { en: 'flexible booking', de: 'flexible Buchung' },
-      '#private-fact-2-value': { en: 'CHF 120', de: 'CHF 120' },
-      '#private-fact-2-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-      '#private-fact-3-label': { en: 'where', de: 'Ort' },
-      '#private-fact-3-value': { en: 'Zürich or online', de: 'Zürich oder online' },
-      '#private-fact-3-unit': { en: '', de: '' },
-
-      '#private-why-title': {
-        en: 'When one-to-one is the right choice',
-        de: 'Wann Einzelunterricht die richtige Wahl ist',
-      },
-      '#private-why-body': {
-        en: 'A group course is the better deal and, for most people learning a language from scratch, the better experience — you need other people to talk to. One-to-one earns its price in the cases where a group cannot go where you need to go: a specific exam on a specific date, a professional vocabulary nobody else in the room shares, a schedule that will not survive a fixed weekly slot, or a level so far along that a matching group would take months to form.',
-        de: 'Ein Gruppenkurs ist günstiger und für die meisten, die eine Sprache von Grund auf lernen, auch die bessere Erfahrung — man braucht Menschen zum Sprechen. Einzelunterricht rechtfertigt seinen Preis dort, wo eine Gruppe nicht hinkommt, wo du hinmusst: eine bestimmte Prüfung an einem bestimmten Datum, ein Fachwortschatz, den sonst niemand im Raum teilt, ein Terminplan, der keinen festen Wochentermin überlebt, oder ein Niveau so weit oben, dass sich eine passende Gruppe erst in Monaten findet.',
-      },
-      '#private-why-pull': {
-        en: 'In a group, the course sets the pace and you meet it. One-to-one, you set the pace and the course follows.',
-        de: 'In der Gruppe gibt der Kurs das Tempo vor und du gehst mit. Im Einzelunterricht gibst du das Tempo vor und der Kurs folgt.',
-      },
-
-      '#private-how-title': { en: 'How it works', de: 'Wie es abläuft' },
-      '#private-how-body': {
-        en: 'We start with what you actually need, not with chapter one. That first conversation is free and takes fifteen minutes.',
-        de: 'Wir beginnen bei dem, was du wirklich brauchst, nicht bei Kapitel eins. Dieses erste Gespräch ist kostenlos und dauert fünfzehn Minuten.',
-      },
-      '#private-how-list': {
-        en: '<li>A free 15-minute call to establish your level, your goal and your deadline if you have one.</li><li>A proposal: how many lessons, how long, how often, and what each block will cover.</li><li>Lessons at times that fit your week, including lunch breaks and evenings.</li><li>Material prepared for you between lessons — your work, your studies, your exam format.</li><li>Direction adjusted as you go, rather than at the end of a fixed syllabus.</li>',
-        de: '<li>Ein kostenloses 15-Minuten-Gespräch, um Niveau, Ziel und — falls vorhanden — Termin zu klären.</li><li>Ein Vorschlag: wie viele Lektionen, wie lang, wie oft und was jeder Block abdeckt.</li><li>Unterricht zu Zeiten, die in deine Woche passen, auch in der Mittagspause oder am Abend.</li><li>Material, das zwischen den Lektionen für dich vorbereitet wird — dein Beruf, dein Studium, dein Prüfungsformat.</li><li>Die Richtung wird unterwegs angepasst, nicht erst am Ende eines fixen Lehrplans.</li>',
-      },
-
-      '#private-where-title': {
-        en: 'Where lessons take place',
-        de: 'Wo der Unterricht stattfindet',
-      },
-      '#private-where-body': {
-        en: 'In our classroom in Zürich, at the teacher’s home, at your offices, or online by video — and you can mix them across a course. Online lessons are the same price and the same lesson, which makes them a practical fallback for a week when you are travelling rather than a separate product.',
-        de: 'In unserem Kursraum in Zürich, bei der Lehrperson zu Hause, bei euch im Büro oder online per Video — und du kannst die Varianten innerhalb eines Kurses mischen. Online-Lektionen kosten gleich viel und sind dieselbe Lektion, was sie zu einer praktischen Lösung für eine Reisewoche macht statt zu einem eigenen Produkt.',
-      },
-
-      '#private-price-title': { en: 'What it costs', de: 'Was es kostet' },
-      '#private-price-body': {
-        en: 'A full one-to-one course of 32 lessons of 60 minutes over four months is CHF 3840. Exam preparation runs longer, at 40 lessons over five months for CHF 4800. If you would rather book flexibly than commit to a full course, one-to-one lessons are CHF 120 per 60 minutes. Gymivorbereitung is priced separately, at CHF 120 per 60 minutes one-to-one.',
-        de: 'Ein vollständiger Einzelkurs mit 32 Lektionen à 60 Minuten über vier Monate kostet CHF 3840. Die Prüfungsvorbereitung ist länger: 40 Lektionen über fünf Monate für CHF 4800. Wenn du lieber flexibel buchst, statt dich auf einen ganzen Kurs festzulegen, kostet die Einzellektion CHF 120 pro 60 Minuten. Die Gymivorbereitung wird separat berechnet, im Einzelunterricht ebenfalls zu CHF 120 pro 60 Minuten.',
-      },
-
-      '#private-faq-title': {
-        en: 'Questions about private lessons',
-        de: 'Fragen zum Einzelunterricht',
-      },
-      '#private-faq-list': {
-        en: faqHtml(FAQ.booking, 'en'),
-        de: faqHtml(FAQ.booking, 'de'),
-      },
-
-      '#private-links-title': { en: 'Related', de: 'Passend dazu' },
-      '#private-links': {
-        en:
-          linkCard(
-            '/online-lessons.html',
-            'Online lessons',
-            'The same one-to-one lesson, by video.'
-          ) +
-          linkCard(
-            '/exam-preparation.html',
-            'Exam preparation',
-            'Cambridge, TOEFL, IELTS, TELC and Goethe.'
-          ) +
-          linkCard(
-            '/group-courses.html',
-            'Open group courses',
-            'What is currently bookable, and at which level.'
-          ),
-        de:
-          linkCard(
-            '/online-lessons.html',
-            'Online-Unterricht',
-            'Dieselbe Einzellektion, per Video.'
-          ) +
-          linkCard(
-            '/exam-preparation.html',
-            'Prüfungsvorbereitung',
-            'Cambridge, TOEFL, IELTS, TELC und Goethe.'
-          ) +
-          linkCard(
-            '/group-courses.html',
-            'Offene Gruppenkurse',
-            'Was gerade buchbar ist und auf welchem Niveau.'
-          ),
-      },
-
-      '#private-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
-      '#private-cta-call': {
-        en: 'book a free 15-minute call',
-        de: 'Kostenloses 15-Minuten-Gespräch buchen',
-      },
-    },
-  },
-
-  '/faq.html': {
-    title: {
-      en: 'Frequently Asked Questions — Learning with Gioia',
-      de: 'Häufige Fragen — Learning with Gioia',
-    },
-    description: {
-      en: 'Answers on levels, group sizes, prices, online lessons, Gymivorbereitung, company courses, booking and cancellation terms at Learning with Gioia in Zürich.',
-      de: 'Antworten zu Niveaus, Gruppengrössen, Preisen, Online-Unterricht, Gymivorbereitung, Firmenkursen, Buchung und Stornobedingungen bei Learning with Gioia in Zürich.',
-    },
-    text: {
-      '#faq-kicker': { en: 'good to know', de: 'Gut zu wissen' },
-      '#faq-h1': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
-      '#faq-intro': {
-        en: 'The questions we are asked most, answered plainly. If yours is not here, ask us — we answer email within a working day.',
-        de: 'Die Fragen, die uns am häufigsten gestellt werden, klar beantwortet. Fehlt deine, frag uns einfach — wir antworten innerhalb eines Arbeitstags.',
-      },
-
-      '#faq-courses-title': { en: 'Courses and levels', de: 'Kurse und Niveaus' },
-      '#faq-courses-list': { en: faqHtml(FAQ.courses, 'en'), de: faqHtml(FAQ.courses, 'de') },
-      '#faq-online-title': { en: 'Online lessons', de: 'Online-Unterricht' },
-      '#faq-online-list': { en: faqHtml(FAQ.online, 'en'), de: faqHtml(FAQ.online, 'de') },
-      '#faq-gymi-title': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
-      '#faq-gymi-list': { en: faqHtml(FAQ.gymi, 'en'), de: faqHtml(FAQ.gymi, 'de') },
-      '#faq-company-title': { en: 'Company courses', de: 'Firmenkurse' },
-      '#faq-company-list': { en: faqHtml(FAQ.company, 'en'), de: faqHtml(FAQ.company, 'de') },
-      '#faq-booking-title': {
-        en: 'Booking, payment and cancellation',
-        de: 'Buchung, Zahlung und Stornierung',
-      },
-      '#faq-booking-list': { en: faqHtml(FAQ.booking, 'en'), de: faqHtml(FAQ.booking, 'de') },
-
-      '#faq-links-title': { en: 'Related', de: 'Passend dazu' },
-      '#faq-links': {
-        en:
-          linkCard('/about.html', 'About us', 'Who teaches, and how the courses are built.') +
-          linkCard('/niveaus.html', 'Find your level', 'An interactive CEFR self-assessment.') +
-          linkCard(
-            '/agb.html',
-            'Terms & Conditions',
-            'The full contractual terms, including cancellation.'
-          ),
-        de:
-          linkCard(
-            '/about.html',
-            'Über uns',
-            'Wer unterrichtet und wie die Kurse aufgebaut sind.'
-          ) +
-          linkCard(
-            '/niveaus.html',
-            'Niveau herausfinden',
-            'Interaktive Selbsteinschätzung nach GER.'
-          ) +
-          linkCard(
-            '/agb.html',
-            'AGB',
-            'Die vollständigen Vertragsbedingungen, inklusive Stornierung.'
-          ),
-      },
-
-      '#faq-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
-      '#faq-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
     },
   },
 });

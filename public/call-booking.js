@@ -1,5 +1,5 @@
 // public/call-booking.js
-// The "book a 15min call" panel in the homepage #start section.
+// The "book a 15min call" panel in the homepage #enquiry section.
 //
 // Slot times come from /api/call-slots already resolved to Europe/Zurich, and
 // the labels are rendered verbatim so a visitor abroad still sees the same
@@ -217,10 +217,20 @@ function renderAgbConsent() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // The nav's "book a call" entry is a link to /#book-a-call. No element has
+  // that id: the hash is the request, and openFromHash() below opens the panel
+  // for it — on arrival from another page, on hashchange when already on the
+  // homepage, and on a click that changes nothing because the hash is set.
+  const CALL_HASH = '#book-a-call';
+
   function closePanel() {
     panel.hidden = true;
     trigger.setAttribute('aria-expanded', 'false');
     trigger.focus();
+    // Otherwise a reload, or coming back with the back button, reopens it.
+    if (window.location.hash === CALL_HASH) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
   }
 
   trigger.addEventListener('click', () => {
@@ -228,6 +238,25 @@ function renderAgbConsent() {
     else closePanel();
   });
   closeBtn.addEventListener('click', closePanel);
+
+  function openFromHash() {
+    if (window.location.hash === CALL_HASH && panel.hidden) openPanel();
+  }
+  window.addEventListener('hashchange', openFromHash);
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    let target;
+    try {
+      target = new URL(link.href, window.location.href);
+    } catch (err) {
+      void err;
+      return;
+    }
+    if (target.hash !== CALL_HASH || target.pathname !== window.location.pathname) return;
+    openFromHash();
+  });
+  openFromHash();
 
   daysEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.call-slot');

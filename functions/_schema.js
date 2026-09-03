@@ -27,7 +27,7 @@ export const BUSINESS = {
   city: 'Zürich',
   country: 'CH',
   vatID: 'CHE-396.783.072', // impressum.html
-  priceRange: 'CHF 50–4800',
+  priceRange: 'CHF 50–150',
   // First name only, deliberately: Gioia chose not to publish a full legal
   // name. Do not "complete" this from the Impressum.
   founderName: 'Gioia',
@@ -41,12 +41,25 @@ export const BUSINESS = {
 // Approved for publication; awaiting the facts themselves. Each is omitted
 // from the Person node while null.
 export const CREDENTIALS = {
-  // e.g. { en: 'MA in Linguistics', de: 'MA in Sprachwissenschaft' }
-  degree: null, // TODO(gioia): what you studied
-  // e.g. { '@type': 'CollegeOrUniversity', name: 'Universität Zürich' }
-  alumniOf: null, // TODO(gioia): where you studied
-  // e.g. 'SVEB 1' or a teaching diploma.
-  teachingQualification: null, // TODO(gioia): teaching qualification
+  // One entry per degree awarded, highest first.
+  degrees: [
+    {
+      en: 'MA in Russian Studies, University College London',
+      de: 'Master of Arts in Russian Studies, University College London',
+    },
+    {
+      en: 'BA in Russian Language and Literature, University of Zürich',
+      de: 'Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich',
+    },
+  ],
+  alumniOf: [
+    { '@type': 'CollegeOrUniversity', name: 'University College London' },
+    { '@type': 'CollegeOrUniversity', name: 'Universität Zürich' },
+  ],
+  // The Lehrdiplom (UZH, Russian and Mathematics) is still in progress. A
+  // credential that has not been awarded is not a credential, so it stays out
+  // of the graph until it is — the about page says "in progress" instead.
+  teachingQualification: null, // TODO(gioia): set once the Lehrdiplom is awarded
   // Year teaching started, as a number, e.g. 2016. Rendered as a duration so
   // the copy never goes stale.
   teachingSince: null, // TODO(gioia): year you started teaching
@@ -72,61 +85,96 @@ const SERVICE_TYPES = [
   'In-house language training',
   'Private one-to-one lessons',
   'Online language lessons',
-  'Tutoring',
+  'Tutoring in Swiss school subjects',
 ];
 
-// Course facts, previously carried as data-course-* attributes on <body>. Held
-// here so the graph can be built while writing <head>, before <body> is parsed.
+// The courses are sections of the homepage, not pages of their own, so each
+// is keyed by an id and points at the anchor where it is described. Prices
+// are the per-60-minute rates the page shows: a regular 32-lesson group
+// block therefore works out at CHF 1600, but the rate is what is quoted.
 const COURSE_DEFAULTS = {
-  workload: 'PT32H',
-  priceGroup: '1600',
-  priceSolo: '3840',
-  categoryGroup: 'group course, per person',
-  categorySolo: 'one-to-one',
-  online: true,
+  workload: 'PT1H',
+  priceGroup: '50',
+  priceSolo: '120',
+  categoryGroup: 'group course (3–5), per 60 min, per person',
+  categorySolo: 'one-to-one, per 60 min',
 };
 
 export const COURSES = {
-  '/german-courses.html': { name: 'German courses', language: 'de' },
-  '/swiss-german.html': { name: 'Swiss German courses', language: 'gsw' },
-  '/english-courses.html': { name: 'English courses', language: 'en' },
-  '/gymivorbereitung.html': {
-    name: 'Gymivorbereitung',
+  'german-courses': {
+    anchor: 'language-courses',
+    name: { en: 'German courses', de: 'Deutschkurse' },
+    description: {
+      en: 'German courses in Zürich from A0 to C2, taught by native speakers, in small groups or one-to-one, in person or online.',
+      de: 'Deutschkurse in Zürich von A0 bis C2, unterrichtet von Muttersprachlerinnen und Muttersprachlern, in kleinen Gruppen oder im Einzelunterricht, vor Ort oder online.',
+    },
     language: 'de',
-    workload: 'PT1H',
-    priceGroup: '80',
-    priceSolo: '120',
-    categoryGroup: 'group course, per 60 min, per person',
-    categorySolo: 'one-to-one, per 60 min',
   },
-  '/exam-preparation.html': {
-    name: 'Exam preparation',
-    language: 'en',
-    workload: 'PT40H',
-    priceGroup: '2000',
-    priceSolo: '4800',
+  'swiss-german': {
+    anchor: 'language-courses',
+    name: { en: 'Swiss German courses', de: 'Schweizerdeutschkurse' },
+    description: {
+      en: 'Swiss German courses in Zürich taught by a native speaker born and raised in Zürich, in small groups or one-to-one, in person or online.',
+      de: 'Schweizerdeutschkurse in Zürich, unterrichtet von einer in Zürich aufgewachsenen Muttersprachlerin, in kleinen Gruppen oder im Einzelunterricht, vor Ort oder online.',
+    },
+    language: 'gsw',
   },
-  '/company-courses.html': {
-    name: 'Company language courses',
+  'english-courses': {
+    anchor: 'language-courses',
+    name: { en: 'English courses', de: 'Englischkurse' },
+    description: {
+      en: 'English courses and tutoring in Zürich from A1 to C2, for school, work and everyday life, in small groups or one-to-one.',
+      de: 'Englischkurse und Nachhilfe in Zürich von A1 bis C2, für Schule, Beruf und Alltag, in kleinen Gruppen oder im Einzelunterricht.',
+    },
     language: 'en',
-    workload: 'PT100H',
+  },
+  'exam-preparation': {
+    anchor: 'language-courses',
+    name: { en: 'Exam preparation', de: 'Prüfungsvorbereitung' },
+    description: {
+      en: 'Preparation for Goethe, TELC, FIDE, Cambridge, TOEFL and IELTS exams in Zürich, practised with the real exam formats.',
+      de: 'Vorbereitung auf Goethe, TELC, FIDE, Cambridge, TOEFL und IELTS in Zürich, geübt mit den echten Prüfungsformaten.',
+    },
+    language: 'en',
+  },
+  'company-courses': {
+    anchor: 'language-courses',
+    name: { en: 'Company language courses', de: 'Firmenkurse' },
+    description: {
+      en: 'Language courses for companies and teams in Zürich, at your offices, in our classroom or online. Around 100 lessons per level, pricing on request.',
+      de: 'Sprachkurse für Firmen und Teams in Zürich, bei euch im Büro, in unserem Kursraum oder online. Rund 100 Lektionen pro Niveau, Preis auf Anfrage.',
+    },
+    language: 'en',
     priceOnRequest: true,
   },
-  '/lunch-time-german.html': {
-    name: 'Build your own German course (lunchtime, intensive)',
+  gymivorbereitung: {
+    anchor: 'gymivorbereitung',
+    name: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
+    description: {
+      en: 'Gymivorbereitung in Zürich, in small groups of three to seven or one-to-one. 20 lessons of 90 minutes over five months.',
+      de: 'Gymivorbereitung in Zürich, in kleinen Gruppen von drei bis sieben oder im Einzelunterricht. 20 Lektionen à 90 Minuten in fünf Monaten.',
+    },
     language: 'de',
-    workload: 'PT1H',
-    priceGroup: '50',
-    priceSolo: '120',
+    priceGroup: '80',
+    priceSolo: '150',
+    categoryGroup: 'group course (3–7), per 60 min, per person',
   },
-  // Online only: no onsite CourseInstance, so the page cannot be read as
-  // offering a Zürich classroom slot it does not have.
-  '/online-lessons.html': {
-    name: 'Online German and Swiss German lessons',
+  tutoring: {
+    anchor: 'tutoring',
+    name: { en: 'School tutoring', de: 'Nachhilfe' },
+    description: {
+      en: 'Tutoring in all subjects taught in Swiss schools, from primary school to Matura, in small groups or one-to-one.',
+      de: 'Nachhilfe in allen Fächern der Schweizer Schulen, von der Primarschule bis zur Matura, in kleinen Gruppen oder im Einzelunterricht.',
+    },
     language: 'de',
-    onlineOnly: true,
+    priceGroup: '80',
+    categoryGroup: 'group course (3–7), per 60 min, per person',
   },
 };
+
+function homeUrl(lang) {
+  return SITE_ORIGIN + pagePath('/index.html', lang);
+}
 
 function place() {
   return {
@@ -161,17 +209,18 @@ function personNode(lang) {
       'Swiss German',
       'Gymivorbereitung',
       'Linguistics',
+      'Russian language and literature',
       'Exam preparation',
     ],
     worksFor: { '@id': BUSINESS_ID },
   };
 
   const credentials = [];
-  if (CREDENTIALS.degree) {
+  for (const degree of CREDENTIALS.degrees || []) {
     credentials.push({
       '@type': 'EducationalOccupationalCredential',
       credentialCategory: 'degree',
-      name: CREDENTIALS.degree[lang],
+      name: degree[lang],
     });
   }
   if (CREDENTIALS.teachingQualification) {
@@ -215,12 +264,14 @@ function businessNode(lang) {
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: lang === 'de' ? 'Kurse & Nachhilfe' : 'Courses & tutoring',
-      itemListElement: Object.keys(COURSES).map((page) => ({
+      // Inline rather than @id references: the full Course nodes are only on
+      // the homepage, and every other page's graph must still resolve.
+      itemListElement: Object.values(COURSES).map((course) => ({
         '@type': 'Offer',
         itemOffered: {
           '@type': 'Course',
-          name: pages[page]?.title?.[lang] || COURSES[page].name,
-          url: SITE_ORIGIN + pagePath(page, lang),
+          name: course.name[lang],
+          url: `${homeUrl(lang)}#${course.anchor}`,
         },
       })),
     },
@@ -242,10 +293,9 @@ function websiteNode(lang) {
   };
 }
 
-function courseNode(page, lang) {
-  const data = { ...COURSE_DEFAULTS, ...COURSES[page] };
-  const entry = pages[page] || {};
-  const url = SITE_ORIGIN + pagePath(page, lang);
+function courseNode(id, lang) {
+  const data = { ...COURSE_DEFAULTS, ...COURSES[id] };
+  const url = `${homeUrl(lang)}#${data.anchor}`;
 
   const instance = (mode, price, category) => {
     const node = {
@@ -267,40 +317,37 @@ function courseNode(page, lang) {
     return node;
   };
 
+  // Every course is taught both in person and online, at the same rate.
   const instances = [];
-  if (!data.onlineOnly) {
+  for (const mode of ['onsite', 'online']) {
     if (data.priceOnRequest) {
-      instances.push(instance('onsite'));
+      instances.push(instance(mode));
     } else {
       instances.push(
-        instance('onsite', data.priceGroup, data.categoryGroup),
-        instance('onsite', data.priceSolo, data.categorySolo)
-      );
-    }
-  }
-  if (data.online || data.onlineOnly) {
-    if (data.priceOnRequest) {
-      instances.push(instance('online'));
-    } else {
-      instances.push(
-        instance('online', data.priceGroup, data.categoryGroup),
-        instance('online', data.priceSolo, data.categorySolo)
+        instance(mode, data.priceGroup, data.categoryGroup),
+        instance(mode, data.priceSolo, data.categorySolo)
       );
     }
   }
 
   return {
     '@type': 'Course',
-    '@id': url + '#course',
-    name: data.name,
-    description: entry.description?.[lang] || DESCRIPTION[lang],
+    // Several courses share an anchor, so the id carries the course key.
+    '@id': `${homeUrl(lang)}#course-${id}`,
+    name: data.name[lang],
+    description: data.description?.[lang] || DESCRIPTION[lang],
     url,
     inLanguage: data.language,
-    teaches: data.name,
+    teaches: data.name.en,
     provider: { '@id': BUSINESS_ID },
     offers: data.priceOnRequest
       ? undefined
-      : { '@type': 'Offer', price: data.priceGroup, priceCurrency: 'CHF' },
+      : {
+          '@type': 'Offer',
+          price: data.priceGroup,
+          priceCurrency: 'CHF',
+          category: data.categoryGroup,
+        },
     hasCourseInstance: instances,
   };
 }
@@ -361,12 +408,12 @@ function stripTags(value) {
 // Google treats hidden FAQ markup as a violation, and an assistant that quotes
 // an answer the visitor cannot find is worse than one that quotes nothing. The
 // two come from one source (FAQ in _i18n-content.js) so they cannot diverge.
+// The questions are rendered in the homepage #faq section (as a collapsed
+// accordion, which Google accepts: the answers are in the HTML and a reader
+// can expand them), so the homepage is the only document that may carry the
+// markup.
 const FAQ_GROUPS_BY_PAGE = {
-  '/faq.html': ['courses', 'online', 'gymi', 'company', 'booking'],
-  '/online-lessons.html': ['online'],
-  '/private-lessons.html': ['booking'],
-  '/company-courses.html': ['company'],
-  '/gymivorbereitung.html': ['gymi'],
+  '/index.html': ['courses', 'online', 'gymi', 'company'],
 };
 
 function faqNode(page, lang) {
@@ -387,29 +434,24 @@ function faqNode(page, lang) {
   };
 }
 
-function aboutNode(lang) {
-  return {
-    '@type': 'AboutPage',
-    '@id': `${SITE_ORIGIN}${pagePath('/about.html', lang)}#about`,
-    inLanguage: lang,
-    name: pages['/about.html'].title[lang],
-    description: pages['/about.html'].description[lang],
-    // The point of the page: it is the document that describes the Person.
-    mainEntity: { '@id': PERSON_ID },
-    about: [{ '@id': PERSON_ID }, { '@id': BUSINESS_ID }],
-    isPartOf: { '@id': WEBSITE_ID },
-  };
-}
+// The one-to-one offering: a format rather than a course, described in the
+// homepage's language-courses section.
+const PRIVATE_LESSONS = {
+  name: { en: 'Private one-to-one language lessons', de: 'Einzelunterricht für Sprachen' },
+  description: {
+    en: 'One-to-one German, Swiss German and English lessons in Zürich and online, CHF 120 per 60 minutes.',
+    de: 'Einzelunterricht in Deutsch, Schweizerdeutsch und Englisch in Zürich und online, CHF 120 pro 60 Minuten.',
+  },
+};
 
-// The one-to-one offering, which until now existed only as a price tile.
 function privateLessonsNode(lang) {
   return {
     '@type': 'Service',
-    '@id': `${SITE_ORIGIN}${pagePath('/private-lessons.html', lang)}#service`,
-    serviceType:
-      lang === 'de' ? 'Einzelunterricht für Sprachen' : 'Private one-to-one language lessons',
-    name: pages['/private-lessons.html'].title[lang],
-    description: pages['/private-lessons.html'].description[lang],
+    '@id': `${homeUrl(lang)}#service-private-lessons`,
+    url: `${homeUrl(lang)}#language-courses`,
+    serviceType: PRIVATE_LESSONS.name[lang],
+    name: PRIVATE_LESSONS.name[lang],
+    description: PRIVATE_LESSONS.description[lang],
     provider: { '@id': BUSINESS_ID },
     areaServed: [
       { '@type': 'City', name: 'Zürich' },
@@ -434,10 +476,12 @@ function privateLessonsNode(lang) {
 export function schemaFor(page, lang) {
   const graph = [businessNode(lang), personNode(lang), websiteNode(lang)];
 
-  if (COURSES[page]) graph.push(courseNode(page, lang));
+  // The homepage describes every course, so it carries every Course node.
+  if (page === '/index.html') {
+    for (const id of Object.keys(COURSES)) graph.push(courseNode(id, lang));
+    graph.push(privateLessonsNode(lang));
+  }
   if (LEARNING_RESOURCES.includes(page)) graph.push(learningResourceNode(page, lang));
-  if (page === '/about.html') graph.push(aboutNode(lang));
-  if (page === '/private-lessons.html') graph.push(privateLessonsNode(lang));
 
   const faq = faqNode(page, lang);
   if (faq) graph.push(faq);

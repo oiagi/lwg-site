@@ -16,25 +16,113 @@
 /de/info    /de/#offer-details  301
 /de/info/   /de/#offer-details  301
 
-# english-exams split into two separate course pages. Must stay above the
-# /en/:page and /de/:page catch-all rewrites below, or /en/english-exams
-# would be rewritten to the (now removed) english-exams.html.
-/english-exams.html  /en/english-courses  301
-/english-exams       /en/english-courses  301
-/en/english-exams    /en/english-courses  301
-/en/english-exams/   /en/english-courses  301
-/de/english-exams    /de/english-courses  301
-/de/english-exams/   /de/english-courses  301
+# The course pages, the about page and the FAQ were folded into the scrollable
+# homepage. Every old URL 301s straight to its section. Must stay above the
+# /en/:page and /de/:page catch-all comment below, for the same reason as
+# /info: a chain through the retired slug would cost a second round trip.
+# functions/_i18n-content.js LEGACY_SLUG_REDIRECTS carries the same map for
+# the language-prefixed forms, because which of the two answers first differs
+# between wrangler dev and production.
+/german-courses.html    /en/#language-courses  301
+/swiss-german.html      /en/#language-courses  301
+/english-courses.html   /en/#language-courses  301
+/exam-preparation.html  /en/#language-courses  301
+/company-courses.html   /en/#language-courses  301
+/lunch-time-german.html /en/#language-courses  301
+/online-lessons.html    /en/#language-courses  301
+/private-lessons.html   /en/#language-courses  301
+/english-exams.html     /en/#language-courses  301
+/english-exams          /en/#language-courses  301
+/gymivorbereitung.html  /de/#gymivorbereitung   301
+/about.html             /en/#about             301
+/faq.html               /en/#faq               301
+/en/german-courses                /en/#language-courses  301
+/en/german-courses/               /en/#language-courses  301
+/de/german-courses                /de/#language-courses  301
+/de/german-courses/               /de/#language-courses  301
+/en/deutschkurse                  /en/#language-courses  301
+/en/deutschkurse/                 /en/#language-courses  301
+/de/deutschkurse                  /de/#language-courses  301
+/de/deutschkurse/                 /de/#language-courses  301
+/en/swiss-german                  /en/#language-courses  301
+/en/swiss-german/                 /en/#language-courses  301
+/de/swiss-german                  /de/#language-courses  301
+/de/swiss-german/                 /de/#language-courses  301
+/en/schweizerdeutsch              /en/#language-courses  301
+/en/schweizerdeutsch/             /en/#language-courses  301
+/de/schweizerdeutsch              /de/#language-courses  301
+/de/schweizerdeutsch/             /de/#language-courses  301
+/en/english-courses               /en/#language-courses  301
+/en/english-courses/              /en/#language-courses  301
+/de/english-courses               /de/#language-courses  301
+/de/english-courses/              /de/#language-courses  301
+/en/englischkurse                 /en/#language-courses  301
+/en/englischkurse/                /en/#language-courses  301
+/de/englischkurse                 /de/#language-courses  301
+/de/englischkurse/                /de/#language-courses  301
+/en/exam-preparation              /en/#language-courses  301
+/en/exam-preparation/             /en/#language-courses  301
+/de/exam-preparation              /de/#language-courses  301
+/de/exam-preparation/             /de/#language-courses  301
+/en/pruefungsvorbereitung         /en/#language-courses  301
+/en/pruefungsvorbereitung/        /en/#language-courses  301
+/de/pruefungsvorbereitung         /de/#language-courses  301
+/de/pruefungsvorbereitung/        /de/#language-courses  301
+/en/company-courses               /en/#language-courses  301
+/en/company-courses/              /en/#language-courses  301
+/de/company-courses               /de/#language-courses  301
+/de/company-courses/              /de/#language-courses  301
+/en/firmenkurse                   /en/#language-courses  301
+/en/firmenkurse/                  /en/#language-courses  301
+/de/firmenkurse                   /de/#language-courses  301
+/de/firmenkurse/                  /de/#language-courses  301
+/en/lunch-time-german             /en/#language-courses  301
+/en/lunch-time-german/            /en/#language-courses  301
+/de/lunch-time-german             /de/#language-courses  301
+/de/lunch-time-german/            /de/#language-courses  301
+/en/kurs-nach-mass                /en/#language-courses  301
+/en/kurs-nach-mass/               /en/#language-courses  301
+/de/kurs-nach-mass                /de/#language-courses  301
+/de/kurs-nach-mass/               /de/#language-courses  301
+/en/online-lessons                /en/#language-courses  301
+/en/online-lessons/               /en/#language-courses  301
+/de/online-lessons                /de/#language-courses  301
+/de/online-lessons/               /de/#language-courses  301
+/en/online-unterricht             /en/#language-courses  301
+/en/online-unterricht/            /en/#language-courses  301
+/de/online-unterricht             /de/#language-courses  301
+/de/online-unterricht/            /de/#language-courses  301
+/en/private-lessons               /en/#language-courses  301
+/en/private-lessons/              /en/#language-courses  301
+/de/private-lessons               /de/#language-courses  301
+/de/private-lessons/              /de/#language-courses  301
+/en/einzelunterricht              /en/#language-courses  301
+/en/einzelunterricht/             /en/#language-courses  301
+/de/einzelunterricht              /de/#language-courses  301
+/de/einzelunterricht/             /de/#language-courses  301
+/en/english-exams                 /en/#language-courses  301
+/en/english-exams/                /en/#language-courses  301
+/de/english-exams                 /de/#language-courses  301
+/de/english-exams/                /de/#language-courses  301
+/en/gymivorbereitung              /en/#gymivorbereitung  301
+/en/gymivorbereitung/             /en/#gymivorbereitung  301
+/de/gymivorbereitung              /de/#gymivorbereitung  301
+/de/gymivorbereitung/             /de/#gymivorbereitung  301
+/en/about                         /en/#about  301
+/en/about/                        /en/#about  301
+/de/about                         /de/#about  301
+/de/about/                        /de/#about  301
+/en/ueber-uns                     /en/#about  301
+/en/ueber-uns/                    /en/#about  301
+/de/ueber-uns                     /de/#about  301
+/de/ueber-uns/                    /de/#about  301
+/en/faq                           /en/#faq  301
+/en/faq/                          /en/#faq  301
+/de/faq                           /de/#faq  301
+/de/faq/                          /de/#faq  301
 
 # Canonical language-prefixed public URLs
 /index.html  /en/  301
-/german-courses.html  /en/german-courses  301
-/swiss-german.html  /en/swiss-german  301
-/gymivorbereitung.html  /de/gymivorbereitung  301
-/english-courses.html  /en/english-courses  301
-/exam-preparation.html  /en/exam-preparation  301
-/company-courses.html  /en/company-courses  301
-/lunch-time-german.html  /en/lunch-time-german  301
 /group-courses.html  /en/group-courses  301
 /enquiry.html  /en/enquiry  301
 /impressum.html  /de/impressum  301

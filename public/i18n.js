@@ -18,17 +18,6 @@
   // do not edit one without the other.
   const ROUTES = {
     '/index.html': { en: '', de: '' },
-    '/german-courses.html': { en: 'german-courses', de: 'deutschkurse' },
-    '/swiss-german.html': { en: 'swiss-german', de: 'schweizerdeutsch' },
-    '/gymivorbereitung.html': { en: 'gymivorbereitung', de: 'gymivorbereitung' },
-    '/english-courses.html': { en: 'english-courses', de: 'englischkurse' },
-    '/exam-preparation.html': { en: 'exam-preparation', de: 'pruefungsvorbereitung' },
-    '/company-courses.html': { en: 'company-courses', de: 'firmenkurse' },
-    '/lunch-time-german.html': { en: 'lunch-time-german', de: 'kurs-nach-mass' },
-    '/online-lessons.html': { en: 'online-lessons', de: 'online-unterricht' },
-    '/private-lessons.html': { en: 'private-lessons', de: 'einzelunterricht' },
-    '/about.html': { en: 'about', de: 'ueber-uns' },
-    '/faq.html': { en: 'faq', de: 'faq' },
     '/group-courses.html': { en: 'group-courses', de: 'gruppenkurse' },
     '/enquiry.html': { en: 'enquiry', de: 'anfrage' },
     '/thankyou.html': { en: 'thankyou', de: 'danke' },

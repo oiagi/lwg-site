@@ -18,6 +18,7 @@ import {
   localizeHtmlLinks,
   hasRoute,
   FAQ,
+  faqHtml,
 } from '../functions/_i18n-content.js';
 import { schemaFor, COURSES, BUSINESS, CREDENTIALS } from '../functions/_schema.js';
 import { navMarkup, footerMarkup } from '../functions/_nav-markup.js';
@@ -74,13 +75,84 @@ test('every slug is unique within its language, so no page shadows another', () 
 test('a slug from the other language resolves, so _render.js can 301 rather than 404', () => {
   // The case that matters: German URLs that existed before the slugs were
   // localized must keep working.
-  assert.equal(pageForAnySlug('german-courses'), '/german-courses.html');
-  assert.equal(pageForAnySlug('deutschkurse'), '/german-courses.html');
-  assert.equal(pageForAnySlug('firmenkurse'), '/company-courses.html');
+  assert.equal(pageForAnySlug('group-courses'), '/group-courses.html');
+  assert.equal(pageForAnySlug('gruppenkurse'), '/group-courses.html');
+  assert.equal(pageForAnySlug('anfrage'), '/enquiry.html');
 
   // And the redirect target is the same page in the requested language.
-  assert.equal(pagePath(pageForAnySlug('german-courses'), 'de'), '/de/deutschkurse');
-  assert.equal(pagePath(pageForAnySlug('deutschkurse'), 'en'), '/en/german-courses');
+  assert.equal(pagePath(pageForAnySlug('group-courses'), 'de'), '/de/gruppenkurse');
+  assert.equal(pagePath(pageForAnySlug('gruppenkurse'), 'en'), '/en/group-courses');
+});
+
+// The course pages, /about and /faq were folded into the homepage. Their
+// slugs, in both languages, must keep resolving — to the section, in the
+// language the prefix asked for — and must not be live routes any more.
+const RETIRED = {
+  'language-courses': [
+    'german-courses',
+    'deutschkurse',
+    'swiss-german',
+    'schweizerdeutsch',
+    'english-courses',
+    'englischkurse',
+    'exam-preparation',
+    'pruefungsvorbereitung',
+    'company-courses',
+    'firmenkurse',
+    'lunch-time-german',
+    'kurs-nach-mass',
+    'online-lessons',
+    'online-unterricht',
+    'private-lessons',
+    'einzelunterricht',
+    'english-exams',
+  ],
+  gymivorbereitung: ['gymivorbereitung'],
+  about: ['about', 'ueber-uns'],
+  faq: ['faq'],
+};
+
+function homepageIds() {
+  const html = readFileSync('public/pages/index.html', 'utf8');
+  return new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+}
+
+test('retired slugs 301 to a homepage section in the requested language', () => {
+  const ids = homepageIds();
+  for (const [anchor, slugs] of Object.entries(RETIRED)) {
+    assert.ok(ids.has(anchor), `homepage has no element with id="${anchor}"`);
+    for (const slug of slugs) {
+      assert.equal(pageForAnySlug(slug), null, `${slug} is still a live route`);
+      const target = LEGACY_SLUG_REDIRECTS[slug];
+      assert.ok(target, `${slug} has no legacy redirect`);
+      for (const lang of SUPPORTED) {
+        assert.equal(target(lang), `/${lang}/#${anchor}`);
+      }
+    }
+  }
+});
+
+test('_redirects sends the retired .html URLs and prefixed slugs to the same anchors', () => {
+  const redirects = readFileSync('public/_redirects', 'utf8');
+  const retired = Object.values(RETIRED).flat();
+  for (const line of redirects.split('\n')) {
+    const [from, to] = line.trim().split(/\s+/);
+    if (!from || from.startsWith('#')) continue;
+    for (const slug of retired) {
+      assert.ok(!to.includes(`/${slug}`), `${from} redirects to retired ${to}`);
+    }
+  }
+  for (const [anchor, slugs] of Object.entries(RETIRED)) {
+    for (const slug of slugs) {
+      for (const lang of SUPPORTED) {
+        assert.match(
+          redirects,
+          new RegExp(`^/${lang}/${slug}\\s+/${lang}/#${anchor}\\s+301`, 'm'),
+          `_redirects lacks /${lang}/${slug} -> /${lang}/#${anchor}`
+        );
+      }
+    }
+  }
 });
 
 test('German slugs never contain characters that need URL-encoding', () => {
@@ -95,7 +167,7 @@ test('German slugs never contain characters that need URL-encoding', () => {
 
 test('templatePath is extensionless and points into /pages', () => {
   assert.equal(templatePath('/index.html'), '/pages/');
-  assert.equal(templatePath('/german-courses.html'), '/pages/german-courses');
+  assert.equal(templatePath('/group-courses.html'), '/pages/group-courses');
   for (const page of Object.keys(ROUTES)) {
     assert.ok(!templatePath(page).endsWith('.html'), page);
   }
@@ -190,16 +262,16 @@ test('DEFAULT_BY_PAGE and LEGACY_SLUG_REDIRECTS reference real pages and slugs',
 });
 
 test('localizeHref rewrites internal links and leaves everything else alone', () => {
-  assert.equal(localizeHref('/german-courses.html', 'de'), '/de/deutschkurse');
-  assert.equal(localizeHref('/german-courses.html', 'en'), '/en/german-courses');
+  assert.equal(localizeHref('/group-courses.html', 'de'), '/de/gruppenkurse');
+  assert.equal(localizeHref('/group-courses.html', 'en'), '/en/group-courses');
   assert.equal(localizeHref('/index.html#offer-details', 'de'), '/de/#offer-details');
   assert.equal(localizeHref('/enquiry.html?ref=x', 'en'), '/en/enquiry?ref=x');
   assert.equal(localizeHref('/enquiry.html?ref=x', 'de'), '/de/anfrage?ref=x');
   // Already localised, and therefore unchanged.
-  assert.equal(localizeHref('/de/deutschkurse', 'de'), null);
+  assert.equal(localizeHref('/de/gruppenkurse', 'de'), null);
   // Written with the English slug under the German prefix: still resolves, and
   // is corrected rather than left to 301 at request time.
-  assert.equal(localizeHref('/de/german-courses', 'de'), '/de/deutschkurse');
+  assert.equal(localizeHref('/de/group-courses', 'de'), '/de/gruppenkurse');
   // Not ours to touch.
   for (const href of [
     '#offer',
@@ -216,9 +288,11 @@ test('localizeHref rewrites internal links and leaves everything else alone', ()
 });
 
 test('localizeHtmlLinks rewrites links inside injected copy', () => {
-  const html = 'We offer <a href="/lunch-time-german.html">tailored programmes</a>.';
-  assert.match(localizeHtmlLinks(html, 'de'), /href="\/de\/kurs-nach-mass"/);
-  assert.match(localizeHtmlLinks(html, 'en'), /href="\/en\/lunch-time-german"/);
+  const html = 'Try our <a href="/niveaus.html">self-assessment</a>.';
+  assert.match(localizeHtmlLinks(html, 'de'), /href="\/de\/niveaus"/);
+  assert.match(localizeHtmlLinks(html, 'en'), /href="\/en\/niveaus"/);
+  const anchored = 'See <a href="/index.html#language-courses">the courses</a>.';
+  assert.match(localizeHtmlLinks(anchored, 'de'), /href="\/de\/#language-courses"/);
   const external = '<a href="https://example.com/a.html">x</a>';
   assert.equal(localizeHtmlLinks(external, 'de'), external);
 });
@@ -237,8 +311,7 @@ test('no dictionary copy links to a .html URL that would 301', () => {
 
 test('nav and footer markup are complete, localised and self-consistent', () => {
   for (const lang of SUPPORTED) {
-    const markup =
-      navMarkup('/gymivorbereitung.html', lang) + footerMarkup('/gymivorbereitung.html', lang);
+    const markup = navMarkup('/niveaus.html', lang) + footerMarkup('/niveaus.html', lang);
     // Every internal link carries the language prefix and no .html.
     const hrefs = [...markup.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
     assert.ok(hrefs.length > 15, `only ${hrefs.length} nav links`);
@@ -252,13 +325,30 @@ test('nav and footer markup are complete, localised and self-consistent', () => 
     }
     // The other language is reachable by a real link, not a button.
     const other = SUPPORTED.find((l) => l !== lang);
-    assert.match(
-      markup,
-      new RegExp(`<a class="language-option" href="/${other}/gymivorbereitung"`)
-    );
+    assert.match(markup, new RegExp(`<a class="language-option" href="/${other}/niveaus"`));
     // The current page is marked once.
     assert.equal((markup.match(/aria-current="page"/g) || []).length, 1);
     assert.ok(markup.includes(nav.impressum[lang]), 'footer missing legal links');
+
+    // The homepage sections the nav points at exist, and the retired pages are
+    // gone from it. The call sub-tab is a hash with no element: call-booking.js
+    // opens the panel for it.
+    const ids = homepageIds();
+    for (const hash of [
+      'language-courses',
+      'tutoring',
+      'gymivorbereitung',
+      'about',
+      'faq',
+      'enquiry',
+    ]) {
+      assert.ok(hrefs.includes(`/${lang}/#${hash}`), `nav lacks /${lang}/#${hash}`);
+      assert.ok(ids.has(hash), `homepage has no id="${hash}"`);
+    }
+    assert.ok(hrefs.includes(`/${lang}/#book-a-call`), 'nav lacks the book-a-call sub-tab');
+    for (const slug of Object.values(RETIRED).flat()) {
+      assert.ok(!hrefs.some((h) => h.endsWith(`/${slug}`)), `nav still links /${slug}`);
+    }
   }
 });
 
@@ -281,40 +371,49 @@ test('schemaFor emits valid JSON with resolvable @id references', () => {
   }
 });
 
-test('course pages carry a Course node offered both onsite and online', () => {
-  for (const page of Object.keys(COURSES)) {
-    const graph = JSON.parse(schemaFor(page, 'de'))['@graph'];
-    const course = graph.find((node) => node['@type'] === 'Course');
-    assert.ok(course, `${page} has no Course node`);
-    const modes = new Set(course.hasCourseInstance.map((i) => i.courseMode));
-    // Every course is bookable online. Only the online-lessons page is online
-    // *only* — it must not claim a Zürich classroom slot it does not offer.
-    assert.ok(modes.has('online'), `${page} missing online instance`);
-    if (page === '/online-lessons.html') {
-      assert.ok(!modes.has('onsite'), 'the online-lessons page must not claim an onsite instance');
-    } else {
-      assert.ok(modes.has('onsite'), `${page} missing onsite instance`);
+function homeCourse(id, lang) {
+  const graph = JSON.parse(schemaFor('/index.html', lang))['@graph'];
+  return graph.find((n) => n['@type'] === 'Course' && n['@id'].endsWith(`#course-${id}`));
+}
+
+test('the homepage carries every Course node, offered both onsite and online', () => {
+  const ids = homepageIds();
+  for (const lang of SUPPORTED) {
+    for (const [id, data] of Object.entries(COURSES)) {
+      const course = homeCourse(id, lang);
+      assert.ok(course, `${lang} homepage has no Course node for ${id}`);
+      // The url is the section that describes it, and that section exists.
+      assert.ok(course.url.endsWith(`#${data.anchor}`), `${id} url ${course.url}`);
+      assert.ok(ids.has(data.anchor), `homepage has no id="${data.anchor}"`);
+      const modes = new Set(course.hasCourseInstance.map((i) => i.courseMode));
+      assert.ok(modes.has('online'), `${id} missing online instance`);
+      assert.ok(modes.has('onsite'), `${id} missing onsite instance`);
+      for (const instance of course.hasCourseInstance) {
+        assert.match(instance.courseWorkload, /^PT\d+H$/, `${id} bad workload`);
+      }
     }
-    for (const instance of course.hasCourseInstance) {
-      assert.match(instance.courseWorkload, /^PT\d+H$/, `${page} bad workload`);
-    }
+  }
+  // No other document describes a course, so none may claim one.
+  for (const page of Object.keys(ROUTES)) {
+    if (page === '/index.html') continue;
+    const graph = JSON.parse(schemaFor(page, 'en'))['@graph'];
+    assert.ok(!graph.some((n) => n['@type'] === 'Course'), `${page} carries a Course node`);
   }
 });
 
 test('company courses quote no price, priced courses always do', () => {
-  const company = JSON.parse(schemaFor('/company-courses.html', 'en'))['@graph'].find(
-    (n) => n['@type'] === 'Course'
-  );
+  const company = homeCourse('company-courses', 'en');
   for (const instance of company.hasCourseInstance) {
     assert.equal(instance.offers, undefined, 'company course must not quote a price');
   }
-  const german = JSON.parse(schemaFor('/german-courses.html', 'en'))['@graph'].find(
-    (n) => n['@type'] === 'Course'
-  );
+  const german = homeCourse('german-courses', 'en');
   for (const instance of german.hasCourseInstance) {
     assert.equal(instance.offers.priceCurrency, 'CHF');
     assert.match(instance.offers.price, /^\d+$/);
   }
+  // The rates in the graph are the ones the page shows.
+  assert.equal(german.offers.price, '50');
+  assert.equal(homeCourse('gymivorbereitung', 'en').offers.price, '80');
 });
 
 test('the sitemap lists every indexable page in both languages', () => {
@@ -395,15 +494,7 @@ test('FAQ markup only claims answers that are rendered on the page', () => {
   // assistants text a visitor cannot find. Both come from FAQ in
   // _i18n-content.js, so this checks the wiring rather than the wording.
   const faqPages = {
-    '/faq.html': [
-      '#faq-courses-list',
-      '#faq-online-list',
-      '#faq-gymi-list',
-      '#faq-company-list',
-      '#faq-booking-list',
-    ],
-    '/online-lessons.html': ['#online-faq-list'],
-    '/private-lessons.html': ['#private-faq-list'],
+    '/index.html': ['#faq-courses-list', '#faq-online-list', '#faq-gymi-list', '#faq-company-list'],
   };
 
   for (const [page, selectors] of Object.entries(faqPages)) {
@@ -426,6 +517,30 @@ test('FAQ markup only claims answers that are rendered on the page', () => {
       }
     }
   }
+
+  // No other page renders a Q&A block, so none may carry FAQPage markup. Same
+  // rule from the other side: it catches markup left behind, or added later,
+  // for answers a visitor cannot see.
+  for (const page of Object.keys(ROUTES)) {
+    if (faqPages[page]) continue;
+    for (const lang of SUPPORTED) {
+      const node = JSON.parse(schemaFor(page, lang))['@graph'].find(
+        (n) => n['@type'] === 'FAQPage'
+      );
+      assert.ok(!node, `${page} ${lang} has FAQPage markup but renders no Q&A block`);
+    }
+  }
+});
+
+test('faqHtml renders one collapsible item per entry, question first', () => {
+  for (const [group, items] of Object.entries(FAQ)) {
+    for (const lang of SUPPORTED) {
+      const html = faqHtml(items, lang);
+      const count = (html.match(/<details class="faq-item">/g) || []).length;
+      assert.equal(count, items.length, `${group} ${lang}: ${count} items for ${items.length}`);
+      assert.match(html, /^<details class="faq-item"><summary><h3>/);
+    }
+  }
 });
 
 test('every FAQ entry has a question and an answer in both languages', () => {
@@ -443,33 +558,46 @@ test('every FAQ entry has a question and an answer in both languages', () => {
 test('llms.txt lists real URLs and states the facts an assistant is asked for', () => {
   const txt = buildLlmsTxt('en');
 
-  // Every linked URL must be one the router actually serves.
+  // Every linked URL must be one the router actually serves; an anchor must
+  // name a real element on the homepage.
   const urls = [...txt.matchAll(/\]\(https:\/\/learningwithgioia\.ch(\/[^)]*)\)/g)].map(
     (m) => m[1]
   );
-  assert.ok(urls.length > 15, `only ${urls.length} page links in llms.txt`);
+  assert.ok(urls.length >= 15, `only ${urls.length} page links in llms.txt`);
   const served = new Set(
     Object.keys(ROUTES).flatMap((page) => SUPPORTED.map((lang) => pagePath(page, lang)))
   );
+  const ids = homepageIds();
   for (const url of urls) {
-    assert.ok(served.has(url), `llms.txt links ${url}, which is not a route`);
+    const [path, hash] = url.split('#');
+    assert.ok(served.has(path), `llms.txt links ${url}, which is not a route`);
+    if (hash !== undefined) {
+      assert.equal(path, '/en/', `llms.txt anchors into ${path}, which is not the homepage`);
+      assert.ok(ids.has(hash), `llms.txt links #${hash}, which is not on the homepage`);
+    }
   }
 
-  // The commercially important pages must not be missing from it.
-  for (const page of [
-    '/company-courses.html',
-    '/swiss-german.html',
-    '/gymivorbereitung.html',
-    '/online-lessons.html',
-    '/private-lessons.html',
-    '/faq.html',
-    '/about.html',
+  // The commercially important sections and pages must not be missing.
+  for (const url of [
+    '/en/#language-courses',
+    '/en/#tutoring',
+    '/en/#gymivorbereitung',
+    '/en/#faq',
+    '/en/#about',
+    '/en/#enquiry',
+    '/en/group-courses',
+    '/en/enquiry',
+    '/en/niveaus',
   ]) {
-    assert.ok(urls.includes(pagePath(page, 'en')), `llms.txt omits ${page}`);
+    assert.ok(urls.includes(url), `llms.txt omits ${url}`);
   }
 
-  // The positioning fact the whole site rests on.
+  // The positioning fact the whole site rests on, and the prices in the
+  // model the page shows.
   assert.match(txt, /native speaker of both Swiss German and German/);
+  assert.match(txt, /CHF 50 per person per 60 minutes/);
+  assert.match(txt, /CHF 80 per person per 60 minutes/);
+  assert.match(txt, /FIDE/);
   assert.match(txt, /info@learningwithgioia\.ch/);
   assert.ok(!txt.includes('undefined'), 'llms.txt contains an undefined value');
 });
@@ -486,7 +614,7 @@ test('llms.txt omits the telephone line until a number is published', () => {
 });
 
 test('unset schema facts are omitted from the graph, never emitted empty', () => {
-  const graph = JSON.parse(schemaFor('/about.html', 'en'))['@graph'];
+  const graph = JSON.parse(schemaFor('/index.html', 'en'))['@graph'];
   const business = graph.find((n) => String(n['@type']).includes('LocalBusiness'));
   const person = graph.find((n) => n['@type'] === 'Person');
 
@@ -635,4 +763,23 @@ test('the homepage sections the switcher restores against are uniquely identifie
   const ids = [...html.matchAll(/<section[^>]*\sid="([^"]+)"/g)].map((m) => m[1]);
   assert.ok(ids.length >= 5, 'the homepage should still be a multi-section scroll page');
   assert.equal(new Set(ids).size, ids.length, 'duplicate section ids on the homepage');
+  for (const id of [
+    'language-courses',
+    'tutoring',
+    'gymivorbereitung',
+    'offer-details',
+    'levels',
+    'materials',
+    'reviews',
+    'about',
+    'faq',
+    'enquiry',
+  ]) {
+    assert.ok(ids.includes(id), `homepage lost its #${id} section`);
+  }
+
+  // Every id on the page is unique, not just the sections': the copy
+  // dictionary and the fact tiles are addressed by id.
+  const all = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(new Set(all).size, all.length, 'duplicate ids on the homepage');
 });

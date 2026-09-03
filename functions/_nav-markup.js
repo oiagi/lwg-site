@@ -64,16 +64,12 @@ export function navMarkup(page, lang) {
     '</button>' +
     '<div class="nav-menu" id="nav-menu">' +
     link('/index.html', 'home') +
-    navSection(link('/index.html', 'offer', 'offer'), [
-      link('/german-courses.html', 'germanCourses'),
-      link('/swiss-german.html', 'swissGerman'),
-      link('/gymivorbereitung.html', 'gymivorbereitung'),
-      link('/english-courses.html', 'englishCourses'),
-      link('/exam-preparation.html', 'examPreparation'),
-      link('/company-courses.html', 'companyCourses'),
-      link('/lunch-time-german.html', 'lunchTimeGerman'),
-      link('/online-lessons.html', 'onlineLessons'),
-      link('/private-lessons.html', 'privateLessons'),
+    // Courses, about and FAQ are sections of the homepage; the sub-pages they
+    // used to be were retired and 301 to these anchors.
+    navSection(link('/index.html', 'offer', 'language-courses'), [
+      link('/index.html', 'languageCourses', 'language-courses'),
+      link('/index.html', 'tutoring', 'tutoring'),
+      link('/index.html', 'gymivorbereitung', 'gymivorbereitung'),
     ]) +
     link('/index.html', 'courseStructure', 'offer-details') +
     navSection(link('/index.html', 'levels', 'levels'), [link('/niveaus.html', 'niveaus')]) +
@@ -83,14 +79,15 @@ export function navMarkup(page, lang) {
       link('/subjunktionen.html', 'subjunktionen'),
     ]) +
     link('/index.html', 'reviews', 'reviews') +
-    // Points at the About page now that one exists; the homepage #about
-    // section is a summary that links onward to it.
-    link('/about.html', 'about') +
-    link('/faq.html', 'faq') +
-    navSection(link('/index.html', 'start', 'start'), [
+    link('/index.html', 'about', 'about') +
+    link('/index.html', 'faq', 'faq') +
+    // The #book-a-call hash has no element of its own: call-booking.js opens
+    // the panel in the #enquiry section when it sees it.
+    navSection(link('/index.html', 'enquiry', 'enquiry'), [
+      link('/enquiry.html', 'enquiryForm'),
       link('/group-courses.html', 'groupCourses'),
+      link('/index.html', 'bookCall', 'book-a-call'),
     ]) +
-    link('/enquiry.html', 'enquiry') +
     '</div>' +
     '</nav>'
   );

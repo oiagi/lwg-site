@@ -118,7 +118,7 @@
       loadedReviews = reviews;
       renderReviews();
       applyReviewClamps();
-      // #about and #start sit below #reviews, so filling the grid pushes them
+      // #about, #faq and #enquiry sit below #reviews, so filling the grid pushes them
       // down after first paint. nav.js holds the reader's place across a
       // language switch; re-apply it now that the page is its final height.
       // It is a no-op unless a switch just happened and the reader has not
