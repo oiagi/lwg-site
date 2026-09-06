@@ -278,7 +278,7 @@ export const pages = {
       '#language-courses .kicker': { en: 'what we offer', de: 'Unser Angebot' },
       '#language-courses .section-title': { en: 'Language courses', de: 'Sprachkurse' },
       '#lc-intro': {
-        en: 'Our language courses take place in a personal setting: in our classrooms, at your offices, at your home or online. Language courses are taught exclusively by native-speaking teachers.',
+        en: 'Our language courses take place in a personal setting in our classrooms, at your offices, at your home or online. They are taught exclusively by native-speaking teachers.',
         de: 'Unsere Sprachkurse finden in einem persönlichen Umfeld statt, entweder in unseren Kursräumlichkeiten, direkt bei Ihnen im Büro, bei Ihnen zu Hause oder online. Sprachkurse werden bei uns ausschliesslich von muttersprachlichen Lehrpersonen unterrichtet.',
       },
       '#lc-languages-title': { en: 'Languages', de: 'Sprachen' },
@@ -298,28 +298,28 @@ export const pages = {
       },
       '#lc-format-title': { en: 'Format', de: 'Format' },
       '#lc-format-group': {
-        en: '<strong>Group</strong> <span>Our group courses have between three and five people, so everybody gets the chance to actively use the target language in the lesson.</span>',
+        en: '<strong>Group</strong> <span>Our group classes have between three and five participants, so that everybody gets to actively apply the target language during lessons.</span>',
         de: '<strong>Gruppe</strong> <span>In unseren Gruppenkursen sind zwischen drei und fünf Personen. So erhalten alle die Chance, die Zielsprache auch im Unterricht aktiv anzuwenden.</span>',
       },
       '#lc-format-private': {
-        en: '<strong>One-to-one</strong> <span>One-to-one lessons offer flexibility and even more time to use the target language.</span>',
+        en: '<strong>One-to-one</strong> <span>More flexibility and more opportunity to apply the target language.</span>',
         de: '<strong>Einzelunterricht</strong> <span>Einzelunterricht bietet Flexibilität und noch mehr Zeit, die Zielsprache anzuwenden.</span>',
       },
       '#lc-format-company': {
-        en: '<strong>Company courses</strong> <span>Our company courses take place at your offices. Ideal for anyone short of time who has to fit lessons around a full diary.</span>',
-        de: '<strong>Firmenkurse</strong> <span>Unsere Firmenkurse finden direkt bei Ihnen im Büro statt. Ideal für diejenigen, die nicht viel Zeit haben und den Unterricht mit einem vollen Terminkalender koordinieren müssen.</span>',
+        en: '<strong>Company courses</strong> <span>Our company courses take place at your offices. Ideal for anyone short of time who has to work around a busy schedule.</span>',
+        de: '<strong>Firmenkurse</strong> <span>Unsere Firmenkurse finden direkt bei Ihnen im Büro statt. Ideal für diejenigen, die nur wenig Zeit haben und sich nach einem vollen Terminkalender richten müssen.</span>',
       },
       '#lc-format-tailored': {
-        en: '<strong>Build your own</strong> <span>If you have something specific in mind, get in touch and we will find a solution that fits.</span>',
+        en: '<strong>Build your own</strong> <span>Get in touch and we will find the right option for you.</span>',
         de: '<strong>Build your own</strong> <span>Wenn Sie einen bestimmten Wunsch haben, melden Sie sich und wir finden eine passende Lösung.</span>',
       },
       '#lc-location-title': { en: 'Location', de: 'Ort' },
       '#lc-location-inperson': {
-        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Ask us about our locations.</span>',
+        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Message us to find out about our locations.</span>',
         de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#lc-location-online': {
-        en: '<strong>Online</strong> <span>Would you rather learn from home, or mix in-person lessons with online ones? No problem. All of our courses can also take place online.</span>',
+        en: '<strong>Online</strong> <span>All of our courses are also offered fully online, or mixed with in-person lessons.</span>',
         de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse können auch online stattfinden.</span>',
       },
       '#lc-facts-title': {
@@ -363,7 +363,7 @@ export const pages = {
       '#tu-level-bms': { en: '<strong>BMS</strong>', de: '<strong>BMS</strong>' },
       '#tu-format-title': { en: 'Format', de: 'Format' },
       '#tu-format-group': {
-        en: "<strong>Group</strong> <span>Group tutoring is taught in groups of three to seven pupils. Where the pupils' levels differ widely, a smaller group works better, so that every pupil gets the attention they need. Where levels and tasks are similar, a larger group works well.</span>",
+        en: '<strong>Group</strong> <span>Taught in groups of three to seven pupils. Where the levels differ widely, a smaller group works better, so that every pupil gets the attention they need. Where levels and tasks are similar, a larger group works well.</span>',
         de: '<strong>Gruppe</strong> <span>Nachhilfe in der Gruppe wird in Gruppen von drei bis sieben Schülerinnen und Schülern unterrichtet. Unterscheiden sich die Niveaus stark, eignet sich eine kleinere Gruppe. So kommt jeder Schülerin und jedem Schüler die nötige Aufmerksamkeit zugute. Bei ähnlichen Niveaus und Aufgabenstellungen eignet sich eine grössere Gruppe.</span>',
       },
       '#tu-format-private': {
@@ -372,7 +372,7 @@ export const pages = {
       },
       '#tu-location-title': { en: 'Location', de: 'Ort' },
       '#tu-location-inperson': {
-        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Ask us about our locations.</span>',
+        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Message us to find out about our locations.</span>',
         de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#tu-location-online': {
@@ -386,6 +386,10 @@ export const pages = {
       '#tu-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
       '#tu-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
       '#tu-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      '#tu-note': {
+        en: 'Message us to find out about ongoing tutoring group courses.',
+        de: 'Kontaktieren Sie uns, um mehr über Gruppennachhilfekurse zu erfahren.',
+      },
       '#tu-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#tu-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
@@ -396,8 +400,8 @@ export const pages = {
         de: 'Gymivorbereitung',
       },
       '#gy-intro': {
-        en: 'Step by step to the Gymiprüfung. We are with you all the way there.',
-        de: 'Schritt für Schritt zur Gymiprüfung. Wir begleiten Sie auf dem Weg dahin.',
+        en: 'Step by step to the Gymiprüfung.',
+        de: 'Schritt für Schritt zur Gymiprüfung.',
       },
       '#gy-details-title': { en: 'Course details', de: 'Kursdetails' },
       '#gy-fact-duration-label': { en: 'lesson length', de: 'Unterrichtsdauer' },
@@ -432,6 +436,11 @@ export const pages = {
       '#gy-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
       '#gy-fact-solo-value': { en: 'CHF 150', de: 'CHF 150' },
       '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      // Stated in teaching days of 3 h, the same units as the facts grid above.
+      '#gy-note': {
+        en: 'Standard Gymivorbereitung group courses run for 12 × 3 h or 20 × 3 h, depending on how soon you start and on the weekly frequency.',
+        de: 'Standard Gruppenkurse für Gymivorbereitung umfassen 12 × 3 Std. oder 20 × 3 Std., je nachdem, wie früh Sie mit der Vorbereitung beginnen möchten und wie häufig pro Woche Sie Zeit haben.',
+      },
       '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#gy-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
@@ -457,20 +466,8 @@ export const pages = {
         de: 'Kleine interaktive Guides, die wir für unsere Lernenden gebaut haben. Kostenlos für alle. Mit Übersicht, Quiz und Spickzettel.',
       },
       '#material-konjunktionen h3': { en: 'Conjunctions', de: 'Konjunktionen' },
-      '#material-konjunktionen p': {
-        en: 'The five words that connect equal parts.',
-        de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
-      },
       '#material-modalpartikeln h3': { en: 'Modal particles', de: 'Modalpartikeln' },
-      '#material-modalpartikeln p': {
-        en: 'The little words that make German come alive.',
-        de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
-      },
       '#material-subjunktionen h3': { en: 'Subjunctions', de: 'Subjunktionen' },
-      '#material-subjunktionen p': {
-        en: 'The words that open subordinate clauses and connect thoughts.',
-        de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
-      },
       '#reviews .kicker': { en: 'reviews', de: 'Stimmen' },
       '#reviews .section-title': {
         en: 'What our students say',
@@ -522,9 +519,12 @@ export const pages = {
       '#about .section-title': { en: 'About us', de: 'Über uns' },
       // Opens the section, and the whole argument the school rests on.
       '#about-opening': {
-        en: 'We have all learnt a language once before, and we can all do it again at any time.',
+        en: 'We have all learnt a language once before, and we have the capacity to do so time and time again.',
         de: 'Wir haben alle schon einmal eine Sprache gelernt und wir können das alle jederzeit wieder tun.',
       },
+      // Labels the personal answers below, the way #faq-heading labels the
+      // questions block further down. Same style, same job.
+      '#about-heading': { en: 'About', de: 'Wer wir sind' },
       '#about-cv-title': { en: 'Education', de: 'Ausbildung' },
       '#about-gioia-cv': {
         en: '<li>Since 2026 — teaching diploma for upper-secondary schools (Russian and Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Language and Literature, University of Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, bilingual German and English.</li>',
@@ -532,8 +532,8 @@ export const pages = {
       },
       '#faq-heading': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
       '#faq-intro': {
-        en: 'The questions we are asked most. Any other questions? Write to us <a href="/enquiry.html">here</a>.',
-        de: 'Die häufigsten Fragen. Noch weitere Fragen? Schreiben Sie uns <a href="/enquiry.html">hier</a>.',
+        en: 'Any questions not answered below? Write to us <a href="/enquiry.html">here</a>.',
+        de: 'Noch weitere Fragen? Schreiben Sie uns <a href="/enquiry.html">hier</a>.',
       },
       '#faq-courses-title': { en: 'Courses and levels', de: 'Kurse und Niveaus' },
       '#faq-swiss-title': { en: 'German in Switzerland', de: 'Deutsch in der Schweiz' },
@@ -1445,10 +1445,6 @@ Object.assign(pages, {
     },
     text: {
       '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },
-      '.page-header p': {
-        en: 'The little words that make German come alive.',
-        de: 'Die kleinen Wörter, die Deutsch lebendig machen.',
-      },
       '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
       '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
       '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
@@ -1470,10 +1466,6 @@ Object.assign(pages, {
     },
     text: {
       '.page-header h1': { en: 'Subjunctions', de: 'Subjunktionen' },
-      '.page-header p': {
-        en: 'The words that open subordinate clauses and connect thoughts.',
-        de: 'Die Wörter, die Nebensätze öffnen und Gedanken verbinden.',
-      },
       '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
       '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
       '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
@@ -1505,10 +1497,6 @@ Object.assign(pages, {
     },
     text: {
       '.page-header h1': { en: 'Conjunctions', de: 'Konjunktionen' },
-      '.page-header p': {
-        en: 'The five words that connect equal parts.',
-        de: 'Die fünf Wörter, die Gleichrangiges verbinden.',
-      },
       '.tab[data-tab="reference"]': { en: 'Reference', de: 'Übersicht' },
       '.tab[data-tab="quiz"]': { en: 'Quiz', de: 'Quiz' },
       '.tab[data-tab="cheatsheet"]': { en: 'Cheat sheet', de: 'Spickzettel' },
