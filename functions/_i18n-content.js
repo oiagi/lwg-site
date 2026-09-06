@@ -332,6 +332,10 @@ export const pages = {
       '#lc-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
       '#lc-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
       '#lc-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
+      '#lc-standard-note': {
+        en: 'A standard language course runs 32 × 60 min.',
+        de: 'Ein regulärer Sprachkurs umfasst 32 × 60 Min.',
+      },
       '#lc-note': {
         en: 'Company courses and tailored programmes are priced on request.',
         de: 'Firmenkurse und massgeschneiderte Programme: Preis auf Anfrage.',
