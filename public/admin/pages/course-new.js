@@ -31,6 +31,45 @@ function fillDefaultPerPersonPrice() {
   priceEl.value = DEFAULT_PRICE_PER_PERSON[groupType] ?? '';
 }
 
+/* ── Linked company ──────────────────────────────────────────────── */
+let companiesData = [];
+
+function populateCompanyDropdown(companies) {
+  const select = document.getElementById('nc-company-id');
+  if (!select) return;
+  companiesData = companies;
+  select.innerHTML =
+    '<option value="">— none —</option>' +
+    companies
+      .map(
+        (c) =>
+          `<option value="${esc(c.id)}">${esc(c.name + (c.booking_code ? ' · ' + c.booking_code : ' (no code)'))}</option>`
+      )
+      .join('');
+  syncCompanyFields();
+}
+
+// A linked company owns the booking code, so the manual fields go away rather
+// than sitting there looking editable while the server ignores them.
+function syncCompanyFields() {
+  const select = document.getElementById('nc-company-id');
+  const hint = document.getElementById('nc-company-code-hint');
+  const customCode = document.getElementById('nc-custom-code-field');
+  const customLabel = document.getElementById('nc-custom-label-field');
+  if (!select) return;
+
+  const company = companiesData.find((c) => String(c.id) === select.value);
+  customCode?.classList.toggle('is-hidden', !!company);
+  customLabel?.classList.toggle('is-hidden', !!company);
+
+  if (!hint) return;
+  if (!company) hint.textContent = '';
+  else
+    hint.textContent = company.booking_code
+      ? `Booking code: ${company.booking_code} (auto-synced from company)`
+      : 'No booking code set for this company yet — add one in the Companies tab.';
+}
+
 function setDropdownOpen(dropdownEl, inputEl, open) {
   dropdownEl.classList.toggle('is-hidden', !open);
   inputEl.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -276,11 +315,12 @@ async function handleSubmit(e) {
   const publicBookingEnabled = document.getElementById('nc-public-booking')?.checked || false;
   const companyCodeBookingEnabled =
     document.getElementById('nc-company-code-booking')?.checked || false;
+  const companyId = document.getElementById('nc-company-id')?.value || '';
   const accessCode = document.getElementById('nc-access-code')?.value.trim() || '';
   const accessLabel = document.getElementById('nc-access-label')?.value.trim() || '';
   const singleSession = document.getElementById('nc-single-session')?.checked || false;
-  if (companyCodeBookingEnabled && !accessCode) {
-    msgEl.textContent = 'Please enter a company booking code.';
+  if (companyCodeBookingEnabled && !companyId && !accessCode) {
+    msgEl.textContent = 'Please link a company or enter a booking code.';
     msgEl.className = 'modal-msg err';
     msgEl.classList.add('is-visible-block');
     return;
@@ -329,8 +369,11 @@ async function handleSubmit(e) {
         location_city: locationCity || null,
         public_booking_enabled: publicBookingEnabled,
         company_code_booking_enabled: companyCodeBookingEnabled,
-        access_code: accessCode || null,
-        access_label: accessLabel || null,
+        company_id: companyId || null,
+        // A linked company supplies both server-side; sending them anyway would
+        // only look like they had been ignored.
+        access_code: companyId ? null : accessCode || null,
+        access_label: companyId ? null : accessLabel || null,
         single_session: singleSession,
         enquiry_id: prefillEnquiryId || null,
         booking_data: { course_type: courseType, subject, level, group: groupType },
@@ -389,6 +432,14 @@ async function handleSubmit(e) {
   } catch {
     document.getElementById('nc-teacher').innerHTML =
       '<option value="">could not load teachers</option>';
+  }
+
+  // Load companies
+  try {
+    const res = await apiFetch('/api/get-companies');
+    populateCompanyDropdown(res.ok ? await res.json() : []);
+  } catch {
+    populateCompanyDropdown([]);
   }
 
   // Initial participant block
@@ -465,6 +516,7 @@ async function handleSubmit(e) {
 
   document.getElementById('course-new-form').addEventListener('submit', handleSubmit);
   document.getElementById('nc-group').addEventListener('change', fillDefaultPerPersonPrice);
+  document.getElementById('nc-company-id')?.addEventListener('change', syncCompanyFields);
   document
     .getElementById('nc-level')
     .addEventListener('change', () => syncSuffixEnabled('nc-level', 'nc-level-suffix'));

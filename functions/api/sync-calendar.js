@@ -31,7 +31,12 @@ import {
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
-import { fetchCourseEvents, applyBlockedDatesToSeries } from './_calendar.js';
+import {
+  fetchCourseEvents,
+  applyBlockedDatesToSeries,
+  courseEventTitle,
+  renameCourseEvents,
+} from './_calendar.js';
 import { loadBlockedPeriods } from './_blocked-dates.js';
 
 function dbEq(value) {
@@ -76,6 +81,63 @@ async function sessionIdsWithAttendance(SUPABASE_URL, headers, sessionIds) {
   }
   const rows = await readJson(res, []);
   return new Set(rows.map((r) => r.session_id));
+}
+
+/**
+ * The company name and student first name the calendar title needs.
+ *
+ * Neither is on the course row: the company is a foreign key, and the row's
+ * own participant_names is a snapshot from the day the course was created, so
+ * a student who has since changed their name would keep the old one in the
+ * title. Enrolments are the live answer.
+ *
+ * Never throws. A lookup that fails costs the title one part; it must not cost
+ * the admin their sync.
+ */
+async function loadTitleContext(course, SUPABASE_URL, headers) {
+  const isPrivate = course.group_type === 'private';
+  let companyName = null;
+  let participantName = null;
+
+  if (course.company_id) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/companies?id=eq.${dbEq(course.company_id)}&select=name`,
+        { headers }
+      );
+      if (res.ok) companyName = (await readJson(res, []))[0]?.name || null;
+      else console.error('Title company lookup failed:', res.status);
+    } catch (err) {
+      console.error('Title company lookup error:', err);
+    }
+  }
+  // The free-text venue name stands in for an unlinked company, but only where
+  // it cannot be mistaken for one: a private lesson at the student's office
+  // stays titled by the student.
+  if (!companyName && !isPrivate) companyName = course.location_company || null;
+
+  if (isPrivate && !companyName) {
+    try {
+      const enrolRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${dbEq(course.id)}&select=student_id`,
+        { headers }
+      );
+      const enrolments = enrolRes.ok ? await readJson(enrolRes, []) : [];
+      const studentId = enrolments[0]?.student_id;
+      if (studentId) {
+        const studRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/students?id=eq.${dbEq(studentId)}&select=first_name`,
+          { headers }
+        );
+        if (studRes.ok) participantName = (await readJson(studRes, []))[0]?.first_name || null;
+      }
+    } catch (err) {
+      console.error('Title student lookup error:', err);
+    }
+    if (!participantName) participantName = course.participant_names?.[0] || null;
+  }
+
+  return { companyName, participantName };
 }
 
 /**
@@ -239,6 +301,35 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
+  // ── Keep the calendar title in step with the course record ────────────
+  // The title is derived from the course, not stored, so linking a company or
+  // fixing a level on the edit page reaches Google only when somebody syncs.
+  // Renaming preserves event ids, so nothing below this point — the upsert, the
+  // deletion pass, sessions_completed — can be disturbed by it.
+  let renamed = null;
+  try {
+    const { companyName, participantName } = await loadTitleContext(course, SUPABASE_URL, headers);
+    renamed = await renameCourseEvents({
+      accessToken,
+      calendarId: teacher.calendar_id,
+      courseCode: course.course_code,
+      masterEventId: course.calendar_event_id || null,
+      desiredTitle: courseEventTitle({
+        courseCode: course.course_code,
+        subject: course.subject,
+        level: course.level,
+        groupType: course.group_type,
+        companyName,
+        participantName,
+      }),
+      activeEvents,
+    });
+  } catch (err) {
+    // Non-fatal, exactly like blocked-date enforcement above: a sync that could
+    // not rename is still a correct sync, and the next press retries.
+    console.error('Calendar title rename error:', err);
+  }
+
   const activeEventIds = new Set(activeEvents.map((e) => e.id));
 
   // ── Load existing session records once ────────────────────────────────
@@ -387,5 +478,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     kept_cancelled: keptCancelledCount,
     blocked_sessions_moved: blockedApplied ? blockedApplied.excludedCount : 0,
     moved_onto_blocked_dates: blockedApplied ? blockedApplied.movedOntoBlockedDates : [],
+    renamed_title: renamed?.title || null,
+    renamed_events: renamed?.patched || 0,
   });
 }, 'sync-calendar');

@@ -858,6 +858,7 @@ export async function syncCalendar(courseId) {
       if (body.blocked_sessions_moved)
         parts.push(`${body.blocked_sessions_moved} moved off blocked dates`);
       if (body.deduplicated) parts.push(`${body.deduplicated} duplicates removed`);
+      if (body.renamed_events) parts.push(`renamed to “${body.renamed_title}”`);
       showMessage(msg, parts.length ? 'synced · ' + parts.join(', ') : 'synced');
     }
     // Sessions the teacher moved by hand onto a blocked date are left exactly
