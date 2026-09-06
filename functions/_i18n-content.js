@@ -438,7 +438,7 @@ export const pages = {
       '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       // Stated in teaching days of 3 h, the same units as the facts grid above.
       '#gy-note': {
-        en: 'Standard Gymivorbereitung group courses run for 12 × 3 h or 20 × 3 h, depending on how soon you start and on the weekly frequency.',
+        en: 'Standard Gymivorbereitung group courses run for 12 × 3 h or 20 × 3 h, depending on how soon you start and the weekly frequency.',
         de: 'Standard Gruppenkurse für Gymivorbereitung umfassen 12 × 3 Std. oder 20 × 3 Std., je nachdem, wie früh Sie mit der Vorbereitung beginnen möchten und wie häufig pro Woche Sie Zeit haben.',
       },
       '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
@@ -983,7 +983,7 @@ function hoursExtra(lang) {
   const note =
     lang === 'de'
       ? 'Oft kommt es vor, dass man schneller vorankommt als gedacht. In diesem Fall ist es nicht nötig, sich an rigide Strukturen zu halten. Blöcke können auch übersprungen werden.'
-      : 'It often happens that people progress faster than expected. In that case there is no need to stick to a rigid structure: blocks can be skipped.';
+      : 'It often happens that people progress faster than expected. In that case there is no need to stick to a rigid structure and blocks can be skipped.';
   return `<div class="faq-extra">${structureFigure(lang)}<p>${note}</p>${HOURS_SOURCES}</div>`;
 }
 
@@ -1040,7 +1040,7 @@ export const FAQ = {
         de: 'Welche Kurse bieten Sie an?',
       },
       a: {
-        en: 'We offer language courses, one-to-one lessons, tutoring and Gymivorbereitung. If your target language, or the kind of course you are looking for, is not listed, do get in touch. We will try to find the right course for you, or to put one together.',
+        en: 'We offer language courses, one-to-one lessons, tutoring and Gymivorbereitung. If your target language, or the kind of course you are looking for, is not listed, do get in touch. We will find the right course for you.',
         de: 'Wir bieten Sprachkurse, Einzelunterricht, Nachhilfe und Gymivorbereitung. Sollte Ihre Zielsprache oder die Kursart, nach der Sie suchen, nicht aufgelistet sein, melden Sie sich gerne bei uns. Wir versuchen, für Sie den passenden Kurs zu finden oder zusammenzustellen.',
       },
     },
@@ -1050,7 +1050,7 @@ export const FAQ = {
         de: 'Wie lange dauert es, Deutsch zu lernen?',
       },
       a: {
-        en: 'There is unfortunately no single answer to this question. What is true is that on average it takes around 100 to 150 guided group hours**, plus a similar amount of independent study, to move up one level — from A0 to A1, for example. Our regular group courses are divided into three blocks per language level.',
+        en: 'There is unfortunately no single answer to this question. What is true is that on average it takes around 100 to 150 guided group hours**, plus a similar amount of independent study, to move up one level, e.g. from A0 to A1. Our regular group courses are divided into three blocks per language level.',
         de: 'Leider gibt es keine einheitliche Antwort auf diese Frage. Es ist aber so, dass man im Schnitt ca. 100 bis 150** angeleitete Gruppenstunden plus eine ähnliche Menge an selbständigem Lernen aufwenden muss, um ein Niveau weiterzukommen, also z. B. um von A0 zu A1 zu gelangen. Unsere regulären Gruppenkurse sind in drei Blöcke pro Sprachniveau aufgeteilt.',
       },
       extra: { en: hoursExtra('en'), de: hoursExtra('de') },
@@ -1061,7 +1061,7 @@ export const FAQ = {
         de: 'Wie finde ich mein Sprachniveau heraus?',
       },
       a: {
-        en: 'We follow the six levels of the Common European Framework of Reference (CEFR). Our <a href="/niveaus.html">self-assessment grid</a> lets you get a rough sense of where you stand. If you would prefer a formal placement test, contact us and we will help you find the right level.',
+        en: 'We follow the six levels of the Common European Framework of Reference (CEFR). Our <a href="/niveaus.html">self-assessment grid</a> lets you get a rough sense of where you stand. If you prefer a formal placement test, contact us and we will help you find the right level.',
         de: 'Wir halten uns an die sechs Stufen des Gemeinsamen Europäischen Referenzrahmens (GER). Mit unserem <a href="/niveaus.html">Selbsteinschätzungsraster</a> können Sie ungefähr einschätzen, wo Sie stehen. Wenn Sie einen formellen Einstufungstest bevorzugen, kontaktieren Sie uns. Wir helfen Ihnen, das richtige Niveau zu finden.',
       },
     },
@@ -1071,7 +1071,7 @@ export const FAQ = {
         de: 'Soll ich Privat- oder Gruppenunterricht nehmen?',
       },
       a: {
-        en: 'It depends on what you are looking for. Private lessons suit you above all if you want to work towards one particular goal and would rather not have to fit around group dynamics or stronger and weaker fellow learners. Group lessons can often open up new perspectives, give you the chance to meet people, and either challenge you or show you that you already know more than you thought. Both formats are excellent ways to learn a language, and they mix well over the course of your learning.',
+        en: 'It depends on what you are looking for. Private lessons suit those who want to work towards one particular goal and want to maximise the opportunity to speak during lessons. Group lessons can open up new perspectives, provide the chance to meet people, and either challenge you or show you that you already know more than you thought. Both formats are excellent ways to learn a language, and they mix well throughout your learning journey.',
         de: 'Es kommt darauf an, was Sie suchen. Privatlektionen eignen sich vor allem, wenn Sie an einem ganz bestimmten Ziel arbeiten wollen und sich nicht nach Gruppendynamiken oder stärkeren oder schwächeren Mitlernenden richten möchten. Gruppenunterricht kann Ihnen oft neue Perspektiven aufzeigen, die Möglichkeit bieten, neue Kontakte zu knüpfen, und Sie herausfordern oder Ihnen auch teilweise zeigen, dass Sie vielleicht doch schon mehr wissen, als Sie dachten. Beide Formate eignen sich hervorragend, um eine Sprache zu lernen, und lassen sich im Sprachlernweg auch gut mischen.',
       },
     },
@@ -1081,7 +1081,7 @@ export const FAQ = {
         de: 'Wie gross sind die Gruppen?',
       },
       a: {
-        en: 'Open group courses take a maximum of five people, and run from three. Gymivorbereitung groups run from three to seven people. If you want a group of exactly your colleagues or friends, we can set that up as a private group.',
+        en: 'An open group course has three to five participants. If you want a group including only your colleagues or friends, we can set that up as a closed group.',
         de: 'Offene Gruppenkurse finden ab drei Teilnehmenden statt und haben maximal fünf Teilnehmende. Wenn Sie als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchten, richten wir das als geschlossene Gruppe ein.',
       },
     },
@@ -1091,7 +1091,7 @@ export const FAQ = {
         de: 'Was passiert, wenn sich weniger als drei Personen anmelden?',
       },
       a: {
-        en: 'A group course runs from three participants. If fewer sign up, we either merge the course, postpone it, or — if you agree — run it with fewer lessons. If the school cancels a course, the full amount is refunded.',
+        en: 'A group course runs from three participants. If fewer sign up, upon your agreement, we either merge the course, postpone it, or run it with a modified lesson count. If the school cancels a course, the full amount is refunded.',
         de: 'Bei weniger Anmeldungen legen wir Kurse mit Ihrem Einverständnis zusammen, verschieben sie oder führen sie modifiziert durch. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
       },
     },
@@ -1117,7 +1117,7 @@ export const FAQ = {
         de: 'Ich mag Deutsch und/oder Schweizerdeutsch nicht, sollte ich es trotzdem lernen?',
       },
       a: {
-        en: 'Our answer is yes. Even if the language does not particularly appeal to you, we will try to give you a way into it. Why? We believe it can only be a good thing to at least understand another language, and better still to speak it. In Zürich the language of everyday life simply is Swiss German and, however annoying that may be, people speak their mother tongue, consciously or not. Being able at least to understand it can only help you find your feet in Switzerland more easily. The same goes for standard German, which is indispensable in writing.',
+        en: 'Our answer is yes. Even if the language does not particularly appeal to you, we will try and spark your interest in it. Why? We believe it can only be a good thing to at least understand the local language, and better yet to speak it. In Zürich the language of everyday life is Swiss German, after all. And, however annoying that may be, people speak their mother tongue, consciously or not. Being able to at least understand it can only help you find your way around Switzerland more easily. The same goes for standard German.',
         de: 'Unsere Antwort ist: ja. Auch wenn Ihnen die Sprache nicht besonders zusagt, werden wir versuchen, Ihnen einen Zugang zur Sprache zu vermitteln. Warum? Wir glauben, dass es nur positiv sein kann, eine weitere Sprache mindestens zu verstehen und noch mehr, sie zu sprechen. In Zürich ist die vorwiegend verwendete Alltagssprache nun einmal Schweizerdeutsch, und so sehr es nerven mag, die Leute sprechen, bewusst oder unbewusst, ihre Muttersprache. Es kann Ihnen nur helfen, sie zumindest zu verstehen, um sich in der Schweiz einfacher zurechtzufinden. Ebenso das Hochdeutsche, das im Schriftverkehr unabdingbar ist.',
       },
     },
@@ -1127,7 +1127,7 @@ export const FAQ = {
         de: 'Warum ist es so schwierig, in der Schweiz Deutsch zu lernen?',
       },
       a: {
-        en: 'Staying on the same subject: one of the official national languages is indeed standard German. What people in German-speaking Switzerland actually speak day to day, however, is largely Swiss German. That is a reality which unfortunately cannot be changed, and it makes learning standard German immensely harder. A key factor in learning a language is the casual, everyday exposure to it outside the classroom, and the prevalence of Swiss German makes that difficult to arrange here. Alongside our courses we therefore also try to provide material that closes this gap between what is learnt and where it is used.',
+        en: 'To stick to the subject, one of the official national languages is indeed standard German. What people in German-speaking Switzerland actually speak day to day, however, is Swiss German. This reality unfortunately cannot be changed, and it makes learning standard German immensely harder. A key factor in learning a language is the casual, everyday exposure to it outside the classroom, and the prevalence of Swiss German makes that difficult to arrange here. In our courses we also try to provide material that helps close this gap between what is learnt and lack of exposure.',
         de: 'Wir bleiben beim Thema. Eine der offiziellen Landessprachen ist zwar Hochdeutsch. Was aber im Alltag von den Einwohnerinnen und Einwohnern der Deutschschweiz grösstenteils gesprochen wird, ist Schweizerdeutsch. Es ist eine Realität, die sich leider nicht ändern lässt. Das erschwert aber das Lernen des Hochdeutschen immens. Ein Schlüsselfaktor beim Lernen einer Sprache ist die beiläufige alltägliche Auseinandersetzung mit dieser ausserhalb des Unterrichts. Und das ist in der Schweiz durch die Prävalenz des Schweizerdeutschen leider nicht so einfach zu gestalten. Wir versuchen im Zusammenhang mit unseren Kursen auch Inhalte zu vermitteln, um diese Diskrepanz zwischen Gelerntem und der Anwendung dessen im Alltag auszugleichen.',
       },
     },
@@ -1140,7 +1140,7 @@ export const FAQ = {
         de: 'Kann ich online lernen?',
       },
       a: {
-        en: 'Yes, any course we offer can also be taught online.',
+        en: 'Yes, any course we offer can also be attended online.',
         de: 'Ja, jeder unserer Kurse kann auch online stattfinden.',
       },
     },
@@ -1183,7 +1183,7 @@ export const FAQ = {
         de: 'Gruppe oder Einzelunterricht für die Gymivorbereitung?',
       },
       a: {
-        en: 'Groups of three to seven children work well when a child is broadly on track and needs exam practice. One-to-one is the better choice when there are specific gaps to close, or when exam nerves are the main obstacle.',
+        en: 'Groups of three to seven children work well when a child is broadly on track and needs exam practice. One-to-one is the better choice when there are specific gaps to close, or when exam anxiety is the main obstacle.',
         de: 'Gruppen von drei bis sieben Kindern eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und lediglich Prüfungstraining braucht. Einzelunterricht ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.',
       },
     },
@@ -1193,7 +1193,7 @@ export const FAQ = {
         de: 'Was wird in der Gymivorbereitung geübt?',
       },
       a: {
-        en: 'Closing gaps in the underlying material, practising with the exam format itself, and building the calm needed to perform under time pressure. The balance between those three is set per child.',
+        en: 'Taught are mathematics and German. The goal is to close any gaps in those subjects, practising with the exam format, and building the calm needed to perform under time pressure. On what we focus during lessons will vary from child to child.',
         de: 'Unterrichtet werden die Fächer Mathematik und Deutsch. Das Ziel ist es, Lücken im Stoff zu schliessen, mit dem Prüfungsformat zu üben und Ruhe aufzubauen. Je nach Kind fällt der Fokus auf diese verschiedenen Aspekte unterschiedlich aus.',
       },
     },
@@ -1206,7 +1206,7 @@ export const FAQ = {
         de: 'Unterrichten Sie bei uns im Büro?',
       },
       a: {
-        en: 'Yes. In-house training at your offices is the most common arrangement. We can also teach in our classroom or online, and mix the three across a single programme if your team is split across sites.',
+        en: 'Yes, we teach directly at your offices or online.',
         de: 'Ja, wir unterrichten bei Bedarf direkt bei Ihnen im Büro oder online.',
       },
     },
@@ -1226,7 +1226,7 @@ export const FAQ = {
         de: 'Können die Inhalte auf unsere Branche zugeschnitten werden?',
       },
       a: {
-        en: 'That is the point of an in-house course. We build the programme around your industry, your everyday work and the situations your people actually face: client meetings, phone calls, written correspondence, small talk in the corridor.',
+        en: 'Certainly. We build the programme around your industry, your everyday work and the situations your people actually face. Client meetings, phone calls, written correspondence, small talk in the corridor.',
         de: 'Selbstverständlich. Wir bauen das Programm um Ihre Branche, Ihren Arbeitsalltag und die Situationen, die für Sie relevant sind, auf. Kundengespräche, Telefonate, Korrespondenz, Small Talk im Gang.',
       },
     },
@@ -1236,7 +1236,7 @@ export const FAQ = {
         de: 'Unterrichten Sie Schweizerdeutsch für zuziehende Mitarbeitende?',
       },
       a: {
-        en: 'Yes, and it is one of the things we are asked for most. Standard German gets a new arrival through the working day. Swiss German is what opens the door to the lunch table, the corridor and the team apéro.',
+        en: 'Yes, we teach Swiss German. Standard German helps with everyday written communication. Swiss German opens doors at the lunch table, the corridor and the team apéro.',
         de: 'Ja, wir unterrichten Schweizerdeutsch. Hochdeutsch hilft einem im Schriftverkehr. Schweizerdeutsch öffnet Türen am Mittagstisch, im Gang, am Team-Apéro und auch sonst im Alltagsleben.',
       },
     },
@@ -1246,7 +1246,7 @@ export const FAQ = {
         de: 'Wie läuft die Rechnungsstellung und Anmeldung?',
       },
       a: {
-        en: 'We invoice the company directly, and can issue one invoice for the whole programme or per participant. Companies can also be given a booking code so employees enrol themselves in the right course without going through your HR inbox.',
+        en: 'We invoice the company directly. Invoices can be issued for the whole programme or per participant. Companies can also obtain a booking code for employees to enrol themselves in a course directly through our website.',
         de: 'Die Rechnung wird an die Firma adressiert, wahlweise eine Rechnung für das ganze Programm oder für individuelle Teilnehmende. Wir erstellen bei Bedarf auch Kursbuchungscodes, damit Mitarbeitende sich direkt über unsere Website anmelden können.',
       },
     },
