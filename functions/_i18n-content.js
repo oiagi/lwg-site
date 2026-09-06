@@ -1193,7 +1193,7 @@ export const FAQ = {
         de: 'Was wird in der Gymivorbereitung geübt?',
       },
       a: {
-        en: 'Taught are mathematics and German. The goal is to close any gaps in those subjects, practising with the exam format, and building the calm needed to perform under time pressure. On what we focus during lessons will vary from child to child.',
+        en: 'For Gymivorbereitung, we teach mathematics and German. The goal is to close any gaps in those subjects, practising with the exam format, and building the calm needed to perform under time pressure. What we focus on during lessons varies from child to child.',
         de: 'Unterrichtet werden die Fächer Mathematik und Deutsch. Das Ziel ist es, Lücken im Stoff zu schliessen, mit dem Prüfungsformat zu üben und Ruhe aufzubauen. Je nach Kind fällt der Fokus auf diese verschiedenen Aspekte unterschiedlich aus.',
       },
     },
