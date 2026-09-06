@@ -494,12 +494,26 @@ test('FAQ markup only claims answers that are rendered on the page', () => {
   // assistants text a visitor cannot find. Both come from FAQ in
   // _i18n-content.js, so this checks the wiring rather than the wording.
   const faqPages = {
-    '/index.html': ['#faq-courses-list', '#faq-online-list', '#faq-gymi-list', '#faq-company-list'],
+    '/index.html': [
+      '#about-personal-list',
+      '#faq-courses-list',
+      '#faq-swiss-list',
+      '#faq-online-list',
+      '#faq-gymi-list',
+      '#faq-company-list',
+    ],
   };
+
+  // The markup carries the prose without its tags, so compare like with like:
+  // an answer that links out is still the same answer.
+  const asText = (html) =>
+    String(html)
+      .replace(/<[^>]*>/g, '')
+      .replace(/&amp;/g, '&');
 
   for (const [page, selectors] of Object.entries(faqPages)) {
     for (const lang of SUPPORTED) {
-      const rendered = selectors.map((s) => pages[page].text[s][lang]).join('');
+      const rendered = asText(selectors.map((s) => pages[page].text[s][lang]).join(''));
       const node = JSON.parse(schemaFor(page, lang))['@graph'].find(
         (n) => n['@type'] === 'FAQPage'
       );
@@ -767,16 +781,18 @@ test('the homepage sections the switcher restores against are uniquely identifie
     'language-courses',
     'tutoring',
     'gymivorbereitung',
-    'offer-details',
     'levels',
     'materials',
     'reviews',
     'about',
-    'faq',
     'enquiry',
   ]) {
     assert.ok(ids.includes(id), `homepage lost its #${id} section`);
   }
+  // #faq is the questions block inside the About section rather than a section
+  // of its own, so the switcher restores against #about — but the anchor still
+  // has to exist, because /faq, /ueber-uns and /info all 301 to it.
+  assert.ok(homepageIds().has('faq'), 'homepage lost its #faq anchor');
 
   // Every id on the page is unique, not just the sections': the copy
   // dictionary and the fact tiles are addressed by id.

@@ -17,7 +17,7 @@ export const AGB_CONSENT_HTML = {
 
 export const CANCELLATION_POLICY_BY_LANGUAGE = {
   en: 'Please note that cancelling or postponing a lesson must be communicated at least 24 hours before the lesson begins. If a lesson is cancelled less than 24 hours before the start, the lesson is considered held and can no longer be postponed.',
-  de: 'Bitte beachte, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
+  de: 'Bitte beachten Sie, dass das Absagen oder Verschieben einer Lektion mindestens 24 Stunden vor Lektionsbeginn kommuniziert werden muss. Wird eine Lektion weniger als 24 Stunden vor Beginn abgesagt, gilt sie als abgehalten und kann nicht mehr verschoben werden.',
 };
 
 export const GROUP_CANCELLATION_POLICY_BY_LANGUAGE = {

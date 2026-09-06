@@ -31,19 +31,19 @@
       thanksText: "We've received your signed contract. You're all set!",
     },
     de: {
-      title: 'dein Kursvertrag',
+      title: 'Ihr Kursvertrag',
       intro:
-        'Bitte drucke den Vertrag aus, den wir dir per E-Mail geschickt haben, unterschreibe ihn und lade unten einen Scan oder ein Foto des unterschriebenen Dokuments hoch.',
+        'Bitte drucken Sie den Vertrag aus, den wir Ihnen per E-Mail geschickt haben, unterschreiben Sie ihn und laden Sie unten einen Scan oder ein Foto des unterschriebenen Dokuments hoch.',
       courseLabel: 'Kurs',
       fileLabel: 'unterschriebener Vertrag (PDF, JPG oder PNG, max. 10 MB) *',
-      fileError: 'Bitte wähle eine PDF-, JPG- oder PNG-Datei bis 10 MB.',
+      fileError: 'Bitte wählen Sie eine PDF-, JPG- oder PNG-Datei bis 10 MB.',
       submit: 'unterschriebenen Vertrag hochladen →',
       uploading: 'wird hochgeladen…',
       already: (date, replaceHint) =>
-        `Du hast am ${date} bereits einen unterschriebenen Vertrag hochgeladen. ${replaceHint}`,
+        `Sie haben am ${date} bereits einen unterschriebenen Vertrag hochgeladen. ${replaceHint}`,
       replaceHint: 'Eine neue Datei ersetzt den bisherigen Upload.',
       thanksTitle: 'vielen Dank.',
-      thanksText: 'Wir haben deinen unterschriebenen Vertrag erhalten. Alles erledigt!',
+      thanksText: 'Wir haben Ihren unterschriebenen Vertrag erhalten. Alles erledigt!',
     },
   };
   let t = STRINGS.en;

@@ -368,6 +368,11 @@ html[data-touch='true'] .btn--ghost:active {
   margin-left: auto;
   margin-right: auto;
 }
+/* Six tiles: two even rows of three rather than a row of four and a stub. */
+.course-facts--three {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 3rem;
+}
 /* Tutoring prices are one row per offering: the group rate is shared but
    the private rate is not, so a single pair could not state both. */
 .price-row + .price-row {
@@ -406,6 +411,13 @@ html[data-touch='true'] .btn--ghost:active {
   font-size: 1.3rem;
   font-weight: 400;
   line-height: 1.2;
+}
+/* A price is two or three characters; "Mathematics and German" is not. Words
+   in a value slot need to come down a size or they wrap into the unit line. */
+.fact__value--text {
+  font-size: 1.02rem;
+  line-height: 1.35;
+  text-align: center;
 }
 .fact__unit {
   font-size: 0.78rem;
@@ -699,44 +711,27 @@ a.offer-card {
 }
 
 /* ── About ───────────────────────────────────────────────────── */
+/* The section's opening line, sitting directly above the questions. Left-
+   aligned rather than centred like the other section ledes, because the
+   accordion under it is left-aligned in the same column and two different left
+   edges in one block read as a mistake. Bottom margin matches .section-lede. */
 .about-text {
   max-width: 48rem;
-  margin: 0 auto;
+  margin: 0 auto 2.4rem;
+  text-align: left;
   font-size: 1.15rem;
   font-weight: 300;
   line-height: 1.75;
   color: var(--ink-soft);
 }
-/* The former About page, left-aligned: centred text stops being readable
-   past a couple of lines. Same width as the card grids above it. */
-.about-body {
-  max-width: 48rem;
-  margin: 2.4rem auto 0;
-  text-align: left;
-}
-.about-body p {
-  font-size: 1.05rem;
-  font-weight: 300;
-  line-height: 1.8;
-  color: var(--ink-soft);
-  margin-bottom: 1.1rem;
-}
-/* Closes the section, so it needs air above it rather than beside it. */
-.about-body .about-pull {
-  margin: 2.2rem 0 0;
-  font-size: 1.15rem;
-  color: var(--ink);
-}
-/* Both lists are set in from the prose, against a hairline rule. */
-.about-cv,
-.about-list {
+/* The CV list, set in from the prose against a hairline rule. */
+.about-cv {
   list-style: none;
   margin: 0 0 1.4rem 1.6rem;
   padding: 0 0 0 1.3rem;
   border-left: 1px solid var(--rule);
 }
-.about-cv li,
-.about-list li {
+.about-cv li {
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.75;
@@ -802,6 +797,48 @@ a.offer-card {
   text-underline-offset: 0.2em;
 }
 
+/* The questions block sits inside the About section, under the personal
+   answers and the CV, so it needs its own heading and air above it. */
+.faq-groups--questions {
+  margin-top: 4rem;
+}
+.faq-heading {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 0.8rem;
+}
+.faq-intro {
+  font-size: 1.02rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  margin-bottom: 2.4rem;
+}
+.faq-intro a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* An answer that carries more than a paragraph — the course-structure diagram
+   and its sources live inside the "how long does it take" answer. Deliberately
+   not .reveal: the IntersectionObserver never fires on content inside a
+   collapsed <details>, so a revealed element here would stay at opacity 0. */
+.faq-extra {
+  padding: 0 2rem 1.4rem 0;
+}
+.faq-extra .structure-diagram {
+  margin: 0 auto 1.4rem;
+  gap: 0.5rem;
+}
+.faq-extra .structure-level__hours {
+  max-width: 8.5rem;
+}
+.faq-extra .detail-sources {
+  margin-top: 1.6rem;
+  padding: 0;
+}
+
 /* ── Closing CTA ─────────────────────────────────────────────── */
 .closing {
   padding-bottom: 4rem;
@@ -833,13 +870,15 @@ a.offer-card {
   .facet-list--row {
     grid-template-columns: 1fr;
   }
-  .course-facts {
+  .course-facts,
+  .course-facts--three {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 @media (max-width: 420px) {
   .course-facts,
-  .course-facts--two {
+  .course-facts--two,
+  .course-facts--three {
     grid-template-columns: 1fr;
   }
 }

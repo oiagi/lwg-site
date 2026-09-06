@@ -9,12 +9,12 @@
 # info page merged into the scrollable homepage — must stay above the
 # /en/:page and /de/:page catch-all rewrites below, or /en/info would be
 # rewritten to the (now retired) info.html instead of redirecting.
-/info.html  /en/#offer-details  301
-/info       /en/#offer-details  301
-/en/info    /en/#offer-details  301
-/en/info/   /en/#offer-details  301
-/de/info    /de/#offer-details  301
-/de/info/   /de/#offer-details  301
+/info.html  /en/#faq  301
+/info       /en/#faq  301
+/en/info    /en/#faq  301
+/en/info/   /en/#faq  301
+/de/info    /de/#faq  301
+/de/info/   /de/#faq  301
 
 # The course pages, the about page and the FAQ were folded into the scrollable
 # homepage. Every old URL 301s straight to its section. Must stay above the

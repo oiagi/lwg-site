@@ -12,7 +12,7 @@ function lang() {
 
 // ── i18n for dynamic strings ──────────────────────────────────────
 const UI = {
-  resultHeading: { en: 'Your language profile', de: 'Dein Sprachprofil' },
+  resultHeading: { en: 'Your language profile', de: 'Ihr Sprachprofil' },
   resultOverallLabel: { en: 'overall level', de: 'Gesamtniveau' },
   resultNoteAll: {
     en: (l) => `All five skills are at level ${l}.`,
@@ -22,22 +22,22 @@ const UI = {
     en: (overall, strong, strongL, weak, weakL) =>
       `Your overall level is around ${overall}. Your ${strong} is the strongest (${strongL}) and your ${weak} is the weakest (${weakL}).`,
     de: (overall, strong, strongL, weak, weakL) =>
-      `Dein Gesamtniveau liegt bei ${overall}. ${strong} ist deine stärkste Fertigkeit (${strongL}), ${weak} die schwächste (${weakL}).`,
+      `Ihr Gesamtniveau liegt bei ${overall}. ${strong} ist Ihre stärkste Fertigkeit (${strongL}), ${weak} die schwächste (${weakL}).`,
   },
   resultCtaText: {
     en: "Not sure about your level? We're happy to help you find the right course.",
-    de: 'Unsicher über dein Niveau? Wir helfen dir gerne dabei, den richtigen Kurs zu finden.',
+    de: 'Unsicher über Ihr Niveau? Wir helfen Ihnen gerne dabei, den richtigen Kurs zu finden.',
   },
   resultCtaBtn: { en: 'Book a free consultation →', de: 'Beratungsgespräch anfragen →' },
   hint: {
     en: 'Please select a level for each skill.',
-    de: 'Bitte wähle für jede Fertigkeit ein Niveau.',
+    de: 'Bitte wählen Sie für jede Fertigkeit ein Niveau.',
   },
   seeResult: { en: 'See my result →', de: 'Ergebnis anzeigen →' },
   introHeading: { en: 'How self-assessment works', de: 'So funktioniert die Selbsteinschätzung' },
   introBody: {
     en: 'For each of the five skills, select the level that best describes you. Click a level to read its description, then choose the highest one that applies to you. At the end you will see your language profile.',
-    de: 'Wähle für jede der fünf Fertigkeiten das Niveau, das dich am besten beschreibt. Klicke auf eine Stufe, um die Beschreibung zu lesen, und wähle die höchste, auf die du dich erkennst. Am Ende siehst du dein Sprachprofil.',
+    de: 'Wählen Sie für jede der fünf Fertigkeiten das Niveau, das Sie am besten beschreibt. Klicken Sie auf eine Stufe, um die Beschreibung zu lesen, und wählen Sie die höchste, in der Sie sich wiedererkennen. Am Ende sehen Sie Ihr Sprachprofil.',
   },
   sourcesHeading: { en: 'Sources', de: 'Quellen' },
   tabOverview: { en: 'Overview', de: 'Übersicht' },

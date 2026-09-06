@@ -71,7 +71,6 @@ export function navMarkup(page, lang) {
       link('/index.html', 'tutoring', 'tutoring'),
       link('/index.html', 'gymivorbereitung', 'gymivorbereitung'),
     ]) +
-    link('/index.html', 'courseStructure', 'offer-details') +
     navSection(link('/index.html', 'levels', 'levels'), [link('/niveaus.html', 'niveaus')]) +
     navSection(link('/index.html', 'materials', 'materials'), [
       link('/konjunktionen.html', 'konjunktionen'),

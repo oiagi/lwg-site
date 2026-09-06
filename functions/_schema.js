@@ -71,8 +71,8 @@ const DESCRIPTION = {
 };
 
 const PERSON_DESCRIPTION = {
-  en: 'Founder of Learning with Gioia. Born and raised in Zürich, native speaker of both Swiss German and German, teaching German, Swiss German and English in Zürich and online.',
-  de: 'Gründerin von Learning with Gioia. In Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch, unterrichtet Deutsch, Schweizerdeutsch und Englisch in Zürich und online.',
+  en: 'Founder of Learning with Gioia. Born and raised in Zürich, native speaker of both Swiss German and German, teaching German, Swiss German and English in Zürich and online. Studied Russian language and literature with a focus on linguistics, and worked in the financial sector in London before returning to teaching.',
+  de: 'Gründerin von Learning with Gioia. In Zürich geboren und aufgewachsen, Muttersprachlerin für Schweizerdeutsch und Deutsch, unterrichtet Deutsch, Schweizerdeutsch und Englisch in Zürich und online. Studium der Russischen Sprach- und Literaturwissenschaft mit Schwerpunkt Linguistik, davor Tätigkeit im Finanzsektor in London.',
 };
 
 const SERVICE_TYPES = [
@@ -86,6 +86,9 @@ const SERVICE_TYPES = [
   'Private one-to-one lessons',
   'Online language lessons',
   'Tutoring in Swiss school subjects',
+  // Not a Course node: for languages beyond the three taught in house a teacher
+  // is sourced from the network, so there is no fixed level ladder or price.
+  'Other languages on request',
 ];
 
 // The courses are sections of the homepage, not pages of their own, so each
@@ -151,8 +154,8 @@ export const COURSES = {
     anchor: 'gymivorbereitung',
     name: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
     description: {
-      en: 'Gymivorbereitung in Zürich, in small groups of three to seven or one-to-one. 20 lessons of 90 minutes over five months.',
-      de: 'Gymivorbereitung in Zürich, in kleinen Gruppen von drei bis sieben oder im Einzelunterricht. 20 Lektionen à 90 Minuten in fünf Monaten.',
+      en: 'Gymivorbereitung in Zürich Seefeld, in Mathematics and German, in small groups of three to seven or one-to-one. 12 or 20 teaching days of three hours, once or twice a week.',
+      de: 'Gymivorbereitung in Zürich Seefeld, in Mathematik und Deutsch, in kleinen Gruppen von drei bis sieben oder im Einzelunterricht. 12 oder 20 Unterrichtstage à drei Stunden, ein- oder zweimal pro Woche.',
     },
     language: 'de',
     priceGroup: '80',
@@ -412,8 +415,10 @@ function stripTags(value) {
 // accordion, which Google accepts: the answers are in the HTML and a reader
 // can expand them), so the homepage is the only document that may carry the
 // markup.
+// About and the FAQ are one section now, and the personal answers are rendered
+// in the same accordion as the rest, so they are marked up alongside them.
 const FAQ_GROUPS_BY_PAGE = {
-  '/index.html': ['courses', 'online', 'gymi', 'company'],
+  '/index.html': ['personal', 'courses', 'swiss', 'online', 'gymi', 'company'],
 };
 
 function faqNode(page, lang) {
@@ -428,8 +433,11 @@ function faqNode(page, lang) {
     inLanguage: lang,
     mainEntity: items.map((item) => ({
       '@type': 'Question',
-      name: item.q[lang],
-      acceptedAnswer: { '@type': 'Answer', text: item.a[lang] },
+      name: stripTags(item.q[lang]),
+      // Answers may carry a link; the markup wants the prose an assistant can
+      // quote, not the anchor. An answer's `extra` (the course-structure
+      // figure, its sources) is deliberately left out for the same reason.
+      acceptedAnswer: { '@type': 'Answer', text: stripTags(item.a[lang]) },
     })),
   };
 }

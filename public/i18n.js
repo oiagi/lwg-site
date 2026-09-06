@@ -94,13 +94,13 @@
   const runtime = {
     feedbackRatingRequired: {
       en: 'Please choose a rating.',
-      de: 'Bitte wähle eine Bewertung.',
+      de: 'Bitte wählen Sie eine Bewertung.',
     },
     feedbackChoiceRequired: {
       en: 'Please choose an answer.',
-      de: 'Bitte wähle eine Antwort.',
+      de: 'Bitte wählen Sie eine Antwort.',
     },
-    feedbackOtherPlaceholder: { en: 'please tell us', de: 'Sag uns gerne, was' },
+    feedbackOtherPlaceholder: { en: 'please tell us', de: 'Sagen Sie uns gerne, was' },
     feedbackSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
     feedbackOptional: { en: 'optional', de: 'optional' },
     groupCoursesLoading: { en: 'loading courses...', de: 'Kurse werden geladen...' },
@@ -125,7 +125,7 @@
     groupCoursesChooseLocation: { en: 'choose location', de: 'Ort wählen' },
     groupCoursesStartsWhenReady: {
       en: 'tell us your preferred level and location',
-      de: 'Teile uns dein gewünschtes Niveau und deinen gewünschten Ort mit',
+      de: 'Teilen Sie uns Ihr gewünschtes Niveau und Ihren gewünschten Ort mit',
     },
     groupCoursesInterest: { en: 'interest', de: 'Interesse' },
     groupCoursesNeeded: { en: 'needed', de: 'benötigt' },
@@ -147,14 +147,14 @@
     groupCoursesCodeTitle: { en: 'company booking code', de: 'Buchungscode der Firma' },
     groupCoursesCodeCopy: {
       en: 'Have a code from your company? Enter it here to see your group booking options.',
-      de: 'Hast du einen Code von deiner Firma? Gib ihn hier ein, um deine Buchungsoptionen zu sehen.',
+      de: 'Haben Sie einen Code von Ihrer Firma? Geben Sie ihn hier ein, um Ihre Buchungsoptionen zu sehen.',
     },
     groupCoursesCodePlaceholder: { en: 'booking code', de: 'Buchungscode' },
     groupCoursesUnlock: { en: 'unlock', de: 'freischalten' },
     groupCoursesUnlocking: { en: 'unlocking...', de: 'Wird freigeschaltet...' },
     groupCoursesCodeRequired: {
       en: 'Please enter your booking code.',
-      de: 'Bitte gib deinen Buchungscode ein.',
+      de: 'Bitte geben Sie Ihren Buchungscode ein.',
     },
     groupCoursesCodeInvalid: {
       en: 'No group booking options were found for this code.',
@@ -184,7 +184,7 @@
     groupCoursesSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
     groupCoursesServerError: {
       en: 'Something went wrong. Please try again or email info@learningwithgioia.ch.',
-      de: 'Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreibe an info@learningwithgioia.ch.',
+      de: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie an info@learningwithgioia.ch.',
     },
     groupCoursesUnavailable: {
       en: 'This course is no longer available for direct booking.',
@@ -193,7 +193,7 @@
     groupCoursesSuccessTitle: { en: 'thank you.', de: 'Danke.' },
     groupCoursesSuccessBody: {
       en: 'Your booking request has been received. We will confirm your request shortly.',
-      de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deine Anfrage so schnell wie möglich.',
+      de: 'Ihre Buchungsanfrage ist eingegangen. Wir bestätigen Ihre Anfrage so schnell wie möglich.',
     },
     callLoading: {
       en: 'loading available times…',
@@ -214,27 +214,27 @@
     },
     callChooseSlot: {
       en: 'Please choose a time first.',
-      de: 'Bitte wähle zuerst eine Zeit.',
+      de: 'Bitte wählen Sie zuerst eine Zeit.',
     },
     callSubmitting: { en: 'booking…', de: 'Wird gebucht…' },
     callSubmit: { en: 'book the call', de: 'Gespräch buchen' },
     callTaken: {
       en: 'That time was just taken. Please choose another one.',
-      de: 'Dieser Termin wurde gerade vergeben. Bitte wähle einen anderen.',
+      de: 'Dieser Termin wurde gerade vergeben. Bitte wählen Sie einen anderen.',
     },
     callServerError: {
       en: 'Something went wrong. Please try again later.',
-      de: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
+      de: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.',
     },
     callSuccessMeet: {
       en: (when) =>
         `We've emailed you a calendar invitation with the video link. See you on ${when}.`,
       de: (when) =>
-        `Wir haben dir eine Kalendereinladung mit dem Videolink geschickt. Bis ${when}.`,
+        `Wir haben Ihnen eine Kalendereinladung mit dem Videolink geschickt. Bis ${when}.`,
     },
     callSuccessEmail: {
       en: (when) => `We've emailed you the details for ${when}. See you then!`,
-      de: (when) => `Wir haben dir die Details für ${when} per E-Mail geschickt. Bis dann!`,
+      de: (when) => `Wir haben Ihnen die Details für ${when} per E-Mail geschickt. Bis dann!`,
     },
     enquiryPhone: { en: 'phone', de: 'Telefon' },
     enquiryPhoneOptional: { en: 'phone (optional)', de: 'Telefon (optional)' },

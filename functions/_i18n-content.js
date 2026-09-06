@@ -68,10 +68,15 @@ export const DEFAULT_BY_PAGE = {
 // their slugs in both languages land on the section, in the language the
 // prefix asked for. Gymivorbereitung had /de/ as its primary URL, so the bare
 // .html form in _redirects goes to /de/#tutoring.
+//
+// About and the FAQ are now one section: #about is the section, #faq the
+// questions block inside it, so both anchors still resolve. /info used to
+// point at the course-structure section, which was folded into the FAQ answer
+// about how long a level takes.
 const home = (hash) => (lang) => `/${lang}/#${hash}`;
 
 export const LEGACY_SLUG_REDIRECTS = {
-  info: home('offer-details'),
+  info: home('faq'),
   redepartikeln: (lang) => pagePath('/modalpartikeln.html', lang),
   contact: (lang) => pagePath('/enquiry.html', lang),
   booking: (lang) => pagePath('/enquiry.html', lang),
@@ -216,8 +221,7 @@ export const nav = {
   tutoring: { en: 'tutoring', de: 'Nachhilfe' },
   gymivorbereitung: { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
   faq: { en: 'FAQ', de: 'Häufige Fragen' },
-  courseStructure: { en: 'course structure', de: 'Kursstruktur' },
-  levels: { en: 'your level', de: 'Dein Niveau' },
+  levels: { en: 'your level', de: 'Ihr Niveau' },
   reviews: { en: 'reviews', de: 'Stimmen' },
   about: { en: 'about', de: 'Über uns' },
   // The section header, and the three ways in under it.
@@ -249,23 +253,23 @@ export const pages = {
       de: 'Learning with Gioia — Sprachkurse & Nachhilfe in Zürich',
     },
     description: {
-      en: 'German and Swiss German courses, Gymivorbereitung, exam preparation and tutoring in Zürich. Native-speaking teachers with linguistics degrees and formal teaching qualifications.',
-      de: 'Deutsch- und Schweizerdeutschkurse, Gymivorbereitung, Prüfungsvorbereitung und Nachhilfe in Zürich. Muttersprachliche Lehrpersonen mit sprachwissenschaftlichem Studium und formaler Lehrqualifikation.',
+      en: 'Language courses, exam preparation, tutoring and Gymivorbereitung in Zürich. One-to-one and small-group lessons, taught exclusively by native-speaking teachers.',
+      de: 'Sprachen lernen, Sprachprüfungsvorbereitung, Nachhilfe und Gymivorbereitung in Zürich. Individual- und Kleingruppenunterricht, ausschliesslich von muttersprachlichen Lehrpersonen.',
     },
     text: {
       // The visible wordmark is an SVG, so this screen-reader heading is the
       // page's only h1 — it has to be in the reader's language.
       'h1.sr-only': {
-        en: 'Learning with Gioia — language courses, exam preparation and tutoring in Zürich',
-        de: 'Learning with Gioia — Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich',
+        en: 'Learning with Gioia — language courses, exam preparation, tutoring and Gymivorbereitung in Zürich',
+        de: 'Learning with Gioia — Sprachkurse, Sprachprüfungsvorbereitung, Nachhilfe und Gymivorbereitung in Zürich',
       },
       '.hero-tagline': {
-        en: '<em>Language courses, exam preparation &amp; tutoring</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
-        de: '<em>Sprachkurse, Prüfungsvorbereitung &amp; Nachhilfe</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
+        en: '<em>Languages, exam preparation, tutoring &amp; Gymivorbereitung</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
+        de: '<em>Sprachen, Sprachprüfungsvorbereitung, Nachhilfe &amp; Gymivorbereitung</em><span class="sep" aria-hidden="true">·</span><em>Zürich</em>',
       },
       '.hero-lede': {
-        en: 'Small groups. Carefully prepared, individually tailored lessons.',
-        de: 'Kleine Gruppen. Sorgfältige Vorbereitung, individuell abgestimmter Unterricht.',
+        en: 'One-to-one and small-group lessons.',
+        de: 'Individual- und Kleingruppenunterricht.',
       },
       '#hero-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#hero-cta-offer': { en: 'what we offer', de: 'Unser Angebot' },
@@ -274,51 +278,49 @@ export const pages = {
       '#language-courses .kicker': { en: 'what we offer', de: 'Unser Angebot' },
       '#language-courses .section-title': { en: 'Language courses', de: 'Sprachkurse' },
       '#lc-intro': {
-        en: 'German, Swiss German and English, from complete beginner (A0) to advanced (C2), in the format and place that suit you.',
-        de: 'Deutsch, Schweizerdeutsch und Englisch, von A0 bis C2, im Format und am Ort, die zu dir passen.',
+        en: 'Our language courses take place in a personal setting: in our classrooms, at your offices, at your home or online. Language courses are taught exclusively by native-speaking teachers.',
+        de: 'Unsere Sprachkurse finden in einem persönlichen Umfeld statt, entweder in unseren Kursräumlichkeiten, direkt bei Ihnen im Büro, bei Ihnen zu Hause oder online. Sprachkurse werden bei uns ausschliesslich von muttersprachlichen Lehrpersonen unterrichtet.',
       },
       '#lc-languages-title': { en: 'Languages', de: 'Sprachen' },
-      '#lc-lang-german': {
-        en: '<strong>German</strong> <span>For everyday life, work and study, taught exclusively by native speakers.</span>',
-        de: '<strong>Deutsch</strong> <span>Für Alltag, Beruf und Studium, unterrichtet ausschliesslich von Muttersprachlerinnen und Muttersprachlern.</span>',
-      },
+      '#lc-lang-german': { en: '<strong>German</strong>', de: '<strong>Deutsch</strong>' },
       '#lc-lang-swiss': {
-        en: '<strong>Swiss German</strong> <span>Follow conversations, join in and feel at home in Swiss everyday life.</span>',
-        de: '<strong>Schweizerdeutsch</strong> <span>Gesprächen folgen, mitreden und sich im Schweizer Alltag zuhause fühlen.</span>',
+        en: '<strong>Swiss German</strong>',
+        de: '<strong>Schweizerdeutsch</strong>',
       },
-      '#lc-lang-english': {
-        en: '<strong>English</strong> <span>For school, work and everyday life, from A1 to C2.</span>',
-        de: '<strong>Englisch</strong> <span>Für Schule, Beruf und Alltag, von A1 bis C2.</span>',
+      '#lc-lang-english': { en: '<strong>English</strong>', de: '<strong>Englisch</strong>' },
+      '#lc-lang-other': {
+        en: '<strong>Other languages</strong> <span>For languages not listed here, send us an enquiry. We will find a suitable teacher within our network.</span>',
+        de: '<strong>Andere Sprachen</strong> <span>Für nicht aufgeführte Sprachen schicken Sie uns eine Anfrage. Wir suchen in unserem Netzwerk eine passende Lehrperson.</span>',
       },
       '#lc-lang-exams': {
-        en: '<strong>Exam preparation</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS and more, practised with the real exam formats.</span>',
-        de: '<strong>Prüfungsvorbereitung</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS und mehr, geübt mit den echten Prüfungsformaten.</span>',
+        en: '<strong>Preparing for a language certificate</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS and more.</span>',
+        de: '<strong>Vorbereitung auf ein Sprachzertifikat</strong> <span>Goethe, TELC, FIDE, Cambridge, TOEFL, IELTS und mehr.</span>',
       },
       '#lc-format-title': { en: 'Format', de: 'Format' },
       '#lc-format-group': {
-        en: '<strong>Group</strong> <span>Three to five people, so everybody gets to speak.</span>',
-        de: '<strong>Gruppe</strong> <span>Drei bis fünf Personen, damit alle zu Wort kommen.</span>',
+        en: '<strong>Group</strong> <span>Our group courses have between three and five people, so everybody gets the chance to actively use the target language in the lesson.</span>',
+        de: '<strong>Gruppe</strong> <span>In unseren Gruppenkursen sind zwischen drei und fünf Personen. So erhalten alle die Chance, die Zielsprache auch im Unterricht aktiv anzuwenden.</span>',
       },
       '#lc-format-private': {
-        en: '<strong>Private</strong> <span>One teacher, one learner, and a course built from what you need.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Eine Lehrperson, eine lernende Person und ein Kurs aus dem, was du brauchst.</span>',
+        en: '<strong>One-to-one</strong> <span>One-to-one lessons offer flexibility and even more time to use the target language.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Einzelunterricht bietet Flexibilität und noch mehr Zeit, die Zielsprache anzuwenden.</span>',
       },
       '#lc-format-company': {
-        en: '<strong>Company</strong> <span>Training for teams, built around your industry and your everyday work.</span>',
-        de: '<strong>Firmenkurse</strong> <span>Training für Teams, aufgebaut um eure Branche und euren Arbeitsalltag.</span>',
+        en: '<strong>Company courses</strong> <span>Our company courses take place at your offices. Ideal for anyone short of time who has to fit lessons around a full diary.</span>',
+        de: '<strong>Firmenkurse</strong> <span>Unsere Firmenkurse finden direkt bei Ihnen im Büro statt. Ideal für diejenigen, die nicht viel Zeit haben und den Unterricht mit einem vollen Terminkalender koordinieren müssen.</span>',
       },
       '#lc-format-tailored': {
-        en: '<strong>Build your own</strong> <span>Lunchtime German, intensive blocks, combined courses: fully tailored to your schedule.</span>',
-        de: '<strong>Build your own</strong> <span>Lunchtime German, Intensivblöcke, kombinierte Kurse: ganz auf deinen Zeitplan zugeschnitten.</span>',
+        en: '<strong>Build your own</strong> <span>If you have something specific in mind, get in touch and we will find a solution that fits.</span>',
+        de: '<strong>Build your own</strong> <span>Wenn Sie einen bestimmten Wunsch haben, melden Sie sich und wir finden eine passende Lösung.</span>',
       },
       '#lc-location-title': { en: 'Location', de: 'Ort' },
       '#lc-location-inperson': {
-        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
-        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
+        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Ask us about our locations.</span>',
+        de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#lc-location-online': {
-        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
-        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
+        en: '<strong>Online</strong> <span>Would you rather learn from home, or mix in-person lessons with online ones? No problem. All of our courses can also take place online.</span>',
+        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse können auch online stattfinden.</span>',
       },
       '#lc-facts-title': {
         en: 'Prices for standard language courses',
@@ -341,39 +343,37 @@ export const pages = {
       '#tutoring .kicker': { en: 'tutoring', de: 'Nachhilfe' },
       '#tutoring .section-title': { en: 'Tutoring', de: 'Nachhilfe' },
       '#tu-intro': {
-        en: 'Tutoring in all subjects taught in Swiss schools, from primary school to Matura.',
-        de: 'Nachhilfe in allen Fächern der Schweizer Schulen, von der Primarschule bis zur Matura.',
+        en: 'We offer tutoring in every subject taught in Swiss schools.',
+        de: 'Wir bieten Nachhilfe in allen Fächern an, die an Schweizer Schulen unterrichtet werden.',
       },
       '#tu-levels-title': { en: 'Levels', de: 'Stufen' },
       '#tu-level-primary': {
-        en: '<strong>Primary school</strong> <span>Building the basics and closing gaps early.</span>',
-        de: '<strong>Primarschule</strong> <span>Grundlagen aufbauen und Lücken früh schliessen.</span>',
+        en: '<strong>Primary school</strong>',
+        de: '<strong>Primarschule</strong>',
       },
       '#tu-level-secondary': {
-        en: '<strong>Secondary school</strong> <span>Keeping up in the subjects that decide the next step.</span>',
-        de: '<strong>Sekundarschule</strong> <span>Am Ball bleiben in den Fächern, die über den nächsten Schritt entscheiden.</span>',
+        en: '<strong>Secondary school</strong>',
+        de: '<strong>Sekundarschule</strong>',
       },
-      '#tu-level-gymnasium': {
-        en: '<strong>Gymnasium</strong> <span>Right through to the Matura exams.</span>',
-        de: '<strong>Gymnasium</strong> <span>Bis zur Matura.</span>',
-      },
+      '#tu-level-gymnasium': { en: '<strong>Gymnasium</strong>', de: '<strong>Gymnasium</strong>' },
+      '#tu-level-bms': { en: '<strong>BMS</strong>', de: '<strong>BMS</strong>' },
       '#tu-format-title': { en: 'Format', de: 'Format' },
       '#tu-format-group': {
-        en: '<strong>Group</strong> <span>Three to seven pupils.</span>',
-        de: '<strong>Gruppe</strong> <span>Drei bis sieben Schülerinnen und Schüler.</span>',
+        en: "<strong>Group</strong> <span>Group tutoring is taught in groups of three to seven pupils. Where the pupils' levels differ widely, a smaller group works better, so that every pupil gets the attention they need. Where levels and tasks are similar, a larger group works well.</span>",
+        de: '<strong>Gruppe</strong> <span>Nachhilfe in der Gruppe wird in Gruppen von drei bis sieben Schülerinnen und Schülern unterrichtet. Unterscheiden sich die Niveaus stark, eignet sich eine kleinere Gruppe. So kommt jeder Schülerin und jedem Schüler die nötige Aufmerksamkeit zugute. Bei ähnlichen Niveaus und Aufgabenstellungen eignet sich eine grössere Gruppe.</span>',
       },
       '#tu-format-private': {
-        en: '<strong>Private</strong> <span>One teacher, one pupil, at your own pace.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Eine Lehrperson, ein Schüler, im eigenen Tempo.</span>',
+        en: '<strong>One-to-one</strong> <span>One-to-one lessons offer the most flexibility and allow for an individual pace of learning.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Einzelunterricht bietet am meisten Flexibilität und ermöglicht ein individuelles Lerntempo.</span>',
       },
       '#tu-location-title': { en: 'Location', de: 'Ort' },
       '#tu-location-inperson': {
-        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
-        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
+        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Ask us about our locations.</span>',
+        de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#tu-location-online': {
-        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
-        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
+        en: '<strong>Online</strong> <span>All of our courses are also offered fully online, or mixed with in-person lessons.</span>',
+        de: '<strong>Online</strong> <span>Alle unsere Kurse werden auch vollständig online oder mit Präsenzunterricht gemischt angeboten.</span>',
       },
       '#tu-facts-title': { en: 'Prices', de: 'Preise' },
       '#tu-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
@@ -392,40 +392,35 @@ export const pages = {
         de: 'Gymivorbereitung',
       },
       '#gy-intro': {
-        en: 'Step by step to the Gymiprüfung, in small groups or one-to-one, always tailored to your child.',
-        de: 'Schritt für Schritt zur Gymiprüfung, in kleinen Gruppen oder im Einzelunterricht, immer abgestimmt auf dein Kind.',
+        en: 'Step by step to the Gymiprüfung. We are with you all the way there.',
+        de: 'Schritt für Schritt zur Gymiprüfung. Wir begleiten Sie auf dem Weg dahin.',
       },
-      '#gy-practice-title': { en: 'What we practise', de: 'Was wir üben' },
-      '#gy-practice-gaps': {
-        en: '<strong>Closing gaps</strong> <span>In the material the exam is built on.</span>',
-        de: '<strong>Lücken schliessen</strong> <span>Im Stoff, auf dem die Prüfung aufbaut.</span>',
+      '#gy-details-title': { en: 'Course details', de: 'Kursdetails' },
+      '#gy-fact-duration-label': { en: 'lesson length', de: 'Unterrichtsdauer' },
+      '#gy-fact-duration-value': { en: '3 h', de: '3 Std.' },
+      '#gy-fact-days-label': { en: 'teaching days', de: 'Anzahl Unterrichtstage' },
+      '#gy-fact-days-value': { en: '12 or 20', de: '12 oder 20' },
+      '#gy-fact-days-unit': {
+        en: '36 and 60 lessons respectively',
+        de: '36 bzw. 60 Lektionen',
       },
-      '#gy-practice-format': {
-        en: '<strong>The exam format</strong> <span>Practising with the format itself, not only the material.</span>',
-        de: '<strong>Das Prüfungsformat</strong> <span>Üben mit dem Format selbst, nicht nur mit dem Stoff.</span>',
+      '#gy-fact-frequency-label': { en: 'frequency', de: 'Unterrichtsfrequenz' },
+      '#gy-fact-frequency-value': { en: '1× or 2×', de: '1× oder 2×' },
+      '#gy-fact-frequency-unit': { en: 'per week', de: 'pro Woche' },
+      '#gy-fact-subjects-label': { en: 'subjects', de: 'Fächer' },
+      '#gy-fact-subjects-value': {
+        en: 'Mathematics and German',
+        de: 'Mathematik und Deutsch',
       },
-      '#gy-practice-calm': {
-        en: '<strong>Calm under pressure</strong> <span>The composure it takes to perform on the day.</span>',
-        de: '<strong>Ruhe unter Druck</strong> <span>Die Sicherheit, die es am Prüfungstag braucht.</span>',
+      '#gy-fact-size-label': { en: 'group size', de: 'Gruppengrösse' },
+      '#gy-fact-size-value': { en: '3–7 children', de: '3–7 Kinder' },
+      '#gy-fact-size-unit': {
+        en: 'one-to-one available',
+        de: 'Einzelunterricht möglich',
       },
-      '#gy-format-title': { en: 'Format', de: 'Format' },
-      '#gy-format-group': {
-        en: '<strong>Group</strong> <span>Three to seven children, when it is mainly about exam practice.</span>',
-        de: '<strong>Gruppe</strong> <span>Drei bis sieben Kinder, wenn es vor allem um Prüfungstraining geht.</span>',
-      },
-      '#gy-format-private': {
-        en: '<strong>Private</strong> <span>When there are specific gaps to close, or exam nerves are the main obstacle.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.</span>',
-      },
-      '#gy-location-title': { en: 'Location', de: 'Ort' },
-      '#gy-location-inperson': {
-        en: '<strong>In person</strong> <span>In Zürich. Contact us to find out about our locations.</span>',
-        de: '<strong>Vor Ort</strong> <span>In Zürich. Frag uns nach unseren Standorten.</span>',
-      },
-      '#gy-location-online': {
-        en: '<strong>Online</strong> <span>The same lessons by video, wherever you are.</span>',
-        de: '<strong>Online</strong> <span>Dieselben Lektionen per Video, wo immer du bist.</span>',
-      },
+      '#gy-fact-place-label': { en: 'location', de: 'Kursort' },
+      '#gy-fact-place-value': { en: 'Zürich Seefeld', de: 'Zürich Seefeld' },
+      '#gy-fact-place-unit': { en: 'online available', de: 'Online möglich' },
       '#gy-facts-title': { en: 'Prices', de: 'Preise' },
       '#gy-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
       '#gy-fact-group-value': { en: 'CHF 80', de: 'CHF 80' },
@@ -433,49 +428,19 @@ export const pages = {
       '#gy-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
       '#gy-fact-solo-value': { en: 'CHF 150', de: 'CHF 150' },
       '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-      '#gy-note': {
-        en: 'One block runs as 20 lessons of 90 minutes over five months. The earlier you start, the better.',
-        de: 'Ein Block umfasst 20 Lektionen à 90 Minuten über fünf Monate. Je früher du beginnst, desto besser.',
-      },
       '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#gy-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
-      '#offer-details .kicker': { en: 'good to know', de: 'Gut zu wissen' },
-      '#offer-details .section-title': {
-        en: 'Course structure',
-        de: 'Kursstruktur',
-      },
-      '#structure-hours': {
-        en: 'Progressing through a full level (e.g. from A0 to A1) typically takes around 100 to 150 hours** of guided learning, alongside a similar amount of independent study.',
-        de: 'Um ein vollständiges Sprachniveau abzudecken (z. B. von A0 zu A1), benötigt man in der Regel etwa 100 bis 150 Stunden** angeleitetes Lernen plus eine ähnliche Menge an selbstständigem Lernen.',
-      },
-      '#structure-suggestion': {
-        en: 'Our regular group courses are structured into three blocks per level:',
-        de: 'Unsere regulären Gruppenkurse sind in drei Blöcke pro Niveau gegliedert:',
-      },
-      '#structure-diagram': {
-        en: 'One full level, for example A1, splits into the partial levels A1.1, A1.2 and A1.3 of 32 hours of guided learning each. The same pattern continues for further levels.',
-        de: 'Ein vollständiges Niveau, zum Beispiel A1, teilt sich in die Teilniveaus A1.1, A1.2 und A1.3 mit je 32 Stunden angeleitetem Lernen. Das gleiche Muster setzt sich für weitere Niveaus fort.',
-        attr: 'aria-label',
-      },
-      '#structure-level-hours': {
-        en: 'approx. 100 to 150 h guided learning',
-        de: 'ca. 100 bis 150 Std. angeleitetes Lernen',
-      },
-      '.structure-part__hours': { en: '32 h', de: '32 Std.' },
-      '#structure-etc': { en: 'etc.', de: 'usw.' },
-      '#structure-cta': {
-        en: 'We offer schedules and programmes tailored to your individual needs. Contact us about your desired course!',
-        de: 'Wir bieten Stundenpläne und Programme, die auf deine individuellen Bedürfnisse zugeschnitten sind. Kontaktier uns für deinen Wunschkurs!',
-      },
-      '#levels .kicker': { en: 'your level', de: 'Dein Niveau' },
+      // The course-structure section this used to hold is now the FAQ answer
+      // about how long a level takes; its diagram and sources moved with it.
+      '#levels .kicker': { en: 'your level', de: 'Ihr Niveau' },
       '#levels .section-title': {
         en: 'Which level fits you?',
-        de: 'Welches Niveau passt zu dir?',
+        de: 'Welches Niveau passt zu Ihnen?',
       },
       '.levels-text': {
         en: 'Not sure where to start? Our interactive self-assessment helps you find your current level.',
-        de: 'Du weisst nicht, wo anfangen? Unser interaktives Selbsteinschätzungsraster hilft dir, dein aktuelles Niveau zu finden.',
+        de: 'Sie wissen nicht, wo Sie anfangen sollen? Unser interaktives Selbsteinschätzungsraster hilft Ihnen, Ihr aktuelles Niveau zu finden.',
       },
       '#levels-cta': { en: 'find your level', de: 'Niveau herausfinden' },
       '#materials .kicker': { en: 'materials', de: 'Materialien' },
@@ -524,14 +489,17 @@ export const pages = {
       '#review-3 figcaption': { en: '— Miriam H.', de: '— Miriam H.' },
       '#review-form-title': {
         en: 'Had lessons with us? Leave a review',
-        de: 'Schon bei uns gelernt? Hinterlass eine Bewertung',
+        de: 'Schon bei uns gelernt? Hinterlassen Sie eine Bewertung',
       },
       'label[for="review-name"]': { en: 'name', de: 'Name' },
-      'label[for="review-text"]': { en: 'your review', de: 'Deine Bewertung' },
-      '#err-review-name': { en: 'Please enter your name.', de: 'Bitte gib deinen Namen ein.' },
+      'label[for="review-text"]': { en: 'your review', de: 'Ihre Bewertung' },
+      '#err-review-name': {
+        en: 'Please enter your name.',
+        de: 'Bitte geben Sie Ihren Namen ein.',
+      },
       '#err-review-text': {
         en: 'Please write a few words.',
-        de: 'Bitte schreib ein paar Worte.',
+        de: 'Bitte schreiben Sie ein paar Worte.',
       },
       '#review-note': {
         en: 'Reviews are checked before they appear on this page.',
@@ -540,54 +508,31 @@ export const pages = {
       '#review-submit': { en: 'submit review', de: 'Bewertung senden' },
       '#err-review-submit': {
         en: 'Something went wrong, please try again later.',
-        de: 'Etwas ist schiefgelaufen, bitte versuche es später erneut.',
+        de: 'Etwas ist schiefgelaufen, bitte versuchen Sie es später erneut.',
       },
       '#review-success': {
         en: 'Thank you! Your review will appear here once it has been checked.',
-        de: 'Danke! Deine Bewertung erscheint hier, sobald sie geprüft wurde.',
+        de: 'Danke! Ihre Bewertung erscheint hier, sobald sie geprüft wurde.',
       },
-      '#about .kicker': { en: 'about', de: 'Über uns' },
-      '#about .section-title': {
-        en: 'Experience &amp; background',
-        de: 'Erfahrung &amp; Hintergrund',
+      '#about .kicker': { en: 'good to know', de: 'Gut zu wissen' },
+      '#about .section-title': { en: 'About us', de: 'Über uns' },
+      // Opens the section, and the whole argument the school rests on.
+      '#about-opening': {
+        en: 'We have all learnt a language once before, and we can all do it again at any time.',
+        de: 'Wir haben alle schon einmal eine Sprache gelernt und wir können das alle jederzeit wieder tun.',
       },
-      '#about-lead': {
-        en: 'Learning with Gioia was founded by Gioia, born and raised in Zürich and a native speaker of both Swiss German and German.',
-        de: 'Learning with Gioia wurde von Gioia gegründet — in Zürich geboren und aufgewachsen, muttersprachlich Schweizerdeutsch und Deutsch.',
-      },
-      // The former About page, in Gioia's own words.
-      '#about-gioia-body': {
-        en: 'I am Gioia, and I have loved languages for as long as I can remember. Along the way I have learnt English, French, Russian, Arabic and Spanish, and made a start on Italian, Chinese, Japanese and Farsi. So I understand what the first weeks of a new language feel like from the inside.',
-        de: 'Ich bin Gioia, und Sprachen haben mich fasziniert, seit ich denken kann. Ich habe Englisch, Französisch, Russisch, Arabisch und Spanisch gelernt und Italienisch, Chinesisch, Japanisch und Farsi angefangen. Wie sich die ersten Wochen einer neuen Sprache anfühlen, kann ich also sehr gut nachvollziehen.',
-      },
-      '#about-gioia-body-2': {
-        en: 'I also know what it is to arrive in a foreign country and want to belong without giving up who you are. I studied Russian language and literature at UZH, then Russian Studies at UCL. I spent a lot of time in Eastern Europe throughout my studies and lived in London for seven years before coming home to Zürich. What I want most is that the language stays interesting to you after the lesson ends.',
-        de: 'Ich weiss auch, wie es ist, in einem fremden Land anzukommen und dazugehören zu wollen, ohne die eigene Identität aufzugeben. Ich habe an der UZH Russische Sprach- und Literaturwissenschaft studiert, danach Russian Studies am UCL. Während des Studiums war ich viel in Osteuropa unterwegs und habe sieben Jahre in London gelebt, bevor ich nach Zürich zurückgekehrt bin. Mein Ziel ist es, Freude am Erlernen der Sprache über den Unterricht hinaus zu vermitteln.',
-      },
-      // Closes the section: everyone has done this once already.
-      '#about-gioia-pull': {
-        en: 'Everyone has learnt a language once already, as a small child. And everyone can learn another one.',
-        de: 'Jeder hat schon einmal eine Sprache gelernt, und zwar als Kleinkind. Und jeder kann eine weitere Sprache lernen.',
-      },
+      '#about-cv-title': { en: 'Education', de: 'Ausbildung' },
       '#about-gioia-cv': {
-        en: '<li>In progress: teaching diploma (Lehrdiplom), University of Zürich — Russian and Mathematics.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Language and Literature, University of Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, bilingual German and English.</li>',
-        de: '<li>Laufend: Lehrdiplom Universität Zürich — Russisch und Mathematik.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, zweisprachig Deutsch und Englisch.</li>',
+        en: '<li>Since 2026 — teaching diploma for upper-secondary schools (Russian and Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Language and Literature, University of Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, bilingual German and English.</li>',
+        de: '<li>Seit 2026 — Lehrdiplom für Maturitätsschulen (Russisch und Mathematik), Universität Zürich.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, zweisprachig Deutsch und Englisch.</li>',
       },
-      '#about-approach-body': {
-        en: 'Every course is tailored to the people taking it. That is easier said than done. That is why the groups stay small.',
-        de: 'Jeder Kurs wird genau auf die Schüler zugeschnitten. Das ist einfacher gesagt als getan. Deshalb sind die Gruppen klein.',
-      },
-      '#about-approach-list': {
-        en: '<li>Small groups, so everybody gets to speak.</li><li>Material built around your work, your studies or your everyday life.</li><li>A clear structure: A1 to C2 of the CEFR, with each level split into blocks of 32 lessons.</li><li>Lessons in our classrooms, at your offices, at home, or online, whichever is most convenient.</li>',
-        de: '<li>Kleine Gruppen, damit alle zu Wort kommen.</li><li>Material rund um deinen Beruf, dein Studium oder deinen Alltag.</li><li>Klare Struktur: A1 bis C2 des GER, jedes Niveau unterteilt in Blöcke von 32 Lektionen.</li><li>Unterricht in unseren Kursräumen, direkt im Büro, zu Hause oder online, je nachdem, wie es bequem ist.</li>',
-      },
-      '#faq .kicker': { en: 'good to know', de: 'Gut zu wissen' },
-      '#faq .section-title': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
+      '#faq-heading': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
       '#faq-intro': {
-        en: 'The questions we are asked most. Any other questions? Write us <a href="/enquiry.html">here</a>.',
-        de: 'Die häufigsten Fragen. Noch weitere Fragen? Schreib uns <a href="/enquiry.html">hier</a>.',
+        en: 'The questions we are asked most. Any other questions? Write to us <a href="/enquiry.html">here</a>.',
+        de: 'Die häufigsten Fragen. Noch weitere Fragen? Schreiben Sie uns <a href="/enquiry.html">hier</a>.',
       },
       '#faq-courses-title': { en: 'Courses and levels', de: 'Kurse und Niveaus' },
+      '#faq-swiss-title': { en: 'German in Switzerland', de: 'Deutsch in der Schweiz' },
       '#faq-online-title': { en: 'Online lessons', de: 'Online-Unterricht' },
       '#faq-gymi-title': { en: 'Gymivorbereitung', de: 'Gymivorbereitung' },
       '#faq-company-title': { en: 'Company courses', de: 'Firmenkurse' },
@@ -595,7 +540,7 @@ export const pages = {
       '#enquiry .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
       '.closing-text': {
         en: 'We want to give you confidence and motivation to use your knowledge beyond the classroom.',
-        de: 'Wir wollen dich dabei unterstützen, dein Wissen auch ausserhalb des Unterrichts anzuwenden.',
+        de: 'Wir wollen Sie dabei unterstützen, Ihr Wissen auch ausserhalb des Unterrichts anzuwenden.',
       },
       '#closing-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#closing-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
@@ -607,7 +552,7 @@ export const pages = {
       '#call-cancel': { en: 'close', de: 'schliessen' },
       '#call-panel-note': {
         en: 'Pick a time that suits you. All times are Zürich time (CET/CEST).',
-        de: 'Wähle eine passende Zeit. Alle Zeiten in Zürcher Zeit (MEZ/MESZ).',
+        de: 'Wählen Sie eine passende Zeit. Alle Zeiten in Zürcher Zeit (MEZ/MESZ).',
       },
       'label[for="cb-first-name"]': { en: 'first name *', de: 'Vorname *' },
       'label[for="cb-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -615,26 +560,26 @@ export const pages = {
       'label[for="cb-phone"]': { en: 'phone', de: 'Telefon' },
       'label[for="cb-topic"]': {
         en: 'what would you like to talk about?',
-        de: 'Worüber möchtest du sprechen?',
+        de: 'Worüber möchten Sie sprechen?',
       },
       '#err-cb-first-name': {
         en: 'Please enter a first name.',
-        de: 'Bitte gib einen Vornamen ein.',
+        de: 'Bitte geben Sie einen Vornamen ein.',
       },
       '#err-cb-last-name': {
         en: 'Please enter a last name.',
-        de: 'Bitte gib einen Nachnamen ein.',
+        de: 'Bitte geben Sie einen Nachnamen ein.',
       },
       '#err-cb-email': {
         en: 'Please enter a valid email address.',
-        de: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+        de: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
       },
       '#err-cb-consent': {
         en: 'Please accept the terms and conditions.',
-        de: 'Bitte akzeptiere die AGB.',
+        de: 'Bitte akzeptieren Sie die AGB.',
       },
       '#cb-submit': { en: 'book the call', de: 'Gespräch buchen' },
-      '#call-success-title': { en: "You're booked in!", de: 'Dein Termin steht!' },
+      '#call-success-title': { en: "You're booked in!", de: 'Ihr Termin steht!' },
     },
   },
   '/enquiry.html': {
@@ -644,11 +589,11 @@ export const pages = {
     },
     description: {
       en: 'Make a quick enquiry with Learning with Gioia — language courses, exam prep and tutoring in Zürich.',
-      de: 'Sende eine kurze Anfrage an Learning with Gioia — für Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich.',
+      de: 'Senden Sie eine kurze Anfrage an Learning with Gioia — für Sprachkurse, Prüfungsvorbereitung und Nachhilfe in Zürich.',
     },
     text: {
       h1: { en: 'make an enquiry', de: 'Anfrage senden' },
-      'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'Wonach suchst du?' },
+      'label[for="lesson-type"]': { en: 'what are you looking for?', de: 'Wonach suchen Sie?' },
       '#lesson-type': {
         en: 'e.g. German A2 course, IELTS exam prep, Maths tutoring — Gymnasium year 9, Gymivorbereitung grade 6...',
         de: 'z. B. Deutschkurs A2, IELTS-Vorbereitung, Mathe-Nachhilfe — Gymnasium 2. Klasse, Gymivorbereitung 6. Klasse...',
@@ -656,9 +601,9 @@ export const pages = {
       },
       '#err-lesson-type': {
         en: 'Please describe what you are looking for.',
-        de: 'Bitte beschreibe, wonach du suchst.',
+        de: 'Bitte beschreiben Sie, wonach Sie suchen.',
       },
-      '.section-label': { en: 'your details', de: 'Deine Angaben' },
+      '.section-label': { en: 'your details', de: 'Ihre Angaben' },
       'label[for="lead-first"]': { en: 'first name', de: 'Vorname' },
       'label[for="lead-last"]': { en: 'last name', de: 'Nachname' },
       'label[for="lead-email"]': { en: 'email', de: 'E-Mail' },
@@ -669,27 +614,30 @@ export const pages = {
       },
       '#err-lead-first': {
         en: 'Please enter a first name.',
-        de: 'Bitte gib einen Vornamen ein.',
+        de: 'Bitte geben Sie einen Vornamen ein.',
       },
-      '#err-lead-last': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
+      '#err-lead-last': {
+        en: 'Please enter a last name.',
+        de: 'Bitte geben Sie einen Nachnamen ein.',
+      },
       '#err-lead-email': {
         en: 'Please enter an email address.',
-        de: 'Bitte gib eine E-Mail-Adresse ein.',
+        de: 'Bitte geben Sie eine E-Mail-Adresse ein.',
       },
       '#err-lead-phone': {
         en: 'Please enter a phone number.',
-        de: 'Bitte gib eine Telefonnummer ein.',
+        de: 'Bitte geben Sie eine Telefonnummer ein.',
       },
       '#err-preferred-contact': {
         en: 'Please select a preferred contact method.',
-        de: 'Bitte wähle eine bevorzugte Kontaktart.',
+        de: 'Bitte wählen Sie eine bevorzugte Kontaktart.',
       },
       '#preferred-contact option[value="Phone"]': { en: 'Phone', de: 'Telefon' },
       '#preferred-contact option[value="Either"]': { en: 'Either', de: 'Beides' },
       '#submit-btn': { en: 'send enquiry ->', de: 'Anfrage senden ->' },
       '#submit-error': {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuchen Sie es erneut oder schreiben Sie uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
     },
   },
@@ -706,7 +654,7 @@ export const pages = {
       h1: { en: 'open group courses', de: 'offene Gruppenkurse' },
       '.courses-intro': {
         en: 'Small group courses with a maximum of 5 people. Booking requests are handled first come, first served. We work hard to confirm your booking request as soon as possible.',
-        de: 'Kleine Gruppenkurse mit maximal 5 Personen. Wir bearbeiten Buchungsanfragen der Reihe nach und bestätigen deine Buchungsanfrage so schnell wie möglich.',
+        de: 'Kleine Gruppenkurse mit maximal 5 Personen. Wir bearbeiten Buchungsanfragen der Reihe nach und bestätigen Ihre Buchungsanfrage so schnell wie möglich.',
       },
       '#courses-status': { en: 'loading courses...', de: 'Kurse werden geladen...' },
       '#empty-state p': {
@@ -714,7 +662,7 @@ export const pages = {
         de: 'Aktuell sind leider keine Plätze in geplanten oder laufenden Gruppenkursen verfügbar :(',
       },
       '#empty-state .enquiry-link': { en: 'make an enquiry ->', de: 'Anfrage senden ->' },
-      '#booking-title': { en: 'your details', de: 'Deine Angaben' },
+      '#booking-title': { en: 'your details', de: 'Ihre Angaben' },
       '#booking-cancel': { en: 'cancel', de: 'Abbrechen' },
       '#label-booking-request': { en: 'booking request', de: 'Buchungsanfrage' },
       '#label-slot-preferences': { en: 'course preferences', de: 'Kurspräferenzen' },
@@ -767,7 +715,7 @@ export const pages = {
       '#label-billing': { en: 'billing', de: 'Rechnung' },
       '#booking-payment-note': {
         en: "What happens after your booking? We will review your request and confirm your spot. Then we will send you the invoice for your booking. Once we receive your payment you're all booked in.",
-        de: 'Was passiert nach deiner Buchungsanfrage? Wir prüfen deine Anfrage und bestätigen deinen Platz. Dann schicken wir dir die Rechnung für deine Buchung. Sobald deine Zahlung eingegangen ist, ist dein Platz gebucht.',
+        de: 'Was passiert nach Ihrer Buchungsanfrage? Wir prüfen Ihre Anfrage und bestätigen Ihren Platz. Dann schicken wir Ihnen die Rechnung für Ihre Buchung. Sobald Ihre Zahlung eingegangen ist, ist Ihr Platz gebucht.',
       },
       'label[for="bf-first-name"]': { en: 'first name *', de: 'Vorname *' },
       'label[for="bf-last-name"]': { en: 'last name *', de: 'Nachname *' },
@@ -807,45 +755,45 @@ export const pages = {
       },
       '#err-first-name': {
         en: 'Please enter a first name.',
-        de: 'Bitte gib einen Vornamen ein.',
+        de: 'Bitte geben Sie einen Vornamen ein.',
       },
       '#err-last-name': {
         en: 'Please enter a last name.',
-        de: 'Bitte gib einen Nachnamen ein.',
+        de: 'Bitte geben Sie einen Nachnamen ein.',
       },
       '#err-gender': {
         en: 'Please select a salutation.',
-        de: 'Bitte wähle eine Anrede aus.',
+        de: 'Bitte wählen Sie eine Anrede aus.',
       },
       '#err-gender-note': {
         en: 'Please specify your salutation.',
-        de: 'Bitte gib deine Anrede an.',
+        de: 'Bitte geben Sie Ihre Anrede an.',
       },
       '#err-email': {
         en: 'Please enter a valid email address.',
-        de: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+        de: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
       },
       '#err-consent': {
         en: 'Please accept the terms to continue.',
-        de: 'Bitte akzeptiere die AGB, um fortzufahren.',
+        de: 'Bitte akzeptieren Sie die AGB, um fortzufahren.',
       },
       '#err-reduced-lessons-ok': {
         en: 'Please select whether you are okay with a reduced course length.',
-        de: 'Bitte wähle aus, ob du mit einer reduzierten Kursdauer einverstanden bist.',
+        de: 'Bitte wählen Sie aus, ob Sie mit einer reduzierten Kursdauer einverstanden sind.',
       },
       '#err-preferred-level': {
         en: 'Please select your desired level.',
-        de: 'Bitte wähle dein gewünschtes Niveau aus.',
+        de: 'Bitte wählen Sie Ihr gewünschtes Niveau aus.',
       },
       '#err-preferred-location': {
         en: 'Please select your desired location.',
-        de: 'Bitte wähle deinen gewünschten Ort aus.',
+        de: 'Bitte wählen Sie Ihren gewünschten Ort aus.',
       },
       '#booking-submit': { en: 'request spot ->', de: 'Platz anfragen ->' },
       '#success-state h2': { en: 'thank you.', de: 'Danke.' },
       '#success-state p': {
         en: 'Your booking request has been received. We will confirm your request shortly.',
-        de: 'Deine Buchungsanfrage ist eingegangen. Wir bestätigen deine Anfrage so schnell wie möglich.',
+        de: 'Ihre Buchungsanfrage ist eingegangen. Wir bestätigen Ihre Anfrage so schnell wie möglich.',
       },
     },
   },
@@ -853,23 +801,23 @@ export const pages = {
     title: { en: 'Thank You — Learning with Gioia', de: 'Danke — Learning with Gioia' },
     description: {
       en: 'Your enquiry has been received. We will be in touch shortly.',
-      de: 'Deine Anfrage ist bei uns eingetroffen. Wir melden uns bald.',
+      de: 'Ihre Anfrage ist bei uns eingetroffen. Wir melden uns bald.',
     },
     text: {
       '#success-state h1': { en: 'thank you.', de: 'Danke.' },
       '#thankyou-body': {
         en: "We've received your message and will contact you shortly to discuss your enquiry.",
-        de: 'Wir haben deine Nachricht erhalten und melden uns bald, um deine Anfrage zu besprechen.',
+        de: 'Wir haben Ihre Nachricht erhalten und melden uns bald, um Ihre Anfrage zu besprechen.',
       },
       '#thankyou-contact': {
         en: 'If you have any questions in the meantime, write to us at <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Wenn du in der Zwischenzeit Fragen hast, schreib uns an <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Wenn Sie in der Zwischenzeit Fragen haben, schreiben Sie uns an <a class="thankyou-link" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#success-state .home-link': { en: 'back to home', de: 'Zurück zur Startseite' },
       '#error-state h2': { en: 'something went wrong.', de: 'Etwas ist schiefgelaufen.' },
       '#error-state p': {
         en: 'Your enquiry may not have been received. Please try again or email us directly at <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Deine Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuche es erneut oder schreibe uns direkt an <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Ihre Anfrage konnte möglicherweise nicht gesendet werden. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt an <a class="thankyou-link thankyou-link--error" href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#error-state .home-link': { en: 'try again', de: 'Erneut versuchen' },
     },
@@ -911,7 +859,7 @@ export const pages = {
     },
     description: {
       en: 'How Learning with Gioia collects, uses and stores personal data: which forms, which processors, how long data is kept, and your rights under Swiss law.',
-      de: 'Wie Learning with Gioia Personendaten erhebt, nutzt und speichert: welche Formulare, welche Dienstleister, Aufbewahrungsdauer und deine Rechte.',
+      de: 'Wie Learning with Gioia Personendaten erhebt, nutzt und speichert: welche Formulare, welche Dienstleister, Aufbewahrungsdauer und Ihre Rechte.',
     },
     text: {
       h1: { en: 'Privacy Policy', de: 'Datenschutzerklärung' },
@@ -988,36 +936,139 @@ pages['/agb.html'] = {
 // Every answer here is taken from something the site already commits to: the
 // AGB (cancellation ladder, minimum group size), the offer section (formats,
 // exams, lesson counts) or the course-structure section (hours per level).
+// The course-structure diagram, which used to be its own homepage section. It
+// answers "how long does it take", so it now lives inside that answer. Rendered
+// as `extra`, not as part of the answer text: the FAQPage markup should carry
+// the prose an assistant can quote, not a table of divs.
+function structureFigure(lang) {
+  const hours =
+    lang === 'de'
+      ? 'ca. 100 bis 150 Std. angeleitetes Lernen'
+      : 'approx. 100 to 150 h guided learning';
+  const part = lang === 'de' ? '32 Std.' : '32 h';
+  const etc = lang === 'de' ? 'usw.' : 'etc.';
+  const label =
+    lang === 'de'
+      ? 'Ein vollständiges Niveau, zum Beispiel A1, teilt sich in die Teilniveaus A1.1, A1.2 und A1.3 mit je 32 Stunden angeleitetem Lernen. Das gleiche Muster setzt sich für weitere Niveaus fort.'
+      : 'One full level, for example A1, splits into the partial levels A1.1, A1.2 and A1.3 of 32 hours of guided learning each. The same pattern continues for further levels.';
+  return (
+    `<figure class="structure-diagram" aria-label="${label}">` +
+    `<div class="structure-level"><span class="structure-level__code">A1</span>` +
+    `<span class="structure-level__hours">${hours}</span></div>` +
+    '<span class="structure-arrow" aria-hidden="true">→</span>' +
+    ['A1.1', 'A1.2', 'A1.3']
+      .map(
+        (code) =>
+          `<div class="structure-part"><span class="structure-part__code">${code}</span>` +
+          `<span class="structure-part__hours">${part}</span></div>`
+      )
+      .join('') +
+    `<span class="structure-etc">${etc}</span>` +
+    '</figure>'
+  );
+}
+
+const HOURS_SOURCES =
+  '<ul class="detail-sources">' +
+  '<li>** The International Language Institute of Massachusetts. 08 May 2025. How Much Time Does It Take to Learn a Language? [online]. Available from: <a href="https://ili.edu/news/how-much-time-does-it-take-to-learn-a-language/">ili.edu</a> [Accessed 03 April 2026].</li>' +
+  '<li>Pearson Global Scale of English Research Series. May 2017. How long does it take to learn a language? Insights from research on language learning. [online]. Available from: <a href="https://www.pearson.com/content/dam/one-dot-com/one-dot-com/pearson-languages/en-gb/blogs/GSE-learning-hours-report.pdf">pearson.com</a> [Accessed 03 April 2026].</li>' +
+  '<li>Conti, Gianfranco. 18 April 2025. How Long Does It Take to Learn a Language? Understanding the Factors That Make Some Languages Harder Than Others. [online]. Available from: <a href="https://gianfrancoconti.com/2025/04/18/how-long-does-it-take-to-learn-a-language-understanding-the-factors-that-make-some-languages-harder-than-others/">gianfrancoconti.com</a> [Accessed 03 April 2026].</li>' +
+  '</ul>';
+
+function hoursExtra(lang) {
+  const note =
+    lang === 'de'
+      ? 'Oft kommt es vor, dass man schneller vorankommt als gedacht. In diesem Fall ist es nicht nötig, sich an rigide Strukturen zu halten. Blöcke können auch übersprungen werden.'
+      : 'It often happens that people progress faster than expected. In that case there is no need to stick to a rigid structure: blocks can be skipped.';
+  return `<div class="faq-extra">${structureFigure(lang)}<p>${note}</p>${HOURS_SOURCES}</div>`;
+}
+
 export const FAQ = {
+  // Gioia's own answers, rendered at the top of the About section. Questions
+  // are put to her, so they address her as Sie; the answers are first person.
+  personal: [
+    {
+      q: {
+        en: 'What did you study, and how does it help you teach?',
+        de: 'Was haben Sie studiert und wie hilft Ihnen das beim Unterrichten?',
+      },
+      a: {
+        en: 'I studied Russian language and literature at the University of Zürich. Although my degree focused on linguistics in the Russian language, it is a field that cuts across languages and applies to every one of them equally. Alongside Russian, my academic career also took me through Spanish, French, Arabic and, briefly, Italian and Persian. So I know only too well what the first few weeks in a completely unfamiliar language feel like, and I try to accompany you on your way to greater confidence in your target language.',
+        de: 'Ich habe an der Universität Zürich Russische Sprach- und Literaturwissenschaft studiert. Obwohl mein Studium auf die russische Sprache ausgerichtet war, habe ich mich umfassend mit Linguistik befasst. Linguistik ist ein sprachübergreifendes Gebiet und kann auf jede Sprache gleichermassen angewendet werden. Ausser Russisch habe ich in meiner akademischen Laufbahn auch Spanisch, Französisch, Arabisch und kurz auch Italienisch und Persisch gelernt. Ich verstehe also nur allzu gut, wie sich die ersten paar Wochen in einer komplett fremden Sprache anfühlen, und versuche, Sie auf Ihrem Weg zu mehr Sicherheit in der Zielsprache zu begleiten.',
+      },
+    },
+    {
+      q: {
+        en: 'Why did you start teaching German?',
+        de: 'Warum haben Sie angefangen, Deutsch zu unterrichten?',
+      },
+      a: {
+        en: 'To answer that I have to rewind a little. I was already tutoring on the side throughout my time at Gymnasium and all the way through university. I then moved to London to continue my studies, lived there for many years and, after my Master’s, worked in the financial sector. When I came back to my home city of Zürich I was not sure which direction to take, and started teaching again. I realised that teaching is the one profession I keep returning to whenever I think about changing course, and really the only one where I forget most of what is going on around me.',
+        de: 'Um diese Frage zu beantworten, muss ich etwas zurückspulen. Ich habe bereits in meiner Zeit am Gymnasium und während meiner Studienzeit immer nebenbei Nachhilfe unterrichtet. Für mein Studium zog ich dann irgendwann nach London, lebte dort viele Jahre und arbeitete nach meinem Master im Finanzsektor. Nachdem ich in meine Heimatstadt Zürich zurückgekehrt war, wusste ich nicht genau, in welche Richtung es gehen sollte, und begann wieder zu unterrichten. Ich habe gemerkt, dass das Unterrichten der einzige Beruf ist, zu dem ich immer wieder zurückkehre, wenn ich darüber nachdenke, mich umzuorientieren, und eigentlich auch der einzige, bei dem ich das meiste um mich herum vergesse.',
+      },
+    },
+    {
+      q: {
+        en: 'How does your earlier work experience help you teach?',
+        de: 'Wie hilft Ihnen Ihre frühere Arbeitserfahrung beim Unterrichten?',
+      },
+      a: {
+        en: 'Finance and school do not pair naturally for most. Even so, many of the skills that matter in finance serve you well in teaching: diplomacy, a professional manner, presentation skills, listening and holding an interesting conversation, improvising where necessary. Explaining complex matters to someone is something I did often in my previous job. And not least the coordinating and structuring of lesson plans, timetables, appointments and deadlines, and staying calm when something does not go as planned.',
+        de: 'Finanzsektor und Schule passen für die meisten nicht allzu gut zusammen. Dennoch kommen einem viele Fähigkeiten, die im Finanzbereich wichtig sind, tatsächlich auch beim Unterrichten zugute: Diplomatie, professionelles Auftreten, Präsentationsfähigkeiten, Zuhören und interessante Gespräche führen, Improvisation, wenn nötig. Auch das Erklären von komplexen Sachverhalten für Lernende ist etwas, das ich in meinem früheren Beruf oft angewendet habe. Und nicht zuletzt das Koordinieren und Strukturieren von Lektionsplänen und Stundenplänen, Terminen und Fristen — und Ruhe zu bewahren, wenn etwas nicht so läuft wie geplant.',
+      },
+    },
+    {
+      q: {
+        en: 'What do you love most about teaching?',
+        de: 'Was lieben Sie am Unterrichten am meisten?',
+      },
+      a: {
+        en: 'Teaching lets me forget all the stress of everyday life. In the lesson I concentrate entirely on my pupils and try to give them as much as I can. That can be tiring at times, but the selflessness of it is very liberating. And there is nothing better than seeing them improve over the time we spend together. It always delights me to hear that someone suddenly understands a street sign they had walked past every day and never been able to place. Or that they have started speaking German with people in everyday life, when before they could not form a sentence. Or that they watched a series in German and understood all of it, read a book in German and told me about it… The list is endless.',
+        de: 'Das Unterrichten lässt mich allen Alltagsstress vergessen. In der Lektion konzentriere ich mich voll und ganz auf meine Schülerinnen und Schüler und versuche, ihnen so viel wie möglich mitzugeben. Das kann auch manchmal anstrengend sein, aber die Selbstlosigkeit daran ist sehr befreiend. Und es ist das Schönste, zu sehen, wie sie sich über die Zeit, die wir miteinander verbringen, verbessern. Es freut mich immer enorm, zu hören, wenn jemand zum Beispiel plötzlich ein Strassenschild versteht, das er oder sie täglich gesehen und nie einordnen konnte. Oder wenn jemand im Alltag Deutsch zu sprechen beginnt, obwohl vorher kein Satz möglich war. Oder eine Serie auf Deutsch schaut und alles versteht, ein Buch auf Deutsch liest und darüber berichtet … Die Liste ist endlos.',
+      },
+    },
+  ],
+
   courses: [
     {
       q: {
-        en: 'What do you teach?',
-        de: 'Was unterrichtet ihr?',
+        en: 'Which courses do you offer?',
+        de: 'Welche Kurse bieten Sie an?',
       },
       a: {
-        en: 'German, Swiss German and English, from complete beginner (A0) to advanced (C2). We also offer tutoring in school subjects and preparation for the Gymiprüfung.',
-        de: 'Deutsch, Schweizerdeutsch und Englisch, von A0 bis C2. Dazu kommen Nachhilfe in Schulfächern und die Vorbereitung auf die Gymiprüfung.',
+        en: 'We offer language courses, one-to-one lessons, tutoring and Gymivorbereitung. If your target language, or the kind of course you are looking for, is not listed, do get in touch. We will try to find the right course for you, or to put one together.',
+        de: 'Wir bieten Sprachkurse, Einzelunterricht, Nachhilfe und Gymivorbereitung. Sollte Ihre Zielsprache oder die Kursart, nach der Sie suchen, nicht aufgelistet sein, melden Sie sich gerne bei uns. Wir versuchen, für Sie den passenden Kurs zu finden oder zusammenzustellen.',
       },
     },
     {
       q: {
-        en: 'How long does it take to complete a level in a language course?',
-        de: 'Wie lange dauert ein Niveau in einem Sprachkurs?',
+        en: 'How long does it take to learn German?',
+        de: 'Wie lange dauert es, Deutsch zu lernen?',
       },
       a: {
-        en: 'Moving through a full level in a group course, for example from A0 to A1, on average takes around 100 to 150 hours of guided learning, plus a similar amount of independent study. Our regular group courses split each level into three blocks of 32 hours.',
-        de: 'Ein vollständiges Niveau in einem Gruppenkurs, zum Beispiel von A0 zu A1, braucht im Durchschnitt etwa 100 bis 150 Stunden angeleitetes Lernen plus eine ähnliche Menge selbstständiges Lernen. Unsere regulären Gruppenkurse teilen jedes Niveau in drei Blöcke à 32 Stunden.',
+        en: 'There is unfortunately no single answer to this question. What is true is that on average it takes around 100 to 150 guided group hours**, plus a similar amount of independent study, to move up one level — from A0 to A1, for example. Our regular group courses are divided into three blocks per language level.',
+        de: 'Leider gibt es keine einheitliche Antwort auf diese Frage. Es ist aber so, dass man im Schnitt ca. 100 bis 150** angeleitete Gruppenstunden plus eine ähnliche Menge an selbständigem Lernen aufwenden muss, um ein Niveau weiterzukommen, also z. B. um von A0 zu A1 zu gelangen. Unsere regulären Gruppenkurse sind in drei Blöcke pro Sprachniveau aufgeteilt.',
+      },
+      extra: { en: hoursExtra('en'), de: hoursExtra('de') },
+    },
+    {
+      q: {
+        en: 'How do I find out my language level?',
+        de: 'Wie finde ich mein Sprachniveau heraus?',
+      },
+      a: {
+        en: 'We follow the six levels of the Common European Framework of Reference (CEFR). Our <a href="/niveaus.html">self-assessment grid</a> lets you get a rough sense of where you stand. If you would prefer a formal placement test, contact us and we will help you find the right level.',
+        de: 'Wir halten uns an die sechs Stufen des Gemeinsamen Europäischen Referenzrahmens (GER). Mit unserem <a href="/niveaus.html">Selbsteinschätzungsraster</a> können Sie ungefähr einschätzen, wo Sie stehen. Wenn Sie einen formellen Einstufungstest bevorzugen, kontaktieren Sie uns. Wir helfen Ihnen, das richtige Niveau zu finden.',
       },
     },
     {
       q: {
-        en: 'How do I know which level I am?',
-        de: 'Woher weiss ich, welches Niveau ich habe?',
+        en: 'Should I take private or group lessons?',
+        de: 'Soll ich Privat- oder Gruppenunterricht nehmen?',
       },
       a: {
-        en: 'Our interactive self-assessment walks you through the six CEFR levels and gives you a profile across listening, reading, speaking and writing. You can also just ask us in a free 15-minute call.',
-        de: 'Unser interaktives Selbsteinschätzungsraster führt dich durch die sechs Niveaus des GER und zeigt dir ein Profil für Hören, Lesen, Sprechen und Schreiben. Du kannst uns aber auch einfach in einem kostenlosen 15-Minuten-Gespräch fragen.',
+        en: 'It depends on what you are looking for. Private lessons suit you above all if you want to work towards one particular goal and would rather not have to fit around group dynamics or stronger and weaker fellow learners. Group lessons can often open up new perspectives, give you the chance to meet people, and either challenge you or show you that you already know more than you thought. Both formats are excellent ways to learn a language, and they mix well over the course of your learning.',
+        de: 'Es kommt darauf an, was Sie suchen. Privatlektionen eignen sich vor allem, wenn Sie an einem ganz bestimmten Ziel arbeiten wollen und sich nicht nach Gruppendynamiken oder stärkeren oder schwächeren Mitlernenden richten möchten. Gruppenunterricht kann Ihnen oft neue Perspektiven aufzeigen, die Möglichkeit bieten, neue Kontakte zu knüpfen, und Sie herausfordern oder Ihnen auch teilweise zeigen, dass Sie vielleicht doch schon mehr wissen, als Sie dachten. Beide Formate eignen sich hervorragend, um eine Sprache zu lernen, und lassen sich im Sprachlernweg auch gut mischen.',
       },
     },
     {
@@ -1027,7 +1078,7 @@ export const FAQ = {
       },
       a: {
         en: 'Open group courses take a maximum of five people, and run from three. Gymivorbereitung groups run from three to seven people. If you want a group of exactly your colleagues or friends, we can set that up as a private group.',
-        de: 'Offene Gruppenkurse haben maximal fünf Teilnehmende und finden ab drei statt. Gymivorbereitungsgruppen laufen mit drei bis sieben. Wenn ihr als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchtet, richten wir das als geschlossene Gruppe ein.',
+        de: 'Offene Gruppenkurse finden ab drei Teilnehmenden statt und haben maximal fünf Teilnehmende. Wenn Sie als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchten, richten wir das als geschlossene Gruppe ein.',
       },
     },
     {
@@ -1037,17 +1088,43 @@ export const FAQ = {
       },
       a: {
         en: 'A group course runs from three participants. If fewer sign up, we either merge the course, postpone it, or — if you agree — run it with fewer lessons. If the school cancels a course, the full amount is refunded.',
-        de: 'Ein Gruppenkurs findet ab drei Teilnehmenden statt. Bei weniger Anmeldungen legen wir Kurse zusammen, verschieben sie oder führen sie — mit deinem Einverständnis — mit weniger Lektionen durch. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
+        de: 'Bei weniger Anmeldungen legen wir Kurse mit Ihrem Einverständnis zusammen, verschieben sie oder führen sie modifiziert durch. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
       },
     },
     {
       q: {
         en: 'Which exams do you prepare for?',
-        de: 'Auf welche Prüfungen bereitet ihr vor?',
+        de: 'Auf welche Prüfungen bereiten Sie vor?',
       },
       a: {
         en: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. We practise with the real exam formats, so nothing on the day is a surprise.',
         de: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. Wir üben mit den echten Prüfungsformaten, damit am Prüfungstag nichts überraschend kommt.',
+      },
+    },
+  ],
+
+  // Why German is hard to pick up here, and why Swiss German is worth it
+  // anyway. Its own group: it is the question this school exists to answer,
+  // and it is what people search for.
+  swiss: [
+    {
+      q: {
+        en: 'I do not like German and/or Swiss German. Should I still learn it?',
+        de: 'Ich mag Deutsch und/oder Schweizerdeutsch nicht, sollte ich es trotzdem lernen?',
+      },
+      a: {
+        en: 'Our answer is yes. Even if the language does not particularly appeal to you, we will try to give you a way into it. Why? We believe it can only be a good thing to at least understand another language, and better still to speak it. In Zürich the language of everyday life simply is Swiss German and, however annoying that may be, people speak their mother tongue, consciously or not. Being able at least to understand it can only help you find your feet in Switzerland more easily. The same goes for standard German, which is indispensable in writing.',
+        de: 'Unsere Antwort ist: ja. Auch wenn Ihnen die Sprache nicht besonders zusagt, werden wir versuchen, Ihnen einen Zugang zur Sprache zu vermitteln. Warum? Wir glauben, dass es nur positiv sein kann, eine weitere Sprache mindestens zu verstehen und noch mehr, sie zu sprechen. In Zürich ist die vorwiegend verwendete Alltagssprache nun einmal Schweizerdeutsch, und so sehr es nerven mag, die Leute sprechen, bewusst oder unbewusst, ihre Muttersprache. Es kann Ihnen nur helfen, sie zumindest zu verstehen, um sich in der Schweiz einfacher zurechtzufinden. Ebenso das Hochdeutsche, das im Schriftverkehr unabdingbar ist.',
+      },
+    },
+    {
+      q: {
+        en: 'Why is it so difficult to learn German in Switzerland?',
+        de: 'Warum ist es so schwierig, in der Schweiz Deutsch zu lernen?',
+      },
+      a: {
+        en: 'Staying on the same subject: one of the official national languages is indeed standard German. What people in German-speaking Switzerland actually speak day to day, however, is largely Swiss German. That is a reality which unfortunately cannot be changed, and it makes learning standard German immensely harder. A key factor in learning a language is the casual, everyday exposure to it outside the classroom, and the prevalence of Swiss German makes that difficult to arrange here. Alongside our courses we therefore also try to provide material that closes this gap between what is learnt and where it is used.',
+        de: 'Wir bleiben beim Thema. Eine der offiziellen Landessprachen ist zwar Hochdeutsch. Was aber im Alltag von den Einwohnerinnen und Einwohnern der Deutschschweiz grösstenteils gesprochen wird, ist Schweizerdeutsch. Es ist eine Realität, die sich leider nicht ändern lässt. Das erschwert aber das Lernen des Hochdeutschen immens. Ein Schlüsselfaktor beim Lernen einer Sprache ist die beiläufige alltägliche Auseinandersetzung mit dieser ausserhalb des Unterrichts. Und das ist in der Schweiz durch die Prävalenz des Schweizerdeutschen leider nicht so einfach zu gestalten. Wir versuchen im Zusammenhang mit unseren Kursen auch Inhalte zu vermitteln, um diese Diskrepanz zwischen Gelerntem und der Anwendung dessen im Alltag auszugleichen.',
       },
     },
   ],
@@ -1070,7 +1147,7 @@ export const FAQ = {
       },
       a: {
         en: 'Yes. Lesson times are arranged in Zürich time, and we can usually find a slot that works across European time zones. For anything further afield, tell us your window and we will aim to find a suitable time.',
-        de: 'Ja. Die Zeiten richten sich nach Zürcher Zeit, und innerhalb Europas findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen sag uns dein Zeitfenster, dann suchen wir eine passende Zeit.',
+        de: 'Ja. Die Zeiten richten sich nach Zürcher Zeit, und innerhalb Europas findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen sagen Sie uns Ihr Zeitfenster, dann suchen wir eine passende Zeit.',
       },
     },
     {
@@ -1080,7 +1157,7 @@ export const FAQ = {
       },
       a: {
         en: 'A stable internet connection, a device with a camera and microphone, and somewhere you can speak out loud. Materials are shared digitally.',
-        de: 'Eine stabile Internetverbindung, ein Gerät mit Kamera und Mikrofon und einen Ort, an dem du laut sprechen kannst. Die Materialien erhältst du digital.',
+        de: 'Eine stabile Internetverbindung, ein Gerät mit Kamera und Mikrofon und einen Ort, an dem Sie laut sprechen können. Die Materialien erhalten Sie digital.',
       },
     },
   ],
@@ -1092,8 +1169,8 @@ export const FAQ = {
         de: 'Wann sollten wir mit der Gymivorbereitung beginnen?',
       },
       a: {
-        en: 'The earlier the better. The road to Gymnasium starts long before exam day. One block of Gymivorbereitung runs as 20 lessons of 90 minutes over five months. Tell us your child’s school year and target exam date and we will suggest a timeline.',
-        de: 'Je früher, desto besser. Der Weg ans Gymnasium beginnt lange vor dem Prüfungstag. Ein Block Gymivorbereitung umfasst 20 Lektionen à 90 Minuten über fünf Monate. Sag uns das Schuljahr deines Kindes und den Prüfungstermin, dann schlagen wir einen Zeitplan vor.',
+        en: 'The earlier the better. The road to Gymnasium starts long before exam day. We teach Mathematics and German across 12 or 20 teaching days of three hours each — 36 and 60 lessons respectively — once or twice a week. Tell us your child’s school year and target exam date and we will suggest a timeline.',
+        de: 'Je früher, desto besser. Der Weg ans Gymnasium beginnt lange vor der Prüfung. Üblicherweise starten Vorbereitungskurse bereits im März des Prüfungsvorjahres. Unterrichtet wird an 12 oder 20 Unterrichtstagen à drei Stunden, also 36 bzw. 60 Lektionen, ein- oder zweimal pro Woche. Intensivkurse in den Ferienzeiten stehen ebenfalls zur Auswahl. Kontaktieren Sie uns, um einen passenden Zeitplan zu finden.',
       },
     },
     {
@@ -1102,8 +1179,8 @@ export const FAQ = {
         de: 'Gruppe oder Einzelunterricht für die Gymivorbereitung?',
       },
       a: {
-        en: 'Groups work well when a child is broadly on track and needs exam practice. One-to-one is the better choice when there are specific gaps to close, or when exam nerves are the main obstacle.',
-        de: 'Gruppen eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und Prüfungstraining braucht. Einzelunterricht ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.',
+        en: 'Groups of three to seven children work well when a child is broadly on track and needs exam practice. One-to-one is the better choice when there are specific gaps to close, or when exam nerves are the main obstacle.',
+        de: 'Gruppen von drei bis sieben Kindern eignen sich gut, wenn ein Kind grundsätzlich auf Kurs ist und lediglich Prüfungstraining braucht. Einzelunterricht ist die bessere Wahl, wenn gezielt Lücken zu schliessen sind oder die Prüfungsangst im Vordergrund steht.',
       },
     },
     {
@@ -1113,7 +1190,7 @@ export const FAQ = {
       },
       a: {
         en: 'Closing gaps in the underlying material, practising with the exam format itself, and building the calm needed to perform under time pressure. The balance between those three is set per child.',
-        de: 'Lücken im Stoff schliessen, mit dem Prüfungsformat selbst üben und die Ruhe aufbauen, die es unter Zeitdruck braucht. Die Gewichtung dieser drei Teile richtet sich nach dem einzelnen Kind.',
+        de: 'Unterrichtet werden die Fächer Mathematik und Deutsch. Das Ziel ist es, Lücken im Stoff zu schliessen, mit dem Prüfungsformat zu üben und Ruhe aufzubauen. Je nach Kind fällt der Fokus auf diese verschiedenen Aspekte unterschiedlich aus.',
       },
     },
   ],
@@ -1122,11 +1199,11 @@ export const FAQ = {
     {
       q: {
         en: 'Do you teach at our offices?',
-        de: 'Unterrichtet ihr bei uns im Büro?',
+        de: 'Unterrichten Sie bei uns im Büro?',
       },
       a: {
         en: 'Yes. In-house training at your offices is the most common arrangement. We can also teach in our classroom or online, and mix the three across a single programme if your team is split across sites.',
-        de: 'Ja. Inhouse-Schulungen bei euch im Büro sind der häufigste Fall. Wir unterrichten auch in unserem Kursraum oder online und kombinieren die drei Varianten innerhalb eines Programms, wenn euer Team auf mehrere Standorte verteilt ist.',
+        de: 'Ja, wir unterrichten bei Bedarf direkt bei Ihnen im Büro oder online.',
       },
     },
     {
@@ -1136,7 +1213,7 @@ export const FAQ = {
       },
       a: {
         en: 'Pricing is on request, because it depends on group size, lesson length, location and how much bespoke material the programme needs. A level typically takes around 100 lessons, commonly at two 60-minute lessons per week.',
-        de: 'Die Preise erstellen wir auf Anfrage, da sie von Gruppengrösse, Lektionsdauer, Ort und dem Umfang an massgeschneidertem Material abhängen. Ein Niveau umfasst typischerweise rund 100 Lektionen, üblicherweise zwei Lektionen à 60 Minuten pro Woche.',
+        de: 'Den Preis erstellen wir auf Anfrage. Er hängt von Gruppengrösse, Lektionsdauer, Ort und dem Umfang an massgeschneidertem Material ab. Ein Niveau umfasst typischerweise rund 100 Lektionen, üblicherweise zwei Lektionen à 60 Minuten pro Woche.',
       },
     },
     {
@@ -1146,27 +1223,27 @@ export const FAQ = {
       },
       a: {
         en: 'That is the point of an in-house course. We build the programme around your industry, your everyday work and the situations your people actually face: client meetings, phone calls, written correspondence, small talk in the corridor.',
-        de: 'Genau dafür ist ein Inhouse-Kurs da. Wir bauen das Programm um eure Branche, euren Arbeitsalltag und die Situationen, die bei euch wirklich vorkommen — Kundengespräche, Telefonate, Korrespondenz, Small Talk im Gang.',
+        de: 'Selbstverständlich. Wir bauen das Programm um Ihre Branche, Ihren Arbeitsalltag und die Situationen, die für Sie relevant sind, auf. Kundengespräche, Telefonate, Korrespondenz, Small Talk im Gang.',
       },
     },
     {
       q: {
         en: 'Can you teach Swiss German to relocating employees?',
-        de: 'Unterrichtet ihr Schweizerdeutsch für zuziehende Mitarbeitende?',
+        de: 'Unterrichten Sie Schweizerdeutsch für zuziehende Mitarbeitende?',
       },
       a: {
         en: 'Yes, and it is one of the things we are asked for most. Standard German gets a new arrival through the working day. Swiss German is what opens the door to the lunch table, the corridor and the team apéro.',
-        de: 'Ja, und das ist eine der häufigsten Anfragen. Mit Hochdeutsch kommt man durch den Arbeitstag. Schweizerdeutsch öffnet die Tür zum Mittagstisch, zum Gang und zum Team-Apéro.',
+        de: 'Ja, wir unterrichten Schweizerdeutsch. Hochdeutsch hilft einem im Schriftverkehr. Schweizerdeutsch öffnet Türen am Mittagstisch, im Gang, am Team-Apéro und auch sonst im Alltagsleben.',
       },
     },
     {
       q: {
         en: 'How is invoicing handled?',
-        de: 'Wie läuft die Rechnungsstellung?',
+        de: 'Wie läuft die Rechnungsstellung und Anmeldung?',
       },
       a: {
         en: 'We invoice the company directly, and can issue one invoice for the whole programme or per participant. Companies can also be given a booking code so employees enrol themselves in the right course without going through your HR inbox.',
-        de: 'Wir stellen der Firma direkt Rechnung, wahlweise eine Rechnung für das ganze Programm oder pro Teilnehmenden. Firmen können ausserdem einen Buchungscode erhalten, mit dem sich Mitarbeitende selbst für den richtigen Kurs anmelden, ohne den Umweg über euer HR-Postfach.',
+        de: 'Die Rechnung wird an die Firma adressiert, wahlweise eine Rechnung für das ganze Programm oder für individuelle Teilnehmende. Wir erstellen bei Bedarf auch Kursbuchungscodes, damit Mitarbeitende sich direkt über unsere Website anmelden können.',
       },
     },
   ],
@@ -1176,11 +1253,16 @@ export const FAQ = {
 // homepage stays scannable. The answer is in the HTML either way, which is what
 // the FAQPage markup and the assistants that quote it need; a reader opens it
 // with one click and no JavaScript.
+//
+// `extra` is block content that belongs to the answer but not inside its <p>,
+// and not in the structured data either — a figure or a source list, which a
+// quoted answer is better off without.
 export function faqHtml(items, lang) {
   return items
     .map(
       (item) =>
-        `<details class="faq-item"><summary><h3>${item.q[lang]}</h3></summary><p>${item.a[lang]}</p></details>`
+        `<details class="faq-item"><summary><h3>${item.q[lang]}</h3></summary>` +
+        `<p>${item.a[lang]}</p>${item.extra ? item.extra[lang] : ''}</details>`
     )
     .join('');
 }
@@ -1188,7 +1270,9 @@ export function faqHtml(items, lang) {
 // The rendered lists live on the homepage. Added here rather than inside the
 // pages literal because they need FAQ, which is declared after it.
 Object.assign(pages['/index.html'].text, {
+  '#about-personal-list': { en: faqHtml(FAQ.personal, 'en'), de: faqHtml(FAQ.personal, 'de') },
   '#faq-courses-list': { en: faqHtml(FAQ.courses, 'en'), de: faqHtml(FAQ.courses, 'de') },
+  '#faq-swiss-list': { en: faqHtml(FAQ.swiss, 'en'), de: faqHtml(FAQ.swiss, 'de') },
   '#faq-online-list': { en: faqHtml(FAQ.online, 'en'), de: faqHtml(FAQ.online, 'de') },
   '#faq-gymi-list': { en: faqHtml(FAQ.gymi, 'en'), de: faqHtml(FAQ.gymi, 'de') },
   '#faq-company-list': { en: faqHtml(FAQ.company, 'en'), de: faqHtml(FAQ.company, 'de') },
@@ -1202,10 +1286,10 @@ Object.assign(pages, {
     },
     text: {
       '#intake-loading': { en: 'loading...', de: 'Wird geladen...' },
-      '#intake-content h1': { en: 'your details', de: 'Deine Angaben' },
+      '#intake-content h1': { en: 'your details', de: 'Ihre Angaben' },
       '.intake-intro': {
         en: 'Please fill in or confirm the information below so we can keep your records up to date. Fields marked * are required.',
-        de: 'Bitte fülle die folgenden Angaben aus oder bestätige sie, damit wir deine Daten aktuell halten können. Felder mit * sind erforderlich.',
+        de: 'Bitte füllen Sie die folgenden Angaben aus oder bestätigen Sie sie, damit wir Ihre Daten aktuell halten können. Felder mit * sind erforderlich.',
       },
       '#intake-label-student': {
         en: 'student information',
@@ -1263,26 +1347,29 @@ Object.assign(pages, {
       'label[for="if-billing-city"]': { en: 'city *', de: 'Ort *' },
       '#err-first-name': {
         en: 'Please enter a first name.',
-        de: 'Bitte gib einen Vornamen ein.',
+        de: 'Bitte geben Sie einen Vornamen ein.',
       },
-      '#err-last-name': { en: 'Please enter a last name.', de: 'Bitte gib einen Nachnamen ein.' },
+      '#err-last-name': {
+        en: 'Please enter a last name.',
+        de: 'Bitte geben Sie einen Nachnamen ein.',
+      },
       '#err-gender': {
         en: 'Please select a salutation.',
-        de: 'Bitte wähle eine Anrede aus.',
+        de: 'Bitte wählen Sie eine Anrede aus.',
       },
       '#err-gender-note': {
         en: 'Please specify your salutation.',
-        de: 'Bitte gib deine Anrede an.',
+        de: 'Bitte geben Sie Ihre Anrede an.',
       },
       '#intake-submit-btn': { en: 'save details ->', de: 'Angaben speichern ->' },
       '#submit-error': {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuchen Sie es erneut oder schreiben Sie uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#intake-thanks h2': { en: 'thank you.', de: 'Danke.' },
       '#intake-thanks p': {
         en: "Your details have been saved. We'll be in touch shortly.",
-        de: 'Deine Angaben wurden gespeichert. Wir melden uns bald.',
+        de: 'Ihre Angaben wurden gespeichert. Wir melden uns bald.',
       },
       '#intake-error h2': {
         en: 'link expired or invalid.',
@@ -1290,7 +1377,7 @@ Object.assign(pages, {
       },
       '#intake-error p': {
         en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Bitte kontaktieren Sie Ihre Lehrperson für einen neuen Link oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
     },
   },
@@ -1301,10 +1388,10 @@ Object.assign(pages, {
     },
     text: {
       '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
-      '#feedback-content h1': { en: 'your feedback', de: 'Dein Feedback' },
+      '#feedback-content h1': { en: 'your feedback', de: 'Ihr Feedback' },
       '.intake-intro': {
         en: 'Thank you for taking the time to share your feedback. Your honest opinion helps improve future lessons — there are no right or wrong answers, so please be as open as you like. Only your teacher reads your answers.',
-        de: 'Danke, dass du dir Zeit für dein Feedback nimmst. Deine ehrliche Meinung hilft uns, den Unterricht besser zu machen — es gibt keine richtigen oder falschen Antworten, sag also ruhig offen, was du denkst. Deine Antworten liest nur deine Lehrperson.',
+        de: 'Danke, dass Sie sich Zeit für Ihr Feedback nehmen. Ihre ehrliche Meinung hilft uns, den Unterricht besser zu machen — es gibt keine richtigen oder falschen Antworten, sagen Sie also ruhig offen, was Sie denken. Ihre Antworten liest nur Ihre Lehrperson.',
       },
       '#feedback-time': {
         en: 'estimated time: 3-5 minutes',
@@ -1313,17 +1400,17 @@ Object.assign(pages, {
       '#feedback-submit-btn': { en: 'send feedback ->', de: 'Feedback senden ->' },
       '#submit-error': {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Etwas ist schiefgelaufen — bitte versuche es erneut oder schreibe uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuchen Sie es erneut oder schreiben Sie uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#feedback-thanks h2': { en: 'thank you.', de: 'Danke.' },
       '#feedback-thanks p': {
         en: 'Your honest feedback helps us improve our lessons for everyone. We read every response carefully and genuinely appreciate both the compliments and the suggestions.',
-        de: 'Dein ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
+        de: 'Ihr ehrliches Feedback hilft uns, den Unterricht für alle besser zu machen. Wir lesen jede Antwort aufmerksam und freuen uns über Lob genauso wie über Verbesserungsvorschläge.',
       },
       '#feedback-done h2': { en: 'already answered.', de: 'Bereits beantwortet.' },
       '#feedback-done p': {
         en: 'This feedback has already been submitted — thank you. If you would like to add something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Dieses Feedback wurde bereits abgeschickt — danke. Wenn du noch etwas ergänzen möchtest, schreib einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Dieses Feedback wurde bereits abgeschickt — danke. Wenn Sie noch etwas ergänzen möchten, schreiben Sie einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#feedback-unavailable h2': {
         en: 'not right now.',
@@ -1331,7 +1418,7 @@ Object.assign(pages, {
       },
       '#feedback-unavailable p': {
         en: 'We could not load your feedback form just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Wir konnten dein Feedback-Formular gerade nicht laden — dein Link ist weiterhin gültig. Bitte versuche es in ein paar Minuten noch einmal oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Wir konnten Ihr Feedback-Formular gerade nicht laden — Ihr Link ist weiterhin gültig. Bitte versuchen Sie es in ein paar Minuten noch einmal oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#feedback-error h2': {
         en: 'link expired or invalid.',
@@ -1339,7 +1426,7 @@ Object.assign(pages, {
       },
       '#feedback-error p': {
         en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
-        de: 'Bitte kontaktiere deine Lehrperson für einen neuen Link oder schreibe an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Bitte kontaktieren Sie Ihre Lehrperson für einen neuen Link oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
     },
   },
@@ -1350,7 +1437,7 @@ Object.assign(pages, {
     },
     description: {
       en: 'Learn German modal particles interactively: reference with examples, quiz and cheat sheet. A free learning resource from Learning with Gioia.',
-      de: 'Lerne deutsche Modalpartikeln interaktiv: Übersicht mit Beispielen, Quiz und Spickzettel. Kostenloses Lernmittel von Learning with Gioia.',
+      de: 'Lernen Sie deutsche Modalpartikeln interaktiv: Übersicht mit Beispielen, Quiz und Spickzettel. Kostenloses Lernmittel von Learning with Gioia.',
     },
     text: {
       '.page-header h1': { en: 'Modal particles', de: 'Modalpartikeln' },
@@ -1375,7 +1462,7 @@ Object.assign(pages, {
     },
     description: {
       en: 'Learn German subjunctions interactively: meaning, subordinate-clause word order, examples, quiz and cheat sheet.',
-      de: 'Lerne deutsche Subjunktionen interaktiv: Bedeutung, Nebensatzstellung, Beispiele, Quiz und Spickzettel.',
+      de: 'Lernen Sie deutsche Subjunktionen interaktiv: Bedeutung, Nebensatzstellung, Beispiele, Quiz und Spickzettel.',
     },
     text: {
       '.page-header h1': { en: 'Subjunctions', de: 'Subjunktionen' },
@@ -1410,7 +1497,7 @@ Object.assign(pages, {
     },
     description: {
       en: 'Learn the five German conjunctions aber, denn, und, sondern and oder interactively: meaning, word order, examples, quiz and cheat sheet.',
-      de: 'Lerne die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel.',
+      de: 'Lernen Sie die fünf deutschen Konjunktionen aber, denn, und, sondern und oder interaktiv: Bedeutung, Satzstellung, Beispiele, Quiz und Spickzettel.',
     },
     text: {
       '.page-header h1': { en: 'Conjunctions', de: 'Konjunktionen' },
