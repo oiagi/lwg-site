@@ -62,6 +62,13 @@ const instanceId = (date, time = LESSON_TIME) =>
  * `overrideSurvivesExdate` picks which way an EXDATE naming an overridden
  * slot resolves. Google does not specify this, so the sync has to be correct
  * either way and both settings are exercised below.
+ *
+ * `lagSlots` names slots that keep the old summary after a master rename while
+ * still reporting the master's `updated` stamp — Google having not finished
+ * propagating. They must be left alone, not patched into overrides.
+ *
+ * `standalone` holds events that belong to no series: the sessions a teacher
+ * adds by hand to a course created with singleSession.
  */
 function makeCalendar({
   startDate = upcomingMonday(),
@@ -69,11 +76,15 @@ function makeCalendar({
   count = 10,
   overrides = {},
   overrideSurvivesExdate = false,
+  summary = `${COURSE_CODE} — Anna <> Gioia`,
+  lagSlots = [],
+  standalone = [],
 } = {}) {
   return {
     master: {
       id: MASTER_ID,
-      summary: `${COURSE_CODE} — Anna <> Gioia`,
+      summary,
+      updated: 'master-v0',
       start: {
         dateTime: zurichToUtc(startDate, startTime).toISOString(),
         timeZone: 'Europe/Zurich',
@@ -84,7 +95,18 @@ function makeCalendar({
     startTime,
     overrides: new Map(Object.entries(overrides)),
     overrideSurvivesExdate,
+    // The summary an override froze at the moment it was created — a real
+    // override carries its own copy, so a later master rename never reaches it.
+    originalSummary: summary,
+    lagSlots: new Set(lagSlots),
+    standalone,
+    // Titles written directly onto an instance or a standalone event.
+    instancePatches: new Map(),
+    // Event ids whose PATCH Google refuses, for the non-fatal-failure test.
+    failPatch: new Set(),
     patches: 0,
+    titlePatches: 0,
+    updateSeq: 0,
   };
 }
 
@@ -111,17 +133,37 @@ function expand(cal, timeMin) {
     // API, where an untouched series reports it equal to `start` throughout.
     // Emitting it only for overrides is what let a sync that read its mere
     // presence as "hand-moved" pass these tests while enforcing nothing.
+    //
+    // Titles work the other way round: an override is its own resource with its
+    // own frozen summary and its own `updated`, while an ordinary instance is
+    // re-rendered from the parent on every read and so reports the parent's.
+    // `lagSlots` is the awkward middle case Google occasionally serves —
+    // parent stamp, stale title.
+    const key = `${date}T${start.time}`;
+    const id = `${MASTER_ID}_${basicUtc(originalUtc)}`;
+    const inherited = override || cal.lagSlots.has(key) ? cal.originalSummary : cal.master.summary;
+
     out.push({
-      id: `${MASTER_ID}_${basicUtc(originalUtc)}`,
+      id,
       recurringEventId: MASTER_ID,
       status: 'confirmed',
-      summary: cal.master.summary,
+      summary: cal.instancePatches.get(id) ?? inherited,
+      updated: override ? `override-${key}` : cal.master.updated,
       start: { dateTime: actualUtc.toISOString(), timeZone: 'Europe/Zurich' },
       end: { dateTime: new Date(actualUtc.getTime() + 50 * 60000).toISOString() },
       originalStartTime: { dateTime: originalUtc.toISOString() },
     });
   }
-  return out.filter((e) => !timeMin || e.start.dateTime >= timeMin);
+  for (const event of cal.standalone) {
+    out.push({
+      status: 'confirmed',
+      ...event,
+      summary: cal.instancePatches.get(event.id) ?? event.summary,
+    });
+  }
+  return out
+    .filter((e) => !timeMin || e.start.dateTime >= timeMin)
+    .sort((a, b) => a.start.dateTime.localeCompare(b.start.dateTime));
 }
 
 const ENV = {
@@ -138,7 +180,16 @@ const ENV = {
  */
 function makeWorld(
   t,
-  { cal = makeCalendar(), sessions = [], blocked = [], course = {}, attendance = [] } = {}
+  {
+    cal = makeCalendar(),
+    sessions = [],
+    blocked = [],
+    course = {},
+    attendance = [],
+    companies = [],
+    enrolments = [],
+    students = [],
+  } = {}
 ) {
   const db = {
     courses: [
@@ -166,6 +217,9 @@ function makeWorld(
     blocked_dates: blocked,
     sessions,
     attendance,
+    companies,
+    enrolments,
+    students,
   };
 
   let nextId = 1;
@@ -192,12 +246,30 @@ function makeWorld(
         const timeMin = new URL(u).searchParams.get('timeMin');
         return json({ items: expand(cal, timeMin) });
       }
-      if (u.includes(`/events/${MASTER_ID}`)) {
-        if (method === 'PATCH') {
-          cal.master.recurrence = JSON.parse(opts.body).recurrence;
-          cal.patches++;
+      // Must be an exact match on the id: an instance id starts with the
+      // master's, so `includes` would route every instance patch to the parent
+      // and hide the very mistake these tests exist to catch.
+      const eventMatch = u.match(/\/events\/([^?]+)/);
+      if (eventMatch) {
+        const eventId = decodeURIComponent(eventMatch[1]);
+        if (method === 'PATCH' && cal.failPatch.has(eventId)) return json({ error: 'boom' }, 500);
+        if (eventId === MASTER_ID) {
+          if (method === 'PATCH') {
+            const patch = JSON.parse(opts.body);
+            if (patch.recurrence) {
+              cal.master.recurrence = patch.recurrence;
+              cal.patches++;
+            }
+            if (patch.summary !== undefined) {
+              cal.master.summary = patch.summary;
+              cal.master.updated = `master-v${++cal.updateSeq}`;
+              cal.titlePatches++;
+            }
+          }
+          return json(structuredClone(cal.master));
         }
-        return json(structuredClone(cal.master));
+        if (method === 'PATCH') cal.instancePatches.set(eventId, JSON.parse(opts.body).summary);
+        return json({ id: eventId });
       }
     }
 
@@ -614,4 +686,192 @@ test('sessions_completed counts the whole course, cancelled rows excluded', asyn
   const res = await run();
   assert.equal(res.body.completed, 3, 'two historical plus the one just past');
   assert.equal(db.courses[0].sessions_completed, 3);
+});
+
+// ── Calendar titles ─────────────────────────────────────────────────────
+//
+// The title is derived from the course record, so sync is what pushes it to
+// Google. Two properties matter more than the string itself: an event must
+// still be findable after a rename (or the deletion pass above removes its
+// session), and an ordinary instance must never be patched into an override.
+
+const GROUP_COURSE = { subject: 'German', level: 'B1.2', group_type: 'group' };
+const NEW_TITLE = `German B1.2 class · ${COURSE_CODE}`;
+
+test('a stale series is renamed once, and repeated syncs leave it alone', async (t) => {
+  const { db, cal, run } = makeWorld(t, { course: GROUP_COURSE });
+
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.equal(res.body.renamed_title, NEW_TITLE);
+  assert.equal(res.body.renamed_events, 1);
+  assert.equal(cal.master.summary, NEW_TITLE);
+  assert.equal(cal.titlePatches, 1);
+
+  const settled = sessionDates(db);
+  for (let i = 0; i < 3; i++) {
+    const again = await run();
+    assert.equal(again.body.renamed_events, 0, 'nothing left to rename');
+  }
+  assert.equal(cal.titlePatches, 1, 'the series is renamed once, not once per sync');
+  assert.deepEqual(sessionDates(db), settled);
+});
+
+test('events already in the new format are still found', async (t) => {
+  // The regression that matters most: the matcher used to demand the course
+  // code at the *start* of the summary. Under that rule every event here
+  // vanishes, the deletion pass calls them deleted, and the course loses its
+  // entire session history.
+  const { db, cal, run } = makeWorld(t, {
+    cal: makeCalendar({ summary: NEW_TITLE }),
+    course: GROUP_COURSE,
+  });
+
+  const res = await run();
+  assert.equal(res.body.events_found, 10);
+  assert.equal(res.body.removed, 0);
+  assert.equal(db.sessions.length, 10);
+  assert.equal(cal.titlePatches, 0, 'already correct — no write at all');
+});
+
+test('renaming leaves every session row untouched', async (t) => {
+  const { db, run } = makeWorld(t, { course: GROUP_COURSE });
+  await run();
+  const before = db.sessions.map((s) => `${s.id}:${s.calendar_event_id}`).sort();
+
+  await run();
+  assert.deepEqual(db.sessions.map((s) => `${s.id}:${s.calendar_event_id}`).sort(), before);
+});
+
+test('a hand-moved instance is renamed by its own patch', async (t) => {
+  const startDate = upcomingMonday();
+  const movedSlot = addDays(startDate, 14);
+  const { cal, run } = makeWorld(t, {
+    cal: makeCalendar({
+      startDate,
+      overrides: { [`${movedSlot}T${LESSON_TIME}`]: [addDays(movedSlot, 2), LESSON_TIME] },
+    }),
+    course: GROUP_COURSE,
+  });
+
+  const res = await run();
+  assert.equal(cal.master.summary, NEW_TITLE);
+  // The override froze its own copy of the summary, so the parent patch never
+  // reached it and it needed one of its own.
+  assert.deepEqual([...cal.instancePatches.values()], [NEW_TITLE]);
+  assert.equal(res.body.renamed_events, 2);
+});
+
+test('an instance that merely lagged is never patched into an override', async (t) => {
+  const startDate = upcomingMonday();
+  const { cal, run } = makeWorld(t, {
+    cal: makeCalendar({ startDate, lagSlots: [`${addDays(startDate, 7)}T${LESSON_TIME}`] }),
+    course: GROUP_COURSE,
+  });
+
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.equal(cal.master.summary, NEW_TITLE);
+  assert.equal(cal.instancePatches.size, 0, 'a stale instance is left for the next sync');
+  assert.equal(res.body.renamed_events, 1, 'only the master');
+});
+
+test('a standalone hand-made session is renamed directly', async (t) => {
+  const startDate = upcomingMonday();
+  const utc = zurichToUtc(addDays(startDate, 3), LESSON_TIME);
+  const { cal, run } = makeWorld(t, {
+    cal: makeCalendar({
+      startDate,
+      standalone: [
+        {
+          id: 'manual-1',
+          summary: `${COURSE_CODE} — catch-up`,
+          start: { dateTime: utc.toISOString(), timeZone: 'Europe/Zurich' },
+          end: { dateTime: new Date(utc.getTime() + 50 * 60000).toISOString() },
+        },
+      ],
+    }),
+    course: GROUP_COURSE,
+  });
+
+  const res = await run();
+  assert.equal(res.body.events_found, 11, 'the hand-made session syncs too');
+  assert.equal(cal.instancePatches.get('manual-1'), NEW_TITLE);
+});
+
+test('a rename that Google refuses does not fail the sync', async (t) => {
+  const { db, cal, run } = makeWorld(t, { course: GROUP_COURSE });
+  cal.failPatch.add(MASTER_ID);
+
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.equal(res.body.events_found, 10);
+  assert.equal(db.sessions.length, 10, 'sessions are synced regardless');
+  assert.equal(res.body.renamed_events, 0);
+  assert.notEqual(cal.master.summary, NEW_TITLE);
+  // And it must not fall back to renaming the instances one by one — that
+  // would turn a failed rename into ten new overrides.
+  assert.equal(cal.instancePatches.size, 0);
+});
+
+test('a course with nothing to say about itself keeps its title', async (t) => {
+  const { cal, run } = makeWorld(t, { course: { group_type: 'group', level: 'XX' } });
+  const before = cal.master.summary;
+
+  const res = await run();
+  assert.equal(res.body.renamed_title, null);
+  assert.equal(cal.titlePatches, 0);
+  assert.equal(cal.master.summary, before);
+});
+
+test('a linked company leads the title', async (t) => {
+  const { cal, run } = makeWorld(t, {
+    course: { ...GROUP_COURSE, company_id: 'comp-1', location_company: 'Some Building' },
+    companies: [{ id: 'comp-1', name: 'Apple' }],
+  });
+
+  await run();
+  assert.equal(cal.master.summary, `Apple German B1.2 · ${COURSE_CODE}`);
+});
+
+test('a private lesson at a company address is titled by the student, not the venue', async (t) => {
+  const course = {
+    subject: 'German',
+    level: 'A2',
+    group_type: 'private',
+    location_company: 'Apple',
+  };
+  const { cal, run } = makeWorld(t, {
+    course,
+    enrolments: [{ id: 'e1', course_id: COURSE_ID, student_id: 'stu-1' }],
+    students: [{ id: 'stu-1', first_name: 'Bharat' }],
+  });
+
+  await run();
+  assert.equal(cal.master.summary, `Bharat German A2 · ${COURSE_CODE}`);
+});
+
+test('an unlinked group course falls back to the venue name', async (t) => {
+  const { cal, run } = makeWorld(t, {
+    course: { ...GROUP_COURSE, location_company: 'Apple' },
+  });
+
+  await run();
+  assert.equal(cal.master.summary, `Apple German B1.2 · ${COURSE_CODE}`);
+});
+
+test('the student first name comes from enrolments, not the creation snapshot', async (t) => {
+  const { cal, run } = makeWorld(t, {
+    course: {
+      subject: 'German',
+      level: 'A2',
+      group_type: 'private',
+      participant_names: ['Anna'],
+    },
+    enrolments: [{ id: 'e1', course_id: COURSE_ID, student_id: 'stu-1' }],
+    students: [{ id: 'stu-1', first_name: 'Annika' }],
+  });
+
+  await run();
+  assert.equal(cal.master.summary, `Annika German A2 · ${COURSE_CODE}`);
 });

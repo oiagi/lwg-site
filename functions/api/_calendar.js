@@ -12,6 +12,118 @@ import {
   slotKey,
 } from './_blocked-dates.js';
 
+// Levels that are bookkeeping codes rather than something a student would
+// recognise as a level: 'CH' for Swiss German, 'SUB' for tutoring, 'XX' for
+// unknown. They are left out of the title — "Apple Swiss German", not
+// "Apple Swiss German CH".
+const NON_DISPLAY_LEVEL = /^(CH|SUB|XX)/i;
+
+// Separates the descriptive part of a title from the course code. Stripped
+// from every other part so a company literally named "A · B" cannot forge a
+// second boundary and confuse a human reading the calendar.
+const CODE_SEPARATOR = ' · ';
+
+function titlePart(value, max = 60) {
+  if (value === null || value === undefined) return null;
+  const cleaned = String(value)
+    .replace(/[·\n\r\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned ? cleaned.slice(0, max) : null;
+}
+
+function displayLevel(level) {
+  const value = titlePart(level, 12);
+  if (!value || NON_DISPLAY_LEVEL.test(value)) return null;
+  return value.toUpperCase();
+}
+
+/**
+ * The Google Calendar title for a course.
+ *
+ * Leads with whatever identifies the course at a glance, and keeps the course
+ * code as a trailing token so sync can still find the event (see
+ * summaryMatchesCourseCode) and so a teacher adding a session by hand can copy
+ * the title verbatim:
+ *
+ *   company    "Apple German B1.2 · 12345", "Apple Swiss German · 12345"
+ *   private    "Bharat German A2 · 47182", "Angelina Mathematics · 47182"
+ *   duo/group  "German B1.2 class · 90341"
+ *
+ * Duo takes the group branch deliberately — the only special case is `private`.
+ *
+ * Returns null when there is nothing descriptive to say: no company, no name,
+ * no subject and no displayable level. Callers treat that as "leave the title
+ * alone", because renaming a teacher's event to a bare "class · 12345" is
+ * worse than whatever they had written there.
+ *
+ * Pure — no I/O. The caller resolves companyName and participantName, since
+ * where those come from differs between creating a course and renaming one.
+ *
+ * Careful with participantName: get-courses.js overwrites `participant_names`
+ * with *full* names in its API response, while the database column holds first
+ * names. Feed this the raw course row, never a get-courses object.
+ *
+ * @param {object} opts
+ * @param {string} opts.courseCode
+ * @param {string|null} [opts.subject]
+ * @param {string|null} [opts.level]
+ * @param {string|null} [opts.groupType] — 'private' | 'duo' | 'group'
+ * @param {string|null} [opts.companyName]
+ * @param {string|null} [opts.participantName] — first name, private courses only
+ * @returns {string|null}
+ */
+export function courseEventTitle({
+  courseCode,
+  subject,
+  level,
+  groupType,
+  companyName = null,
+  participantName = null,
+}) {
+  const code = titlePart(courseCode, 20);
+  if (!code) return null;
+
+  const company = titlePart(companyName);
+  const parts = [];
+  if (company) parts.push(company);
+  else if (groupType === 'private') {
+    const name = titlePart(participantName);
+    if (name) parts.push(name);
+  }
+
+  const subjectPart = titlePart(subject, 40);
+  if (subjectPart) parts.push(subjectPart);
+  const levelPart = displayLevel(level);
+  if (levelPart) parts.push(levelPart);
+
+  // "class" marks an open group but says nothing on its own, so it never
+  // counts towards the title being descriptive enough to write.
+  if (!parts.length) return null;
+  if (!company && groupType !== 'private') parts.push('class');
+
+  return `${parts.join(' ')}${CODE_SEPARATOR}${code}`;
+}
+
+/**
+ * Whether an event summary carries this course code as a standalone token.
+ *
+ * Deliberately position-independent. The title format puts the code last
+ * ("German B1.2 class · 90341") while every event created before that change
+ * puts it first ("90341 — Anna <> Gioia"), and both have to keep matching: an
+ * event that stops matching is an event whose session row the deletion pass in
+ * sync-calendar.js removes.
+ *
+ * The boundaries are what stop "12345" matching "123456" or "X12345". Note the
+ * escape has to cover '-', because legacy codes look like "P-A1-001".
+ */
+export function summaryMatchesCourseCode(summary, courseCode) {
+  const code = String(courseCode || '');
+  if (!code) return false;
+  const escaped = code.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+  return new RegExp(`(?:^|[^A-Za-z0-9])${escaped}(?![A-Za-z0-9])`).test(String(summary || ''));
+}
+
 /**
  * Create a recurring Google Calendar event for a course.
  *
@@ -21,7 +133,10 @@ import {
  * @param {string} opts.courseCode   — e.g. "P-A1-001"
  * @param {object} opts.booking      — Booking data (service, level, language, exam)
  * @param {object} opts.contact      — Contact data (lead, participants)
- * @param {string} opts.teacherName  — Teacher display name
+ * @param {string|null} opts.subject — Course subject, for the title
+ * @param {string|null} opts.level   — Level code as stored on the course
+ * @param {string|null} opts.groupType — 'private' | 'duo' | 'group'
+ * @param {string|null} opts.companyName — Linked company, for the title
  * @param {string} opts.firstSessionAt — ISO datetime for first session
  * @param {number} opts.durationMinutes — Session duration (default 50)
  * @param {number|null} opts.sessionsTotal — Block size or null for open-ended
@@ -39,7 +154,10 @@ export async function createCourseCalendarEvent({
   courseCode,
   booking,
   contact,
-  teacherName,
+  subject = null,
+  level = null,
+  groupType = null,
+  companyName = null,
   firstSessionAt,
   durationMinutes = 50,
   sessionsTotal,
@@ -51,9 +169,17 @@ export async function createCourseCalendarEvent({
   const startTime = new Date(firstSessionAt);
   const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
-  const eventTitle = participantNames.length
-    ? `${courseCode} — ${participantNames.join('+')} <> ${teacherName}`
-    : `${courseCode} <> ${teacherName}`;
+  // The bare code is the last resort: a course with nothing to say about
+  // itself still needs a summary sync can find.
+  const eventTitle =
+    courseEventTitle({
+      courseCode,
+      subject,
+      level,
+      groupType,
+      companyName,
+      participantName: participantNames[0],
+    }) || String(courseCode);
 
   const sessionsLine = singleSession
     ? `Sessions: ${sessionsTotal ? sessionsTotal + ' planned manually' : 'planned manually'}\n`
@@ -288,10 +414,10 @@ const EVENT_WINDOW_DAYS = 90;
 /**
  * Fetch expanded single events from Google Calendar matching a course code.
  *
- * Starts from 90 days ago so we don't blow past the per-page cap with
- * legacy sessions, and matches the course code as a prefix followed by a
- * non-alphanumeric boundary — otherwise "12345" would false-positive on a
- * summary starting with "123456".
+ * Starts from 90 days ago so we don't blow past the per-page cap with legacy
+ * sessions, and keeps only the events whose summary carries the course code as
+ * a standalone token — see summaryMatchesCourseCode for why position does not
+ * matter.
  *
  * Follows nextPageToken to the end: a truncated list looks exactly like a
  * set of deleted events to a caller that reconciles by absence, and silently
@@ -333,18 +459,223 @@ export async function fetchCourseEvents({ accessToken, calendarId, courseCode })
     pageToken = data.nextPageToken || null;
   } while (pageToken);
 
-  const matches = (e) => {
-    const s = e.summary || '';
-    if (!s.startsWith(courseCode)) return false;
-    const next = s.charAt(courseCode.length);
-    return next === '' || /[^A-Za-z0-9]/.test(next);
-  };
+  const matches = (e) => summaryMatchesCourseCode(e.summary, courseCode);
 
   return {
     active: items.filter((e) => matches(e) && e.status !== 'cancelled'),
     cancelled: items.filter((e) => matches(e) && e.status === 'cancelled'),
     since: timeMin,
   };
+}
+
+// Upper bound on the calendar writes one rename may issue. Sync already spends
+// a subrequest per session on the upsert loop, and Google meters writes per
+// calendar, so a course with dozens of hand-edited lessons must not be allowed
+// to eat the whole budget. Whatever is left over is picked up next sync — every
+// step below is a diff against the current state, so stopping early is safe.
+const MAX_TITLE_PATCHES = 40;
+
+async function patchEventSummary({ accessToken, calendarId, eventId, summary }) {
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}?sendUpdates=none`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ summary }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('Title patch error:', res.status, err.slice(0, 200));
+    const error = new Error(`Could not rename event (${res.status})`);
+    error.statusCode = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+/**
+ * Bring a course's calendar events in line with `desiredTitle`.
+ *
+ * The title is derived from the course record rather than stored, so linking a
+ * company or correcting a level has to be pushed to Google by something. That
+ * something is sync — this runs on every press and is a no-op once the titles
+ * agree.
+ *
+ * Three facts about Google's model drive the algorithm:
+ *
+ *  1. Ordinary instances of a recurring event are expanded from the parent on
+ *     every read; they hold no summary of their own. So one PATCH of the master
+ *     renames the entire series, past occurrences included, however old.
+ *  2. An instance the teacher edited or dragged is an *override* — a real event
+ *     resource, created as a full copy of the parent at the moment of the edit,
+ *     with its own materialised summary. The parent PATCH does not reach it, so
+ *     it needs one of its own.
+ *  3. PATCHing an ordinary instance *creates* an override. That is the thing to
+ *     never do by accident: a spurious override collides with the EXDATE logic
+ *     above, whose failure modes are documented on applyBlockedDatesToSeries.
+ *
+ * Hence: patch the master, re-read, and then only touch what is left — which by
+ * construction is either already an override or not part of this series at all.
+ * An instance that did not inherit and is not an override is Google lagging
+ * behind its own write; it is logged and left for the next sync.
+ *
+ * Renaming never changes an event id, so nothing downstream in sync — the
+ * session upsert, the deletion pass, sessions_completed — can be affected.
+ *
+ * @param {object} opts
+ * @param {string} opts.accessToken
+ * @param {string} opts.calendarId
+ * @param {string} opts.courseCode
+ * @param {string|null} opts.masterEventId — courses.calendar_event_id
+ * @param {string|null} opts.desiredTitle — from courseEventTitle(); null = leave alone
+ * @param {object[]} opts.activeEvents — expanded instances from fetchCourseEvents
+ * @param {number} [opts.maxPatches]
+ * @returns {Promise<{title: string|null, patched: number, failed: number,
+ *   skipped: string[], capped: boolean, rateLimited: boolean}>}
+ */
+export async function renameCourseEvents({
+  accessToken,
+  calendarId,
+  courseCode,
+  masterEventId,
+  desiredTitle,
+  activeEvents = [],
+  maxPatches = MAX_TITLE_PATCHES,
+}) {
+  const result = {
+    title: desiredTitle || null,
+    patched: 0,
+    failed: 0,
+    skipped: [],
+    capped: false,
+    rateLimited: false,
+  };
+  if (!desiredTitle) return result;
+
+  const isStale = (e) => e.status !== 'cancelled' && (e.summary || '') !== desiredTitle;
+
+  // Nothing to do, and — importantly — not a single request spent finding that
+  // out. The admin presses sync repeatedly; the steady state has to be free.
+  if (!activeEvents.some(isStale)) return result;
+
+  // Google rejects further writes long before it stops answering reads, so a
+  // quota error means stop, not retry.
+  const halt = (err) => {
+    if (err?.statusCode === 403 || err?.statusCode === 429) {
+      result.rateLimited = true;
+      return true;
+    }
+    return false;
+  };
+
+  let master = null;
+  let masterPatched = false;
+  if (masterEventId) {
+    const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(masterEventId)}`;
+    const masterRes = await fetch(base, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!masterRes.ok) {
+      throw new Error(`Could not load recurring event (${masterRes.status})`);
+    }
+    master = await masterRes.json();
+    if ((master.summary || '') !== desiredTitle) {
+      try {
+        // Keep the patched copy: its `updated` stamp is what tells an
+        // override apart from an instance that merely inherited.
+        master = await patchEventSummary({
+          accessToken,
+          calendarId,
+          eventId: masterEventId,
+          summary: desiredTitle,
+        });
+        masterPatched = true;
+        result.patched++;
+      } catch (err) {
+        if (halt(err)) return result;
+        result.failed++;
+      }
+    }
+  }
+
+  // Re-read so everything that inherited the new title drops out below. This
+  // is what keeps the loop from mistaking an ordinary instance for an override.
+  let events = activeEvents;
+  if (masterPatched) {
+    ({ active: events } = await fetchCourseEvents({ accessToken, calendarId, courseCode }));
+  }
+
+  const parentsToPatch = new Set();
+  for (const event of events) {
+    if (result.patched + result.failed >= maxPatches) {
+      result.capped = true;
+      break;
+    }
+    if (!isStale(event) || event.id === masterEventId) continue;
+
+    // An instance of some other series carrying this code. Patch that series'
+    // master once, never the instance — that would plant an override in a
+    // recurrence this course does not own.
+    if (event.recurringEventId && event.recurringEventId !== masterEventId) {
+      parentsToPatch.add(event.recurringEventId);
+      continue;
+    }
+
+    // A standalone one-off: the sessions a teacher adds by hand for a course
+    // created with singleSession. Its own resource, safe to patch directly.
+    const standalone = !event.recurringEventId;
+    const isOverride =
+      standalone ||
+      isMovedInstance(event) ||
+      (master?.updated && event.updated && event.updated !== master.updated);
+
+    if (!isOverride) {
+      // Google has not finished propagating the master patch. Patching here
+      // would manufacture the override this whole function exists to avoid.
+      result.skipped.push(event.id);
+      continue;
+    }
+
+    try {
+      await patchEventSummary({
+        accessToken,
+        calendarId,
+        eventId: event.id,
+        summary: desiredTitle,
+      });
+      result.patched++;
+    } catch (err) {
+      if (halt(err)) return result;
+      result.failed++;
+    }
+  }
+
+  for (const parentId of parentsToPatch) {
+    if (result.patched + result.failed >= maxPatches) {
+      result.capped = true;
+      break;
+    }
+    try {
+      await patchEventSummary({
+        accessToken,
+        calendarId,
+        eventId: parentId,
+        summary: desiredTitle,
+      });
+      result.patched++;
+    } catch (err) {
+      if (halt(err)) return result;
+      result.failed++;
+    }
+  }
+
+  if (result.skipped.length) {
+    console.warn(
+      'Calendar rename: instances did not inherit the new title, left for the next sync:',
+      result.skipped.join(', ')
+    );
+  }
+
+  return result;
 }
 
 /**

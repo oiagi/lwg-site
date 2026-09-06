@@ -7,6 +7,8 @@
 //   first_session_at,     — ISO datetime string for the first session
 //   duration_minutes,     — session duration (default 50)
 //   course_code_override, — optional: skip auto-generation
+//   company_id,           — optional: links the course to a company, which
+//                           supplies the booking code and the calendar title
 // }
 //
 // Steps:
@@ -95,6 +97,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     location_city,
     public_booking_enabled,
     company_code_booking_enabled,
+    company_id,
     access_code,
     access_label,
     course_code_override,
@@ -106,7 +109,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!teacher_id || !first_session_at) {
     return errorResponse('Missing teacher_id or first_session_at', 400);
   }
-  if (company_code_booking_enabled && !normalizeAccessCode(access_code)) {
+  if (company_code_booking_enabled && !company_id && !normalizeAccessCode(access_code)) {
     return errorResponse('access_code is required for company code booking', 400);
   }
 
@@ -173,6 +176,31 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
+  // ── Linked company ────────────────────────────────────────────────────
+  // Same contract as update-course.js: a linked company owns the booking code,
+  // so any manually supplied one is ignored. The name is also what the calendar
+  // title leads with, which is why this has to resolve before the event is
+  // created rather than being left to the edit page.
+  const companyId = company_id || null;
+  let companyName = null;
+  let companyAccessCode = null;
+  if (companyId) {
+    const compRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/companies?id=eq.${encodeURIComponent(companyId)}&select=name,booking_code`,
+      { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
+    );
+    if (compRes.ok) {
+      const [company] = await compRes.json();
+      companyName = company?.name || null;
+      companyAccessCode = normalizeAccessCode(company?.booking_code) || null;
+    } else {
+      console.error('Company lookup failed:', await compRes.text());
+    }
+  }
+  // A private lesson held at the student's employer has location_company set
+  // and must still be titled by the student's name, not the office's.
+  const titleCompany = companyName || (groupType === 'private' ? null : location_company || null);
+
   // ── Calendar event ───────────────────────────────────────────────────
   // Blocked dates shift recurring occurrences past the end of the cycle,
   // so failing to load them must block scheduling rather than silently
@@ -199,7 +227,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         courseCode,
         booking,
         contact,
-        teacherName: teacher.name,
+        subject: booking.subject || null,
+        level: levelCode,
+        groupType,
+        companyName: titleCompany,
         firstSessionAt: first_session_at,
         durationMinutes: duration_minutes,
         sessionsTotal: sessions_total,
@@ -243,8 +274,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         location_city: location_city || null,
         public_booking_enabled: !!public_booking_enabled,
         company_code_booking_enabled: !!company_code_booking_enabled,
-        access_code: normalizeAccessCode(access_code),
-        access_label: access_label || null,
+        company_id: companyId,
+        access_code: companyId ? companyAccessCode : normalizeAccessCode(access_code),
+        access_label: companyId ? null : access_label || null,
         recurrence_rule: recurrenceRule,
         calendar_event_id: calendarEventId,
         enquiry_id: enquiry_id || null,
