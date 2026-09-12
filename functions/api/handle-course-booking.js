@@ -33,20 +33,20 @@ function esc(str) {
 
 function buildDeclineEmail(enquiry, language) {
   const isDE = language === 'de';
-  const name = cleanString(enquiry.lead_first, 200) || (isDE ? 'du' : 'there');
+  const name = cleanString(enquiry.lead_first, 200) || '';
   const copy = isDE
     ? {
-        subject: 'Bezüglich deiner Buchungsanfrage — learning with gioia',
-        greeting: `Hallo ${esc(name)} :)`,
-        body: 'Vielen Dank für deine Anfrage. Leider ist der gewünschte Kurs nicht mehr verfügbar :(',
-        closing: 'Wir melden uns bald bei dir, um Optionen zu besprechen.',
-        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+        subject: 'Bezüglich Ihrer Buchungsanfrage — learning with gioia',
+        greeting: `Hallo${name ? ' ' + esc(name) : ''} :)`,
+        body: 'Vielen Dank für Ihre Anfrage. Leider ist der gewünschte Kurs nicht mehr verfügbar :(',
+        closing: 'Wir melden uns bald bei Ihnen, um den passenden Kurs für Sie zu finden.',
+        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
       }
     : {
         subject: 'Regarding your booking request — learning with gioia',
-        greeting: `Hi ${esc(name)} :)`,
+        greeting: `Hi${name ? ' ' + esc(name) : ''} :)`,
         body: 'Thank you for your request. Unfortunately, the course you requested is no longer available :(',
-        closing: 'We will be in touch shortly to discuss options.',
+        closing: 'We will be in touch shortly to find the right course for you.',
         footer: 'If you have any questions, reply to this email or write to',
       };
 

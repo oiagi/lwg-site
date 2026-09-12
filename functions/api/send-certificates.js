@@ -43,16 +43,23 @@ function buildEmail({ language, name, courseCode, level }) {
   const isEN = language === 'en';
   const subject = isEN
     ? `Certificate of Attendance — ${courseCode || 'your course'} · learning with gioia`
-    : `Teilnahmebestätigung — ${courseCode || 'dein Kurs'} · learning with gioia`;
+    : `Teilnahmebestätigung — ${courseCode || 'Ihr Kurs'} · learning with gioia`;
 
-  const greeting = isEN ? `Hello ${name || 'student'},` : `Hallo ${name || 'Kursteilnehmer:in'},`;
+  // German greets by first name only; English keeps the name as given.
+  const firstName =
+    String(name || '')
+      .trim()
+      .split(/\s+/)[0] || '';
+  const greeting = isEN
+    ? `Hello${name ? ` ${name}` : ''},`
+    : `Hallo${firstName ? ` ${firstName}` : ''}`;
   const courseLabel = [level, isEN ? 'course' : 'Kurs', courseCode].filter(Boolean).join(' ');
   const body = isEN
     ? `Below you will find the certificate for your ${esc(courseLabel || 'course')}.`
-    : `anbei findest du das Zertifikat für deinen ${esc(courseLabel || 'Kurs')}.`;
+    : `Anbei finden Sie das Zertifikat für Ihren ${esc(courseLabel || 'Kurs')}.`;
   const closing = isEN
-    ? 'It was a pleasure learning with you! Thank you for participating in the course, and maybe see you again soon.'
-    : 'Es hat uns Spass gemacht, mit dir zu lernen! Danke, dass du dabei warst und vielleicht bis bald wieder.';
+    ? 'It has been a pleasure learning with you! Thank you for participating in the course, and maybe see you again soon.'
+    : 'Es hat uns Spass gemacht, mit Ihnen zu lernen! Danke, dass Sie dabei waren und vielleicht bis bald wieder.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
   const teamLine = 'Gioia';
 
@@ -70,7 +77,7 @@ function buildEmail({ language, name, courseCode, level }) {
         </tr>
         <tr>
           <td style="padding:40px 40px 16px;">
-            <p style="margin:0 0 24px;font-size:22px;line-height:1.4;color:#1a1a1a;">${isEN ? 'Done!' : 'Geschafft!'}</p>
+            <p style="margin:0 0 24px;font-size:22px;line-height:1.4;color:#1a1a1a;">${isEN ? 'Well done!' : 'Gut gemacht!'}</p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>
             <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">${body}</p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(closing)}</p>

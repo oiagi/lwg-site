@@ -299,11 +299,11 @@ export const pages = {
       '#lc-format-title': { en: 'Format', de: 'Format' },
       '#lc-format-group': {
         en: '<strong>Group</strong> <span>Our group classes have between three and five participants, so that everybody gets to actively apply the target language during lessons.</span>',
-        de: '<strong>Gruppe</strong> <span>In unseren Gruppenkursen sind zwischen drei und fünf Personen. So erhalten alle die Chance, die Zielsprache auch im Unterricht aktiv anzuwenden.</span>',
+        de: '<strong>Gruppe</strong> <span>In unseren Gruppenkursen sind zwischen drei und fünf Personen. So haben alle die Möglichkeit, die Zielsprache bereits im Unterricht aktiv anzuwenden.</span>',
       },
       '#lc-format-private': {
-        en: '<strong>One-to-one</strong> <span>More flexibility and more opportunity to apply the target language.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Einzelunterricht bietet Flexibilität und noch mehr Zeit, die Zielsprache anzuwenden.</span>',
+        en: '<strong>One-to-one</strong> <span>More flexibility and more time to apply the target language during lessons.</span>',
+        de: '<strong>Einzelunterricht</strong> <span>Mehr Flexibilität und noch mehr Zeit, um die Zielsprache im Unterricht anzuwenden.</span>',
       },
       '#lc-format-company': {
         en: '<strong>Company courses</strong> <span>Our company courses take place at your offices. Ideal for anyone short of time who has to work around a busy schedule.</span>',
@@ -319,8 +319,8 @@ export const pages = {
         de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#lc-location-online': {
-        en: '<strong>Online</strong> <span>All of our courses are also offered fully online, or mixed with in-person lessons.</span>',
-        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse können auch online stattfinden.</span>',
+        en: '<strong>Online</strong> <span>You prefer to learn from home or mix in-person lessons with online classes? No problem, all courses are also offered online.</span>',
+        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse werden auch online angeboten.</span>',
       },
       '#lc-facts-title': {
         en: 'Prices for standard language courses',
@@ -364,7 +364,7 @@ export const pages = {
       '#tu-format-title': { en: 'Format', de: 'Format' },
       '#tu-format-group': {
         en: '<strong>Group</strong> <span>Taught in groups of three to seven pupils. Where the levels differ widely, a smaller group works better, so that every pupil gets the attention they need. Where levels and tasks are similar, a larger group works well.</span>',
-        de: '<strong>Gruppe</strong> <span>Nachhilfe in der Gruppe wird in Gruppen von drei bis sieben Schülerinnen und Schülern unterrichtet. Unterscheiden sich die Niveaus stark, eignet sich eine kleinere Gruppe. So kommt jeder Schülerin und jedem Schüler die nötige Aufmerksamkeit zugute. Bei ähnlichen Niveaus und Aufgabenstellungen eignet sich eine grössere Gruppe.</span>',
+        de: '<strong>Gruppe</strong> <span>Gruppen von drei bis sieben Lernenden. Unterscheiden sich die Niveaus stark, eignet sich eine kleinere Gruppe. So kommt jeder Schülerin und jedem Schüler die nötige Aufmerksamkeit zugute. Bei ähnlichen Niveaus und Aufgabenstellungen eignet sich eine grössere Gruppe.</span>',
       },
       '#tu-format-private': {
         en: '<strong>One-to-one</strong> <span>One-to-one lessons offer the most flexibility and allow for an individual pace of learning.</span>',
@@ -376,8 +376,8 @@ export const pages = {
         de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
       },
       '#tu-location-online': {
-        en: '<strong>Online</strong> <span>All of our courses are also offered fully online, or mixed with in-person lessons.</span>',
-        de: '<strong>Online</strong> <span>Alle unsere Kurse werden auch vollständig online oder mit Präsenzunterricht gemischt angeboten.</span>',
+        en: '<strong>Online</strong> <span>You prefer to learn from home or mix in-person lessons with online classes? No problem, all courses are also offered online.</span>',
+        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse werden auch online angeboten.</span>',
       },
       '#tu-facts-title': { en: 'Prices', de: 'Preise' },
       '#tu-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
@@ -438,8 +438,8 @@ export const pages = {
       '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       // Stated in teaching days of 3 h, the same units as the facts grid above.
       '#gy-note': {
-        en: 'Standard Gymivorbereitung group courses run for 12 × 3 h or 20 × 3 h, depending on how soon you start and the weekly frequency.',
-        de: 'Standard Gruppenkurse für Gymivorbereitung umfassen 12 × 3 Std. oder 20 × 3 Std., je nachdem, wie früh Sie mit der Vorbereitung beginnen möchten und wie häufig pro Woche Sie Zeit haben.',
+        en: 'Standard Gymivorbereitung group course packages include 12 × 3 h or 20 × 3 h, depending on how soon you start and the weekly frequency.',
+        de: 'Standard Gruppenkurspakete für Gymivorbereitung umfassen 12 × 3 Std. oder 20 × 3 Std., je nachdem, wie früh Sie mit der Vorbereitung beginnen möchten und wie häufig pro Woche Sie Zeit haben.',
       },
       '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#gy-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
@@ -520,15 +520,15 @@ export const pages = {
       // Opens the section, and the whole argument the school rests on.
       '#about-opening': {
         en: 'We have all learnt a language once before, and we have the capacity to do so time and time again.',
-        de: 'Wir haben alle schon einmal eine Sprache gelernt und wir können das alle jederzeit wieder tun.',
+        de: 'Alle haben schon einmal eine Sprache gelernt und alle besitzen die Fähigkeit, das jederzeit wieder zu tun.',
       },
       // Labels the personal answers below, the way #faq-heading labels the
       // questions block further down. Same style, same job.
       '#about-heading': { en: 'About', de: 'Wer wir sind' },
       '#about-cv-title': { en: 'Education', de: 'Ausbildung' },
       '#about-gioia-cv': {
-        en: '<li>Since 2026 — teaching diploma for upper-secondary schools (Russian and Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Language and Literature, University of Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, bilingual German and English.</li>',
-        de: '<li>Seit 2026 — Lehrdiplom für Maturitätsschulen (Russisch und Mathematik), Universität Zürich.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, Kantonsschule Küsnacht, zweisprachig Deutsch und Englisch.</li>',
+        en: '<li>Since 2026 — BSc Mathematics, University of Zürich.</li><li>Since 2026 — teaching diploma for upper-secondary schools (First Subject Russian and Second Subject Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Linguistics and Literature, University of Zürich.</li><li>2010 — Matura, bilingual German and English, Kantonsschule Küsnacht.</li>',
+        de: '<li>Seit 2026 — BSc Mathematik, Universität Zürich.</li><li>Seit 2026 — Lehrdiplom für Maturitätsschulen (LfM) (Erstes Unterrichtsfach Russisch und Zweites Unterrichtsfach Mathematik), Universität Zürich.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, zweisprachig Deutsch und Englisch, Kantonsschule Küsnacht.</li>',
       },
       '#faq-heading': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
       '#faq-intro': {
@@ -953,8 +953,8 @@ function structureFigure(lang) {
   const etc = lang === 'de' ? 'usw.' : 'etc.';
   const label =
     lang === 'de'
-      ? 'Ein vollständiges Niveau, zum Beispiel A1, teilt sich in die Teilniveaus A1.1, A1.2 und A1.3 mit je 32 Stunden angeleitetem Lernen. Das gleiche Muster setzt sich für weitere Niveaus fort.'
-      : 'One full level, for example A1, splits into the partial levels A1.1, A1.2 and A1.3 of 32 hours of guided learning each. The same pattern continues for further levels.';
+      ? 'Ein vollständiges Niveau, zum Beispiel A1, teilt sich in die Teilniveaus A1.1, A1.2 und A1.3 mit je 32 Stunden angeleitetem Lernen. Das gleiche Muster setzt sich für höhere Niveaus fort.'
+      : 'One full level, for example A1, splits into the partial levels A1.1, A1.2 and A1.3 of 32 hours of guided learning each. The same pattern continues for higher levels.';
   return (
     `<figure class="structure-diagram" aria-label="${label}">` +
     `<div class="structure-level"><span class="structure-level__code">A1</span>` +
@@ -982,9 +982,20 @@ const HOURS_SOURCES =
 function hoursExtra(lang) {
   const note =
     lang === 'de'
-      ? 'Oft kommt es vor, dass man schneller vorankommt als gedacht. In diesem Fall ist es nicht nötig, sich an rigide Strukturen zu halten. Blöcke können auch übersprungen werden.'
-      : 'It often happens that people progress faster than expected. In that case there is no need to stick to a rigid structure and blocks can be skipped.';
+      ? 'Oft kommt es vor, dass Schüler schneller vorankommen als gedacht. In diesem Fall ist es nicht nötig, sich an rigide Strukturen zu halten. Blöcke können auch übersprungen werden.'
+      : 'It often happens that students progress faster than expected. In that case there is no need to stick to a rigid structure and blocks can be skipped.';
   return `<div class="faq-extra">${structureFigure(lang)}<p>${note}</p>${HOURS_SOURCES}</div>`;
+}
+
+// A bulleted answer. The list is block content, so it rides along as `extra`
+// rather than sitting inside the answer's <p>, the same way the course
+// structure figure does.
+function faqPoints(items) {
+  return (
+    '<div class="faq-extra"><ul class="faq-points">' +
+    items.map((item) => `<li>${item}</li>`).join('') +
+    '</ul></div>'
+  );
 }
 
 export const FAQ = {
@@ -997,8 +1008,8 @@ export const FAQ = {
         de: 'Was haben Sie studiert und wie hilft Ihnen das beim Unterrichten?',
       },
       a: {
-        en: 'I studied Russian language and literature at the University of Zürich. Although my degree focused on linguistics in the Russian language, it is a field that cuts across languages and applies to every one of them equally. Alongside Russian, my academic career also took me through Spanish, French, Arabic and, briefly, Italian and Persian. So I know only too well what the first few weeks in a completely unfamiliar language feel like, and I try to accompany you on your way to greater confidence in your target language.',
-        de: 'Ich habe an der Universität Zürich Russische Sprach- und Literaturwissenschaft studiert. Obwohl mein Studium auf die russische Sprache ausgerichtet war, habe ich mich umfassend mit Linguistik befasst. Linguistik ist ein sprachübergreifendes Gebiet und kann auf jede Sprache gleichermassen angewendet werden. Ausser Russisch habe ich in meiner akademischen Laufbahn auch Spanisch, Französisch, Arabisch und kurz auch Italienisch und Persisch gelernt. Ich verstehe also nur allzu gut, wie sich die ersten paar Wochen in einer komplett fremden Sprache anfühlen, und versuche, Sie auf Ihrem Weg zu mehr Sicherheit in der Zielsprache zu begleiten.',
+        en: 'I studied Russian linguistics and literature at the University of Zürich and at SSEES, UCL in London. Although the focus of my degree was on Eastern European languages, linguistics is a field that cuts across languages and applies to every language equally. Alongside Russian, my academic career also took me through Spanish, French, Arabic and, briefly, Chinese, Japanese, Italian and Persian. So I know only too well what the first few weeks in a completely unfamiliar language and a new alphabet feel like, and I will do my best to accompany you on your way to greater confidence in your target language.',
+        de: 'Ich habe an der Universität Zürich und am SSEES am UCL in London Russische Sprach- und Literaturwissenschaft studiert. Obwohl mein Studium auf osteuropäische Sprachen ausgerichtet war, ist Linguistik ein sprachübergreifendes Gebiet und kann auf jede Sprache gleichermassen angewendet werden. Ausser Russisch habe ich in meiner akademischen Laufbahn auch Spanisch, Französisch, Arabisch und kurz auch Chinesisch, Japanisch, Italienisch und Persisch gelernt. Ich verstehe also nur allzu gut, wie sich die ersten paar Wochen in einer komplett fremden Sprache und auch in einem fremden Alphabet anfühlen, und werde mein Bestes tun, Sie auf Ihrem Weg zu mehr Sicherheit in Ihrer Zielsprache zu begleiten.',
       },
     },
     {
@@ -1007,8 +1018,8 @@ export const FAQ = {
         de: 'Warum haben Sie angefangen, Deutsch zu unterrichten?',
       },
       a: {
-        en: 'To answer that I have to rewind a little. I was already tutoring on the side throughout my time at Gymnasium and all the way through university. I then moved to London to continue my studies, lived there for many years and, after my Master’s, worked in the financial sector. When I came back to my home city of Zürich I was not sure which direction to take, and started teaching again. I realised that teaching is the one profession I keep returning to whenever I think about changing course, and really the only one where I forget most of what is going on around me.',
-        de: 'Um diese Frage zu beantworten, muss ich etwas zurückspulen. Ich habe bereits in meiner Zeit am Gymnasium und während meiner Studienzeit immer nebenbei Nachhilfe unterrichtet. Für mein Studium zog ich dann irgendwann nach London, lebte dort viele Jahre und arbeitete nach meinem Master im Finanzsektor. Nachdem ich in meine Heimatstadt Zürich zurückgekehrt war, wusste ich nicht genau, in welche Richtung es gehen sollte, und begann wieder zu unterrichten. Ich habe gemerkt, dass das Unterrichten der einzige Beruf ist, zu dem ich immer wieder zurückkehre, wenn ich darüber nachdenke, mich umzuorientieren, und eigentlich auch der einzige, bei dem ich das meiste um mich herum vergesse.',
+        en: 'To answer that I have to rewind a little. I was already tutoring on the side throughout my time at Gymnasium and all the way through university. I then moved to London to continue my studies, lived there for many years and, after my Master’s, worked in the financial sector. When I came back to my home city of Zürich I was not sure which direction to take, and started teaching again. I realised that teaching is the one profession I keep returning to whenever I think about changing course. And really the only one where I forget most of what is going on around me.',
+        de: 'Um diese Frage zu beantworten, muss ich etwas zurückspulen. Ich habe bereits in meiner Zeit am Gymnasium und während meiner Studienzeit immer nebenbei Nachhilfe unterrichtet. Für mein Studium zog ich dann irgendwann nach London, lebte dort viele Jahre und arbeitete nach meinem Master im Finanzsektor. Nachdem ich in meine Heimatstadt Zürich zurückkehrte, wusste ich nicht genau, in welche Richtung es gehen sollte, und begann wieder zu unterrichten. Ich merkte, dass das Unterrichten derjenige Beruf ist, zu dem ich immer wieder zurückkehre, wenn ich mich neu orientieren möchte. Und eigentlich auch der einzige, bei dem ich das meiste um mich herum vergesse.',
       },
     },
     {
@@ -1017,8 +1028,8 @@ export const FAQ = {
         de: 'Wie hilft Ihnen Ihre frühere Arbeitserfahrung beim Unterrichten?',
       },
       a: {
-        en: 'Finance and school do not pair naturally for most. Even so, many of the skills that matter in finance serve you well in teaching: diplomacy, a professional manner, presentation skills, listening and holding an interesting conversation, improvising where necessary. Explaining complex matters to someone is something I did often in my previous job. And not least the coordinating and structuring of lesson plans, timetables, appointments and deadlines, and staying calm when something does not go as planned.',
-        de: 'Finanzsektor und Schule passen für die meisten nicht allzu gut zusammen. Dennoch kommen einem viele Fähigkeiten, die im Finanzbereich wichtig sind, tatsächlich auch beim Unterrichten zugute: Diplomatie, professionelles Auftreten, Präsentationsfähigkeiten, Zuhören und interessante Gespräche führen, Improvisation, wenn nötig. Auch das Erklären von komplexen Sachverhalten für Lernende ist etwas, das ich in meinem früheren Beruf oft angewendet habe. Und nicht zuletzt das Koordinieren und Strukturieren von Lektionsplänen und Stundenplänen, Terminen und Fristen — und Ruhe zu bewahren, wenn etwas nicht so läuft wie geplant.',
+        en: 'Finance and school do not pair naturally for most. Even so, many of the skills that matter in finance serve you well in teaching: diplomacy, a professional manner, presentation skills, listening and keeping a conversation interesting, improvising where necessary. Explaining complex matters to someone is something I did often in my previous job. And not least the coordinating and structuring of lesson plans, timetables, appointments and deadlines, and staying calm when something does not go as planned.',
+        de: 'Finanzsektor und Schule passen für die meisten nicht allzu gut zusammen. Dennoch kommen einem viele Fähigkeiten, die im Finanzbereich wichtig sind, tatsächlich auch beim Unterrichten zugute: Diplomatie, professionelles Auftreten, Präsentationsfähigkeiten, Zuhören und interessante Gespräche führen, Improvisation, wenn nötig. Auch das Erklären von komplexen Sachverhalten für Lernende ist etwas, das ich in meinem früheren Beruf oft angewendet habe. Und nicht zuletzt das Koordinieren und Strukturieren von Lektionsplänen und Stundenplänen, Terminen und Fristen. Und Ruhe zu bewahren, wenn etwas nicht so läuft wie geplant.',
       },
     },
     {
@@ -1027,8 +1038,8 @@ export const FAQ = {
         de: 'Was lieben Sie am Unterrichten am meisten?',
       },
       a: {
-        en: 'Teaching lets me forget all the stress of everyday life. In the lesson I concentrate entirely on my pupils and try to give them as much as I can. That can be tiring at times, but the selflessness of it is very liberating. And there is nothing better than seeing them improve over the time we spend together. It always delights me to hear that someone suddenly understands a street sign they had walked past every day and never been able to place. Or that they have started speaking German with people in everyday life, when before they could not form a sentence. Or that they watched a series in German and understood all of it, read a book in German and told me about it… The list is endless.',
-        de: 'Das Unterrichten lässt mich allen Alltagsstress vergessen. In der Lektion konzentriere ich mich voll und ganz auf meine Schülerinnen und Schüler und versuche, ihnen so viel wie möglich mitzugeben. Das kann auch manchmal anstrengend sein, aber die Selbstlosigkeit daran ist sehr befreiend. Und es ist das Schönste, zu sehen, wie sie sich über die Zeit, die wir miteinander verbringen, verbessern. Es freut mich immer enorm, zu hören, wenn jemand zum Beispiel plötzlich ein Strassenschild versteht, das er oder sie täglich gesehen und nie einordnen konnte. Oder wenn jemand im Alltag Deutsch zu sprechen beginnt, obwohl vorher kein Satz möglich war. Oder eine Serie auf Deutsch schaut und alles versteht, ein Buch auf Deutsch liest und darüber berichtet … Die Liste ist endlos.',
+        en: 'Teaching lets me forget all the stresses of everyday life. In the lesson I concentrate entirely on my pupils and try to give them as much as I can. That can be tiring at times, but the selflessness of it is very liberating. And there is nothing better than seeing them improve over the time we spend together. It always delights me to hear that someone suddenly understands a street sign they had walked past every day and were never able to grasp before. Or that they started speaking their target language with people in everyday life, when before they could not form a sentence. Or that they watched a series in the target language and understood all of it, read a book in the target language and tell me about it… The list is endless.',
+        de: 'Das Unterrichten lässt mich allen Alltagsstress vergessen. In der Lektion konzentriere ich mich voll und ganz auf meine Schülerinnen und Schüler und versuche, ihnen so viel wie möglich mitzugeben. Das kann auch manchmal anstrengend sein, aber die Selbstlosigkeit daran ist sehr befreiend. Und es ist das Schönste, zu sehen, wie sie sich über die Zeit, die wir miteinander verbringen, verbessern. Es freut mich immer enorm, zu hören, wenn jemand zum Beispiel plötzlich ein Strassenschild versteht, das er oder sie täglich gesehen und nie einordnen konnte. Oder wenn jemand im Alltag die Zielsprache zu sprechen beginnt, wenn vorher kein Satz möglich war. Oder eine Serie in der Zielsprache schaut und alles versteht, ein Buch in der Zielsprache liest und darüber berichtet … Die Liste ist endlos.',
       },
     },
   ],
@@ -1040,7 +1051,7 @@ export const FAQ = {
         de: 'Welche Kurse bieten Sie an?',
       },
       a: {
-        en: 'We offer language courses, one-to-one lessons, tutoring and Gymivorbereitung. If your target language, or the kind of course you are looking for, is not listed, do get in touch. We will find the right course for you.',
+        en: 'We offer language courses, one-to-one lessons, tutoring and Gymivorbereitung. If your target language, or the kind of course you are looking for, is not listed, do get in touch. We will find or build the right course for you.',
         de: 'Wir bieten Sprachkurse, Einzelunterricht, Nachhilfe und Gymivorbereitung. Sollte Ihre Zielsprache oder die Kursart, nach der Sie suchen, nicht aufgelistet sein, melden Sie sich gerne bei uns. Wir versuchen, für Sie den passenden Kurs zu finden oder zusammenzustellen.',
       },
     },
@@ -1061,7 +1072,7 @@ export const FAQ = {
         de: 'Wie finde ich mein Sprachniveau heraus?',
       },
       a: {
-        en: 'We follow the six levels of the Common European Framework of Reference (CEFR). Our <a href="/niveaus.html">self-assessment grid</a> lets you get a rough sense of where you stand. If you prefer a formal placement test, contact us and we will help you find the right level.',
+        en: 'We follow the six levels of the Common European Framework of Reference (CEFR). Our <a href="/niveaus.html">self-assessment grid</a> lets you get a rough sense of where you stand. If you prefer a formal placement test, contact us. We will help you find the right level.',
         de: 'Wir halten uns an die sechs Stufen des Gemeinsamen Europäischen Referenzrahmens (GER). Mit unserem <a href="/niveaus.html">Selbsteinschätzungsraster</a> können Sie ungefähr einschätzen, wo Sie stehen. Wenn Sie einen formellen Einstufungstest bevorzugen, kontaktieren Sie uns. Wir helfen Ihnen, das richtige Niveau zu finden.',
       },
     },
@@ -1072,7 +1083,7 @@ export const FAQ = {
       },
       a: {
         en: 'It depends on what you are looking for. Private lessons suit those who want to work towards one particular goal and want to maximise the opportunity to speak during lessons. Group lessons can open up new perspectives, provide the chance to meet people, and either challenge you or show you that you already know more than you thought. Both formats are excellent ways to learn a language, and they mix well throughout your learning journey.',
-        de: 'Es kommt darauf an, was Sie suchen. Privatlektionen eignen sich vor allem, wenn Sie an einem ganz bestimmten Ziel arbeiten wollen und sich nicht nach Gruppendynamiken oder stärkeren oder schwächeren Mitlernenden richten möchten. Gruppenunterricht kann Ihnen oft neue Perspektiven aufzeigen, die Möglichkeit bieten, neue Kontakte zu knüpfen, und Sie herausfordern oder Ihnen auch teilweise zeigen, dass Sie vielleicht doch schon mehr wissen, als Sie dachten. Beide Formate eignen sich hervorragend, um eine Sprache zu lernen, und lassen sich im Sprachlernweg auch gut mischen.',
+        de: 'Es kommt darauf an, was Sie suchen. Privatlektionen eignen sich vor allem, wenn Sie an einem ganz bestimmten Ziel arbeiten wollen und die Möglichkeit maximieren wollen, im Unterricht zu sprechen. Gruppenunterricht kann Ihnen oft neue Perspektiven aufzeigen, die Möglichkeit bieten, neue Kontakte zu knüpfen, und Sie herausfordern oder aufzeigen, dass Sie vielleicht doch schon mehr wissen, als angenommen. Beide Formate eignen sich hervorragend, um eine Sprache zu lernen, und lassen sich im Sprachlernweg auch gut mischen.',
       },
     },
     {
@@ -1082,7 +1093,7 @@ export const FAQ = {
       },
       a: {
         en: 'An open group course has three to five participants. If you want a group including only your colleagues or friends, we can set that up as a closed group.',
-        de: 'Offene Gruppenkurse finden ab drei Teilnehmenden statt und haben maximal fünf Teilnehmende. Wenn Sie als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchten, richten wir das als geschlossene Gruppe ein.',
+        de: 'Offene Gruppenkurse finden ab drei Teilnehmenden statt und haben maximal fünf Teilnehmende. Wenn Sie als Gruppe von Kolleginnen, Kollegen oder Freundinnen und Freunden lernen möchten, richten wir eine geschlossene Gruppe ein.',
       },
     },
     {
@@ -1092,17 +1103,17 @@ export const FAQ = {
       },
       a: {
         en: 'A group course runs from three participants. If fewer sign up, upon your agreement, we either merge the course, postpone it, or run it with a modified lesson count. If the school cancels a course, the full amount is refunded.',
-        de: 'Bei weniger Anmeldungen legen wir Kurse mit Ihrem Einverständnis zusammen, verschieben sie oder führen sie modifiziert durch. Sagt die Schule einen Kurs ab, wird der volle Betrag rückerstattet.',
+        de: 'Bei weniger Anmeldungen legen wir Kurse mit Ihrem Einverständnis zusammen, verschieben sie oder führen sie mit einer abgeänderten Anzahl Lektionen durch. Sagt die Schule einen Kurs ab, wird der volle Betrag erstattet.',
       },
     },
     {
       q: {
-        en: 'Which exams do you prepare for?',
-        de: 'Auf welche Prüfungen bereiten Sie vor?',
+        en: 'Which exam preparation courses do you offer?',
+        de: 'Welche Prüfungsvorbereitungskurse bieten Sie an?',
       },
       a: {
-        en: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. We practise with the real exam formats, so nothing on the day is a surprise.',
-        de: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. Wir üben mit den echten Prüfungsformaten, damit am Prüfungstag nichts überraschend kommt.',
+        en: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. We practise with the official exam formats, so nothing on the day is a surprise.',
+        de: 'TELC, Goethe, FIDE, Cambridge, TOEFL, IELTS. Wir üben mit den offiziellen Prüfungsformaten, damit am Prüfungstag nichts überraschend kommt.',
       },
     },
   ],
@@ -1117,8 +1128,8 @@ export const FAQ = {
         de: 'Ich mag Deutsch und/oder Schweizerdeutsch nicht, sollte ich es trotzdem lernen?',
       },
       a: {
-        en: 'Our answer is yes. Even if the language does not particularly appeal to you, we will try and spark your interest in it. Why? We believe it can only be a good thing to at least understand the local language, and better yet to speak it. In Zürich the language of everyday life is Swiss German, after all. And, however annoying that may be, people speak their mother tongue, consciously or not. Being able to at least understand it can only help you find your way around Switzerland more easily. The same goes for standard German.',
-        de: 'Unsere Antwort ist: ja. Auch wenn Ihnen die Sprache nicht besonders zusagt, werden wir versuchen, Ihnen einen Zugang zur Sprache zu vermitteln. Warum? Wir glauben, dass es nur positiv sein kann, eine weitere Sprache mindestens zu verstehen und noch mehr, sie zu sprechen. In Zürich ist die vorwiegend verwendete Alltagssprache nun einmal Schweizerdeutsch, und so sehr es nerven mag, die Leute sprechen, bewusst oder unbewusst, ihre Muttersprache. Es kann Ihnen nur helfen, sie zumindest zu verstehen, um sich in der Schweiz einfacher zurechtzufinden. Ebenso das Hochdeutsche, das im Schriftverkehr unabdingbar ist.',
+        en: 'Our answer is yes. Even if the language does not particularly appeal to you, we will try and spark your interest in it. Why? We believe it can only be a good thing to at least understand the local language, and better yet to speak it. In Zürich the language of everyday life is Swiss German, after all. And, however annoying that may be, people speak their mother tongue, consciously or not. Being able to at least understand it can only help you find your way around Switzerland more easily. The same goes for standard German, which in at least written communication is essential.',
+        de: 'Unsere Antwort ist: ja. Auch wenn Ihnen die Sprache nicht besonders zusagt, werden wir versuchen, Ihnen einen Zugang zur Sprache zu vermitteln. Warum? Wir glauben, dass es nur positiv sein kann, die hiesige Landessprache mindestens zu verstehen und noch viel mehr, sie zu sprechen. In Zürich ist die vorwiegend verwendete Alltagssprache nun einmal Schweizerdeutsch, und so sehr es nerven mag, die Leute sprechen, bewusst oder unbewusst, ihre Muttersprache. Es kann Ihnen nur helfen, sie zumindest zu verstehen, um sich in der Schweiz einfacher zurechtzufinden. Ebenso das Hochdeutsche, das im Schriftverkehr unabdingbar ist.',
       },
     },
     {
@@ -1127,8 +1138,8 @@ export const FAQ = {
         de: 'Warum ist es so schwierig, in der Schweiz Deutsch zu lernen?',
       },
       a: {
-        en: 'To stick to the subject, one of the official national languages is indeed standard German. What people in German-speaking Switzerland actually speak day to day, however, is Swiss German. This reality unfortunately cannot be changed, and it makes learning standard German immensely harder. A key factor in learning a language is the casual, everyday exposure to it outside the classroom, and the prevalence of Swiss German makes that difficult to arrange here. In our courses we also try to provide material that helps close this gap between what is learnt and lack of exposure.',
-        de: 'Wir bleiben beim Thema. Eine der offiziellen Landessprachen ist zwar Hochdeutsch. Was aber im Alltag von den Einwohnerinnen und Einwohnern der Deutschschweiz grösstenteils gesprochen wird, ist Schweizerdeutsch. Es ist eine Realität, die sich leider nicht ändern lässt. Das erschwert aber das Lernen des Hochdeutschen immens. Ein Schlüsselfaktor beim Lernen einer Sprache ist die beiläufige alltägliche Auseinandersetzung mit dieser ausserhalb des Unterrichts. Und das ist in der Schweiz durch die Prävalenz des Schweizerdeutschen leider nicht so einfach zu gestalten. Wir versuchen im Zusammenhang mit unseren Kursen auch Inhalte zu vermitteln, um diese Diskrepanz zwischen Gelerntem und der Anwendung dessen im Alltag auszugleichen.',
+        en: 'A key factor in learning a language is the casual, everyday exposure to it outside the classroom. Easier said than done. People in German-speaking Switzerland actually speak Swiss German not standard German, a reality that unfortunately cannot be changed, and which makes learning standard German immensely harder. In our courses we introduce techniques to help you to obtain the necessary exposure in a variety of ways.',
+        de: 'Ein Schlüsselfaktor beim Lernen einer Sprache ist die beiläufige alltägliche Auseinandersetzung mit dieser ausserhalb des Unterrichts. Einfacher gesagt als getan. Die Einwohnerinnen und Einwohner der Deutschschweiz sprechen grösstenteils Schweizerdeutsch. Es ist eine Realität, die sich leider nicht ausradieren lässt und die das Lernen des Hochdeutschen immens erschwert. In unseren Kursen zeigen wir Ihnen verschiedene Möglichkeiten auf, um die nötige Anwendung der Sprache zu erreichen.',
       },
     },
   ],
@@ -1151,7 +1162,7 @@ export const FAQ = {
       },
       a: {
         en: 'Yes. Lesson times are arranged in Zürich time, and we can usually find a slot that works across European time zones. For anything further afield, tell us your window and we will aim to find a suitable time.',
-        de: 'Ja. Die Zeiten richten sich nach Zürcher Zeit, und innerhalb Europas findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen sagen Sie uns Ihr Zeitfenster, dann suchen wir eine passende Zeit.',
+        de: 'Ja. Die Zeiten richten sich nach der Zeitzone in Zürich, und innerhalb von Europa findet sich fast immer ein passender Termin. Bei grösseren Zeitverschiebungen nennen Sie uns Ihr Zeitfenster und wir suchen eine passende Zeit.',
       },
     },
     {
@@ -1173,7 +1184,7 @@ export const FAQ = {
         de: 'Wann sollten wir mit der Gymivorbereitung beginnen?',
       },
       a: {
-        en: 'The earlier the better. The road to Gymnasium starts long before exam day. We teach Mathematics and German across 12 or 20 teaching days of three hours each — 36 and 60 lessons respectively — once or twice a week. Tell us your child’s school year and target exam date and we will suggest a timeline.',
+        en: 'The earlier the better. The road to Gymnasium starts long before exam day. We teach Mathematics and German across 12 or 20 teaching days of three hours each — 36 and 60 lessons respectively — once or twice a week. We also offer intensive classes during holidays. Tell us your child’s school year and target exam date and we will suggest a timeline.',
         de: 'Je früher, desto besser. Der Weg ans Gymnasium beginnt lange vor der Prüfung. Üblicherweise starten Vorbereitungskurse bereits im März des Prüfungsvorjahres. Unterrichtet wird an 12 oder 20 Unterrichtstagen à drei Stunden, also 36 bzw. 60 Lektionen, ein- oder zweimal pro Woche. Intensivkurse in den Ferienzeiten stehen ebenfalls zur Auswahl. Kontaktieren Sie uns, um einen passenden Zeitplan zu finden.',
       },
     },
@@ -1193,7 +1204,7 @@ export const FAQ = {
         de: 'Was wird in der Gymivorbereitung geübt?',
       },
       a: {
-        en: 'For Gymivorbereitung, we teach mathematics and German. The goal is to close any gaps in those subjects, practising with the exam format, and building the calm needed to perform under time pressure. What we focus on during lessons varies from child to child.',
+        en: 'For Gymivorbereitung, we teach mathematics and German. The goal is to close any gaps in those subjects, practising with the exam format, and building the calm needed to perform under time pressure. Which of these we focus on during lessons varies from child to child.',
         de: 'Unterrichtet werden die Fächer Mathematik und Deutsch. Das Ziel ist es, Lücken im Stoff zu schliessen, mit dem Prüfungsformat zu üben und Ruhe aufzubauen. Je nach Kind fällt der Fokus auf diese verschiedenen Aspekte unterschiedlich aus.',
       },
     },
@@ -1222,6 +1233,32 @@ export const FAQ = {
     },
     {
       q: {
+        en: 'Why does pricing sometimes vary across courses?',
+        de: 'Warum sind Kurse teilweise unterschiedlich teuer?',
+      },
+      a: {
+        en: 'Our course prices are calculated on the following bases:',
+        de: 'Unsere Kurspreise werden auf folgenden Grundlagen berechnet:',
+      },
+      extra: {
+        en: faqPoints([
+          'Where the course takes place and how long it takes to commute there',
+          'Number of students',
+          'The required materials',
+          'How much individual preparation is required',
+          'The number of lessons booked',
+        ]),
+        de: faqPoints([
+          'Wo der Kurs stattfindet und wie lange die Anreise ist',
+          'Anzahl Schüler',
+          'Welche Kursmaterialien verwendet werden',
+          'Wie viel individuelle Vorbereitung nötig ist',
+          'Wie viele Lektionen auf einmal gebucht werden',
+        ]),
+      },
+    },
+    {
+      q: {
         en: 'Can the course content be specific to our industry?',
         de: 'Können die Inhalte auf unsere Branche zugeschnitten werden?',
       },
@@ -1236,7 +1273,7 @@ export const FAQ = {
         de: 'Unterrichten Sie Schweizerdeutsch für zuziehende Mitarbeitende?',
       },
       a: {
-        en: 'Yes, we teach Swiss German. Standard German helps with everyday written communication. Swiss German opens doors at the lunch table, the corridor and the team apéro.',
+        en: 'Yes, we teach Swiss German. Standard German helps with everyday written communication. Swiss German opens doors at the lunch table, the corridor, the team apéro... and generally in everyday life.',
         de: 'Ja, wir unterrichten Schweizerdeutsch. Hochdeutsch hilft einem im Schriftverkehr. Schweizerdeutsch öffnet Türen am Mittagstisch, im Gang, am Team-Apéro und auch sonst im Alltagsleben.',
       },
     },

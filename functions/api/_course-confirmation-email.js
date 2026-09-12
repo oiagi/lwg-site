@@ -156,6 +156,9 @@ export function firstLessonLabel(sessions, language = 'de', now = new Date()) {
 
 function variantCopy({ variant, language, greetingName, sessions, now }) {
   const isEnglish = language === 'en';
+  // Without a first name the greeting simply drops it — no stand-in noun.
+  const named = greetingName ? ` ${greetingName}` : '';
+  const namedEn = greetingName ? `, ${greetingName}` : '';
 
   if (variant === 'starting_soon') {
     const lesson = firstLessonLabel(sessions, language, now);
@@ -163,25 +166,29 @@ function variantCopy({ variant, language, greetingName, sessions, now }) {
       const start = lesson ? `Your course starts on ${lesson}.` : 'Your course starts soon.';
       return {
         title: 'Your course starts soon',
-        intro: `It's almost time, ${greetingName} :) ${start} Below you will find all the important information about your course again. Any questions? Just write to us at info@learningwithgioia.ch`,
+        greeting: `It's almost time${namedEn} :)`,
+        intro: `${start} Below you will find all the important information about your course again. Any questions? Just write to us at info@learningwithgioia.ch`,
       };
     }
-    const start = lesson ? `Dein Kurs startet am ${lesson}.` : 'Dein Kurs startet demnächst.';
+    const start = lesson ? `Ihr Kurs startet am ${lesson}.` : 'Ihr Kurs startet demnächst.';
     return {
-      title: 'Dein Kurs startet bald',
-      intro: `Es ist bald so weit, ${greetingName} :) ${start} Hier findest du nochmals alle wichtigen Infos zu deinem Kurs. Noch Fragen? Dann schreib uns einfach auf info@learningwithgioia.ch`,
+      title: 'Ihr Kurs startet bald',
+      greeting: `Es ist bald so weit${named} :)`,
+      intro: `${start} Hier finden Sie nochmals alle wichtigen Infos zu Ihrem Kurs. Noch Fragen? Dann schreiben Sie uns einfach auf info@learningwithgioia.ch`,
     };
   }
 
   if (isEnglish) {
     return {
       title: 'Course confirmation',
-      intro: `Thank you for your registration, ${greetingName} :) We look forward to learning with you soon. Below you will find all the important information about your course. Any questions? Just write to us at info@learningwithgioia.ch`,
+      greeting: `Thank you for your registration${namedEn} :)`,
+      intro: `We look forward to learning with you soon. Below you will find all the important information about your course. Any questions? Just write to us at info@learningwithgioia.ch`,
     };
   }
   return {
     title: 'Kursbestätigung',
-    intro: `Vielen Dank für deine Anmeldung, ${greetingName} :) Wir freuen uns darauf, bald mit dir zu lernen. Unten findest du alle wichtigen Infos zu deinem Kurs. Noch Fragen? Dann schreib uns einfach auf info@learningwithgioia.ch`,
+    greeting: `Vielen Dank für Ihre Anmeldung${named} :)`,
+    intro: `Wir freuen uns darauf, bald mit Ihnen zu lernen. Unten finden Sie alle wichtigen Infos zu Ihrem Kurs. Noch Fragen? Dann schreiben Sie uns einfach auf info@learningwithgioia.ch`,
   };
 }
 
@@ -190,11 +197,11 @@ function subjectFor({ variant, language, course }) {
   if (variant === 'starting_soon') {
     return isEnglish
       ? `Your course starts soon - ${course.course_code || 'your course'} · learning with gioia`
-      : `Dein Kurs startet bald - ${course.course_code || 'dein Kurs'} · learning with gioia`;
+      : `Ihr Kurs startet bald - ${course.course_code || 'Ihr Kurs'} · learning with gioia`;
   }
   return isEnglish
     ? `Course confirmation - ${course.course_code || 'your course'} · learning with gioia`
-    : `Kursbestätigung - ${course.course_code || 'dein Kurs'} · learning with gioia`;
+    : `Kursbestätigung - ${course.course_code || 'Ihr Kurs'} · learning with gioia`;
 }
 
 export function buildConfirmationEmail({
@@ -206,19 +213,26 @@ export function buildConfirmationEmail({
   now = new Date(),
 }) {
   const isEnglish = language === 'en';
-  const greetingName = studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
-  const { title, intro } = variantCopy({ variant, language, greetingName, sessions, now });
+  const greetingName = studentFirstName || '';
+  const { title, greeting, intro } = variantCopy({
+    variant,
+    language,
+    greetingName,
+    sessions,
+    now,
+  });
   const copy = {
     subject: subjectFor({ variant, language, course }),
     htmlLang: isEnglish ? 'en' : 'de',
     title,
+    greeting,
     intro,
     details: isEnglish ? 'Course details' : 'Kursdetails',
     sessions: isEnglish ? 'Scheduled lessons' : 'Geplante Lektionen',
     cancellation: isEnglish ? 'Cancellation and postponement' : 'Absage und Verschiebung',
     questions: isEnglish
       ? 'If you have any questions, you can reach us at'
-      : 'Bei Fragen erreichst du uns unter',
+      : 'Bei Fragen erreichen Sie uns unter',
   };
   // The AGB were already sent with the confirmation, so the reminder skips them.
   const agbBlock =
@@ -248,6 +262,9 @@ export function buildConfirmationEmail({
           <td style="padding:40px 40px 16px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
               ${esc(copy.title)}
+            </p>
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">
+              ${esc(copy.greeting)}
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
               ${esc(copy.intro)}

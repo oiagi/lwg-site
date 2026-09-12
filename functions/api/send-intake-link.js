@@ -30,18 +30,18 @@ function esc(str) {
 
 function buildIntakeLinkEmail(student, intakeUrl, language) {
   const isDE = language === 'de';
-  const name = student.first_name || (isDE ? 'du' : 'there');
+  const name = student.first_name || '';
   const copy = isDE
     ? {
-        subject: 'Bitte fülle dein Anmeldeformular aus — learning with gioia',
-        greeting: `Hallo ${esc(name)} :)`,
-        body: 'Um dich für den gewünschten Kurs anzumelden, benötigen wir noch einige Informationen von dir. Bitte füll das folgende Formular aus:',
+        subject: 'Bitte füllen Sie Ihr Anmeldeformular aus — learning with gioia',
+        greeting: `Hallo${name ? ' ' + esc(name) : ''} :)`,
+        body: 'Um Sie für den gewünschten Kurs zu registrieren, benötigen wir noch einige Informationen von Ihnen. Bitte füllen Sie das folgende Formular aus:',
         btn: 'Formular ausfüllen →',
-        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
       }
     : {
         subject: 'Please complete your enrolment form — learning with gioia',
-        greeting: `Hi ${esc(name)} :)`,
+        greeting: `Hi${name ? ' ' + esc(name) : ''} :)`,
         body: 'In order to enrol you in one of our courses we need some more information from you. Please fill in the following form:',
         btn: 'Complete the form →',
         footer: 'If you have any questions, reply to this email or write to',

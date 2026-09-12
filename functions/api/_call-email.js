@@ -107,10 +107,10 @@ export function buildCallConfirmationEmail(booking) {
   const copy = isGerman
     ? {
         htmlLang: 'de',
-        subject: `Dein ${duration}-Minuten-Gespräch ist gebucht — ${formatCallWhenShort(booking.starts_at, 'de')} (Zürich)`,
-        greeting: `Danke, ${booking.first_name} :)`,
-        body: `Dein kostenloses ${duration}-minütiges Gespräch mit Gioia ist bestätigt.`,
-        label: 'Dein Termin',
+        subject: `Ihr ${duration}-Minuten-Gespräch ist gebucht — ${formatCallWhenShort(booking.starts_at, 'de')} (Zürich)`,
+        greeting: `Danke${booking.first_name ? ' ' + booking.first_name : ''} :)`,
+        body: `Ihr kostenloses ${duration}-minütiges Gespräch mit Gioia ist bestätigt.`,
+        label: 'Ihr Termin',
         whenKey: 'Wann',
         durationKey: 'Dauer',
         durationValue: `${duration} Minuten`,
@@ -118,16 +118,16 @@ export function buildCallConfirmationEmail(booking) {
         linkPending: 'Der Link folgt in der Kalendereinladung.',
         joinBtn: 'Am Gespräch teilnehmen →',
         calendarNote:
-          'Du erhältst zusätzlich eine Google-Kalendereinladung — mit dem Annehmen wird das Gespräch in deinen Kalender eingetragen.',
+          'Sie erhalten zusätzlich eine Google-Kalendereinladung. Mit der Annahme der Einladung wird das Gespräch in Ihren Kalender eingetragen.',
         icsNote:
-          'Mit der angehängten Kalenderdatei (.ics) trägst du das Gespräch in deinen Kalender ein.',
-        reschedule: 'Passt die Zeit doch nicht? Antworte einfach auf diese E-Mail.',
-        footer: 'Bei Fragen antworte auf diese E-Mail oder schreib an',
+          'Mit der angehängten Kalenderdatei (.ics) können Sie das Gespräch in Ihren Kalender eintragen.',
+        reschedule: 'Passt die Zeit doch nicht? Antworten Sie einfach auf diese E-Mail.',
+        footer: 'Bei Fragen antworten Sie auf diese E-Mail oder schreiben Sie an',
       }
     : {
         htmlLang: 'en',
         subject: `Your ${duration}-minute call is booked — ${formatCallWhenShort(booking.starts_at, 'en')} (Zürich)`,
-        greeting: `Thanks, ${booking.first_name} :)`,
+        greeting: `Thanks${booking.first_name ? ', ' + booking.first_name : ''} :)`,
         body: `Your free ${duration}-minute call with Gioia is confirmed.`,
         label: 'Your call',
         whenKey: 'When',
@@ -137,10 +137,10 @@ export function buildCallConfirmationEmail(booking) {
         linkPending: 'The link follows in the calendar invitation.',
         joinBtn: 'Join the call →',
         calendarNote:
-          "You'll also receive a Google Calendar invitation — accepting it adds the call to your calendar.",
+          "You'll also receive a Google Calendar invitation. Accepting it adds the call to your calendar.",
         icsNote: 'The attached calendar file (.ics) adds the call to your calendar.',
         reschedule: 'Need a different time? Just reply to this email.',
-        footer: 'If you have any questions in the meantime, reply to this email or write to',
+        footer: 'If you have any questions in the meantime, please reply to this email or write to',
       };
 
   const whereValue = meetLink
@@ -221,7 +221,7 @@ export function buildCallNotificationEmail(booking) {
 
   const warning = notOnCalendar
     ? `<p style="margin:0 0 24px;padding:12px 16px;background:#fdf1ee;border-left:3px solid #b3564d;font-size:14px;line-height:1.6;color:#8a3a33;">
-         This call is <strong>not</strong> on the Google Calendar — add it manually. The visitor has been sent a calendar file instead.
+         This call is <strong>not</strong> on the Google Calendar. Please add it manually. The visitor has been sent a calendar file instead.
        </p>`
     : '';
 

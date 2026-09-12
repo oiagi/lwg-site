@@ -80,9 +80,9 @@ test('cancellation email (de, unpaid): storno subject, no-payment line', () => {
   });
   assert.equal(subject, 'Stornorechnung LWG-2026-0042 · learning with gioia');
   assert.ok(html.includes('Liebe Anna'));
-  assert.ok(html.includes('Die Rechnung LWG-2026-0007 ist damit storniert.'));
+  assert.ok(html.includes('Die Rechnung mit der Nummer LWG-2026-0007 ist damit storniert.'));
   assert.ok(html.includes('es ist keine Zahlung erforderlich'));
-  assert.ok(html.includes('Die neue Rechnung erhältst du in einer separaten E-Mail.'));
+  assert.ok(html.includes('Die neue Rechnung erhalten Sie in einer separaten E-Mail.'));
   assert.ok(!html.includes('überweisen'));
 });
 
@@ -105,7 +105,7 @@ test('cancellation email (de, paid): refund line instead of no-payment line', ()
     original_number: 'LWG-2026-0007',
     original_paid: true,
   });
-  assert.ok(html.includes('Wir überweisen dir den Betrag innerhalb der nächsten 7 Werktage.'));
+  assert.ok(html.includes('Wir überweisen Ihnen den Betrag innerhalb der nächsten 7 Werktage.'));
   assert.ok(!html.includes('keine Zahlung erforderlich'));
 });
 
@@ -129,6 +129,6 @@ test('cancellation email (en): subject names the original invoice', () => {
     original_paid: false,
     new_invoice_follows: true,
   });
-  assert.ok(unpaidVariant.html.includes('no payment is required'));
+  assert.ok(unpaidVariant.html.includes('No payment is required'));
   assert.ok(unpaidVariant.html.includes('You will receive the new invoice in a separate email.'));
 });

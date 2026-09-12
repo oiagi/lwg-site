@@ -49,22 +49,22 @@ function buildEmail({ language, name, first_name, last_name, gender, invoice }) 
     : `Rechnung ${invoiceNo} · learning with gioia`;
 
   const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
-  const courseLabel = invoice.subject || (isEN ? 'your course' : 'deinen Kurs');
+  const courseLabel = invoice.subject || (isEN ? 'your course' : 'Ihren Kurs');
   const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass du mit uns lernst.';
+  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass Sie mit uns lernen.';
   const invoiceLine = isEN
     ? `Attached you will find the invoice for ${courseLabel}.`
-    : `Anbei findest du die Rechnung für ${courseLabel}.`;
+    : `Anbei finden Sie die Rechnung für ${courseLabel}.`;
   const paymentLine = dueDate
     ? isEN
       ? `You can pay it easily with the QR bill in the PDF. The payment is due by ${dueDate}.`
-      : `Du kannst sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
+      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
     : isEN
       ? 'You will find the payment details directly in the attached PDF.'
-      : 'Die Zahlungsdetails findest du direkt im angehängten PDF.';
+      : 'Die Zahlungsdetails finden Sie direkt im angehängten PDF.';
   const questionLine = isEN
     ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworte einfach direkt auf diese E-Mail.';
+    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
   const bodyHtml = [

@@ -54,19 +54,19 @@ function buildFeedbackEmail({ course, studentFirstName, feedbackUrl, language })
   const copy = isEnglish
     ? {
         subject: `How was your course?${codeLabel} — learning with gioia`,
-        greeting: `Hi ${studentFirstName || 'there'} :)`,
-        intro: `We hope you enjoyed your ${label}. Would you take three to five minutes to tell us how it went? There are no right or wrong answers — your honest opinion helps us make the next course better.`,
+        greeting: `Hi${studentFirstName ? ` ${studentFirstName}` : ''} :)`,
+        intro: `We hope you liked your ${label}. We would be very grateful if you took three to five minutes to tell us how it went. There are no right or wrong answers. Your honest opinion helps us make the next course better.`,
         btn: 'Give feedback →',
         note: 'The link is personal to you and stays valid for 90 days.',
         footer: 'If you have any questions, reply to this email or write to',
       }
     : {
-        subject: `Wie war dein Kurs?${codeLabel} — learning with gioia`,
-        greeting: `Hallo ${studentFirstName || 'du'} :)`,
-        intro: `wir hoffen, dein ${label} hat dir gefallen. Nimmst du dir drei bis fünf Minuten Zeit, um uns zu sagen, wie es war? Es gibt keine richtigen oder falschen Antworten — deine ehrliche Meinung hilft uns, den nächsten Kurs besser zu machen.`,
+        subject: `Wie war Ihr Kurs?${codeLabel} — learning with gioia`,
+        greeting: `Hallo${studentFirstName ? ` ${studentFirstName}` : ''} :)`,
+        intro: `Wir hoffen, Ihr ${label} hat Ihnen gefallen. Wir würden uns freuen, wenn Sie sich drei bis fünf Minuten Zeit nehmen, um uns mitzuteilen, wie es war. Es gibt keine richtigen oder falschen Antworten. Ihre ehrliche Meinung hilft uns, den nächsten Kurs besser zu machen.`,
         btn: 'Feedback geben →',
-        note: 'Der Link ist persönlich für dich und 90 Tage lang gültig.',
-        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+        note: 'Der Link ist persönlich für Sie und 90 Tage lang gültig.',
+        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
       };
 
   return {

@@ -51,11 +51,11 @@ test('confirmation: English subject carries the short date', () => {
 
 test('confirmation: German copy is used for language "de"', () => {
   const { subject, html } = buildCallConfirmationEmail(booking({ language: 'de' }));
-  assert.match(subject, /Dein 15-Minuten-Gespräch ist gebucht/);
+  assert.match(subject, /Ihr 15-Minuten-Gespräch ist gebucht/);
   assert.match(html, /lang="de"/);
-  assert.match(html, /Danke, Anna/);
+  assert.match(html, /Danke Anna/);
   // Informal "du", never "Sie" or "Student".
-  assert.match(html, /Antworte einfach auf diese E-Mail/);
+  assert.match(html, /Antworten Sie einfach auf diese E-Mail/);
   assert.doesNotMatch(html, /Student/);
 });
 

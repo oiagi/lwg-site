@@ -27,17 +27,17 @@ function esc(str) {
 
 function buildPaymentThankYouEmail(student, language) {
   const isDE = language === 'de';
-  const name = student.first_name || (isDE ? 'du' : 'there');
+  const name = student.first_name || '';
   const copy = isDE
     ? {
         subject: 'Zahlung erhalten — learning with gioia',
-        greeting: `Danke, ${esc(name)} :)`,
-        body: 'Wir haben deine Zahlung erhalten. Wir freuen uns über dein Vertrauen und darauf, mit dir zu lernen.',
-        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+        greeting: `Danke${name ? ' ' + esc(name) : ''} :)`,
+        body: 'Wir haben Ihre Zahlung erhalten. Wir freuen uns über Ihr Vertrauen und darauf, mit Ihnen zu lernen.',
+        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
       }
     : {
         subject: 'Payment received — learning with gioia',
-        greeting: `Thank you, ${esc(name)} :)`,
+        greeting: `Thank you${name ? ', ' + esc(name) : ''} :)`,
         body: "We've received your payment. We appreciate your trust in us and look forward to studying with you.",
         footer: 'If you have any questions, reply to this email or write to',
       };

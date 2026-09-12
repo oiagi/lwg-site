@@ -88,7 +88,10 @@ function courseLabel(course, language = 'de') {
 
 function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
   const isEnglish = language === 'en';
-  const greetingName = studentFirstName || (isEnglish ? 'course participant' : 'Kursteilnehmer:in');
+  const greetingName = studentFirstName || '';
+  const greetingLine = isEnglish
+    ? `Hello${greetingName ? ` ${greetingName}` : ''},`
+    : `Hallo${greetingName ? ` ${greetingName}` : ''} :)`;
   const codeLabel = course.course_code ? ` (${course.course_code})` : '';
   const label = courseLabel(course, language);
   const copy = isEnglish
@@ -103,10 +106,10 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
     : {
         subject: `Aktualisierter Lektionsplan${codeLabel} — learning with gioia`,
         htmlLang: 'de',
-        intro: `anbei der aktuelle Lektionsplan für deinen ${label}. Wir freuen uns, dass du dabei bist.`,
+        intro: `Anbei der aktuelle Lektionsplan für Ihren ${label}. Wir freuen uns, dass Sie dabei sind.`,
         sessions: 'Geplante Lektionen',
         cancellation: 'Absage und Verschiebung',
-        questions: 'Bei Fragen erreichst du uns unter',
+        questions: 'Bei Fragen erreichen Sie uns unter',
       };
   return {
     subject: copy.subject,
@@ -125,7 +128,7 @@ function buildScheduleEmail({ course, sessions, studentFirstName, language }) {
         <tr>
           <td style="padding:40px 40px 16px;">
             <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
-              ${isEnglish ? 'Hello' : 'Hallo'} ${esc(greetingName)},
+              ${esc(greetingLine)}
             </p>
             <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">
               ${esc(copy.intro)}

@@ -61,33 +61,33 @@ function formatPreferredContact(value, language = 'en') {
 function buildCustomerEmail(booking, contact, language = 'en', intakeUrl = null) {
   const isGerman = language === 'de';
   const lead = contact.lead || contact;
-  const name = lead.firstName || (isGerman ? 'du' : 'there');
+  const name = lead.firstName || '';
   const bookingLines = formatBooking(booking, language);
   const copy = isGerman
     ? {
-        subject: 'Wir haben deine Anfrage erhalten — learning with gioia',
+        subject: 'Wir haben Ihre Anfrage erhalten — learning with gioia',
         htmlLang: 'de',
-        thankYou: `Danke, ${esc(name)} :)`,
-        body: 'Wir haben deine Nachricht erhalten und melden uns in Kürze bei dir, um deine Anfrage zu besprechen.',
+        thankYou: `Danke${name ? ' ' + esc(name) : ''} :)`,
+        body: 'Wir haben Ihre Nachricht erhalten und melden uns in Kürze bei Ihnen, um Ihre Anfrage zu besprechen.',
         intakeText:
-          'In der Zwischenzeit füll bitte dieses Formular aus. Ohne diese Angaben können wir dich nicht in einen Kurs einschreiben!',
+          'Füllen Sie in der Zwischenzeit bitte dieses Formular aus. Wir benötigen diese Angaben, um Sie für den gewünschten Kurs zu registrieren.',
         intakeBtn: 'Formular ausfüllen →',
-        enquiryLabel: 'Deine Anfrage',
+        enquiryLabel: 'Ihre Anfrage',
         preferredContact: 'Bevorzugte Kontaktart',
         footer:
-          'Wenn du in der Zwischenzeit Fragen hast, antworte auf diese E-Mail oder schreib an',
+          'Wenn Sie in der Zwischenzeit Fragen haben, antworten Sie bitte auf diese E-Mail oder schreiben Sie an',
       }
     : {
         subject: "We've received your enquiry — learning with gioia",
         htmlLang: 'en',
-        thankYou: `Thank you, ${esc(name)} :)`,
+        thankYou: `Thank you${name ? ', ' + esc(name) : ''} :)`,
         body: "We've received your message and will contact you shortly to discuss your enquiry.",
         intakeText:
-          'In the meantime, please complete this form. Without this information we cannot enrol you in a course!',
+          'In the meantime, please complete this form. We require this information to register you for the desired course.',
         intakeBtn: 'Complete the form →',
         enquiryLabel: 'Your enquiry',
         preferredContact: 'Preferred contact',
-        footer: 'If you have any questions in the meantime, reply to this email or write to',
+        footer: 'If you have any questions in the meantime, please reply to this email or write to',
       };
 
   const bookingRows = bookingLines
