@@ -121,21 +121,21 @@ export function buildCancellationEmail({
 
   const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
   const intro = isEN
-    ? `Attached you will find the credit note ${storno_number} for invoice ${original_number}. Invoice ${original_number} is hereby cancelled.`
-    : `Anbei findest du die Stornorechnung ${storno_number} zur Rechnung ${original_number}. Die Rechnung ${original_number} ist damit storniert.`;
+    ? `Attached you will find the credit note ${storno_number} for invoice ${original_number}. Invoice number ${original_number} is hereby cancelled.`
+    : `Anbei finden Sie die Stornorechnung ${storno_number} zur Rechnung ${original_number}. Die Rechnung mit der Nummer ${original_number} ist damit storniert.`;
   const paymentLine = original_paid
     ? isEN
       ? 'We will transfer the amount back to you within the next 7 working days.'
-      : 'Wir überweisen dir den Betrag innerhalb der nächsten 7 Werktage.'
+      : 'Wir überweisen Ihnen den Betrag innerhalb der nächsten 7 Werktage.'
     : isEN
-      ? 'The invoice is void — no payment is required.'
-      : 'Die Rechnung ist gegenstandslos — es ist keine Zahlung erforderlich.';
+      ? 'The invoice is void. No payment is required.'
+      : 'Die Rechnung ist gegenstandslos und es ist keine Zahlung erforderlich.';
   const newInvoiceLine = isEN
     ? 'You will receive the new invoice in a separate email.'
-    : 'Die neue Rechnung erhältst du in einer separaten E-Mail.';
+    : 'Die neue Rechnung erhalten Sie in einer separaten E-Mail.';
   const questionLine = isEN
     ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworte einfach direkt auf diese E-Mail.';
+    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
   const bodyHtml = [

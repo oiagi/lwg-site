@@ -113,10 +113,10 @@ function buildIntakeConfirmationEmail(data, lang) {
 
   const L = isDE
     ? {
-        subject: 'Deine Anmeldedaten — learning with gioia',
-        greeting: `Hallo ${esc(data.first_name || 'du')} :)`,
+        subject: 'Ihre Anmeldedaten — learning with gioia',
+        greeting: `Hallo${data.first_name ? ' ' + esc(data.first_name) : ''} :)`,
         intro:
-          'Vielen Dank! Wir haben dein Formular erhalten. Hier ist eine Übersicht der gespeicherten Daten:',
+          'Vielen Dank! Wir haben Ihr Formular erhalten. Hier ist eine Übersicht der gespeicherten Daten:',
         personal: 'Persönliche Angaben',
         emergency: 'Notfallkontakt',
         billing: 'Rechnungsadresse',
@@ -127,11 +127,11 @@ function buildIntakeConfirmationEmail(data, lang) {
         address: 'Adresse',
         relationship: 'Beziehung',
         footer:
-          'Falls etwas korrigiert werden muss, antworte einfach auf diese E-Mail oder schreib uns an',
+          'Falls etwas korrigiert werden muss, antworten Sie einfach auf diese E-Mail oder schreiben Sie uns an',
       }
     : {
         subject: 'Your enrolment details — learning with gioia',
-        greeting: `Hi ${esc(data.first_name || 'there')} :)`,
+        greeting: `Hi${data.first_name ? ' ' + esc(data.first_name) : ''} :)`,
         intro: "Thank you! We've received your form. Here's a summary of the details we've stored:",
         personal: 'Personal details',
         emergency: 'Emergency contact',

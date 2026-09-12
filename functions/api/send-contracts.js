@@ -39,32 +39,40 @@ function esc(str) {
 
 function buildEmail({ language, name, courseCode, uploadUrl }) {
   const isEN = language === 'en';
+  // `name` arrives as the full name; the greeting uses the first name only.
+  const firstName = String(name || '')
+    .trim()
+    .split(/\s+/)[0];
   const subject = isEN
     ? `Your course contract — ${courseCode || 'your course'} · learning with gioia`
-    : `Dein Kursvertrag — ${courseCode || 'dein Kurs'} · learning with gioia`;
+    : `Ihr Kursvertrag — ${courseCode || 'Ihr Kurs'} · learning with gioia`;
 
   const copy = isEN
     ? {
-        greeting: `Hi ${name || 'there'} :)`,
+        greeting: `Hi${firstName ? ` ${firstName}` : ''} :)`,
         body: `Attached you will find the contract for your ${courseCode ? `course ${courseCode}` : 'course'}. It already carries our signature.`,
         steps: [
           'Print the attached contract.',
           'Read it carefully and sign it.',
           'Scan or photograph the signed contract and upload it via the button below.',
         ],
+        noteLabel: 'Note:',
+        note: 'Swiss law stipulates that contracts must be signed in physical form in order to be valid.',
         btn: 'Upload signed contract →',
         footer: 'If you have any questions, reply to this email or write to',
       }
     : {
-        greeting: `Hallo ${name || 'du'} :)`,
-        body: `Anbei findest du den Vertrag für deinen ${courseCode ? `Kurs ${courseCode}` : 'Kurs'}. Er ist von uns bereits unterschrieben.`,
+        greeting: `Hallo${firstName ? ` ${firstName}` : ''} :)`,
+        body: `Anbei finden Sie den Vertrag für Ihren ${courseCode ? `Kurs ${courseCode}` : 'Kurs'}. Er ist von uns bereits unterschrieben.`,
         steps: [
-          'Drucke den angehängten Vertrag aus.',
-          'Lies ihn sorgfältig durch und unterschreibe ihn.',
-          'Scanne oder fotografiere den unterschriebenen Vertrag und lade ihn über den Button unten hoch.',
+          'Drucken Sie den angehängten Vertrag aus.',
+          'Lesen Sie ihn sorgfältig durch und unterschreiben Sie ihn.',
+          'Scannen oder fotografieren Sie den unterschriebenen Vertrag und laden Sie ihn über den Button unten hoch.',
         ],
+        noteLabel: 'Anmerkung:',
+        note: 'Das schweizerische Gesetz sieht vor, dass Verträge in physischer Form unterschrieben werden müssen, um gültig zu sein.',
         btn: 'Unterschriebenen Vertrag hochladen →',
-        footer: 'Bei Fragen antworte einfach auf diese E-Mail oder schreib an',
+        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
       };
 
   const stepsHtml = copy.steps
@@ -87,7 +95,10 @@ function buildEmail({ language, name, courseCode, uploadUrl }) {
         <tr><td style="padding:40px 40px 32px;">
           <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">${esc(copy.greeting)}</p>
           <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.body)}</p>
-          <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">${stepsHtml}</table>
+          <table cellpadding="0" cellspacing="0" style="margin:0 0 20px;">${stepsHtml}</table>
+          <p style="margin:0 0 24px;font-size:13px;line-height:1.7;color:#666;">
+            <strong>${esc(copy.noteLabel)}</strong> ${esc(copy.note)}
+          </p>
           <p style="margin:0;">
             <a href="${esc(uploadUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">${esc(copy.btn)}</a>
           </p>

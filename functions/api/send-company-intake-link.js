@@ -30,19 +30,22 @@ function esc(str) {
 
 function buildEmail({ firstName, intakeUrl, language }) {
   const isEn = language === 'en';
-  const greeting = firstName || (isEn ? 'there' : 'du');
+  const name = firstName || '';
   const copy = isEn
     ? {
         subject: 'Please complete your student intake form · learning with gioia',
-        intro: `Hello ${greeting} :) Please fill in your details so we can create or update your student record.`,
+        greeting: `Hello${name ? ' ' + name : ''} :)`,
+        intro: 'Please fill in your details so we can create or update your student record.',
         button: 'Complete intake form',
         footer: 'Any questions? Write to us at',
       }
     : {
-        subject: 'Bitte fülle dein Anmeldeformular aus · learning with gioia',
-        intro: `Hallo ${greeting} :) Bitte fülle deine Angaben aus, damit wir deinen Schülereintrag erstellen oder aktualisieren können.`,
+        subject: 'Bitte füllen Sie Ihr Anmeldeformular aus · learning with gioia',
+        greeting: `Hallo${name ? ' ' + name : ''} :)`,
+        intro:
+          'Bitte füllen Sie Ihre Angaben aus, damit wir Ihren Schülereintrag erstellen oder aktualisieren können.',
         button: 'Formular ausfüllen',
-        footer: 'Noch Fragen? Schreib uns an',
+        footer: 'Noch Fragen? Schreiben Sie uns an',
       };
 
   return {
@@ -58,6 +61,7 @@ function buildEmail({ firstName, intakeUrl, language }) {
           <p style="margin:0;color:#d6eaf8;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
         </td></tr>
         <tr><td style="padding:40px 40px 32px;">
+          <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">${esc(copy.greeting)}</p>
           <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.intro)}</p>
           <p style="margin:0;">
             <a href="${esc(intakeUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">${esc(copy.button)} →</a>

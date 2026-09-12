@@ -35,27 +35,29 @@ function esc(str) {
 
 function buildEmail({ firstName, bookingCode, bookingUrl, language }) {
   const isEn = language === 'en';
-  const greeting = firstName || (isEn ? 'there' : 'du');
+  const name = firstName || '';
 
   const copy = isEn
     ? {
         subject: 'Your company booking code · learning with gioia',
         htmlLang: 'en',
-        intro: `Hello ${greeting} :) Here is the link to courses currently happening at your company.`,
+        greeting: `Hello${name ? ' ' + name : ''} :)`,
+        intro: 'Here is the link to courses currently happening at your company.',
         linkText: 'Open group courses',
         codeLabel: 'Your booking code',
         codeNote: 'Enter this code on the page above to see the courses available to you.',
         questions: 'Any questions? Write to us at',
       }
     : {
-        subject: 'Dein Buchungscode für Firmenkurse · learning with gioia',
+        subject: 'Ihr Buchungscode für Firmenkurse · learning with gioia',
         htmlLang: 'de',
-        intro: `Hallo ${greeting} :) Hier ist der Link zu den Kursen, die aktuell in deinem Unternehmen stattfinden.`,
+        greeting: `Hallo${name ? ' ' + name : ''} :)`,
+        intro: 'Hier ist der Link zu den Kursen, die aktuell in Ihrem Unternehmen stattfinden.',
         linkText: 'Zu den Gruppenkursen',
-        codeLabel: 'Dein Buchungscode',
+        codeLabel: 'Ihr Buchungscode',
         codeNote:
-          'Gib diesen Code auf der obigen Seite ein, um die für dich verfügbaren Kurse zu sehen.',
-        questions: 'Noch Fragen? Schreib uns an',
+          'Geben Sie diesen Code auf der obigen Seite ein, um die für Sie verfügbaren Kurse zu sehen.',
+        questions: 'Noch Fragen? Schreiben Sie uns an',
       };
 
   return {
@@ -74,6 +76,9 @@ function buildEmail({ firstName, bookingCode, bookingUrl, language }) {
         </tr>
         <tr>
           <td style="padding:40px 40px 24px;">
+            <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">
+              ${esc(copy.greeting)}
+            </p>
             <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:#333;">
               ${esc(copy.intro)}
             </p>

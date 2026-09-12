@@ -57,7 +57,7 @@ test('confirmation keeps its subject, title and AGB block', () => {
   const de = build();
   assert.equal(de.subject, 'Kursbestätigung - LWG-2026-14 · learning with gioia');
   assert.match(de.html, /Kursbestätigung/);
-  assert.match(de.html, /Vielen Dank für deine Anmeldung, Anna/);
+  assert.match(de.html, /Vielen Dank für Ihre Anmeldung Anna/);
   assert.ok(de.html.includes(AGB_MARKER_DE));
 
   const en = build({ language: 'en' });
@@ -70,9 +70,9 @@ test('confirmation keeps its subject, title and AGB block', () => {
 
 test('starting_soon uses its own subject and names the first lesson', () => {
   const de = build({ variant: 'starting_soon' });
-  assert.equal(de.subject, 'Dein Kurs startet bald - LWG-2026-14 · learning with gioia');
-  assert.match(de.html, /Es ist bald so weit, Anna/);
-  assert.match(de.html, /Dein Kurs startet am Montag, 03.08.2026, 18:00/);
+  assert.equal(de.subject, 'Ihr Kurs startet bald - LWG-2026-14 · learning with gioia');
+  assert.match(de.html, /Es ist bald so weit Anna/);
+  assert.match(de.html, /Ihr Kurs startet am Montag, 03.08.2026, 18:00/);
 
   const en = build({ variant: 'starting_soon', language: 'en' });
   assert.equal(en.subject, 'Your course starts soon - LWG-2026-14 · learning with gioia');
@@ -99,7 +99,7 @@ test('starting_soon drops the AGB but keeps details, lessons and cancellation', 
 
 test('starting_soon falls back to a generic opener without sessions', () => {
   const de = build({ variant: 'starting_soon', sessions: [] });
-  assert.match(de.html, /Dein Kurs startet demnächst\./);
+  assert.match(de.html, /Ihr Kurs startet demnächst\./);
   assert.match(de.html, /Noch keine Lektionen geplant\./);
 
   const en = build({ variant: 'starting_soon', sessions: [], language: 'en' });
@@ -109,11 +109,11 @@ test('starting_soon falls back to a generic opener without sessions', () => {
 test('missing first name falls back to the neutral greeting', () => {
   assert.match(
     build({ variant: 'starting_soon', studentFirstName: '' }).html,
-    /Es ist bald so weit, Kursteilnehmer:in/
+    /Es ist bald so weit :\)/
   );
   assert.match(
     build({ studentFirstName: '', language: 'en' }).html,
-    /Thank you for your registration, course participant/
+    /Thank you for your registration :\)/
   );
 });
 
