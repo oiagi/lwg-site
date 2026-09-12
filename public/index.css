@@ -839,6 +839,20 @@ a.offer-card {
   padding: 0;
 }
 
+/* A bulleted answer, e.g. what a course price is calculated from. Matches the
+   answer paragraph's type; the indent comes from the marker position. */
+.faq-points {
+  padding: 0 2rem 0 1.1rem;
+  list-style: disc;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+.faq-points li {
+  padding-left: 0.2rem;
+}
+
 /* ── Closing CTA ─────────────────────────────────────────────── */
 .closing {
   padding-bottom: 4rem;
