@@ -13,10 +13,9 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
-import { sendResendEmail } from './_email.js';
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 const BUCKET = 'invoice-archive';
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const REMINDABLE_STATUSES = new Set(['sent', 'pending', 'unpaid', 'open', 'overdue', 'downloaded']);
 const INVOICE_NUMBER_RE = /^LWG-\d{4}-\d{4}$/;
 

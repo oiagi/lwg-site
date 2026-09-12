@@ -38,10 +38,9 @@ import {
   archiveInvoicePdf,
   logInvoice,
 } from './_invoices.js';
-import { sendResendEmail } from './_email.js';
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 import { cleanFilenamePart, buildCancellationEmail } from './_invoice-email.js';
 
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const ALLOWED_LANGUAGES = ['de', 'en'];
 const UNCANCELLABLE_STATUSES = new Set(['cancelled', 'storno']);
 

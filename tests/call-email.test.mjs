@@ -140,7 +140,7 @@ test('buildCallIcs produces a CRLF REQUEST with matching start and end', () => {
     startIso: START,
     durationMinutes: 15,
     summary: 'Test call',
-    organizerEmail: 'hello@oiagi.org',
+    organizerEmail: 'info@learningwithgioia.ch',
     attendeeEmail: 'anna@example.com',
     now: Date.parse('2026-08-09T12:00:00Z'),
   });
@@ -162,7 +162,7 @@ test('buildCallIcs escapes commas, semicolons and newlines in TEXT values', () =
     startIso: START,
     summary: 'A, B; C\\D',
     description: 'line one\nline two',
-    organizerEmail: 'hello@oiagi.org',
+    organizerEmail: 'info@learningwithgioia.ch',
     attendeeEmail: 'a@b.ch',
   });
   assert.match(ics, /SUMMARY:A\\, B\\; C\\\\D/);
@@ -174,7 +174,7 @@ test('icsToBase64 survives umlauts', () => {
     uid: 'x',
     startIso: START,
     summary: 'Gespräch mit Jürg',
-    organizerEmail: 'hello@oiagi.org',
+    organizerEmail: 'info@learningwithgioia.ch',
     attendeeEmail: 'a@b.ch',
   });
   const decoded = new TextDecoder().decode(

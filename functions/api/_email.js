@@ -3,7 +3,11 @@
 // sendResendEmail(); call sites keep their own guards (missing key,
 // missing recipient) and response handling.
 
-export const FROM_EMAIL = 'learning with gioia <hello@oiagi.org>';
+// Single source of truth for the address we send from, reply to and print.
+// Changing it here moves the sender, every reply_to and the ICS organizer at once.
+export const CONTACT_EMAIL = 'info@learningwithgioia.ch';
+export const FROM_EMAIL = `learning with gioia <${CONTACT_EMAIL}>`;
+export const NOTIFY_EMAILS = [CONTACT_EMAIL];
 
 /**
  * POST a message to the Resend API.
