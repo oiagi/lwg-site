@@ -39,9 +39,7 @@ import {
   slotRequiresAccessCode,
 } from './_public-course-booking.js';
 
-import { sendResendEmail } from './_email.js';
-
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 const STUDENT_FIELDS = [
   'first_name',

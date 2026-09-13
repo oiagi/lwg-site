@@ -15,9 +15,7 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
-import { sendResendEmail } from './_email.js';
-
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 // Tables that reference students.id via student_id. Ordered so that any
 // FK constraints with ON DELETE RESTRICT won't block the final delete.

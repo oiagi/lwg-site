@@ -23,9 +23,7 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getOrCreateStudentToken } from './_student-utils.js';
-import { sendResendEmail } from './_email.js';
-
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 function esc(str) {
   if (str === null || str === undefined) return '';

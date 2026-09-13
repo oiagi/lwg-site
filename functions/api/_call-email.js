@@ -5,7 +5,7 @@
 // book-call.js stays about orchestration. Visual template matches
 // submit-enquiry.js: #f4f8fb page, 560px white card, #1a1a1a header bar.
 
-const ADMIN_EMAIL = 'info@learningwithgioia.ch';
+import { CONTACT_EMAIL as ADMIN_EMAIL } from './_email.js';
 
 function esc(str) {
   if (!str && str !== 0) return '';

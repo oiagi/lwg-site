@@ -27,9 +27,7 @@ import {
   optionLabel,
   validateFeedbackSubmission,
 } from './_feedback.js';
-import { sendResendEmail } from './_email.js';
-
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 const FEEDBACK_SELECT =
   'id,student_id,course_id,language,requested_at,submitted_at,' + FEEDBACK_COLUMNS.join(',');

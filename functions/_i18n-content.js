@@ -524,10 +524,10 @@ export const pages = {
       },
       // Labels the personal answers below, the way #faq-heading labels the
       // questions block further down. Same style, same job.
-      '#about-heading': { en: 'About', de: 'Wer wir sind' },
+      '#about-heading': { en: 'About', de: 'Genaueres' },
       '#about-cv-title': { en: 'Education', de: 'Ausbildung' },
       '#about-gioia-cv': {
-        en: '<li>Since 2026 — BSc Mathematics, University of Zürich.</li><li>Since 2026 — teaching diploma for upper-secondary schools (First Subject Russian and Second Subject Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Linguistics and Literature, University of Zürich.</li><li>2010 — Matura, bilingual German and English, Kantonsschule Küsnacht.</li>',
+        en: '<li>Since 2026 — BSc Mathematics, University of Zürich.</li><li>Since 2026 — Teaching Diploma for Upper-secondary Schools (LfM) (First Subject Russian and Second Subject Mathematics), University of Zürich.</li><li>2019 — MA in Russian Studies, University College London.</li><li>2015 — BA in Russian Linguistics and Literature, University of Zürich.</li><li>2010 — Matura, bilingual German and English, Kantonsschule Küsnacht.</li>',
         de: '<li>Seit 2026 — BSc Mathematik, Universität Zürich.</li><li>Seit 2026 — Lehrdiplom für Maturitätsschulen (LfM) (Erstes Unterrichtsfach Russisch und Zweites Unterrichtsfach Mathematik), Universität Zürich.</li><li>2019 — Master of Arts in Russian Studies, University College London.</li><li>2015 — Bachelor of Arts in Russischer Sprach- und Literaturwissenschaft, Universität Zürich.</li><li>2010 — Matura, zweisprachig Deutsch und Englisch, Kantonsschule Küsnacht.</li>',
       },
       '#faq-heading': { en: 'Frequently asked questions', de: 'Häufige Fragen' },
