@@ -13,9 +13,7 @@ import {
   parseJsonBody,
   capitalizeNameFields,
 } from './_utils.js';
-import { sendResendEmail } from './_email.js';
-
-const ADMIN_EMAIL = 'info@learningwithgioia.ch';
+import { sendResendEmail, CONTACT_EMAIL as ADMIN_EMAIL } from './_email.js';
 
 function esc(str) {
   if (str === null || str === undefined) return '';

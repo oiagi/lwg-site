@@ -13,9 +13,8 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { sendResendEmail } from './_email.js';
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const DEFAULT_SITE_URL = 'https://learningwithgioia.ch';
 
 function esc(str) {

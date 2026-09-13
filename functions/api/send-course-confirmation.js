@@ -24,9 +24,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { buildConfirmationEmail, COURSE_EMAIL_VARIANTS } from './_course-confirmation-email.js';
-import { sendResendEmail } from './_email.js';
-
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
 const SENT_AT_COLUMN = {
   confirmation: 'confirmation_sent_at',

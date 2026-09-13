@@ -27,7 +27,7 @@ import { loadCallContext } from './_call-availability.js';
 import { slotIsAvailable, SLOT_MINUTES } from './_call-slots.js';
 import { createCallCalendarEvent } from './_calendar.js';
 import { buildCallIcs, icsToBase64 } from './_ics.js';
-import { sendResendEmail, FROM_EMAIL } from './_email.js';
+import { sendResendEmail, FROM_EMAIL, NOTIFY_EMAILS, CONTACT_EMAIL } from './_email.js';
 import {
   buildCallConfirmationEmail,
   buildCallNotificationEmail,
@@ -35,8 +35,6 @@ import {
 } from './_call-email.js';
 import { findOrCreateStudent } from './_student-utils.js';
 
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
-const ORGANIZER_EMAIL = 'hello@oiagi.org';
 const MAX_UPCOMING_PER_EMAIL = 2;
 
 function cleanString(value, max) {
@@ -240,7 +238,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
             ? `${SLOT_MINUTES}-Minuten-Gespräch mit learning with gioia`
             : `${SLOT_MINUTES}min call with learning with gioia`,
         description: formatCallWhen(startIso, language),
-        organizerEmail: ORGANIZER_EMAIL,
+        organizerEmail: CONTACT_EMAIL,
         attendeeName: `${fields.first_name} ${fields.last_name || ''}`.trim(),
         attendeeEmail: email,
         url: 'https://learningwithgioia.ch',

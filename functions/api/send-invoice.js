@@ -27,7 +27,7 @@ import {
   archiveInvoicePdf,
   logInvoice,
 } from './_invoices.js';
-import { sendResendEmail } from './_email.js';
+import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 import {
   esc,
   cleanFilenamePart,
@@ -37,7 +37,6 @@ import {
   bodyParagraph,
 } from './_invoice-email.js';
 
-const NOTIFY_EMAILS = ['info@learningwithgioia.ch'];
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
 function buildEmail({ language, name, first_name, last_name, gender, invoice }) {

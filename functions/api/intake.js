@@ -20,9 +20,7 @@ import {
   capitalizeNameFields,
 } from './_utils.js';
 import { getStudentLanguage } from './_student-utils.js';
-import { sendResendEmail } from './_email.js';
-
-const ADMIN_EMAIL = 'info@learningwithgioia.ch';
+import { sendResendEmail, CONTACT_EMAIL as ADMIN_EMAIL } from './_email.js';
 
 const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
