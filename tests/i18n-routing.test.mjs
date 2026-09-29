@@ -237,11 +237,13 @@ test('x-default resolves to one language per page, consistent with _redirects', 
   for (const page of Object.keys(ROUTES)) {
     const lang = defaultLangFor(page);
     assert.ok(SUPPORTED.includes(lang), `${page} -> ${lang}`);
-    // Where _redirects canonicalises the legacy .html URL, it must agree.
-    const rule = redirects.match(new RegExp(`^\\${page}\\s+(\\S+)\\s+301`, 'm'));
-    if (rule) {
-      assert.equal(rule[1], pagePath(page, lang), `_redirects disagrees on ${page}`);
-    }
+    // Every legacy .html URL must 301 to the x-default page. The templates
+    // live under /pages/, so a page without a rule 404s at its old address,
+    // which is how every emailed /intake.html link broke.
+    const escaped = page.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rule = redirects.match(new RegExp(`^${escaped}\\s+(\\S+)\\s+301`, 'm'));
+    assert.ok(rule, `_redirects has no 301 for ${page}`);
+    assert.equal(rule[1], pagePath(page, lang), `_redirects disagrees on ${page}`);
   }
 });
 
@@ -307,6 +309,25 @@ test('no dictionary copy links to a .html URL that would 301', () => {
       }
     }
   }
+});
+
+test('no code builds a link to a legacy .html page URL', () => {
+  // Catches `${base}/intake.html?token=…` in emails and admin copy buttons.
+  // Page keys such as '/thankyou.html' passed to href() or ROUTES are fine:
+  // only a path after an interpolated origin, or one carrying a query, is a link.
+  const names = Object.keys(ROUTES).map((page) => page.slice(1).replace('.', '\\.'));
+  const stale = new RegExp(`(\\}/(${names.join('|')})|/(${names.join('|')})\\?)`);
+  const offenders = [];
+  for (const dir of ['functions', 'public']) {
+    for (const file of readdirSync(dir, { recursive: true })) {
+      if (!String(file).endsWith('.js')) continue;
+      const lines = readFileSync(`${dir}/${file}`, 'utf8').split('\n');
+      lines.forEach((line, i) => {
+        if (stale.test(line)) offenders.push(`${dir}/${file}:${i + 1}: ${line.trim()}`);
+      });
+    }
+  }
+  assert.deepEqual(offenders, [], `links to retired .html URLs:\n${offenders.join('\n')}`);
 });
 
 test('nav and footer markup are complete, localised and self-consistent', () => {
