@@ -4,7 +4,7 @@
 //
 // Asks the enrolled students of a course to fill in the course feedback
 // form. Each recipient gets a course_feedback row with its own token and
-// a private link to /feedback.html?token=... Students who have already
+// a private link to /<lang>/feedback?token=... Students who have already
 // submitted are skipped; students who were asked before keep their
 // original token, so an earlier email stays valid.
 //
@@ -262,7 +262,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         studentFirstName: student.first_name || '',
         // ?lang is part of i18n.js's language resolution, so the page opens
         // in the same language the email was written in.
-        feedbackUrl: `${base}/feedback.html?token=${encodeURIComponent(token)}&lang=${language}`,
+        feedbackUrl: `${base}/${language}/feedback?token=${encodeURIComponent(token)}&lang=${language}`,
         language,
       });
       try {

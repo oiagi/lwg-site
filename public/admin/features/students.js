@@ -820,7 +820,7 @@ export async function markIntakeSeen(studentId, btn) {
 }
 
 export function copyIntakeLink(token, btn) {
-  const url = `${window.location.origin}/intake.html?token=${encodeURIComponent(token)}`;
+  const url = `${window.location.origin}/en/intake?token=${encodeURIComponent(token)}`;
   const msgEl = btn?.parentElement?.querySelector('.detail-action-msg');
   const done = (text) => {
     if (msgEl) {

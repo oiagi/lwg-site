@@ -26,7 +26,7 @@ function getSiteOrigin() {
 
 function buildCompanyIntakeUrl(company) {
   if (!company?.intake_code) return '';
-  return `${getSiteOrigin()}/intake.html?company=${encodeURIComponent(company.intake_code)}`;
+  return `${getSiteOrigin()}/en/intake?company=${encodeURIComponent(company.intake_code)}`;
 }
 
 /* ── Load + render list ────────────────────────────────────────────── */

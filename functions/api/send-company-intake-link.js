@@ -126,7 +126,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const students = (await studRes.json()).filter((s) => s.email);
   if (!students.length) return errorResponse('No linked students have an email address', 400);
 
-  const intakeUrl = `${siteUrl}/intake.html?company=${encodeURIComponent(company.intake_code)}`;
+  const intakeUrl = `${siteUrl}/${language}/intake?company=${encodeURIComponent(company.intake_code)}`;
   const results = await Promise.all(
     students.map(async (student) => {
       const email = buildEmail({

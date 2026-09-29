@@ -132,6 +132,11 @@
 /subjunktionen.html  /de/subjunktionen  301
 /konjunktionen.html  /de/konjunktionen  301
 /niveaus.html  /de/niveaus  301
+# Links already emailed as /intake.html?token=… or /feedback.html?token=… —
+# the query string carries through the 301.
+/intake.html  /en/intake  301
+/feedback.html  /en/feedback  301
+/thankyou.html  /en/thankyou  301
 
 # /en/* and /de/* are served by functions/en/[[path]].js and functions/de/[[path]].js,
 # which resolve the slug and render the page in the right language server-side.

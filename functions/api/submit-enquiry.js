@@ -315,7 +315,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       const token = await getOrCreateStudentToken(SUPABASE_URL, SUPABASE_SERVICE_KEY, studentId);
       if (token) {
         const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
-        intakeFormUrl = `${base}/intake.html?token=${encodeURIComponent(token)}`;
+        intakeFormUrl = `${base}/${language}/intake?token=${encodeURIComponent(token)}`;
       }
     } catch (err) {
       console.error('Student link error (non-fatal):', err);
