@@ -22,6 +22,14 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 # registered in Google Cloud Console for the OAuth client.
 # GOOGLE_REDIRECT_URI=http://localhost:8788/api/auth-callback
 
+# ── Swiss QR-bill (invoice payment part) ─────────────────────────
+# QR-IBAN of the account invoices are paid into (positions 5–9 must be
+# 30000–31999). Without it the admin cannot add a payment part to invoices.
+# QR_BILL_IBAN=CH4431999123000889012
+# Account holder name exactly as registered with the bank. Optional;
+# defaults to "Birukoff World c/o Gioia Birukoff".
+# QR_BILL_CREDITOR_NAME=Birukoff World c/o Gioia Birukoff
+
 # ── CORS ─────────────────────────────────────────────────────────
 # Comma-separated list of allowed origins
 # (defaults to https://learningwithgioia.ch,https://oiagi.org,http://localhost)
