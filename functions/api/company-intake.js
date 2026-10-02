@@ -12,6 +12,8 @@ import {
   checkRateLimit,
   parseJsonBody,
   capitalizeNameFields,
+  normalizeCountryFields,
+  foreignCountryLabel,
 } from './_utils.js';
 import { sendResendEmail, CONTACT_EMAIL as ADMIN_EMAIL } from './_email.js';
 
@@ -51,6 +53,7 @@ function buildIntakeConfirmationEmail(data, lang) {
   const address = [
     [data.street, data.street_number].filter(Boolean).join(' '),
     [data.postcode, data.city].filter(Boolean).join(' '),
+    foreignCountryLabel(data.country, isDE),
   ]
     .filter(Boolean)
     .join(', ');
@@ -66,6 +69,7 @@ function buildIntakeConfirmationEmail(data, lang) {
     ? [
         [data.billing_street, data.billing_street_number].filter(Boolean).join(' '),
         [data.billing_postcode, data.billing_city].filter(Boolean).join(' '),
+        foreignCountryLabel(data.billing_country, isDE),
       ]
         .filter(Boolean)
         .join(', ')
@@ -211,6 +215,7 @@ function buildStudentPayload(body, companyId) {
     street_number: body.street_number,
     postcode: body.postcode,
     city: body.city,
+    country: body.country,
     emergency_contact: body.emergency_contact,
     ec_relationship: body.ec_relationship,
     ec_phone: body.ec_phone,
@@ -231,6 +236,7 @@ function buildStudentPayload(body, companyId) {
     'billing_street_number',
     'billing_postcode',
     'billing_city',
+    'billing_country',
   ];
 
   if (body.billing_separate) {
@@ -278,6 +284,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (body.gender === 'other' && !body.gender_note) {
     return errorResponse('Please specify your salutation', 400);
   }
+  const badCountry = normalizeCountryFields(body);
+  if (badCountry) return errorResponse(`${badCountry} must be a two-letter ISO code`, 400);
   const missing = missingRequired(body, [
     'email',
     'phone',
@@ -285,6 +293,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'street_number',
     'postcode',
     'city',
+    'country',
   ]);
   if (missing) return errorResponse(`${missing} is required`, 400);
   if (!emailValid(body.email)) return errorResponse('email must be valid', 400);
@@ -301,6 +310,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       'billing_street_number',
       'billing_postcode',
       'billing_city',
+      'billing_country',
     ]);
     if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
     if (!['female', 'male', 'other'].includes(body.billing_gender)) {

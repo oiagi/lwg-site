@@ -18,6 +18,7 @@ import {
   parseJsonBody,
   pickDefined,
   capitalizeNameFields,
+  normalizeCountryFields,
 } from './_utils.js';
 
 const STUDENT_FIELDS = [
@@ -31,6 +32,7 @@ const STUDENT_FIELDS = [
   'street',
   'street_number',
   'city',
+  'country',
   'current_level',
   'progress_notes',
   'company_id',
@@ -44,6 +46,7 @@ const STUDENT_FIELDS = [
   'billing_street_number',
   'billing_postcode',
   'billing_city',
+  'billing_country',
   'billing_email',
   'rate_per_session',
   'currency',
@@ -110,6 +113,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   // active is excluded from allowed fields because it is derived from status below.
   const data = pickDefined(body, STUDENT_FIELDS);
   capitalizeNameFields(data);
+  const badCountry = normalizeCountryFields(data);
+  if (badCountry) return errorResponse(`${badCountry} must be a two-letter ISO code`, 400);
 
   if ('gender' in data) {
     if (!GENDER_VALUES.has(data.gender)) {

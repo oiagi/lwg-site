@@ -17,6 +17,7 @@ import {
   withErrorHandling,
   parseJsonBody,
   capitalizeNameFields,
+  normalizeCountryFields,
 } from './_utils.js';
 
 const ALLOWED_FIELDS = [
@@ -30,6 +31,7 @@ const ALLOWED_FIELDS = [
   'street_number',
   'postcode',
   'city',
+  'country',
   'emergency_contact',
   'ec_relationship',
   'ec_phone',
@@ -43,6 +45,7 @@ const ALLOWED_FIELDS = [
   'billing_street_number',
   'billing_postcode',
   'billing_city',
+  'billing_country',
   'vat_number',
   'payment_method',
   'progress_notes',
@@ -69,6 +72,10 @@ function pickAllowed(row) {
     } else if (out[field] && out[field] !== 'other') {
       delete out[noteField];
     }
+  }
+  // Drop malformed country codes rather than failing the whole row.
+  for (const field of ['country', 'billing_country']) {
+    if (field in out && normalizeCountryFields(out, [field])) delete out[field];
   }
   return capitalizeNameFields(out);
 }

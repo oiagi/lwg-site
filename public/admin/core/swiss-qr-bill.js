@@ -172,7 +172,9 @@ function firstFilled(...values) {
 // billing_* fields whenever any of them is set — the same precedence the
 // invoice address block uses. Returns null when the address is incomplete,
 // in which case the bill shows a blank box the payer fills in by hand.
-export function debtorFromStudent(student, country = 'CH') {
+// The country comes from the student's billing_country / country columns;
+// `fallbackCountry` covers rows saved before those columns existed.
+export function debtorFromStudent(student, fallbackCountry = 'CH') {
   if (!student) return null;
   const useBilling = Boolean(
     firstFilled(
@@ -194,6 +196,7 @@ export function debtorFromStudent(student, country = 'CH') {
         buildingNumber: firstFilled(student.billing_street_number),
         postalCode: firstFilled(student.billing_postcode),
         city: firstFilled(student.billing_city),
+        country: firstFilled(student.billing_country, student.country, fallbackCountry),
       }
     : {
         name: ownName,
@@ -201,9 +204,10 @@ export function debtorFromStudent(student, country = 'CH') {
         buildingNumber: firstFilled(student.street_number),
         postalCode: firstFilled(student.postcode),
         city: firstFilled(student.city),
+        country: firstFilled(student.country, fallbackCountry),
       };
   if (!debtor.name || !debtor.postalCode || !debtor.city) return null;
-  return { ...debtor, country };
+  return { ...debtor, country: debtor.country.toUpperCase() };
 }
 
 /* ── Amount ──────────────────────────────────────────────────────── */
@@ -345,11 +349,20 @@ export function qrBillLabels(lang = 'de') {
 }
 
 // Address lines as printed on the bill: name, street + number, postcode + town.
+// Following the SIX style guide, foreign addresses carry the country code in
+// front of the postcode ("DE-80331 München"); Swiss ones print it plainly.
 export function partyDisplayLines(party) {
   if (!party) return [];
+  const country = String(party.country ?? '')
+    .trim()
+    .toUpperCase();
+  const postalCode =
+    party.postalCode && country && country !== 'CH'
+      ? `${country}-${party.postalCode}`
+      : party.postalCode;
   return [
     party.name,
     [party.street, party.buildingNumber].filter(Boolean).join(' '),
-    [party.postalCode, party.city].filter(Boolean).join(' '),
+    [postalCode, party.city].filter(Boolean).join(' '),
   ].filter(Boolean);
 }

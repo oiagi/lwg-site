@@ -2,6 +2,7 @@
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { foreignCountryLine, DEFAULT_COUNTRY } from '../core/countries.js';
 import {
   debtorFromStudent,
   qrReferenceFromInvoiceNumber,
@@ -298,6 +299,7 @@ function invoiceRecipient(student) {
       email: student.billing_email || '',
       street: [student.billing_street, student.billing_street_number].filter(Boolean).join(' '),
       city: [student.billing_postcode, student.billing_city].filter(Boolean).join(' '),
+      country: student.billing_country || student.country || DEFAULT_COUNTRY,
     };
   }
 
@@ -310,12 +312,19 @@ function invoiceRecipient(student) {
     email: student?.email || '',
     street: [student?.street, student?.street_number].filter(Boolean).join(' '),
     city: [student?.postcode, student?.city].filter(Boolean).join(' '),
+    country: student?.country || DEFAULT_COUNTRY,
   };
 }
 
-function billingAddressLines(student) {
+// Address block lines; the country is added only for addresses abroad.
+function billingAddressLines(student, language = 'de') {
   const recipient = invoiceRecipient(student);
-  return [recipient.name, recipient.street, recipient.city].filter(Boolean);
+  return [
+    recipient.name,
+    recipient.street,
+    recipient.city,
+    foreignCountryLine(recipient.country, language),
+  ].filter(Boolean);
 }
 
 function formalGreeting(data) {
@@ -451,12 +460,18 @@ function titleCase(value) {
     .join(' ');
 }
 
-function formalCourseLabel(course, lang = 'de') {
-  const courseType = String(course.course_type || '').toLowerCase();
-  const rawSubject = course.subject || titleCase(course.course_type);
+// Subject and level only ("Deutsch B1.2"); tutoring and Gymivorbereitung
+// carry no level.
+function courseNameLabel(course, lang = 'de') {
+  const courseType = String(course?.course_type || '').toLowerCase();
+  const rawSubject = course?.subject || titleCase(course?.course_type);
   const subject = translateSubject(rawSubject, lang);
-  const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course.level;
-  return [subject, level, course.course_code].filter(Boolean).join(' · ');
+  const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course?.level;
+  return [subject, level].filter(Boolean).join(' ');
+}
+
+function formalCourseLabel(course, lang = 'de') {
+  return [courseNameLabel(course, lang), course.course_code].filter(Boolean).join(' · ');
 }
 
 function courseQuantity(course) {
@@ -595,9 +610,10 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     recipientEmail: currentBulkRecipients.length
       ? recipient.email || billingEmail(student)
       : val('inv-recipient-email'),
-    recipientLines: billingAddressLines(student),
+    recipientLines: billingAddressLines(student, language),
     debtor: debtorFromStudent(student),
     courseCode: currentCourse?.course_code || '',
+    courseName: courseNameLabel(currentCourse, language),
     isShared: isSharedCourse(currentCourse),
     sessionLengthMinutes: Number(currentCourse?.session_length_minutes || 60),
   };
@@ -833,9 +849,13 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
 }
 
 // Bill data for the Swiss QR-bill page: creditor from the server config, payer
-// from the student, reference derived from the invoice number.
+// from the student, reference derived from the invoice number. The additional
+// information reads "Deutsch B1.2 Gruppenunterricht 32x60min" (140 chars max,
+// enforced by prepareQrBill); the invoice number is already encoded in the QR
+// reference.
 function qrBillInput(data) {
-  const isEN = data.language === 'en';
+  const s = invoiceStrings(data.language, data.isShared);
+  const lessons = `${data.quantity}x${data.sessionLengthMinutes}min`;
   return {
     iban: qrBillConfig.iban,
     creditor: qrBillConfig.creditor,
@@ -843,7 +863,7 @@ function qrBillInput(data) {
     amount: data.totalAmount,
     currency: data.currency === 'EUR' ? 'EUR' : 'CHF',
     reference: qrReferenceFromInvoiceNumber(data.invoiceNumber),
-    message: `${isEN ? 'Invoice' : 'Rechnung'} ${data.invoiceNumber} · ${data.subject || ''}`,
+    message: [data.courseName, s.classType, lessons].filter(Boolean).join(' '),
   };
 }
 
@@ -1527,9 +1547,10 @@ function getStornoData() {
     : { name: '', firstName: '', lastName: '', gender: '', genderNote: '', email: '' };
   const quantity = numVal('storno-quantity');
   const unitPrice = numVal('storno-unit-price');
+  const language = stornoDocumentLanguage();
   return {
     isStorno: true,
-    language: stornoDocumentLanguage(),
+    language,
     invoiceNumber: val('storno-number'),
     customerReference: student?.customer_reference || '',
     invoiceDate: val('storno-date'),
@@ -1545,7 +1566,7 @@ function getStornoData() {
     recipientGender: recipient.gender,
     recipientGenderNote: recipient.genderNote,
     recipientEmail: stornoNotifyEmail(),
-    recipientLines: student ? billingAddressLines(student) : [],
+    recipientLines: student ? billingAddressLines(student, language) : [],
     courseCode: course?.course_code || '',
     isShared: isSharedCourse(course || {}),
     sessionLengthMinutes: Number(course?.session_length_minutes || 60),

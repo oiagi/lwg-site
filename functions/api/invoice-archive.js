@@ -170,7 +170,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       env,
       'students',
       records.map((r) => r.student_id),
-      'id,first_name,last_name,gender,gender_note,email,customer_reference,street,street_number,postcode,city,billing_name,billing_gender,billing_gender_note,billing_email,billing_street,billing_street_number,billing_postcode,billing_city',
+      'id,first_name,last_name,gender,gender_note,email,customer_reference,street,street_number,postcode,city,country,billing_name,billing_gender,billing_gender_note,billing_email,billing_street,billing_street_number,billing_postcode,billing_city,billing_country',
       'id,first_name,last_name,gender,gender_note,email,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_street,billing_street_number,billing_postcode,billing_city'
     ),
     fetchRelatedRecords(

@@ -39,7 +39,7 @@ const DB_SORTS = {
 
 const DERIVED_SORTS = new Set(['student_count', 'sessions_remaining']);
 const STUDENT_SELECT =
-  'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_gender,billing_gender_note,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
+  'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,country,billing_name,billing_gender,billing_gender_note,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,billing_country,subjects';
 const STUDENT_SELECT_COMPAT =
   'id,first_name,last_name,gender,gender_note,email,phone,current_level,progress_notes,access_token,customer_reference,street,street_number,postcode,city,billing_name,billing_email,billing_phone,billing_street,billing_street_number,billing_postcode,billing_city,subjects';
 const ENROLMENT_SELECT =

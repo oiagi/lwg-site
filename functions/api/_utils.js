@@ -74,6 +74,48 @@ export function capitalizeNameFields(data, fields = CAPITALIZED_STUDENT_FIELDS) 
   return data;
 }
 
+// ── Country codes ─────────────────────────────────────────────────────────
+// Student addresses store the country as an ISO 3166-1 alpha-2 code ('CH'),
+// which is also what the Swiss QR-bill debtor needs. Swiss convention omits
+// the country line for domestic addresses.
+export const DEFAULT_COUNTRY = 'CH';
+const COUNTRY_FIELDS = ['country', 'billing_country'];
+
+export function normalizeCountry(value) {
+  if (value === null || value === undefined) return null;
+  const code = String(value).trim().toUpperCase();
+  return code || null;
+}
+
+export function countryValid(value) {
+  return /^[A-Z]{2}$/.test(String(value ?? ''));
+}
+
+// Uppercases country / billing_country in place. Returns the name of the
+// first field holding something that is not a two-letter code, or null.
+export function normalizeCountryFields(data, fields = COUNTRY_FIELDS) {
+  if (!data) return null;
+  for (const field of fields) {
+    if (!(field in data)) continue;
+    data[field] = normalizeCountry(data[field]);
+    if (data[field] !== null && !countryValid(data[field])) return field;
+  }
+  return null;
+}
+
+// Localized country name for emails/documents; '' for CH so domestic
+// addresses stay as they are. Falls back to the code if ICU lacks the name.
+export function foreignCountryLabel(code, isDE) {
+  const iso = normalizeCountry(code);
+  if (!iso || iso === DEFAULT_COUNTRY) return '';
+  try {
+    const names = new Intl.DisplayNames([isDE ? 'de' : 'en'], { type: 'region', fallback: 'none' });
+    return names.of(iso) || iso;
+  } catch {
+    return iso;
+  }
+}
+
 // ── Supabase request headers ──────────────────────────────────────────────
 export function supabaseHeaders(key) {
   return {

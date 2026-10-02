@@ -2,6 +2,7 @@
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { foreignCountryLine } from '../core/countries.js';
 import { formatCourseAddress } from './courses.js';
 import {
   loadPdfAssets,
@@ -45,6 +46,7 @@ export async function openCertificateModal(courseId, coursesCache) {
       street_number: s.street_number || '',
       postcode: s.postcode || '',
       city: s.city || '',
+      country: s.country || '',
       selected: true,
       paid_invoice_amount: paidInv ? paidInv.total_amount : null,
       paid_invoice_currency: paidInv ? paidInv.currency || 'CHF' : 'CHF',
@@ -228,7 +230,8 @@ function buildCertificateData(recipient, course, opts) {
 
   const addrLine1 = [recipient.street, recipient.street_number].filter(Boolean).join(' ');
   const addrLine2 = [recipient.postcode, recipient.city].filter(Boolean).join(' ');
-  const addressLines = [addrLine1, addrLine2].filter(Boolean);
+  const addrLine3 = foreignCountryLine(recipient.country, opts.language);
+  const addressLines = [addrLine1, addrLine2, addrLine3].filter(Boolean);
 
   return {
     fullName,
