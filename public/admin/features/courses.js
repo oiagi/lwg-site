@@ -781,8 +781,8 @@ function renderCourses(courses) {
                   data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
                 <div class="detail-action-row">
                   <button class="save-btn"
-                    data-action="sendCourseConfirmation" data-args="${c.id}">send confirmation</button>
-                  <span class="saved-msg" id="confirm-msg-${c.id}">sent</span>
+                    data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
+                  <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"
@@ -803,11 +803,6 @@ function renderCourses(courses) {
                   <button class="save-btn"
                     data-action="openContractModal" data-args="${c.id}">send contracts</button>
                   <span class="saved-msg" id="contract-row-msg-${c.id}">sent</span>
-                </div>
-                <div class="detail-action-row">
-                  <button class="save-btn"
-                    data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
-                  <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"

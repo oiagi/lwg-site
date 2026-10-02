@@ -1,5 +1,5 @@
 /* ── Course communications ────────────────────────────────────────────
-   Course-level send actions: confirmation + schedule emails (through the
+   Course-level send actions: starting-soon + schedule emails (through the
    confirm-send modal) and the certificate / contract / invoice modal
    openers. All of them read the shared coursesCache owned by courses.js;
    refreshCourseInCache mutates entries in place so the cache stays the
@@ -44,9 +44,10 @@ function fmtScheduleSession(session, course) {
   return duration ? `${label} (${duration} min)` : label;
 }
 
-/* Both consolidated course-info emails run through /api/send-course-confirmation
-   and differ only in framing, so the modal is built once and the variant
-   supplies the wording. */
+/* The course-info emails run through /api/send-course-confirmation and differ
+   only in framing, so the modal is built once and the variant supplies the
+   wording. Only the 'starting_soon' variant is sent from here: the course
+   confirmation now travels with the invoice email. */
 async function openCourseOverviewSend({
   courseId,
   variant,
@@ -134,23 +135,6 @@ async function openCourseOverviewSend({
   });
 }
 
-export function sendCourseConfirmation(courseId) {
-  return openCourseOverviewSend({
-    courseId,
-    variant: 'confirmation',
-    title: 'send course confirmation',
-    msgId: 'confirm-msg-',
-    subjectFor: (course) =>
-      `Kursbestätigung / Course confirmation - ${course.course_code || 'course'} · learning with gioia`,
-    includedHtml: `
-    <ul class="cs-detail-list">
-      <li>24-hour cancellation policy</li>
-      <li>AGB / terms &amp; conditions</li>
-      <li>English confirmations include both English and German AGB</li>
-    </ul>`,
-  });
-}
-
 export function openStartingSoonModal(courseId) {
   return openCourseOverviewSend({
     courseId,
@@ -163,7 +147,7 @@ export function openStartingSoonModal(courseId) {
     <ul class="cs-detail-list">
       <li>The date of the next lesson, named in the intro</li>
       <li>24-hour cancellation policy</li>
-      <li>No AGB — they already came with the confirmation</li>
+      <li>No AGB — they already came with the invoice</li>
     </ul>`,
   });
 }

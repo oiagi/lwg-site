@@ -5,6 +5,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildConfirmationEmail,
+  courseInfoSectionsHtml,
+  sessionListRows,
+  heldBeforeJoining,
+  zurichDateOf,
   firstLessonLabel,
   formatLocation,
   studentBookingTotal,
@@ -144,6 +148,63 @@ test('unsorted sessions still resolve the earliest lesson', () => {
   const now = new Date('2026-07-01T00:00:00Z');
   const shuffled = [sessions[2], sessions[0], sessions[1]];
   assert.equal(firstLessonLabel(shuffled, 'de', now), 'Montag, 03.08.2026, 18:00');
+});
+
+test('courseInfoSectionsHtml toggles the AGB and keeps the other three blocks', () => {
+  const withAgb = courseInfoSectionsHtml({ course, sessions, language: 'de' });
+  assert.ok(withAgb.includes(AGB_MARKER_DE));
+  assert.match(withAgb, /Kursdetails/);
+  assert.match(withAgb, /Geplante Lektionen/);
+  assert.match(withAgb, /Absage und Verschiebung/);
+
+  const withoutAgb = courseInfoSectionsHtml({
+    course,
+    sessions,
+    language: 'de',
+    includeAgb: false,
+  });
+  assert.ok(!withoutAgb.includes(AGB_MARKER_DE));
+  assert.match(withoutAgb, /Kursdetails/);
+  assert.match(withoutAgb, /Absage und Verschiebung/);
+
+  // The confirmation email is built from the same rows.
+  assert.ok(build().html.includes(withAgb));
+  assert.ok(build({ variant: 'starting_soon' }).html.includes(withoutAgb));
+
+  // Billing overrides replace the course-level lesson count and total.
+  const billed = courseInfoSectionsHtml({
+    course,
+    sessions,
+    language: 'de',
+    booking: { lessons: 2, total: 300 },
+  });
+  assert.match(billed, /Anzahl Lektionen<\/td>\s*<td[^>]*>2</);
+  assert.match(billed, /Preis für die gesamte Buchung<\/td>\s*<td[^>]*>300\.00 CHF</);
+  assert.match(withAgb, /Anzahl Lektionen<\/td>\s*<td[^>]*>3</);
+  assert.match(withAgb, /Preis für die gesamte Buchung<\/td>\s*<td[^>]*>450\.00 CHF</);
+});
+
+test('lessons before joined_at are compared by their Zurich calendar date', () => {
+  // 21:30 UTC on 9 Aug is 23:30 Zurich time on 9 Aug: still the day before.
+  const lateEvening = { scheduled_at: '2026-08-09T21:30:00Z' };
+  // 22:30 UTC on 9 Aug is already 00:30 Zurich time on 10 Aug: the join date.
+  const justAfterMidnight = { scheduled_at: '2026-08-09T22:30:00Z' };
+  assert.equal(zurichDateOf(lateEvening.scheduled_at), '2026-08-09');
+  assert.equal(zurichDateOf(justAfterMidnight.scheduled_at), '2026-08-10');
+  assert.equal(heldBeforeJoining(lateEvening, '2026-08-10'), true);
+  assert.equal(heldBeforeJoining(justAfterMidnight, '2026-08-10'), false);
+  assert.equal(heldBeforeJoining(lateEvening, null), false);
+  assert.equal(heldBeforeJoining({ scheduled_at: 'nope' }, '2026-08-10'), false);
+
+  const rows = sessionListRows(sessions, course, 'de', { joinedAt: '2026-08-10' });
+  assert.equal((rows.match(/line-through/g) || []).length, 1);
+  assert.match(rows, /Grau durchgestrichen/);
+  // Without joinedAt the rows are exactly what the confirmation always rendered.
+  assert.equal(
+    sessionListRows(sessions, course, 'de'),
+    sessionListRows(sessions, course, 'de', {})
+  );
+  assert.ok(!sessionListRows(sessions, course, 'de').includes('line-through'));
 });
 
 test('booking total and location helpers', () => {

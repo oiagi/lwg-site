@@ -12,6 +12,12 @@
 // browser by public/admin/features/qr-bill-pdf.js, using the creditor data
 // from /api/get-qr-bill-config, and is page 2 of the PDF by the time this
 // endpoint is called.
+//
+// The email doubles as the course confirmation: besides the amount and due
+// date it carries the course details, the lesson list, the cancellation
+// policy and the full AGB, loaded here from the course, its sessions and the
+// student's enrolment (joined_at greys out lessons held before a late joiner
+// joined).
 
 import {
   requireAdminAuth,
@@ -19,6 +25,7 @@ import {
   errorResponse,
   withErrorHandling,
   parseJsonBody,
+  supabaseHeaders,
 } from './_utils.js';
 import {
   INVOICE_NUMBER_RE,
@@ -30,65 +37,37 @@ import {
   logInvoice,
 } from './_invoices.js';
 import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
-import {
-  esc,
-  cleanFilenamePart,
-  formatDate,
-  invoiceGreeting,
-  emailShell,
-  bodyParagraph,
-} from './_invoice-email.js';
+import { cleanFilenamePart, buildInvoiceEmail } from './_invoice-email.js';
 
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
-function buildEmail({ language, name, first_name, last_name, gender, invoice }) {
-  const isEN = language === 'en';
-  const invoiceNo = invoice.invoice_number || '';
-  const amount = `${Number(invoice.total_amount || 0).toFixed(2)} ${invoice.currency || 'CHF'}`;
-  const subject = isEN
-    ? `Invoice ${invoiceNo} · learning with gioia`
-    : `Rechnung ${invoiceNo} · learning with gioia`;
+/* The course blocks of the email come from the same reads the course-info
+   emails use (send-course-confirmation.js), plus the student's enrolment for
+   joined_at. A missing course is an error; failed session or enrolment reads
+   degrade to an empty lesson list / no greying rather than blocking the send. */
+async function loadCourseContext(env, courseId, studentId) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+  const q = encodeURIComponent;
 
-  const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
-  const courseLabel = invoice.subject || (isEN ? 'your course' : 'Ihren Kurs');
-  const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass Sie mit uns lernen.';
-  const invoiceLine = isEN
-    ? `Attached you will find the invoice for ${courseLabel}.`
-    : `Anbei finden Sie die Rechnung für ${courseLabel}.`;
-  const paymentLine = dueDate
-    ? isEN
-      ? `You can pay it easily with the QR bill in the PDF. The payment is due by ${dueDate}.`
-      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
-    : isEN
-      ? 'You will find the payment details directly in the attached PDF.'
-      : 'Die Zahlungsdetails finden Sie direkt im angehängten PDF.';
-  const questionLine = isEN
-    ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
-  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
+  const [cr, sr, er] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/courses?id=eq.${q(courseId)}&select=*`, { headers: H }),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${q(courseId)}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at,duration_minutes,status`,
+      { headers: H }
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${q(courseId)}&student_id=eq.${q(studentId)}&select=joined_at`,
+      { headers: H }
+    ),
+  ]);
 
-  const bodyHtml = [
-    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>`,
-    bodyParagraph(intro),
-    bodyParagraph(invoiceLine),
-    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
-      ${isEN ? 'Amount' : 'Betrag'}: <strong>${esc(amount)}</strong><br>
-      ${esc(paymentLine)}
-    </p>`,
-    bodyParagraph(questionLine, '0 0 24px'),
-    bodyParagraph(sign, '0 0 4px'),
-    bodyParagraph('Gioia', '0'),
-  ].join('\n');
+  const courses = cr.ok ? await cr.json() : [];
+  if (!courses.length) return { error: errorResponse('Course not found', 404) };
 
-  return {
-    subject,
-    html: emailShell({
-      language,
-      title: `${isEN ? 'Invoice' : 'Rechnung'} ${invoiceNo}`,
-      bodyHtml,
-    }),
-  };
+  const sessions = sr.ok ? await sr.json() : [];
+  const enrolments = er.ok ? await er.json() : [];
+  return { course: courses[0], sessions, joinedAt: enrolments[0]?.joined_at || null };
 }
 
 function validate(body) {
@@ -131,15 +110,21 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('Invoice number already exists. Please reopen the invoice modal.', 409);
   }
 
+  const context = await loadCourseContext(env, body.course_id, body.student_id);
+  if (context.error) return context.error;
+
   const invoiceRecord = existing || (await logInvoice(env, body, PENDING_STATUS_CANDIDATES));
 
-  const { subject, html } = buildEmail({
+  const { subject, html } = buildInvoiceEmail({
     language: body.language,
     name: body.name || '',
     first_name: body.first_name || '',
     last_name: body.last_name || '',
     gender: body.gender || '',
     invoice: body.invoice,
+    course: context.course,
+    sessions: context.sessions,
+    joinedAt: context.joinedAt,
   });
   const filename = `${body.language === 'en' ? 'invoice' : 'rechnung'}-${cleanFilenamePart(
     body.invoice.invoice_number,

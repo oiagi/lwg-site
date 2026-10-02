@@ -31,7 +31,6 @@ import {
   submitAttendance,
 } from './features/attendance.js';
 import {
-  sendCourseConfirmation,
   openStartingSoonModal,
   openScheduleModal,
   openFeedbackRequestModal,
@@ -172,7 +171,6 @@ const actions = {
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
-  sendCourseConfirmation,
   openStartingSoonModal,
   openScheduleModal,
   openFeedbackRequestModal,

@@ -1,6 +1,9 @@
 // functions/api/_course-confirmation-email.js
 // Shared template for the two consolidated course-info emails:
-//   'confirmation'   — sent after enrolment, includes the full AGB
+//   'confirmation'   — course overview with the full AGB. No longer sent from
+//                      the admin: the invoice email (send-invoice.js) carries
+//                      the same blocks via courseInfoSectionsHtml and acts as
+//                      the confirmation. The variant stays for the endpoint.
 //   'starting_soon'  — sent shortly before the first lesson, no AGB repeat
 // Both share the course details table, lesson list and cancellation callout;
 // only the subject, title and intro differ.
@@ -71,9 +74,12 @@ export function formatLocation(course) {
   return address || course.location || '—';
 }
 
-export function courseDetailRows(course, sessions, language = 'de') {
-  const lessons = bookingLessonCount(course, sessions);
-  const total = studentBookingTotal(course, sessions);
+/* `booking` overrides the course-level lesson count and total with the figures
+   the student is actually billed for (late joiners, overridden lesson counts),
+   so the invoice email never contradicts the attached PDF. */
+export function courseDetailRows(course, sessions, language = 'de', booking = {}) {
+  const lessons = numberOrNull(booking.lessons) ?? bookingLessonCount(course, sessions);
+  const total = numberOrNull(booking.total) ?? studentBookingTotal(course, sessions);
   const label = {
     de: {
       code: 'Kurscode',
@@ -126,21 +132,63 @@ export function sessionDuration(session, course) {
   return session.duration_minutes ?? course.session_length_minutes ?? null;
 }
 
-export function sessionListRows(sessions, course, language = 'de') {
+/* Calendar date of a session in Zurich time, as YYYY-MM-DD, so it can be
+   compared with an enrolment's joined_at (a date-only column) without the
+   UTC-midnight drift a plain Date comparison would introduce on the server. */
+export function zurichDateOf(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Zurich',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const get = (type) => parts.find((p) => p.type === type)?.value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+/* A lesson counts as "held before joining" when its Zurich calendar date lies
+   before the student's joined_at. Mirrors studentLessonCount in the admin. */
+export function heldBeforeJoining(session, joinedAt) {
+  if (!joinedAt) return false;
+  const day = zurichDateOf(session.scheduled_at);
+  return day !== null && day < joinedAt;
+}
+
+/* The lesson list. With `joinedAt` (late joiners), lessons already held
+   before the student joined stay in the list so the whole course is visible,
+   but are greyed out and struck through, with a legend underneath. */
+export function sessionListRows(sessions, course, language = 'de', { joinedAt = null } = {}) {
+  const isEnglish = language === 'en';
   if (!sessions.length) {
-    const empty =
-      language === 'en' ? 'No lessons have been scheduled yet.' : 'Noch keine Lektionen geplant.';
+    const empty = isEnglish
+      ? 'No lessons have been scheduled yet.'
+      : 'Noch keine Lektionen geplant.';
     return `<tr><td style="padding:8px 0;font-size:13px;color:#888;">${empty}</td></tr>`;
   }
-  return sessions
-    .map(
-      (s, i) => `
+  let greyed = 0;
+  const rows = sessions
+    .map((s, i) => {
+      const held = heldBeforeJoining(s, joinedAt);
+      if (held) greyed += 1;
+      const numStyle = held ? 'color:#bbb;' : 'color:#888;';
+      const dateStyle = held ? 'color:#bbb;text-decoration:line-through;' : '';
+      return `
       <tr>
-        <td style="padding:6px 0;font-size:13px;color:#888;width:2.4em;vertical-align:top;">${i + 1}.</td>
-        <td style="padding:6px 0;font-size:13px;">${esc(fmtDate(s.scheduled_at, language, sessionDuration(s, course)))}</td>
-      </tr>`
-    )
+        <td style="padding:6px 0;font-size:13px;${numStyle}width:2.4em;vertical-align:top;">${i + 1}.</td>
+        <td style="padding:6px 0;font-size:13px;${dateStyle}">${esc(fmtDate(s.scheduled_at, language, sessionDuration(s, course)))}</td>
+      </tr>`;
+    })
     .join('');
+  if (!greyed) return rows;
+  const legend = isEnglish
+    ? 'Greyed out: lessons held before you joined.'
+    : 'Grau durchgestrichen: Lektionen, die vor Ihrem Einstieg stattgefunden haben.';
+  return `${rows}
+      <tr>
+        <td colspan="2" style="padding:10px 0 0;font-size:12px;color:#aaa;line-height:1.5;">${esc(legend)}</td>
+      </tr>`;
 }
 
 /* The lesson the "starting soon" mail leads with: the next one still ahead of
@@ -192,6 +240,60 @@ function variantCopy({ variant, language, greetingName, sessions, now }) {
   };
 }
 
+/* The card rows shared by the course-info emails and the invoice email:
+   details table, lesson list, cancellation callout and (optionally) the AGB.
+   Returned as <tr> rows for the 600px card table of the email shell. */
+export function courseInfoSectionsHtml({
+  course,
+  sessions,
+  language = 'de',
+  includeAgb = true,
+  joinedAt = null,
+  booking = {},
+}) {
+  const isEnglish = language === 'en';
+  const copy = {
+    details: isEnglish ? 'Course details' : 'Kursdetails',
+    sessions: isEnglish ? 'Scheduled lessons' : 'Geplante Lektionen',
+    cancellation: isEnglish ? 'Cancellation and postponement' : 'Absage und Verschiebung',
+  };
+  const agbBlock = includeAgb
+    ? `
+        <tr>
+          <td style="padding:0 40px 32px;border-top:1px solid #eee;padding-top:24px;">
+            ${renderAgbEmailHtml(language)}
+          </td>
+        </tr>`
+    : '';
+  return `
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.details)}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
+              ${courseDetailRows(course, sessions, language, booking)}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
+              ${sessionListRows(sessions, course, language, { joinedAt })}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
+              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
+                ${esc(['duo', 'group'].includes(String(course.group_type || '').toLowerCase()) ? getGroupCancellationPolicy(language) : getCancellationPolicy(language))}
+              </p>
+            </div>
+          </td>
+        </tr>${agbBlock}`;
+}
+
 function subjectFor({ variant, language, course }) {
   const isEnglish = language === 'en';
   if (variant === 'starting_soon') {
@@ -227,23 +329,17 @@ export function buildConfirmationEmail({
     title,
     greeting,
     intro,
-    details: isEnglish ? 'Course details' : 'Kursdetails',
-    sessions: isEnglish ? 'Scheduled lessons' : 'Geplante Lektionen',
-    cancellation: isEnglish ? 'Cancellation and postponement' : 'Absage und Verschiebung',
     questions: isEnglish
       ? 'If you have any questions, you can reach us at'
       : 'Bei Fragen erreichen Sie uns unter',
   };
-  // The AGB were already sent with the confirmation, so the reminder skips them.
-  const agbBlock =
-    variant === 'starting_soon'
-      ? ''
-      : `
-        <tr>
-          <td style="padding:0 40px 32px;border-top:1px solid #eee;padding-top:24px;">
-            ${renderAgbEmailHtml(language)}
-          </td>
-        </tr>`;
+  // The AGB already came with the invoice, so the reminder skips them.
+  const sections = courseInfoSectionsHtml({
+    course,
+    sessions,
+    language,
+    includeAgb: variant !== 'starting_soon',
+  });
   return {
     subject: copy.subject,
     html: `<!DOCTYPE html>
@@ -270,33 +366,7 @@ export function buildConfirmationEmail({
               ${esc(copy.intro)}
             </p>
           </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.details)}</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${courseDetailRows(course, sessions, language)}
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;">${esc(copy.sessions)}</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eee;">
-              ${sessionListRows(sessions, course, language)}
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <div style="background:#fff9e6;border-left:3px solid #d4a017;padding:16px 20px;">
-              <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a6d0a;">${esc(copy.cancellation)}</p>
-              <p style="margin:0;font-size:13px;line-height:1.6;color:#333;">
-                ${esc(['duo', 'group'].includes(String(course.group_type || '').toLowerCase()) ? getGroupCancellationPolicy(language) : getCancellationPolicy(language))}
-              </p>
-            </div>
-          </td>
-        </tr>${agbBlock}
+        </tr>${sections}
         <tr>
           <td style="padding:24px 40px 32px;border-top:1px solid #eee;">
             <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
