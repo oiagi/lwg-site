@@ -451,12 +451,18 @@ function titleCase(value) {
     .join(' ');
 }
 
-function formalCourseLabel(course, lang = 'de') {
-  const courseType = String(course.course_type || '').toLowerCase();
-  const rawSubject = course.subject || titleCase(course.course_type);
+// Subject and level only ("Deutsch B1.2"); tutoring and Gymivorbereitung
+// carry no level.
+function courseNameLabel(course, lang = 'de') {
+  const courseType = String(course?.course_type || '').toLowerCase();
+  const rawSubject = course?.subject || titleCase(course?.course_type);
   const subject = translateSubject(rawSubject, lang);
-  const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course.level;
-  return [subject, level, course.course_code].filter(Boolean).join(' · ');
+  const level = courseType === 'tutoring' || courseType === 'gymivorbereitung' ? '' : course?.level;
+  return [subject, level].filter(Boolean).join(' ');
+}
+
+function formalCourseLabel(course, lang = 'de') {
+  return [courseNameLabel(course, lang), course.course_code].filter(Boolean).join(' · ');
 }
 
 function courseQuantity(course) {
@@ -598,6 +604,7 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     recipientLines: billingAddressLines(student),
     debtor: debtorFromStudent(student),
     courseCode: currentCourse?.course_code || '',
+    courseName: courseNameLabel(currentCourse, language),
     isShared: isSharedCourse(currentCourse),
     sessionLengthMinutes: Number(currentCourse?.session_length_minutes || 60),
   };
@@ -833,9 +840,13 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
 }
 
 // Bill data for the Swiss QR-bill page: creditor from the server config, payer
-// from the student, reference derived from the invoice number.
+// from the student, reference derived from the invoice number. The additional
+// information reads "Deutsch B1.2 Gruppenunterricht 32x60min" (140 chars max,
+// enforced by prepareQrBill); the invoice number is already encoded in the QR
+// reference.
 function qrBillInput(data) {
-  const isEN = data.language === 'en';
+  const s = invoiceStrings(data.language, data.isShared);
+  const lessons = `${data.quantity}x${data.sessionLengthMinutes}min`;
   return {
     iban: qrBillConfig.iban,
     creditor: qrBillConfig.creditor,
@@ -843,7 +854,7 @@ function qrBillInput(data) {
     amount: data.totalAmount,
     currency: data.currency === 'EUR' ? 'EUR' : 'CHF',
     reference: qrReferenceFromInvoiceNumber(data.invoiceNumber),
-    message: `${isEN ? 'Invoice' : 'Rechnung'} ${data.invoiceNumber} · ${data.subject || ''}`,
+    message: [data.courseName, s.classType, lessons].filter(Boolean).join(' '),
   };
 }
 
