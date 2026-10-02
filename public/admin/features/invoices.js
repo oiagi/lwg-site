@@ -2,6 +2,13 @@
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import {
+  debtorFromStudent,
+  qrReferenceFromInvoiceNumber,
+  formatIban,
+  formatQrReference,
+} from '../core/swiss-qr-bill.js';
+import { drawQrBillPage } from './qr-bill-pdf.js';
 
 const SENDER = {
   name: 'Birukoff World c/o Gioia Birukoff',
@@ -17,16 +24,38 @@ let currentStudent = null;
 let currentBulkRecipients = [];
 let bulkPreviewIndex = 0;
 let _singleOpenQuantity = null;
-const sharedQrAttachment = createQrAttachment();
 
-function createQrAttachment() {
-  return {
-    dataUrl: null,
-    pdfBytes: null,
-    fileType: null,
-    pdfObjectUrl: null,
-    fileName: '',
-  };
+// Creditor side of the Swiss QR-bill (IBAN + address), served by the Worker
+// from environment variables. Loaded whenever the modal opens; while it is
+// missing the admin is told why and asked before sending without a payment part.
+let qrBillConfig = null;
+let qrBillConfigError = '';
+let qrBillConfigPromise = null;
+
+function loadQrBillConfig() {
+  qrBillConfigPromise = (async () => {
+    try {
+      const res = await apiFetch('/api/get-qr-bill-config');
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.iban) throw new Error(body.error || `HTTP ${res.status}`);
+      qrBillConfig = body;
+      qrBillConfigError = '';
+    } catch (err) {
+      qrBillConfig = null;
+      qrBillConfigError = err.message || String(err);
+      console.error('Could not load QR-bill configuration:', err);
+    }
+    updateInvoicePreview();
+  })();
+  return qrBillConfigPromise;
+}
+
+// Asks before continuing without a payment part. Returns false to abort.
+async function confirmWithoutQrBill(action) {
+  await qrBillConfigPromise;
+  if (qrBillConfig) return true;
+  const reason = qrBillConfigError || 'configuration missing';
+  return confirm(`QR-bill not available (${reason}). ${action} without a payment part?`);
 }
 
 export async function openInvoiceModal(courseId, studentId, coursesCache) {
@@ -44,7 +73,7 @@ export async function openInvoiceModal(courseId, studentId, coursesCache) {
   currentCourse = course;
   currentStudent = student;
   currentBulkRecipients = [];
-  resetSharedQrAttachment();
+  loadQrBillConfig();
 
   const titleEl = document.getElementById('invoice-title');
   titleEl.textContent = `send invoice — ${studentName(student)}`;
@@ -74,8 +103,6 @@ export async function openInvoiceModal(courseId, studentId, coursesCache) {
   setVal('inv-recipient-email', data.email);
   document.querySelector('input[name="inv-language"][value="de"]').checked = true;
 
-  const fileEl = document.getElementById('inv-qr-file');
-  if (fileEl) fileEl.value = '';
   btn.textContent = 'send invoice';
   btn.disabled = false;
   resetDownloadButton('download');
@@ -126,10 +153,9 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
       alreadyInvoiced,
       _originalLessonCount: s.invoice_lesson_count,
       _invoiceNumber: null,
-      qrAttachment: createQrAttachment(),
     };
   });
-  resetSharedQrAttachment();
+  loadQrBillConfig();
 
   const titleEl = document.getElementById('invoice-title');
   titleEl.textContent = `send invoices — ${course.course_code || 'course'}`;
@@ -157,9 +183,6 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
   setVal('inv-recipient-email', billingEmail(currentStudent));
   document.querySelector('input[name="inv-language"][value="de"]').checked = true;
 
-  const fileEl = document.getElementById('inv-qr-file');
-  if (fileEl) fileEl.value = '';
-
   renderBulkInvoiceRecipients(currentBulkRecipients);
   bindInvoiceListeners();
   updateInvoicePreview();
@@ -177,10 +200,8 @@ export function closeInvoiceModal() {
   document.getElementById('invoice-modal').classList.remove('open');
   document.getElementById('inv-quantity').disabled = false;
   document.getElementById('inv-total').disabled = false;
-  resetBulkQrAttachments();
   currentBulkRecipients = [];
   renderBulkInvoiceRecipients([]);
-  resetSharedQrAttachment();
 }
 
 let listenersBound = false;
@@ -213,46 +234,11 @@ function bindInvoiceListeners() {
       updateInvoicePreview();
     });
   });
-  document.getElementById('inv-qr-file')?.addEventListener('change', handleQrFile);
 }
 
 function setVal(id, value) {
   const el = document.getElementById(id);
   if (el) el.value = value ?? '';
-}
-
-function revokeQrAttachmentObjectUrl(attachment) {
-  if (!attachment?.pdfObjectUrl) return;
-  URL.revokeObjectURL(attachment.pdfObjectUrl);
-  attachment.pdfObjectUrl = null;
-}
-
-function clearQrAttachment(attachment) {
-  if (!attachment) return;
-  revokeQrAttachmentObjectUrl(attachment);
-  attachment.dataUrl = null;
-  attachment.pdfBytes = null;
-  attachment.fileType = null;
-  attachment.fileName = '';
-}
-
-function resetSharedQrAttachment() {
-  clearQrAttachment(sharedQrAttachment);
-}
-
-function resetBulkQrAttachments() {
-  currentBulkRecipients.forEach((recipient) => clearQrAttachment(recipient.qrAttachment));
-}
-
-function hasQrAttachment(attachment) {
-  return Boolean(attachment?.dataUrl || attachment?.pdfBytes);
-}
-
-function activeQrAttachment(student = currentStudent) {
-  if (currentBulkRecipients.length && student?.qrAttachment?.fileType) {
-    return student.qrAttachment;
-  }
-  return sharedQrAttachment;
 }
 
 function val(id) {
@@ -362,7 +348,7 @@ function renderBulkInvoiceRecipients(recipients) {
   wrap.classList.remove('is-hidden');
   wrap.innerHTML = `
     <label>Recipients <span class="cs-meta" id="inv-bulk-count"></span></label>
-    <p class="label-hint">Upload an individual QR pay part for a recipient, or use the shared Bank QR bill below as a fallback.</p>
+    <p class="label-hint">Each recipient gets their own invoice number and QR-bill with their address as payer.</p>
     <div class="invoice-recipient-list">
       ${recipients
         .map(
@@ -381,10 +367,6 @@ function renderBulkInvoiceRecipients(recipients) {
                   data-invoice-recipient-lessons="${i}"
                   aria-label="Lessons for ${esc(studentName(s))}">
               </span>
-              <input class="invoice-recipient-qr" type="file" data-invoice-recipient-qr="${i}" accept="application/pdf,image/png,image/jpeg,image/webp" aria-label="QR pay part for ${esc(
-                studentName(s)
-              )}">
-              <span class="invoice-recipient-qr-status" data-invoice-recipient-qr-status="${i}">shared QR</span>
             </div>`
         )
         .join('')}
@@ -404,12 +386,6 @@ function renderBulkInvoiceRecipients(recipients) {
       }
     });
   });
-  wrap.querySelectorAll('input[data-invoice-recipient-qr]').forEach((input) => {
-    input.addEventListener('change', (e) => {
-      const idx = parseInt(input.dataset.invoiceRecipientQr, 10);
-      handleRecipientQrFile(idx, e);
-    });
-  });
   wrap.querySelectorAll('input[data-invoice-recipient-lessons]').forEach((input) => {
     input.addEventListener('change', () => {
       const idx = parseInt(input.dataset.invoiceRecipientLessons, 10);
@@ -420,7 +396,6 @@ function renderBulkInvoiceRecipients(recipients) {
       }
     });
   });
-  updateAllRecipientQrStatuses();
 }
 
 function selectedBulkRecipients() {
@@ -591,94 +566,6 @@ function updateTotalFromParts() {
   setVal('inv-total', total ? total.toFixed(2) : '');
 }
 
-function updateRecipientQrStatus(index) {
-  const recipient = currentBulkRecipients[index];
-  const status = document.querySelector(`[data-invoice-recipient-qr-status="${index}"]`);
-  if (!recipient || !status) return;
-  const attachment = recipient.qrAttachment;
-  if (attachment?.fileType === 'pdf' && !attachment.pdfBytes) {
-    status.textContent = 'loading QR';
-    return;
-  }
-  if (sharedQrAttachment.fileType === 'pdf' && !sharedQrAttachment.pdfBytes) {
-    status.textContent = 'loading shared QR';
-    return;
-  }
-  status.textContent = hasQrAttachment(attachment)
-    ? 'individual QR'
-    : sharedQrAttachment.fileType
-      ? 'shared QR'
-      : 'no QR';
-}
-
-function updateAllRecipientQrStatuses() {
-  currentBulkRecipients.forEach((_, index) => updateRecipientQrStatus(index));
-}
-
-function readQrFile(file, attachment, inputEl, onChange) {
-  clearQrAttachment(attachment);
-  if (!file) {
-    onChange?.();
-    return;
-  }
-  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
-    attachment.pdfObjectUrl = URL.createObjectURL(file);
-    attachment.fileType = 'pdf';
-    attachment.fileName = file.name;
-    onChange?.();
-    const reader = new FileReader();
-    reader.onload = () => {
-      attachment.pdfBytes = new Uint8Array(reader.result);
-      onChange?.();
-    };
-    reader.onerror = () => {
-      alert('Could not read the QR bill PDF.');
-      if (inputEl) inputEl.value = '';
-      clearQrAttachment(attachment);
-      onChange?.();
-    };
-    reader.readAsArrayBuffer(file);
-    return;
-  }
-  if (!file.type.startsWith('image/')) {
-    alert('Please upload the QR bill as a PDF, PNG, or JPG.');
-    if (inputEl) inputEl.value = '';
-    onChange?.();
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = () => {
-    attachment.dataUrl = reader.result;
-    attachment.fileType = 'image';
-    attachment.fileName = file.name;
-    onChange?.();
-  };
-  reader.onerror = () => {
-    alert('Could not read the QR image.');
-    if (inputEl) inputEl.value = '';
-    clearQrAttachment(attachment);
-    onChange?.();
-  };
-  reader.readAsDataURL(file);
-}
-
-function handleQrFile(e) {
-  readQrFile(e.target.files?.[0], sharedQrAttachment, e.target, () => {
-    updateAllRecipientQrStatuses();
-    updateInvoicePreview();
-  });
-}
-
-function handleRecipientQrFile(index, e) {
-  const recipient = currentBulkRecipients[index];
-  if (!recipient) return;
-  recipient.qrAttachment ||= createQrAttachment();
-  readQrFile(e.target.files?.[0], recipient.qrAttachment, e.target, () => {
-    updateRecipientQrStatus(index);
-    if (String(currentStudent?.id) === String(recipient.id)) updateInvoicePreview();
-  });
-}
-
 function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-number')) {
   const language = document.querySelector('input[name="inv-language"]:checked')?.value || 'de';
   const isBulk = currentBulkRecipients.length > 0;
@@ -709,6 +596,7 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
       ? recipient.email || billingEmail(student)
       : val('inv-recipient-email'),
     recipientLines: billingAddressLines(student),
+    debtor: debtorFromStudent(student),
     courseCode: currentCourse?.course_code || '',
     isShared: isSharedCourse(currentCourse),
     sessionLengthMinutes: Number(currentCourse?.session_length_minutes || 60),
@@ -788,22 +676,6 @@ function buildPreviewHtml(data) {
   const s = invoiceStrings(lang, data.isShared);
   const recipient = data.recipientLines.map((line) => esc(line)).join('<br>');
   const greeting = formalGreeting(data);
-  // Storno documents carry no QR payment part — nothing is payable.
-  const qrAttachment = data.isStorno ? null : activeQrAttachment(currentStudent);
-  const qrPreview = !qrAttachment
-    ? ''
-    : qrAttachment.fileType === 'pdf'
-      ? `<span>${qrAttachment.pdfBytes ? 'QR bill PDF will be attached as page 2' : 'Loading QR bill PDF...'}</span>`
-      : qrAttachment.dataUrl
-        ? `<img src="${qrAttachment.dataUrl}" alt="">`
-        : '<span>QR bill PDF</span>';
-  const qrPdfPreview =
-    qrAttachment && qrAttachment.fileType === 'pdf' && qrAttachment.pdfObjectUrl
-      ? `<div class="inv-prev-pdf-page">
-          <p class="inv-prev-pdf-label">QR bill page preview</p>
-          <iframe src="${esc(qrAttachment.pdfObjectUrl)}" title="QR bill PDF preview"></iframe>
-        </div>`
-      : '';
   const title = data.isStorno ? s.stornoTitle : data.subject || s.titleFallback;
   const stornoSubjectLine =
     data.isStorno && data.subject
@@ -872,10 +744,41 @@ function buildPreviewHtml(data) {
       </table>
       <p>${esc(data.isStorno ? s.stornoClosing(data.originalPaid) : s.paymentText())}</p>
       <p>${esc(s.closing)}<br>Gioia Birukoff</p>
-      ${data.isStorno ? '' : `<div class="inv-prev-qr">${qrPreview}</div>`}
+      ${qrBillPreviewNote(data)}
       ${data.isStorno ? '' : `<p class="inv-prev-note">${esc(s.footnote)}</p>`}
-    </div>
-    ${qrPdfPreview}`;
+    </div>`;
+}
+
+// Short summary of the QR-bill that page 2 of the PDF will carry. Storno
+// documents carry none — nothing is payable.
+function qrBillPreviewNote(data) {
+  if (data.isStorno) return '';
+  const isEN = data.language === 'en';
+  if (!qrBillConfig) {
+    const text = qrBillConfigError
+      ? `QR-bill not available: ${qrBillConfigError}`
+      : 'Loading QR-bill configuration…';
+    return `<div class="inv-prev-qr inv-prev-qr-missing">${esc(text)}</div>`;
+  }
+  let reference = '—';
+  try {
+    reference = formatQrReference(qrReferenceFromInvoiceNumber(data.invoiceNumber));
+  } catch {
+    // Invoice number still incomplete; the PDF build reports the format error.
+  }
+  const lines = [
+    isEN
+      ? 'QR-bill (payment part + receipt) on page 2'
+      : 'QR-Rechnung (Zahlteil + Empfangsschein) auf Seite 2',
+    `IBAN ${formatIban(qrBillConfig.iban)}`,
+    `${isEN ? 'Reference' : 'Referenz'} ${reference}`,
+    data.debtor
+      ? ''
+      : isEN
+        ? 'Payer address incomplete — the bill shows a blank box to fill in'
+        : 'Zahleradresse unvollständig — der Zahlteil zeigt ein leeres Feld zum Ausfüllen',
+  ];
+  return `<div class="inv-prev-qr">${lines.filter(Boolean).map(esc).join('<br>')}</div>`;
 }
 
 function updateInvoicePreview() {
@@ -929,16 +832,19 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
   return y + lines.length * lineHeight;
 }
 
-async function mergeWithQrPdf(invoiceBytes, qrAttachment = sharedQrAttachment) {
-  if (!qrAttachment?.pdfBytes) return arrayBufferToBase64(invoiceBytes);
-  if (!window.PDFLib?.PDFDocument) {
-    throw new Error('PDF merge library not loaded — please reload the page.');
-  }
-  const invoiceDoc = await window.PDFLib.PDFDocument.load(invoiceBytes);
-  const qrDoc = await window.PDFLib.PDFDocument.load(qrAttachment.pdfBytes);
-  const copiedPages = await invoiceDoc.copyPages(qrDoc, qrDoc.getPageIndices());
-  copiedPages.forEach((page) => invoiceDoc.addPage(page));
-  return await invoiceDoc.saveAsBase64({ dataUri: false });
+// Bill data for the Swiss QR-bill page: creditor from the server config, payer
+// from the student, reference derived from the invoice number.
+function qrBillInput(data) {
+  const isEN = data.language === 'en';
+  return {
+    iban: qrBillConfig.iban,
+    creditor: qrBillConfig.creditor,
+    debtor: data.debtor,
+    amount: data.totalAmount,
+    currency: data.currency === 'EUR' ? 'EUR' : 'CHF',
+    reference: qrReferenceFromInvoiceNumber(data.invoiceNumber),
+    message: `${isEN ? 'Invoice' : 'Rechnung'} ${data.invoiceNumber} · ${data.subject || ''}`,
+  };
 }
 
 function arrayBufferToBase64(buffer) {
@@ -951,9 +857,10 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
-async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
-  // Storno documents carry no QR payment part — nothing is payable.
-  if (data.isStorno) qrAttachment = null;
+// Builds the invoice PDF: page 1 is the invoice, page 2 the Swiss QR-bill
+// (payment part + receipt) whenever the creditor config is loaded. Storno
+// documents never get a QR-bill — nothing is payable.
+async function buildInvoicePdf(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210;
@@ -1058,8 +965,8 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
     paymentLines.length * 5.5 +
     7 +
     5.5;
-  // Bottom bound: above the footnote, or above the QR image when it sits on page 1
-  const bottomBound = qrAttachment?.dataUrl ? pageH - 66 : pageH - 28;
+  // Bottom bound: above the footnote
+  const bottomBound = pageH - 28;
   // Distribute spare space 45/55 above/below so the block sits at the optical center
   y = headerBottom + Math.max(8, (bottomBound - headerBottom - blockH) * 0.45);
   setFont(11);
@@ -1138,20 +1045,20 @@ async function buildInvoicePdf(data, qrAttachment = activeQrAttachment()) {
   doc.text(s.closing, margin, y);
   doc.text('Gioia Birukoff', margin, y + 5.5);
 
-  if (qrAttachment?.dataUrl) {
-    try {
-      doc.addImage(qrAttachment.dataUrl, undefined, pageW - margin - 70, pageH - 62, 70, 42);
-    } catch (err) {
-      console.error('Could not add QR image:', err);
-    }
-  }
-
   if (!data.isStorno) {
     setFont(7.2);
     addWrappedText(doc, s.footnote, margin, pageH - 22, contentW, 3.6);
+    if (qrBillConfig) {
+      drawQrBillPage(
+        doc,
+        qrBillInput(data),
+        lang,
+        `${s.titleFallback} ${data.invoiceNumber} · ${SENDER.name}`
+      );
+    }
   }
 
-  return await mergeWithQrPdf(doc.output('arraybuffer'), qrAttachment);
+  return arrayBufferToBase64(doc.output('arraybuffer'));
 }
 
 async function persistLessonCount(courseId, studentId, count) {
@@ -1189,29 +1096,7 @@ export async function submitInvoice() {
     msg.classList.add('is-visible-block');
     return;
   }
-  const selectedQrAttachments = isBulk
-    ? bulkRecipients.map((student) => activeQrAttachment(student))
-    : [activeQrAttachment()];
-  if (
-    selectedQrAttachments.some(
-      (attachment) => attachment.fileType === 'pdf' && !attachment.pdfBytes
-    )
-  ) {
-    msg.textContent = 'The QR bill PDF is still loading. Please wait a moment.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
-    return;
-  }
-  const missingQrCount = selectedQrAttachments.filter(
-    (attachment) => !hasQrAttachment(attachment)
-  ).length;
-  const missingQrMessage =
-    isBulk && missingQrCount
-      ? `${missingQrCount} selected recipient(s) have no QR bill. Send without QR pay part for them?`
-      : 'No QR bill has been uploaded. Send the invoice without it?';
-  if (missingQrCount && !confirm(missingQrMessage)) {
-    return;
-  }
+  if (!(await confirmWithoutQrBill(isBulk ? 'Send the invoices' : 'Send the invoice'))) return;
 
   btn.textContent = 'preparing pdf…';
   btn.disabled = true;
@@ -1234,7 +1119,7 @@ export async function submitInvoice() {
         const invoiceNumber = student._invoiceNumber;
         const studentData = getInvoiceData(student, invoiceNumber);
         btn.textContent = `sending ${i + 1}/${bulkRecipients.length}…`;
-        const pdfBase64 = await buildInvoicePdf(studentData, activeQrAttachment(student));
+        const pdfBase64 = await buildInvoicePdf(studentData);
         try {
           await sendInvoiceRequest(studentData, student, pdfBase64);
           sent += 1;
@@ -1260,7 +1145,7 @@ export async function submitInvoice() {
       return;
     }
 
-    const pdfBase64 = await buildInvoicePdf(data, activeQrAttachment());
+    const pdfBase64 = await buildInvoicePdf(data);
     btn.textContent = 'sending…';
     await sendInvoiceRequest(data, currentStudent, pdfBase64);
 
@@ -1406,17 +1291,7 @@ export async function downloadInvoice() {
     return;
   }
 
-  const selectedQrAttachments = isBulk
-    ? bulkRecipients.map((student) => activeQrAttachment(student))
-    : [activeQrAttachment()];
-  if (
-    selectedQrAttachments.some(
-      (attachment) => attachment.fileType === 'pdf' && !attachment.pdfBytes
-    )
-  ) {
-    msg.textContent = 'The QR bill PDF is still loading. Please wait a moment.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+  if (!(await confirmWithoutQrBill(isBulk ? 'Download the invoices' : 'Download the invoice'))) {
     return;
   }
 
@@ -1446,7 +1321,7 @@ export async function downloadInvoice() {
       const studentData = isBulk ? getInvoiceData(student, invoiceNumber) : data;
       btn.textContent =
         recipients.length > 1 ? `preparing ${i + 1}/${recipients.length}…` : 'preparing…';
-      const pdfBase64 = await buildInvoicePdf(studentData, activeQrAttachment(student));
+      const pdfBase64 = await buildInvoicePdf(studentData);
       downloadPdfFromBase64(pdfBase64, invoiceFilename(studentData));
       try {
         await logInvoiceDownload(studentData, student, pdfBase64);
@@ -1736,7 +1611,7 @@ export async function submitStorno() {
     if (!window.jspdf || !window.jspdf.jsPDF) {
       throw new Error('PDF library not loaded — please reload the page.');
     }
-    const pdfBase64 = await buildInvoicePdf(data, null);
+    const pdfBase64 = await buildInvoicePdf(data);
     btn.textContent = 'cancelling…';
     const res = await apiFetch('/api/cancel-invoice', {
       method: 'POST',

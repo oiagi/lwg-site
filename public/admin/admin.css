@@ -3383,8 +3383,7 @@ html[data-device='mobile'] .blocked-dates-range {
   overflow-y: auto;
   padding: 0;
 }
-.invoice-preview > .inv-prev-page,
-.invoice-preview > .inv-prev-pdf-page {
+.invoice-preview > .inv-prev-page {
   margin: 0.8rem;
 }
 .invoice-carousel-nav {
@@ -3507,45 +3506,22 @@ html[data-device='mobile'] .blocked-dates-range {
   text-align: right;
 }
 .inv-prev-qr {
-  align-items: center;
   border: 1px dashed #b8c7d4;
   color: var(--text-muted);
-  display: flex;
   font-size: 0.68rem;
-  height: 7rem;
-  justify-content: center;
+  line-height: 1.5;
   margin: 1rem 0 0 auto;
-  width: 11rem;
+  max-width: 22rem;
+  padding: 0.5rem 0.7rem;
 }
-.inv-prev-qr img {
-  display: block;
-  max-height: 100%;
-  max-width: 100%;
+.inv-prev-qr-missing {
+  border-color: #d9a3a3;
+  color: #a12626;
 }
 .inv-prev-note {
   color: #333;
   font-size: 0.62rem;
   margin-top: 1rem;
-}
-.inv-prev-pdf-page {
-  background: #fff;
-  border: 1px solid #ddd;
-  margin-top: 0.8rem;
-  padding: 0.8rem;
-}
-.inv-prev-pdf-label {
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  margin: 0 0 0.6rem;
-  text-transform: uppercase;
-}
-.inv-prev-pdf-page iframe {
-  border: 1px solid var(--border-soft);
-  display: block;
-  height: 24rem;
-  width: 100%;
 }
 .invoice-recipient-list {
   border: 1px solid var(--border-soft);
@@ -3562,7 +3538,7 @@ html[data-device='mobile'] .blocked-dates-range {
   display: grid;
   font-size: 0.82rem;
   column-gap: 0.8rem;
-  grid-template-columns: 2.2rem minmax(0, 1fr) minmax(9rem, 0.9fr) 5rem;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
   letter-spacing: 0;
   margin-bottom: 0;
   padding: 0.3rem 0;
@@ -3598,16 +3574,6 @@ html[data-device='mobile'] .blocked-dates-range {
   margin-top: 0.2rem;
   padding: 0.15rem 0.3rem;
   width: 4rem;
-}
-.invoice-recipient-qr {
-  font-size: 0.74rem;
-  min-width: 0;
-}
-.invoice-recipient-qr-status {
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  justify-self: end;
-  text-align: right;
 }
 .cert-prev-footer {
   display: flex;
@@ -3680,12 +3646,6 @@ html[data-device='mobile'] .cert-options {
 html[data-device='mobile'] .invoice-recipient-row {
   grid-template-columns: 1.6rem minmax(0, 1fr);
   row-gap: 0.35rem;
-}
-html[data-device='mobile'] .invoice-recipient-qr,
-html[data-device='mobile'] .invoice-recipient-qr-status {
-  grid-column: 2;
-  justify-self: stretch;
-  text-align: left;
 }
 html[data-device='mobile'] .cert-prev-footer {
   flex-direction: column;
