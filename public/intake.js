@@ -58,6 +58,19 @@
     setHidden(billingSection, !show);
   }
 
+  // Country dropdowns are filled client-side in the page language so the
+  // server-side i18n only has to translate the labels.
+  function fillCountrySelects() {
+    const lang = window.LWG_I18N?.getLang() || document.documentElement.lang || 'en';
+    ['if-country', 'if-billing-country'].forEach((id) => {
+      const select = document.getElementById(id);
+      window.LWG_COUNTRIES?.populateSelect(select, lang, select?.value || 'CH');
+    });
+  }
+
+  fillCountrySelects();
+  document.addEventListener('lwg:language-applied', fillCountrySelects);
+
   function setGenderNoteVisible(show) {
     setHidden(genderNoteWrap, !show);
     if (!show) setVal('if-gender-note', '');
@@ -81,6 +94,7 @@
         'if-billing-street-number',
         'if-billing-postcode',
         'if-billing-city',
+        'if-billing-country',
       ].forEach((id) => showGeneratedError(id, '', false));
     }
   });
@@ -105,6 +119,7 @@
     setVal('if-street-number', data.street_number);
     setVal('if-postcode', data.postcode);
     setVal('if-city', data.city);
+    setVal('if-country', data.country || 'CH');
 
     setVal('if-ec-name', data.emergency_contact);
     setVal('if-ec-relationship', data.ec_relationship);
@@ -130,6 +145,7 @@
     setVal('if-billing-street-number', data.billing_street_number);
     setVal('if-billing-postcode', data.billing_postcode);
     setVal('if-billing-city', data.billing_city);
+    setVal('if-billing-country', data.billing_country || 'CH');
   }
 
   async function load() {
@@ -234,6 +250,7 @@
       ['if-street-number', 'Please enter a street number.'],
       ['if-postcode', 'Please enter a postcode.'],
       ['if-city', 'Please enter a city.'],
+      ['if-country', 'Please select a country.'],
     ].forEach(([id, message]) => {
       if (!requireValue(id, message)) valid = false;
     });
@@ -250,6 +267,7 @@
         ['if-billing-street-number', 'Please enter a billing street number.'],
         ['if-billing-postcode', 'Please enter a billing postcode.'],
         ['if-billing-city', 'Please enter a billing city.'],
+        ['if-billing-country', 'Please select a billing country.'],
       ].forEach(([id, message]) => {
         if (!requireValue(id, message)) valid = false;
       });
@@ -293,6 +311,7 @@
       street_number: getVal('if-street-number') || null,
       postcode: getVal('if-postcode') || null,
       city: getVal('if-city') || null,
+      country: getVal('if-country') || null,
       emergency_contact: getVal('if-ec-name') || null,
       ec_relationship: getVal('if-ec-relationship') || null,
       ec_phone: getVal('if-ec-phone') || null,
@@ -315,6 +334,7 @@
       body.billing_street_number = getVal('if-billing-street-number') || null;
       body.billing_postcode = getVal('if-billing-postcode') || null;
       body.billing_city = getVal('if-billing-city') || null;
+      body.billing_country = getVal('if-billing-country') || null;
     }
 
     const btn = document.getElementById('intake-submit-btn');

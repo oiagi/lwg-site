@@ -343,6 +343,7 @@ renderAgbConsent();
       street_number: val('bf-street-number') || null,
       postcode: val('bf-postcode') || null,
       city: val('bf-city') || null,
+      country: val('bf-country') || null,
       emergency_contact: val('bf-ec-name') || null,
       ec_relationship: val('bf-ec-relationship') || null,
       ec_phone: val('bf-ec-phone') || null,
@@ -361,6 +362,7 @@ renderAgbConsent();
       student.billing_street_number = val('bf-billing-street-number') || null;
       student.billing_postcode = val('bf-billing-postcode') || null;
       student.billing_city = val('bf-billing-city') || null;
+      student.billing_country = val('bf-billing-country') || null;
     }
     return student;
   }
@@ -381,6 +383,7 @@ renderAgbConsent();
       ['bf-street-number', 'Please enter a street number.'],
       ['bf-postcode', 'Please enter a postcode.'],
       ['bf-city', 'Please enter a city.'],
+      ['bf-country', 'Please select a country.'],
     ];
 
     let valid = true;
@@ -409,6 +412,7 @@ renderAgbConsent();
         ['bf-billing-street-number', 'Please enter a billing street number.'],
         ['bf-billing-postcode', 'Please enter a billing postcode.'],
         ['bf-billing-city', 'Please enter a billing city.'],
+        ['bf-billing-country', 'Please select a billing country.'],
       ].forEach(([id, message]) => {
         if (!requireValue(id, message)) valid = false;
       });
@@ -576,9 +580,22 @@ renderAgbConsent();
         'bf-billing-street-number',
         'bf-billing-postcode',
         'bf-billing-city',
+        'bf-billing-country',
       ].forEach((id) => showGeneratedError(id, '', false));
     }
   });
+
+  // Country dropdowns are filled client-side in the page language so the
+  // server-side i18n only has to translate the labels.
+  function fillCountrySelects() {
+    ['bf-country', 'bf-billing-country'].forEach((id) => {
+      const select = document.getElementById(id);
+      window.LWG_COUNTRIES?.populateSelect(select, lang(), select?.value || 'CH');
+    });
+  }
+
+  fillCountrySelects();
+  document.addEventListener('lwg:language-applied', fillCountrySelects);
 
   genderSelect.addEventListener('change', () => {
     const needsNote = genderSelect.value === 'other';

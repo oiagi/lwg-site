@@ -1,6 +1,7 @@
 /* ── Student add/edit form page ───────────────────────────────────── */
 import { initAuth, getSession } from '../core/auth.js';
 import { apiFetch } from '../core/api.js';
+import { COUNTRIES, DEFAULT_COUNTRY } from '../core/countries.js';
 
 async function loadCompanyOptions(selectedId) {
   const select = document.getElementById('sm-company-id');
@@ -29,6 +30,7 @@ const BILLING_FIELDS = [
   'sm-billing-street-number',
   'sm-billing-postcode',
   'sm-billing-city',
+  'sm-billing-country',
 ];
 
 let initialFormState = '';
@@ -38,6 +40,17 @@ let isSubmitting = false;
 function setValue(id, v) {
   const el = document.getElementById(id);
   if (el) el.value = v ?? '';
+}
+
+// Both country selects list the same ISO codes; the stored value (or CH) is
+// selected after the options exist.
+function fillCountrySelects(country, billingCountry) {
+  COUNTRIES.populateSelect(document.getElementById('sm-country'), 'en', country || DEFAULT_COUNTRY);
+  COUNTRIES.populateSelect(
+    document.getElementById('sm-billing-country'),
+    'en',
+    billingCountry || DEFAULT_COUNTRY
+  );
 }
 
 function formSnapshot() {
@@ -98,6 +111,7 @@ function populate(data) {
   setValue('sm-street-number', data.street_number);
   setValue('sm-postcode', data.postcode);
   setValue('sm-city', data.city);
+  fillCountrySelects(data.country, data.billing_country);
   setValue('sm-ec-name', data.emergency_contact);
   setValue('sm-ec-phone', data.ec_phone);
   setValue('sm-ec-email', data.ec_email);
@@ -187,6 +201,12 @@ function wireBillingToggle() {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
+    } else {
+      // Re-ticking the box starts the billing country from the student's.
+      const billingCountry = document.getElementById('sm-billing-country');
+      if (billingCountry && !billingCountry.value) {
+        billingCountry.value = document.getElementById('sm-country')?.value || DEFAULT_COUNTRY;
+      }
     }
   });
 }
@@ -267,6 +287,7 @@ function buildBody() {
     street_number: document.getElementById('sm-street-number').value.trim() || null,
     postcode: document.getElementById('sm-postcode').value.trim() || null,
     city: document.getElementById('sm-city').value.trim() || null,
+    country: document.getElementById('sm-country').value || DEFAULT_COUNTRY,
     emergency_contact: document.getElementById('sm-ec-name').value.trim() || null,
     ec_phone: document.getElementById('sm-ec-phone').value.trim() || null,
     ec_email: document.getElementById('sm-ec-email').value.trim() || null,
@@ -295,6 +316,7 @@ function buildBody() {
       document.getElementById('sm-billing-street-number').value.trim() || null;
     body.billing_postcode = document.getElementById('sm-billing-postcode').value.trim() || null;
     body.billing_city = document.getElementById('sm-billing-city').value.trim() || null;
+    body.billing_country = document.getElementById('sm-billing-country').value || null;
   } else {
     body.billing_name = null;
     body.billing_gender = null;
@@ -305,6 +327,7 @@ function buildBody() {
     body.billing_street_number = null;
     body.billing_postcode = null;
     body.billing_city = null;
+    body.billing_country = null;
   }
 
   const id = document.getElementById('sm-id').value;
@@ -378,6 +401,7 @@ async function handleSubmit(e) {
     }
   } else {
     document.getElementById('sm-status').value = 'active';
+    fillCountrySelects(DEFAULT_COUNTRY, DEFAULT_COUNTRY);
     setBilling(false);
     setGenderNote(false);
     setBillingGenderNote(false);

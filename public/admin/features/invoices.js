@@ -2,6 +2,7 @@
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { foreignCountryLine, DEFAULT_COUNTRY } from '../core/countries.js';
 import {
   debtorFromStudent,
   qrReferenceFromInvoiceNumber,
@@ -298,6 +299,7 @@ function invoiceRecipient(student) {
       email: student.billing_email || '',
       street: [student.billing_street, student.billing_street_number].filter(Boolean).join(' '),
       city: [student.billing_postcode, student.billing_city].filter(Boolean).join(' '),
+      country: student.billing_country || student.country || DEFAULT_COUNTRY,
     };
   }
 
@@ -310,12 +312,19 @@ function invoiceRecipient(student) {
     email: student?.email || '',
     street: [student?.street, student?.street_number].filter(Boolean).join(' '),
     city: [student?.postcode, student?.city].filter(Boolean).join(' '),
+    country: student?.country || DEFAULT_COUNTRY,
   };
 }
 
-function billingAddressLines(student) {
+// Address block lines; the country is added only for addresses abroad.
+function billingAddressLines(student, language = 'de') {
   const recipient = invoiceRecipient(student);
-  return [recipient.name, recipient.street, recipient.city].filter(Boolean);
+  return [
+    recipient.name,
+    recipient.street,
+    recipient.city,
+    foreignCountryLine(recipient.country, language),
+  ].filter(Boolean);
 }
 
 function formalGreeting(data) {
@@ -601,7 +610,7 @@ function getInvoiceData(student = currentStudent, invoiceNumber = val('inv-numbe
     recipientEmail: currentBulkRecipients.length
       ? recipient.email || billingEmail(student)
       : val('inv-recipient-email'),
-    recipientLines: billingAddressLines(student),
+    recipientLines: billingAddressLines(student, language),
     debtor: debtorFromStudent(student),
     courseCode: currentCourse?.course_code || '',
     courseName: courseNameLabel(currentCourse, language),
@@ -1538,9 +1547,10 @@ function getStornoData() {
     : { name: '', firstName: '', lastName: '', gender: '', genderNote: '', email: '' };
   const quantity = numVal('storno-quantity');
   const unitPrice = numVal('storno-unit-price');
+  const language = stornoDocumentLanguage();
   return {
     isStorno: true,
-    language: stornoDocumentLanguage(),
+    language,
     invoiceNumber: val('storno-number'),
     customerReference: student?.customer_reference || '',
     invoiceDate: val('storno-date'),
@@ -1556,7 +1566,7 @@ function getStornoData() {
     recipientGender: recipient.gender,
     recipientGenderNote: recipient.genderNote,
     recipientEmail: stornoNotifyEmail(),
-    recipientLines: student ? billingAddressLines(student) : [],
+    recipientLines: student ? billingAddressLines(student, language) : [],
     courseCode: course?.course_code || '',
     isShared: isSharedCourse(course || {}),
     sessionLengthMinutes: Number(course?.session_length_minutes || 60),

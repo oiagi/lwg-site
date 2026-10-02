@@ -17,6 +17,8 @@ import {
   pickDefined,
   normalizePageLanguage,
   capitalizeNameFields,
+  normalizeCountryFields,
+  countryValid,
 } from './_utils.js';
 import { validate } from './_validate.js';
 import { findOrCreateStudent, getOrCreateStudentToken } from './_student-utils.js';
@@ -52,6 +54,7 @@ const STUDENT_FIELDS = [
   'street_number',
   'postcode',
   'city',
+  'country',
   'emergency_contact',
   'ec_relationship',
   'ec_phone',
@@ -65,6 +68,7 @@ const STUDENT_FIELDS = [
   'billing_street_number',
   'billing_postcode',
   'billing_city',
+  'billing_country',
   'consent_given',
   'consent_date',
 ];
@@ -101,6 +105,7 @@ function normalizeStudent(input) {
     else out[key] = cleanString(value, key === 'email' || key === 'billing_email' ? 320 : 200);
   }
   capitalizeNameFields(out);
+  normalizeCountryFields(out);
   out.consent_given = input?.consent_given === true;
   out.consent_date = out.consent_given ? new Date().toISOString() : null;
   if (!['female', 'male', 'other'].includes(out.gender)) {
@@ -339,8 +344,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     'street_number',
     'postcode',
     'city',
+    'country',
   ]);
   if (missing) return errorResponse(`${missing} is required`, 400);
+  if (!countryValid(student.country)) {
+    return errorResponse('country must be a two-letter ISO code', 400);
+  }
+  if (student.billing_country && !countryValid(student.billing_country)) {
+    return errorResponse('billing_country must be a two-letter ISO code', 400);
+  }
   if (student.ec_email && !emailValid(student.ec_email)) {
     return errorResponse('ec_email must be valid', 400);
   }
@@ -366,6 +378,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       'billing_street_number',
       'billing_postcode',
       'billing_city',
+      'billing_country',
     ]);
     if (missingBilling) return errorResponse(`${missingBilling} is required`, 400);
     if (!['female', 'male', 'other'].includes(student.billing_gender)) {

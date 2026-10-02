@@ -2,6 +2,7 @@
 import { apiFetch } from '../core/api.js';
 import { esc, queryString, attachListControls } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { countryName } from '../core/countries.js';
 import { openConfirmSend } from './confirm-send.js';
 
 let currentStudentFilter = 'active';
@@ -397,6 +398,7 @@ function renderStudentDetail(container, s) {
         ${contactLine('email', s.email, 'mailto:')}
         ${contactLine('phone', s.phone, 'tel:')}
         ${hasPersonalAddress ? esc([s.street, s.street_number].filter(Boolean).join(' ')) + '<br>' + esc([s.postcode, s.city].filter(Boolean).join(' ')) : '<span class="detail-muted">no address</span>'}
+        ${s.country ? '<br>' + esc(countryName(s.country)) : ''}
       </p>
     </div>`;
 
@@ -428,7 +430,8 @@ function renderStudentDetail(container, s) {
                ${contactLine('email', s.billing_email, 'mailto:')}
                ${contactLine('phone', s.billing_phone, 'tel:')}
                ${esc([s.billing_street, s.billing_street_number].filter(Boolean).join(' '))}<br>
-               ${esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))}`
+               ${esc([s.billing_postcode, s.billing_city].filter(Boolean).join(' '))}
+               ${s.billing_country ? '<br>' + esc(countryName(s.billing_country)) : ''}`
             : '<span class="detail-muted">same as personal</span>'
         }
         ${s.vat_number ? '<br><span class="detail-muted">VAT: ' + esc(s.vat_number) + '</span>' : ''}

@@ -60,6 +60,7 @@ function validStudent(overrides = {}) {
     street_number: '1',
     postcode: '8001',
     city: 'Zürich',
+    country: 'CH',
     consent_given: true,
     ...overrides,
   };
@@ -186,7 +187,21 @@ test('book-course validates optional emergency-contact email', async () => {
   assert.equal(res.body.error, 'ec_email must be valid');
 });
 
-test('book-course billing block is all-or-nothing', async () => {
+test('book-course requires a two-letter ISO country code', async () => {
+  const missing = await bookWithStudent({ country: undefined });
+  assert.equal(missing.status, 400);
+  assert.equal(missing.body.error, 'country is required');
+
+  const spelledOut = await bookWithStudent({ country: 'Schweiz' });
+  assert.equal(spelledOut.status, 400);
+  assert.equal(spelledOut.body.error, 'country must be a two-letter ISO code');
+
+  const badBilling = await bookWithStudent({ billing_country: 'Germany' });
+  assert.equal(badBilling.status, 400);
+  assert.equal(badBilling.body.error, 'billing_country must be a two-letter ISO code');
+});
+
+test('book-course billing block is all-or-nothing', async (t) => {
   // billing_separate flag alone triggers the full billing requirement…
   const flagged = await bookWithStudent({ billing_separate: true });
   assert.equal(flagged.status, 400);
@@ -196,6 +211,28 @@ test('book-course billing block is all-or-nothing', async () => {
   const partial = await bookWithStudent({ billing_city: 'Bern' });
   assert.equal(partial.status, 400);
   assert.equal(partial.body.error, 'billing_name is required');
+
+  // billing_country alone does not: existing rows are backfilled with 'CH'
+  // and that must not force a full billing address. The request gets past
+  // validation and only fails on the (deliberately unmocked) course lookup.
+  withMockFetch(t, []);
+  const countryOnly = await bookWithStudent({ billing_country: 'CH' });
+  assert.notEqual(countryOnly.status, 400);
+});
+
+test('book-course requires billing_country with a separate billing address', async () => {
+  const res = await bookWithStudent({
+    billing_name: 'Firma AG',
+    billing_gender: 'female',
+    billing_email: 'billing@example.com',
+    billing_phone: '+41 44 000 00 00',
+    billing_street: 'Seestrasse',
+    billing_street_number: '2',
+    billing_postcode: '8002',
+    billing_city: 'Zürich',
+  });
+  assert.equal(res.status, 400);
+  assert.equal(res.body.error, 'billing_country is required');
 });
 
 test('book-course billing gender and email rules', async () => {
@@ -208,6 +245,7 @@ test('book-course billing gender and email rules', async () => {
     billing_street_number: '2',
     billing_postcode: '8002',
     billing_city: 'Zürich',
+    billing_country: 'CH',
   };
 
   const badGender = await bookWithStudent({ ...billing, billing_gender: 'unknown' });

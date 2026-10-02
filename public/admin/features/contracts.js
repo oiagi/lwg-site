@@ -5,6 +5,7 @@
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
+import { foreignCountryLine } from '../core/countries.js';
 import { formatCourseAddress } from './courses.js';
 import {
   CANCELLATION_POLICY_BY_LANGUAGE,
@@ -104,6 +105,7 @@ export async function openContractModal(courseId, coursesCache) {
     street_number: s.street_number || '',
     postcode: s.postcode || '',
     city: s.city || '',
+    country: s.country || '',
     contract_sent_at: s.contract_sent_at || null,
     contract_signed_at: s.contract_signed_at || null,
     selected: true,
@@ -262,7 +264,8 @@ function buildContractData(recipient, course, opts) {
 
   const addrLine1 = [recipient.street, recipient.street_number].filter(Boolean).join(' ');
   const addrLine2 = [recipient.postcode, recipient.city].filter(Boolean).join(' ');
-  const addressLines = [addrLine1, addrLine2].filter(Boolean);
+  const addrLine3 = foreignCountryLine(recipient.country, opts.language);
+  const addressLines = [addrLine1, addrLine2, addrLine3].filter(Boolean);
 
   return {
     fullName,

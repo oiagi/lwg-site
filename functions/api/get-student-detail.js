@@ -33,6 +33,7 @@ const STUDENT_DETAIL_FIELD_LIST = [
   'street',
   'street_number',
   'city',
+  'country',
   'current_level',
   'progress_notes',
   'company_id',
@@ -50,6 +51,7 @@ const STUDENT_DETAIL_FIELD_LIST = [
   'billing_street_number',
   'billing_postcode',
   'billing_city',
+  'billing_country',
   'rate_per_session',
   'currency',
   'vat_number',
@@ -88,6 +90,8 @@ const STUDENT_DETAIL_FIELDS_COMPAT = STUDENT_DETAIL_FIELD_LIST.filter(
       'billing_gender_note',
       'intake_link_sent_at',
       'booking_code_sent_at',
+      'country',
+      'billing_country',
     ].includes(field)
 ).join(',');
 
@@ -126,6 +130,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     student.billing_gender_note ??= null;
     student.intake_link_sent_at ??= null;
     student.booking_code_sent_at ??= null;
+    student.country ??= null;
+    student.billing_country ??= null;
 
     // ── Load enrolments + courses ───────────────────────────────────────
     const enrolRes = await fetch(

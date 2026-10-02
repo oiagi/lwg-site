@@ -158,6 +158,40 @@ test('debtorFromStudent prefers billing fields and falls back to the student nam
   assert.equal(named.name, 'Peter Meier');
 });
 
+test('debtorFromStudent takes the country from the student row', () => {
+  const abroad = debtorFromStudent({
+    first_name: 'Anna',
+    last_name: 'Meier',
+    postcode: '80331',
+    city: 'München',
+    country: 'de',
+  });
+  assert.equal(abroad.country, 'DE');
+
+  // Billing country wins over the personal one when billing data is used…
+  const billed = debtorFromStudent({
+    first_name: 'Anna',
+    last_name: 'Meier',
+    country: 'CH',
+    billing_postcode: '1010',
+    billing_city: 'Wien',
+    billing_country: 'AT',
+  });
+  assert.equal(billed.country, 'AT');
+
+  // …and falls back to the personal one, then to CH, for older rows.
+  const inherited = debtorFromStudent({
+    first_name: 'Anna',
+    last_name: 'Meier',
+    country: 'FR',
+    billing_postcode: '75001',
+    billing_city: 'Paris',
+  });
+  assert.equal(inherited.country, 'FR');
+  const legacy = debtorFromStudent({ first_name: 'Anna', postcode: '8002', city: 'Zürich' });
+  assert.equal(legacy.country, 'CH');
+});
+
 test('debtorFromStudent returns null when name, postcode or city is missing', () => {
   assert.equal(debtorFromStudent(null), null);
   assert.equal(debtorFromStudent({ first_name: 'Anna', city: 'Zürich' }), null);
@@ -284,6 +318,26 @@ test('partyDisplayLines joins street/number and postcode/town', () => {
     '8002 Zürich',
   ]);
   assert.deepEqual(partyDisplayLines(null), []);
+});
+
+test('partyDisplayLines prefixes the postcode with the country code abroad', () => {
+  assert.deepEqual(
+    partyDisplayLines({
+      name: 'Anna Meier',
+      street: 'Marienplatz',
+      buildingNumber: '1',
+      postalCode: '80331',
+      city: 'München',
+      country: 'DE',
+    }),
+    ['Anna Meier', 'Marienplatz 1', 'DE-80331 München']
+  );
+  // Swiss addresses stay as before.
+  assert.deepEqual(partyDisplayLines({ ...DEBTOR, country: 'ch' }), [
+    'Anna Meier',
+    'Seestrasse 12a',
+    '8002 Zürich',
+  ]);
 });
 
 /* ── QR encoding ──────────────────────────────────────────────────── */

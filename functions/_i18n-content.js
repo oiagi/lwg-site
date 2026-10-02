@@ -734,6 +734,7 @@ export const pages = {
       'label[for="bf-street-number"]': { en: 'number *', de: 'Nummer *' },
       'label[for="bf-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
       'label[for="bf-city"]': { en: 'city *', de: 'Ort *' },
+      'label[for="bf-country"]': { en: 'country *', de: 'Land *' },
       'label[for="bf-ec-name"]': { en: 'name', de: 'Name' },
       'label[for="bf-ec-relationship"]': { en: 'relationship', de: 'Beziehung' },
       '#bf-ec-relationship': {
@@ -753,6 +754,7 @@ export const pages = {
       'label[for="bf-billing-street-number"]': { en: 'number *', de: 'Nummer *' },
       'label[for="bf-billing-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
       'label[for="bf-billing-city"]': { en: 'city *', de: 'Ort *' },
+      'label[for="bf-billing-country"]': { en: 'country *', de: 'Land *' },
       '.booking-checkbox span': {
         en: 'billing address differs from personal address',
         de: 'Rechnungsadresse weicht von persönlicher Adresse ab',
@@ -1349,6 +1351,7 @@ Object.assign(pages, {
       'label[for="if-street-number"]': { en: 'number *', de: 'Nummer *' },
       'label[for="if-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
       'label[for="if-city"]': { en: 'city *', de: 'Ort *' },
+      'label[for="if-country"]': { en: 'country *', de: 'Land *' },
       '#intake-label-emergency': {
         en: 'emergency contact',
         de: 'Notfallkontakt',
@@ -1386,6 +1389,7 @@ Object.assign(pages, {
       'label[for="if-billing-street-number"]': { en: 'number *', de: 'Nummer *' },
       'label[for="if-billing-postcode"]': { en: 'postcode *', de: 'Postleitzahl *' },
       'label[for="if-billing-city"]': { en: 'city *', de: 'Ort *' },
+      'label[for="if-billing-country"]': { en: 'country *', de: 'Land *' },
       '#err-first-name': {
         en: 'Please enter a first name.',
         de: 'Bitte geben Sie einen Vornamen ein.',
