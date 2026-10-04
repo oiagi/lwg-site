@@ -1434,15 +1434,12 @@ Object.assign(pages, {
     text: {
       '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
       '#feedback-content h1': { en: 'your feedback', de: 'Ihr Feedback' },
-      '.intake-intro': {
-        en: 'Thank you for taking the time to share your feedback. Your honest opinion helps improve future lessons — there are no right or wrong answers, so please be as open as you like. Only your teacher reads your answers.',
-        de: 'Danke, dass Sie sich Zeit für Ihr Feedback nehmen. Ihre ehrliche Meinung hilft uns, den Unterricht besser zu machen — es gibt keine richtigen oder falschen Antworten, sagen Sie also ruhig offen, was Sie denken. Ihre Antworten liest nur Ihre Lehrperson.',
-      },
-      '#feedback-time': {
-        en: 'estimated time: 3-5 minutes',
-        de: 'Dauer: 3-5 Minuten',
-      },
-      '#feedback-submit-btn': { en: 'send feedback ->', de: 'Feedback senden ->' },
+      // #feedback-meta ("anonymous · about 3–5 minutes") is filled in by
+      // feedback.js from the question set, since it depends on the form kind.
+      '#feedback-required-note': { en: '* required', de: '* Pflichtfrage' },
+      '#feedback-back': { en: '← back', de: '← zurück' },
+      '#feedback-next': { en: 'next →', de: 'weiter →' },
+      '#feedback-submit-btn': { en: 'send feedback →', de: 'Feedback senden →' },
       '#submit-error': {
         en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Etwas ist schiefgelaufen — bitte versuchen Sie es erneut oder schreiben Sie uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',

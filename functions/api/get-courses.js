@@ -12,7 +12,7 @@ import {
   withErrorHandling,
 } from './_utils.js';
 import { groupCourseInvoices } from './_invoices.js';
-import { FEEDBACK_SUMMARY_COLUMNS, labelledAverages, summariseFeedback } from './_feedback.js';
+import { DEFAULT_KIND, FEEDBACK_KINDS, isFeedbackKind, summariseByKind } from './_feedback.js';
 
 const DB_SORTS = {
   created_at: {
@@ -107,18 +107,31 @@ const BASE_INVOICE_COLUMNS = [
 ];
 const OPTIONAL_INVOICE_COLUMNS = ['sent_at', 'cancels_invoice_id', 'cancelled_at'];
 
-// Feedback requests, for the sent-tags and the per-course summary. The
-// comment text is deliberately left out — the course list stays lean and
-// get-feedback.js serves the full responses on demand. Returns [] when the
-// add_course_feedback migration has not been applied yet.
+// Feedback requests (for the "requested" tags and the counts) and the
+// anonymous responses (for the averages). Only the answers needed for the
+// summary travel here; get-feedback.js serves the full responses on demand.
+// Whether a request was answered is deliberately not selected: the admin
+// only ever sees how many responded, never who. Returns [] when the
+// add_course_feedback_responses migration has not been applied yet.
 async function fetchCourseFeedback(supabaseUrl, headers, courseFilter) {
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/course_feedback?or=(${courseFilter})&select=student_id,course_id,requested_at,submitted_at,${FEEDBACK_SUMMARY_COLUMNS.join(',')}`,
-    { headers }
-  );
-  if (res.ok) return res.json();
-  console.error('get-courses feedback fetch failed:', await res.text());
-  return [];
+  const [requestsRes, responsesRes] = await Promise.all([
+    fetch(
+      `${supabaseUrl}/rest/v1/course_feedback?or=(${courseFilter})&select=student_id,course_id,kind,requested_at`,
+      { headers }
+    ),
+    fetch(
+      `${supabaseUrl}/rest/v1/course_feedback_responses?or=(${courseFilter})&select=course_id,kind,answers`,
+      { headers }
+    ),
+  ]);
+  const requests = requestsRes.ok ? await requestsRes.json() : [];
+  if (!requestsRes.ok)
+    console.error('get-courses feedback fetch failed:', await requestsRes.text());
+  const responses = responsesRes.ok ? await responsesRes.json() : [];
+  if (!responsesRes.ok) {
+    console.error('get-courses feedback responses fetch failed:', await responsesRes.text());
+  }
+  return { requests, responses };
 }
 
 async function fetchCourseInvoices(supabaseUrl, headers, courseIds) {
@@ -261,7 +274,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       : [];
 
     // ── Batch fetch feedback requests for these courses ───────────────
-    const allFeedback = await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
+    const { requests: allFeedbackRequests, responses: allFeedbackResponses } =
+      await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
 
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
@@ -304,12 +318,19 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       if (!byStudent[c.student_id]) byStudent[c.student_id] = c;
     }
 
-    const feedbackByCourse = {};
-    const feedbackByCourseStudent = {};
-    for (const f of allFeedback) {
-      (feedbackByCourse[f.course_id] ||= []).push(f);
-      (feedbackByCourseStudent[f.course_id] ||= {})[f.student_id] = f;
+    const feedbackRequestsByCourse = {};
+    const feedbackRequestedByCourseStudent = {};
+    for (const f of allFeedbackRequests) {
+      const kind = isFeedbackKind(f.kind) ? f.kind : DEFAULT_KIND;
+      (feedbackRequestsByCourse[f.course_id] ||= []).push(f);
+      const byStudent = (feedbackRequestedByCourseStudent[f.course_id] ||= {});
+      (byStudent[f.student_id] ||= {})[kind] = f.requested_at || null;
     }
+    const feedbackResponsesByCourse = {};
+    for (const r of allFeedbackResponses) {
+      (feedbackResponsesByCourse[r.course_id] ||= []).push(r);
+    }
+    const noFeedbackRequested = Object.fromEntries(FEEDBACK_KINDS.map((k) => [k, null]));
 
     const studentsById = {};
     for (const s of allStudents) {
@@ -342,7 +363,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const contractByStudent = contractByCourseStudent[course.id] || {};
       const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
-      const feedbackByStudent = feedbackByCourseStudent[course.id] || {};
+      const feedbackRequestedByStudent = feedbackRequestedByCourseStudent[course.id] || {};
       const students = [...(studentIdsByCourse[course.id] || [])]
         .map((id) => {
           const s = studentsById[id];
@@ -363,19 +384,20 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             contract_sent_at: contractByStudent[id]?.sent_at || null,
             contract_signed_at: contractByStudent[id]?.signed_uploaded_at || null,
             invoice_sent_at: invoiceSentByStudent[id] || null,
-            feedback_requested_at: feedbackByStudent[id]?.requested_at || null,
-            feedback_submitted_at: feedbackByStudent[id]?.submitted_at || null,
+            // When each form was requested from this student. Whether they
+            // answered is not exposed: responses are anonymous.
+            feedback_requested: { ...noFeedbackRequested, ...feedbackRequestedByStudent[id] },
           };
         })
         .filter(Boolean);
-      const feedbackSummary = summariseFeedback(feedbackByCourse[course.id] || []);
       return {
         ...course,
         company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
-        feedback_summary: {
-          ...feedbackSummary,
-          averages: labelledAverages(feedbackSummary.averages),
-        },
+        // { midterm: { requested, submitted, averages, nps }, final: { ... } }
+        feedback_summary: summariseByKind(
+          feedbackRequestsByCourse[course.id] || [],
+          feedbackResponsesByCourse[course.id] || []
+        ),
         sessions: sessionsByCourse[course.id] || [],
         pending_bookings: pendingBookingsByCourse[course.id] || [],
         participant_names: students.map(enrolmentDisplayName).filter(Boolean),

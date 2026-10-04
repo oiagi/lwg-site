@@ -219,21 +219,50 @@ export async function openScheduleModal(courseId) {
   });
 }
 
-/* Mirrors FEEDBACK_FIELDS in functions/api/_feedback.js — preview only;
-   the email and the form both build their copy server-side. */
-const FEEDBACK_QUESTION_PREVIEW = [
-  'Overall satisfaction',
-  'Organisation',
-  'Clarity of explanations',
-  'Comfort asking questions',
-  'Pace of the course',
-  'Course materials',
-  'Speaking time',
-  'Everyday vocabulary',
-  'Confidence when speaking',
-];
+/* Mirrors the two forms in functions/api/_feedback.js — preview only; the
+   email and the form both build their copy server-side. */
+const FEEDBACK_PREVIEW = {
+  midterm: {
+    title: 'request mid-course feedback',
+    subject: 'Wie läuft Ihr Kurs? / How is your course going?',
+    minutes: '3 minutes',
+    required: [
+      'Satisfaction so far and pace (1–10)',
+      'Lesson frequency, breaks, substitute teacher',
+    ],
+    optional: [
+      'Which materials they like and what they would like added',
+      'How they prefer to work in class',
+      'How they study at home and how much time they have',
+      'Their preferred frequency and lesson length (if the current frequency does not suit)',
+      'Their own preference when the teacher is unavailable (if they picked "other")',
+      'Anything else for the second half of the course',
+    ],
+  },
+  final: {
+    title: 'request final feedback',
+    subject: 'Wie war Ihr Kurs? / How was your course?',
+    minutes: '3–5 minutes',
+    required: [
+      'Overall satisfaction, organisation, explanations, comfort asking questions, pace, materials (1–10)',
+      'Speaking time and vocabulary for language courses, exam readiness for exam courses',
+      'Progress made',
+      'How likely they are to recommend us (1–10)',
+    ],
+    optional: [
+      'What would have helped (if progress was low) and which activities helped most',
+      'What they enjoyed and what we could improve',
+      'Whether they want another course and what they would like to learn next',
+    ],
+  },
+};
 
-export async function openFeedbackRequestModal(courseId) {
+export async function openFeedbackRequestModal(courseId, kind = 'final') {
+  const preview = FEEDBACK_PREVIEW[kind];
+  if (!preview) {
+    alert('Unknown feedback form.');
+    return;
+  }
   let course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
     alert('Course not found. Please reload and try again.');
@@ -251,48 +280,40 @@ export async function openFeedbackRequestModal(courseId) {
     alert('No enrolled students with an email address.');
     return;
   }
-  const pending = withEmail.filter((s) => !s.feedback_submitted_at);
-  if (!pending.length) {
-    alert('Every student in this course has already given feedback.');
-    return;
-  }
 
-  // Students who already answered stay visible but unticked, so it is clear
-  // why they are not being emailed again.
+  // Everyone is listed and ticked: responses are anonymous, so there is no
+  // "already answered" to show. The server quietly skips students who have
+  // submitted this form and leaves earlier links valid.
   const recipients = withEmail.map((s) => ({
     student_id: s.id,
-    name: studentDisplayName(s) + (s.feedback_submitted_at ? ' (already answered)' : ''),
+    name: studentDisplayName(s),
     email: s.email,
-    selected: !s.feedback_submitted_at,
+    selected: true,
   }));
 
-  const alreadyAsked = pending.filter((s) => s.feedback_requested_at).length;
+  const alreadyAsked = withEmail.filter((s) => s.feedback_requested?.[kind]).length;
   const contentHtml = `
-    <p class="cs-section-label">feedback questions (rated 1–5)</p>
-    <ol class="cs-session-list">
-      ${FEEDBACK_QUESTION_PREVIEW.map((q) => `<li>${esc(q)}</li>`).join('')}
-    </ol>
-    <p class="cs-section-label">plus, all optional</p>
+    <p class="cs-section-label">required questions</p>
     <ul class="cs-detail-list">
-      <li>Which course and how many lessons they attended</li>
-      <li>How likely they are to recommend us (0–10)</li>
-      <li>Progress made and which activities helped most</li>
-      <li>Open questions: what they enjoyed, what to improve, what was difficult,
-        the one thing they would change, whether they want another course, and
-        whether we may quote them</li>
+      ${preview.required.map((q) => `<li>${esc(q)}</li>`).join('')}
+    </ul>
+    <p class="cs-section-label">optional questions</p>
+    <ul class="cs-detail-list">
+      ${preview.optional.map((q) => `<li>${esc(q)}</li>`).join('')}
     </ul>
     <p class="cs-section-label">also included</p>
     <ul class="cs-detail-list">
+      <li>Anonymous: answers are stored without the student, only the number of responses is shown</li>
       <li>A private link per student, valid for 90 days, one submission each</li>
-      <li>The form takes about 3–5 minutes</li>
-      ${alreadyAsked ? `<li>${alreadyAsked} of these students were already asked — they keep their original link</li>` : ''}
+      <li>The form takes about ${esc(preview.minutes)}</li>
+      ${alreadyAsked ? `<li>${alreadyAsked} of these students were already asked — they keep their original link, and anyone who has answered is skipped</li>` : ''}
     </ul>
   `;
 
   openConfirmSend({
-    title: 'request course feedback',
+    title: preview.title,
     recipients,
-    subject: `Wie war dein Kurs? / How was your course?${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
+    subject: `${preview.subject}${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
     contentHtml,
     languageOptions: [
       { value: 'de', label: 'Deutsch' },
@@ -302,13 +323,14 @@ export async function openFeedbackRequestModal(courseId) {
     selectableRecipients: true,
     onConfirm: async ({ language, recipients: selectedRecipients }) => {
       if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById('feedback-msg-' + courseId);
+      const msg = document.getElementById(`feedback-msg-${kind}-${courseId}`);
       const res = await apiFetch('/api/send-feedback-request', {
         method: 'POST',
         body: {
           course_id: courseId,
           student_ids: selectedRecipients.map((r) => r.student_id),
           language,
+          kind,
         },
       });
       const body = await res.json().catch(() => ({}));
