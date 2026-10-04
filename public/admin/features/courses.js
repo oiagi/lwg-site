@@ -10,6 +10,7 @@ import {
 } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { loadGroupSlots } from './course-slots.js';
+import { KIND_LABELS as FEEDBACK_KIND_LABELS } from './feedback.js';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -348,24 +349,37 @@ function sentCommunicationsBlock(course) {
 }
 
 /* Summary only — the responses themselves are fetched on demand by
-   loadCourseFeedback in features/feedback.js, so the course list stays lean. */
+   loadCourseFeedback in features/feedback.js, so the course list stays lean.
+   Responses are anonymous: this shows counts and averages, never who answered. */
 function feedbackBlock(course) {
-  const summary = course.feedback_summary;
-  if (!summary?.requested) return '';
+  const summary = course.feedback_summary || {};
+  const kinds = Object.keys(FEEDBACK_KIND_LABELS).filter(
+    (k) => summary[k]?.requested || summary[k]?.submitted
+  );
+  if (!kinds.length) return '';
 
-  const nps =
-    summary.nps?.score !== null && summary.nps?.score !== undefined
-      ? `<li>NPS ${esc(String(summary.nps.score))} · <span class="detail-muted">${esc(String(summary.nps.average))}/10 from ${summary.nps.responses}</span></li>`
-      : '';
-  const averageItems = (summary.averages || [])
-    .filter((a) => a.value !== null && a.value !== undefined)
-    .map(
-      (a) =>
-        `<li>${esc(a.label)} · <span class="detail-muted">${esc(String(a.value))}/5</span></li>`
-    )
-    .join('');
+  const items = [];
+  let anySubmitted = false;
+  for (const kind of kinds) {
+    const s = summary[kind];
+    anySubmitted = anySubmitted || s.submitted > 0;
+    items.push(
+      `<li>${esc(FEEDBACK_KIND_LABELS[kind])} · <span class="detail-muted">${s.submitted} of ${s.requested} responded</span></li>`
+    );
+    if (s.nps?.score !== null && s.nps?.score !== undefined) {
+      items.push(
+        `<li>NPS ${esc(String(s.nps.score))} · <span class="detail-muted">${esc(String(s.nps.average))}/10 from ${s.nps.responses}</span></li>`
+      );
+    }
+    for (const a of s.averages || []) {
+      if (a.value === null || a.value === undefined) continue;
+      items.push(
+        `<li>${esc(a.label)} · <span class="detail-muted">${esc(String(a.value))}/10</span></li>`
+      );
+    }
+  }
 
-  const viewButton = summary.submitted
+  const viewButton = anySubmitted
     ? `<button class="save-btn feedback-view-btn" data-action="loadCourseFeedback"
          data-args="${course.id}">view responses</button>`
     : '';
@@ -373,11 +387,7 @@ function feedbackBlock(course) {
   return `
     <div class="sent-status">
       <p class="detail-meta">feedback</p>
-      <ul class="sent-status-list">
-        <li>${summary.submitted} of ${summary.requested} responded</li>
-        ${nps}
-        ${averageItems}
-      </ul>
+      <ul class="sent-status-list">${items.join('')}</ul>
       ${viewButton}
       <div class="course-feedback-responses" id="course-feedback-${course.id}"></div>
     </div>`;
@@ -657,11 +667,12 @@ function renderCourses(courses) {
                 : s.contract_sent_at
                   ? `<span class="sent-tag">contract sent · ${esc(fmtDate(s.contract_sent_at))}</span>`
                   : '',
-              s.feedback_submitted_at
-                ? `<span class="sent-tag paid-tag">feedback given · ${esc(fmtDate(s.feedback_submitted_at))}</span>`
-                : s.feedback_requested_at
-                  ? `<span class="sent-tag">feedback requested · ${esc(fmtDate(s.feedback_requested_at))}</span>`
-                  : '',
+              // Only that a form was requested — responses are anonymous.
+              ...Object.entries(FEEDBACK_KIND_LABELS).map(([kind, label]) =>
+                s.feedback_requested?.[kind]
+                  ? `<span class="sent-tag">${esc(label)} feedback requested · ${esc(fmtDate(s.feedback_requested[kind]))}</span>`
+                  : ''
+              ),
             ]
               .filter(Boolean)
               .join('');
@@ -806,8 +817,13 @@ function renderCourses(courses) {
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"
-                    data-action="openFeedbackRequestModal" data-args="${c.id}">request feedback</button>
-                  <span class="saved-msg" id="feedback-msg-${c.id}">sent</span>
+                    data-action="openFeedbackRequestModal" data-args="${c.id},midterm">request mid-course feedback</button>
+                  <span class="saved-msg" id="feedback-msg-midterm-${c.id}">sent</span>
+                </div>
+                <div class="detail-action-row">
+                  <button class="save-btn"
+                    data-action="openFeedbackRequestModal" data-args="${c.id},final">request final feedback</button>
+                  <span class="saved-msg" id="feedback-msg-final-${c.id}">sent</span>
                 </div>
               </div>
               ${sentCommunicationsBlock(c)}

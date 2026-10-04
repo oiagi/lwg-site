@@ -25,18 +25,24 @@
 
     <div id="feedback-content" class="is-hidden">
       <h1>your feedback</h1>
-      <p class="intake-intro">
-        Thank you for taking the time to share your feedback. Your honest opinion helps improve
-        future lessons — there are no right or wrong answers, so please be as open as you like.
-        Only your teacher reads your answers.
-      </p>
-      <p class="feedback-time" id="feedback-time">estimated time: 3–5 minutes</p>
+      <p class="feedback-meta" id="feedback-meta"></p>
 
       <div class="field-summary" id="feedback-course"></div>
 
-      <div id="feedback-sections"></div>
+      <div class="feedback-progress" id="feedback-progress" role="progressbar" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
+        <span class="feedback-progress-bar" id="feedback-progress-bar"></span>
+      </div>
+      <p class="feedback-step-label" id="feedback-step-label"></p>
 
-      <button class="submit" id="feedback-submit-btn">send feedback →</button>
+      <div id="feedback-step" class="feedback-form"></div>
+
+      <p class="feedback-required-note" id="feedback-required-note">* required</p>
+
+      <div class="form-actions">
+        <button type="button" class="step-btn step-btn--back is-hidden" id="feedback-back">← back</button>
+        <button type="button" class="step-btn step-btn--next" id="feedback-next">next →</button>
+        <button type="button" class="submit is-hidden" id="feedback-submit-btn">send feedback →</button>
+      </div>
       <div class="error submit-error" id="submit-error">
         Something went wrong — please try again or email us at
         <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
