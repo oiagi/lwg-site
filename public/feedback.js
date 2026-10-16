@@ -7,24 +7,33 @@
   const errorState = document.getElementById('feedback-error');
   const unavailable = document.getElementById('feedback-unavailable');
   const courseBox = document.getElementById('feedback-course');
-  const sectionsBox = document.getElementById('feedback-sections');
+  const metaLine = document.getElementById('feedback-meta');
+  const stepBox = document.getElementById('feedback-step');
+  const progress = document.getElementById('feedback-progress');
+  const progressBar = document.getElementById('feedback-progress-bar');
+  const stepLabel = document.getElementById('feedback-step-label');
+  const requiredNote = document.getElementById('feedback-required-note');
+  const backBtn = document.getElementById('feedback-back');
+  const nextBtn = document.getElementById('feedback-next');
   const submitBtn = document.getElementById('feedback-submit-btn');
   const submitError = document.getElementById('submit-error');
 
-  /* Answers survive a language switch, which re-renders the questions.
-     `answers` is keyed by question id; `others` holds the "other: ___"
-     text that sits next to a choice. */
+  /* `answers` is keyed by question id and survives stepping back and forth;
+     `others` holds the "other: ___" text that sits next to a choice. */
   const answers = {};
   const others = {};
   let questions = null;
   let course = null;
+  let currentStep = 0;
 
   function currentLang() {
     return window.LWG_I18N?.getLang() === 'de' ? 'de' : 'en';
   }
 
   function t(key, fallback) {
-    return window.LWG_I18N?.translateRuntime?.(key) || fallback;
+    const value = window.LWG_I18N?.translateRuntime?.(key);
+    // translateRuntime hands the key back when it knows no string for it.
+    return value && value !== key ? value : fallback;
   }
 
   function setHidden(el, hidden) {
@@ -49,6 +58,20 @@
     setErrorVisible(document.getElementById(errorId(question)), false);
   }
 
+  /* ── Keep the token when the visitor switches language ─────────────
+     The language switcher links to the bare page, which would land on
+     "link expired or invalid". Answers are not carried over: the switch is
+     a full page load. */
+  function keepTokenOnLanguageLinks() {
+    if (!token) return;
+    document.querySelectorAll('.language-option[data-lang]').forEach((link) => {
+      const url = new URL(link.getAttribute('href'), window.location.origin);
+      url.searchParams.set('token', token);
+      url.searchParams.set('lang', link.dataset.lang);
+      link.setAttribute('href', url.pathname + url.search);
+    });
+  }
+
   /* ── Course context ──────────────────────────────────────────────
      The header names the course, which is why the form never asks. */
   function renderCourse() {
@@ -70,6 +93,14 @@
     }
   }
 
+  /* "anonymous · about 3–5 minutes" */
+  function renderMeta() {
+    const set = questionSet();
+    if (!set) return;
+    const minutes = t('feedbackEstimated', 'about {minutes}').replace('{minutes}', set.minutes);
+    metaLine.textContent = t('feedbackAnonymous', 'anonymous') + ' · ' + minutes;
+  }
+
   /* ── Shared field chrome ────────────────────────────────────────── */
   function addHint(parent, text) {
     if (!text) return;
@@ -87,23 +118,35 @@
     parent.appendChild(error);
   }
 
+  /* The question text, with a required marker where one is due. */
+  function fillLabel(el, question) {
+    el.textContent = question.label;
+    if (question.required) {
+      const mark = document.createElement('span');
+      mark.className = 'required-mark';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = '*';
+      el.appendChild(mark);
+    }
+  }
+
   function fieldset(question, extraClass) {
     const el = document.createElement('fieldset');
     el.className = extraClass;
     const legend = document.createElement('legend');
     legend.className = 'field-legend';
-    legend.textContent = question.label;
+    fillLabel(legend, question);
     el.appendChild(legend);
     return el;
   }
 
-  /* ── Numeric scales (1-5 statements and the 0-10 recommendation) ── */
+  /* ── Numeric scales (every scale on the form runs 1-10) ─────────── */
   function renderScale(question) {
     const wrap = fieldset(question, 'rating-field');
     addHint(wrap, question.hint);
 
     const scaleRow = document.createElement('div');
-    scaleRow.className = question.max > 5 ? 'rating-scale rating-scale--wide' : 'rating-scale';
+    scaleRow.className = 'rating-scale';
     for (let value = question.min; value <= question.max; value += 1) {
       const label = document.createElement('label');
       label.className = 'rating-option';
@@ -116,6 +159,7 @@
       input.addEventListener('change', () => {
         answers[question.id] = value;
         clearError(question);
+        applyConditions();
       });
 
       const box = document.createElement('span');
@@ -130,9 +174,9 @@
     const endpoints = document.createElement('div');
     endpoints.className = 'rating-endpoints';
     const min = document.createElement('span');
-    min.textContent = question.min + ' — ' + question.minLabel;
+    min.textContent = question.min + ' = ' + question.minLabel;
     const max = document.createElement('span');
-    max.textContent = question.maxLabel + ' — ' + question.max;
+    max.textContent = question.max + ' = ' + question.maxLabel;
     endpoints.append(min, max);
     wrap.appendChild(endpoints);
 
@@ -182,6 +226,7 @@
         answers[question.id] = option.value;
         if (otherInput) setHidden(otherInput, option.value !== 'other');
         clearError(question);
+        applyConditions();
       });
 
       const text = document.createElement('span');
@@ -228,6 +273,7 @@
         answers[question.id] = [...selected];
         if (otherInput) setHidden(otherInput, !selected.has('other'));
         clearError(question);
+        applyConditions();
       });
 
       const text = document.createElement('span');
@@ -256,7 +302,7 @@
     const id = 'comment-' + question.id;
     const label = document.createElement('label');
     label.setAttribute('for', id);
-    label.textContent = question.label;
+    fillLabel(label, question);
 
     const textarea = document.createElement('textarea');
     textarea.id = id;
@@ -267,7 +313,8 @@
     });
 
     wrap.append(label, textarea);
-    addHint(wrap, question.hint || t('feedbackOptional', 'optional'));
+    addHint(wrap, question.hint || (question.required ? '' : t('feedbackOptional', 'optional')));
+    addError(wrap, question, t('feedbackChoiceRequired', 'Please choose an answer.'));
     return wrap;
   }
 
@@ -284,25 +331,81 @@
     return questions[currentLang()] || questions.de || questions.en;
   }
 
-  function renderQuestions() {
-    const set = questionSet();
-    if (!set) return;
+  function steps() {
+    return questionSet()?.steps || [];
+  }
 
-    sectionsBox.textContent = '';
-    for (const section of set.sections) {
-      const heading = document.createElement('p');
-      heading.className = 'section-label';
-      heading.textContent = section.title;
-      sectionsBox.appendChild(heading);
+  function stepQuestions(index) {
+    return steps()[index]?.questions || [];
+  }
 
-      for (const question of section.questions) {
-        const render = RENDERERS[question.type];
-        if (render) sectionsBox.appendChild(render(question));
+  /* ── Conditional questions ──────────────────────────────────────── */
+  function conditionMet(question) {
+    if (!question.showIf) return true;
+    return question.showIf.values.includes(answers[question.showIf.id]);
+  }
+
+  /* Show or hide the follow-ups on the current step. A follow-up that
+     disappears forgets its answer, so nothing is sent for a question the
+     student no longer sees. */
+  function applyConditions() {
+    for (const question of stepQuestions(currentStep)) {
+      if (!question.showIf) continue;
+      const card = document.getElementById('card-' + question.id);
+      const shown = conditionMet(question);
+      setHidden(card, !shown);
+      if (!shown && answers[question.id] !== undefined) {
+        delete answers[question.id];
+        delete others[question.id];
+        const field = card?.querySelector('textarea, input');
+        if (field) field.value = '';
+        clearError(question);
       }
     }
   }
 
-  /* ── Submit ─────────────────────────────────────────────────────── */
+  /* ── Steps ──────────────────────────────────────────────────────── */
+  function renderProgress() {
+    const total = steps().length;
+    const n = currentStep + 1;
+    progress.setAttribute('aria-valuemax', String(total));
+    progress.setAttribute('aria-valuenow', String(n));
+    progressBar.style.width = Math.round((n / total) * 100) + '%';
+    stepLabel.textContent = t('feedbackStepOf', 'step {n} of {total}')
+      .replace('{n}', String(n))
+      .replace('{total}', String(total));
+    setHidden(backBtn, currentStep === 0);
+    setHidden(nextBtn, currentStep >= total - 1);
+    setHidden(submitBtn, currentStep < total - 1);
+  }
+
+  function renderStep() {
+    stepBox.textContent = '';
+    const list = stepQuestions(currentStep);
+    let anyRequired = false;
+    for (const question of list) {
+      const render = RENDERERS[question.type];
+      if (!render) continue;
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.id = 'card-' + question.id;
+      card.appendChild(render(question));
+      stepBox.appendChild(card);
+      anyRequired = anyRequired || Boolean(question.required);
+    }
+    setHidden(requiredNote, !anyRequired);
+    applyConditions();
+    renderProgress();
+  }
+
+  function goToStep(index) {
+    currentStep = Math.max(0, Math.min(index, steps().length - 1));
+    renderStep();
+    setErrorVisible(submitError, false);
+    content.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  /* ── Validation ─────────────────────────────────────────────────── */
   function isAnswered(question) {
     const value = answers[question.id];
     if (question.type === 'multi') return Array.isArray(value) && value.length > 0;
@@ -310,28 +413,27 @@
     return value !== undefined && value !== null && value !== '';
   }
 
-  function validate() {
-    const set = questionSet();
+  /* Only the current step's visible required questions block the way on. */
+  function validateStep() {
     let firstMissing = null;
-    for (const section of set.sections) {
-      for (const question of section.questions) {
-        if (!question.required) continue;
-        const missing = !isAnswered(question);
-        setErrorVisible(document.getElementById(errorId(question)), missing);
-        if (missing && !firstMissing) firstMissing = question;
-      }
+    for (const question of stepQuestions(currentStep)) {
+      if (!question.required || !conditionMet(question)) continue;
+      const missing = !isAnswered(question);
+      setErrorVisible(document.getElementById(errorId(question)), missing);
+      if (missing && !firstMissing) firstMissing = question;
     }
     if (firstMissing) {
       const el = document.getElementById(errorId(firstMissing));
       el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      el?.closest('fieldset')?.querySelector('input')?.focus();
+      el?.closest('.question-card')?.querySelector('input, textarea')?.focus();
     }
     return !firstMissing;
   }
 
+  /* ── Submit ─────────────────────────────────────────────────────── */
   async function submit() {
     setErrorVisible(submitError, false);
-    if (!validate()) return;
+    if (!validateStep()) return;
 
     const originalLabel = submitBtn.textContent;
     submitBtn.disabled = true;
@@ -359,16 +461,24 @@
     }
   }
 
+  nextBtn.addEventListener('click', () => {
+    if (validateStep()) goToStep(currentStep + 1);
+  });
+  backBtn.addEventListener('click', () => goToStep(currentStep - 1));
   submitBtn.addEventListener('click', submit);
 
-  /* Re-render the header and the questions in the newly chosen language. */
+  /* Fires once per page load, after i18n.js has settled the language. */
   document.addEventListener('lwg:language-applied', () => {
+    keepTokenOnLanguageLinks();
+    if (!questions) return;
     renderCourse();
-    renderQuestions();
+    renderMeta();
+    renderStep();
   });
 
   /* ── Load ───────────────────────────────────────────────────────── */
   (async function load() {
+    keepTokenOnLanguageLinks();
     if (!token) {
       showOnly(errorState);
       return;
@@ -389,7 +499,8 @@
         return;
       }
       renderCourse();
-      renderQuestions();
+      renderMeta();
+      renderStep();
       showOnly(content);
     } catch {
       // Network failure, not a bad token.

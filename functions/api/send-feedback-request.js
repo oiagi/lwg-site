@@ -1,12 +1,13 @@
 // functions/api/send-feedback-request.js
 // POST /api/send-feedback-request
-// Body: { course_id, student_id?, student_ids?, language? }
+// Body: { course_id, kind?, student_id?, student_ids?, language? }
 //
-// Asks the enrolled students of a course to fill in the course feedback
-// form. Each recipient gets a course_feedback row with its own token and
-// a private link to /<lang>/feedback?token=... Students who have already
-// submitted are skipped; students who were asked before keep their
-// original token, so an earlier email stays valid.
+// Asks the enrolled students of a course to fill in the mid-course or the
+// end-of-course feedback form. Each recipient gets a course_feedback row
+// with its own token and a private link to /<lang>/feedback?token=...
+// Students who have already submitted that form are skipped without saying
+// who they are; students who were asked before keep their original token,
+// so an earlier email stays valid.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY, SITE_URL (optional)
@@ -20,101 +21,19 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { courseSubjectLabel } from './_feedback.js';
+import { DEFAULT_KIND, isFeedbackKind } from './_feedback.js';
+import { buildFeedbackEmail } from './_feedback-email.js';
 import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
 
-function esc(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function courseLabel(course, language) {
-  const label = [
-    courseSubjectLabel(course, language),
-    course.level,
-    language === 'en' ? 'course' : 'Kurs',
-    course.course_code,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  return label || (language === 'en' ? 'course' : 'Kurs');
-}
-
-function buildFeedbackEmail({ course, studentFirstName, feedbackUrl, language }) {
-  const isEnglish = language === 'en';
-  const codeLabel = course.course_code ? ` (${course.course_code})` : '';
-  const label = courseLabel(course, language);
-  const copy = isEnglish
-    ? {
-        subject: `How was your course?${codeLabel} — learning with gioia`,
-        greeting: `Hi${studentFirstName ? ` ${studentFirstName}` : ''} :)`,
-        intro: `We hope you liked your ${label}. We would be very grateful if you took three to five minutes to tell us how it went. There are no right or wrong answers. Your honest opinion helps us make the next course better.`,
-        btn: 'Give feedback →',
-        note: 'The link is personal to you and stays valid for 90 days.',
-        footer: 'If you have any questions, reply to this email or write to',
-      }
-    : {
-        subject: `Wie war Ihr Kurs?${codeLabel} — learning with gioia`,
-        greeting: `Hallo${studentFirstName ? ` ${studentFirstName}` : ''} :)`,
-        intro: `Wir hoffen, Ihr ${label} hat Ihnen gefallen. Wir würden uns freuen, wenn Sie sich drei bis fünf Minuten Zeit nehmen, um uns mitzuteilen, wie es war. Es gibt keine richtigen oder falschen Antworten. Ihre ehrliche Meinung hilft uns, den nächsten Kurs besser zu machen.`,
-        btn: 'Feedback geben →',
-        note: 'Der Link ist persönlich für Sie und 90 Tage lang gültig.',
-        footer: 'Bei Fragen antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
-      };
-
-  return {
-    subject: copy.subject,
-    html: `<!DOCTYPE html>
-<html lang="${isEnglish ? 'en' : 'de'}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f8fb;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f8fb;padding:40px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;max-width:560px;width:100%;">
-        <tr><td style="background:#1a1a1a;padding:32px 40px;">
-          <p style="margin:0;color:#d6eaf8;font-family:Georgia,serif;font-size:13px;letter-spacing:0.2em;text-transform:uppercase;">learning with gioia</p>
-        </td></tr>
-        <tr><td style="padding:40px 40px 16px;">
-          <p style="margin:0 0 24px;font-size:22px;font-weight:normal;color:#1a1a1a;font-family:Georgia,serif;">${esc(copy.greeting)}</p>
-          <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333;">${esc(copy.intro)}</p>
-        </td></tr>
-        <tr><td style="padding:0 40px 32px;">
-          <p style="margin:0 0 12px;">
-            <a href="${esc(feedbackUrl)}" style="display:inline-block;background:#1a1a1a;color:#d6eaf8;text-decoration:none;padding:10px 14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">${esc(copy.btn)}</a>
-          </p>
-          <p style="margin:0;font-size:12px;color:#aaa;line-height:1.6;">${esc(copy.note)}</p>
-        </td></tr>
-        <tr><td style="padding:24px 40px 32px;border-top:1px solid #eee;">
-          <p style="margin:0;font-size:13px;color:#aaa;line-height:1.6;">
-            ${esc(copy.footer)}
-            <a href="mailto:info@learningwithgioia.ch" style="color:#1a1a1a;">info@learningwithgioia.ch</a>.
-          </p>
-          <p style="margin:16px 0 0;font-size:13px;color:#aaa;">
-            <a href="https://learningwithgioia.ch" style="color:#aaa;">learningwithgioia.ch</a>
-          </p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`,
-  };
-}
-
 /**
- * Ensure every recipient has a course_feedback row. Existing rows keep
- * their token so links already in a student's inbox stay valid.
+ * Ensure every recipient has a course_feedback row for this kind. Existing
+ * rows keep their token so links already in a student's inbox stay valid.
  * Returns a map of student_id -> token for the students still to be asked.
  */
-async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, recipients, language }) {
+async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, kind, recipients, language }) {
   const idFilter = recipients.map((s) => `student_id.eq.${s.id}`).join(',');
   const existingRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/course_feedback?course_id=eq.${encodeURIComponent(courseId)}&or=(${idFilter})&select=student_id,token,submitted_at`,
+    `${SUPABASE_URL}/rest/v1/course_feedback?course_id=eq.${encodeURIComponent(courseId)}&kind=eq.${kind}&or=(${idFilter})&select=student_id,token,submitted_at`,
     { headers: H }
   );
   if (!existingRes.ok) {
@@ -122,27 +41,29 @@ async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, recipients, langu
     console.error('Could not read course_feedback:', text);
     const err = new Error('Feedback storage unavailable');
     err.statusCode = 500;
-    err.userMessage = 'Feedback table not available. Run the add_course_feedback migration.';
+    err.userMessage =
+      'Feedback table not available. Run the add_course_feedback_responses migration.';
     throw err;
   }
   const existing = await existingRes.json();
 
   const tokensByStudent = {};
-  const alreadySubmitted = [];
+  const alreadySubmitted = new Set();
   for (const row of existing) {
-    if (row.submitted_at) alreadySubmitted.push(String(row.student_id));
+    if (row.submitted_at) alreadySubmitted.add(String(row.student_id));
     else tokensByStudent[String(row.student_id)] = row.token;
   }
 
   const newRows = recipients
     .filter(
       (s) =>
-        !alreadySubmitted.includes(String(s.id)) &&
+        !alreadySubmitted.has(String(s.id)) &&
         !Object.prototype.hasOwnProperty.call(tokensByStudent, String(s.id))
     )
     .map((s) => ({
       student_id: s.id,
       course_id: courseId,
+      kind,
       token: crypto.randomUUID(),
       language,
     }));
@@ -165,7 +86,7 @@ async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, recipients, langu
     }
   }
 
-  return { tokensByStudent, alreadySubmitted };
+  return tokensByStudent;
 }
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
@@ -183,6 +104,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (error) return error;
 
   const { course_id, student_id } = body;
+  const kind = body.kind === undefined ? DEFAULT_KIND : body.kind;
+  if (!isFeedbackKind(kind)) return errorResponse('kind must be midterm or final', 400);
   const hasStudentIds = Object.prototype.hasOwnProperty.call(body, 'student_ids');
   if (hasStudentIds && !Array.isArray(body.student_ids)) {
     return errorResponse('student_ids must be an array', 400);
@@ -222,7 +145,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (studentIds.length) {
     const studentFilter = studentIds.map((id) => `id.eq.${id}`).join(',');
     const studRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,first_name,last_name,email`,
+      `${SUPABASE_URL}/rest/v1/students?or=(${studentFilter})&select=id,email`,
       { headers: H }
     );
     students = studRes.ok ? await studRes.json() : [];
@@ -239,17 +162,20 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('No enrolled students with an email address', 400);
   }
 
-  const { tokensByStudent, alreadySubmitted } = await ensureFeedbackRows({
+  const tokensByStudent = await ensureFeedbackRows({
     SUPABASE_URL,
     H,
     courseId: course_id,
+    kind,
     recipients,
     language,
   });
 
+  // Students who already answered are left out silently: naming them would
+  // reveal who responded, which the anonymous form promises not to do.
   const toEmail = recipients.filter((s) => tokensByStudent[String(s.id)]);
   if (!toEmail.length) {
-    return errorResponse('All selected students have already submitted their feedback', 400);
+    return errorResponse('Nobody left to ask: the selected students have already answered', 400);
   }
 
   const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
@@ -258,8 +184,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     toEmail.map(async (student) => {
       const token = tokensByStudent[String(student.id)];
       const email = buildFeedbackEmail({
+        kind,
         course,
-        studentFirstName: student.first_name || '',
         // ?lang is part of i18n.js's language resolution, so the page opens
         // in the same language the email was written in.
         feedbackUrl: `${base}/${language}/feedback?token=${encodeURIComponent(token)}&lang=${language}`,
@@ -275,10 +201,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         if (!res.ok) {
           console.error(`Feedback request failed for ${student.email}:`, await res.text());
         }
-        return { email: student.email, student_id: student.id, ok: res.ok };
+        return { student_id: student.id, ok: res.ok };
       } catch (err) {
         console.error(`Feedback request error for ${student.email}:`, err?.message || err);
-        return { email: student.email, student_id: student.id, ok: false };
+        return { student_id: student.id, ok: false };
       }
     })
   );
@@ -291,7 +217,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     const idFilter = sentStudentIds.map((id) => `student_id.eq.${id}`).join(',');
     try {
       await fetch(
-        `${SUPABASE_URL}/rest/v1/course_feedback?course_id=eq.${encodedCourseId}&or=(${idFilter})`,
+        `${SUPABASE_URL}/rest/v1/course_feedback?course_id=eq.${encodedCourseId}&kind=eq.${kind}&or=(${idFilter})`,
         {
           method: 'PATCH',
           headers: { ...H, Prefer: 'return=minimal' },
@@ -303,11 +229,5 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
-  return jsonResponse({
-    success: failed === 0,
-    sent,
-    failed,
-    skipped: alreadySubmitted.length,
-    recipients: results,
-  });
+  return jsonResponse({ success: failed === 0, sent, failed });
 }, 'send-feedback-request');

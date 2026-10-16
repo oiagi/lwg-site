@@ -1,12 +1,9 @@
--- Course feedback requests and responses.
--- One row per (student, course): created when the request email is sent,
--- filled in when the student submits the form at /feedback.html?token=...
--- Required by: functions/api/send-feedback-request.js, functions/api/feedback.js
--- The columns mirror FEEDBACK_FIELDS in functions/api/_feedback.js — add a
--- question there and a column here in the same change.
--- Not every question is asked of every student: the course profile decides
--- which ones apply, so a column left NULL can mean "not asked" as well as
--- "skipped". See courseFeedbackProfile() in _feedback.js.
+-- Course feedback requests — the first version of the table.
+-- SUPERSEDED by add_course_feedback_responses.sql, which turns this into a
+-- pure request table (one row per student, course and form kind) and moves
+-- the answers into the anonymous course_feedback_responses table as JSON.
+-- Run this file first on a fresh database, then the responses migration.
+-- The answer columns below are no longer read or written by the app.
 -- Run in the Supabase SQL editor or via: supabase db push
 
 CREATE TABLE IF NOT EXISTS course_feedback (

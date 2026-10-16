@@ -1,34 +1,33 @@
-/* ── Feedback: course feedback responses ──────────────────────────────
+/* ── Feedback: anonymous course feedback responses ─────────────────────
    Two surfaces over the same endpoint: the feedback tab (all courses)
-   and the on-demand responses list inside a course detail. Question
-   labels always come from the API so they cannot drift from the
-   columns in _feedback.js.                                            */
+   and the on-demand responses list inside a course detail. Responses
+   carry no student reference; the only per-student fact the admin ever
+   sees is that a request went out. Question labels always come from the
+   API so they cannot drift from _feedback.js.                          */
 import { apiFetch } from '../core/api.js';
 import { esc, fmtDate } from '../core/helpers.js';
 
 let feedback = null;
-let currentFilter = 'submitted';
+let currentFilter = 'all';
 
-const MIGRATION_HINT = 'Has the add_course_feedback migration been run?';
+const MIGRATION_HINT = 'Has the add_course_feedback_responses migration been run?';
 
-function responseCard(row, questions, options = {}) {
+export const KIND_LABELS = { midterm: 'mid-course', final: 'end of course' };
+
+export function kindLabel(kind) {
+  return KIND_LABELS[kind] || kind || '—';
+}
+
+function responseCard(row, questionsByKind, options = {}) {
+  const questions = questionsByKind?.[row.kind] || {};
+  const answers = row.answers || {};
   const heading = options.hideCourse
-    ? esc(row.student_name || row.student_email || '—')
-    : `${esc(row.course_code || '—')} · ${esc(row.student_name || row.student_email || '—')}`;
+    ? esc(kindLabel(row.kind))
+    : `${esc(row.course_code || '—')} · ${esc(kindLabel(row.kind))}`;
 
-  if (!row.submitted_at) {
-    return `
-      <div class="feedback-card feedback-card--pending">
-        <div class="feedback-card-head">
-          <span class="feedback-card-title">${heading}</span>
-          <span class="feedback-card-meta">requested ${esc(fmtDate(row.requested_at))} · no response yet</span>
-        </div>
-      </div>`;
-  }
-
-  const ratings = (questions?.ratings || [])
+  const ratings = (questions.ratings || [])
     .map((q) => {
-      const value = row[q.column];
+      const value = answers[q.id];
       if (value === null || value === undefined) return '';
       return `<li>${esc(q.label)} · <span class="detail-muted">${esc(String(value))}/${q.max || 5}</span></li>`;
     })
@@ -37,24 +36,24 @@ function responseCard(row, questions, options = {}) {
 
   // Choices are stored as machine values ('a_lot'); the labels ride along
   // with the response so this stays in step with _feedback.js.
-  const choices = (questions?.choices || [])
+  const choices = (questions.choices || [])
     .map((q) => {
-      const stored = row[q.column];
+      const stored = answers[q.id];
       if (stored === null || stored === undefined || (Array.isArray(stored) && !stored.length)) {
         return '';
       }
       const labels = (Array.isArray(stored) ? stored : [stored])
         .map((v) => (q.options || []).find((o) => o.value === v)?.label || v)
         .join(', ');
-      const other = q.otherColumn && row[q.otherColumn] ? ` (${row[q.otherColumn]})` : '';
+      const other = q.otherKey && answers[q.otherKey] ? ` (${answers[q.otherKey]})` : '';
       return `<li>${esc(q.label)} · <span class="detail-muted">${esc(labels + other)}</span></li>`;
     })
     .filter(Boolean)
     .join('');
 
-  const comments = (questions?.comments || [])
+  const comments = (questions.comments || [])
     .map((q) => {
-      const text = row[q.column];
+      const text = answers[q.id];
       if (!text) return '';
       return `
         <div class="feedback-comment">
@@ -66,10 +65,10 @@ function responseCard(row, questions, options = {}) {
     .join('');
 
   return `
-    <div class="feedback-card">
+    <div class="feedback-card feedback-card--${esc(row.kind)}">
       <div class="feedback-card-head">
         <span class="feedback-card-title">${heading}</span>
-        <span class="feedback-card-meta">${esc(fmtDate(row.submitted_at))}</span>
+        <span class="feedback-card-meta">${esc(fmtDate(row.submitted_on))}</span>
       </div>
       <ul class="feedback-rating-list">${ratings}${choices}</ul>
       ${comments || '<p class="detail-muted">no written comments</p>'}
@@ -94,7 +93,7 @@ export async function loadCourseFeedback(courseId, el) {
     const res = await apiFetch('/api/get-feedback?course_id=' + encodeURIComponent(courseId));
     if (!res.ok) throw new Error();
     const data = await res.json();
-    const rows = (data.responses || []).filter((r) => r.submitted_at);
+    const rows = data.responses || [];
     target.innerHTML = rows.length
       ? rows.map((r) => responseCard(r, data.questions, { hideCourse: true })).join('')
       : '<p class="detail-muted">no responses yet</p>';
@@ -133,25 +132,35 @@ export function filterFeedback(filter, el) {
 
 function visibleFeedback() {
   const rows = feedback?.responses || [];
-  if (currentFilter === 'submitted') return rows.filter((r) => r.submitted_at);
-  if (currentFilter === 'awaiting') return rows.filter((r) => !r.submitted_at);
+  if (currentFilter === 'midterm' || currentFilter === 'final') {
+    return rows.filter((r) => r.kind === currentFilter);
+  }
   return rows;
 }
 
+/** "mid-course 4 of 6 responded · end of course 3 of 6 responded · NPS 50" */
+function summaryText(summary) {
+  const parts = [];
+  for (const kind of ['midterm', 'final']) {
+    const s = summary?.[kind];
+    if (!s?.requested && !s?.submitted) continue;
+    parts.push(`${kindLabel(kind)} ${s.submitted} of ${s.requested} responded`);
+  }
+  const nps = summary?.final?.nps;
+  if (nps?.score !== null && nps?.score !== undefined) parts.push(`NPS ${nps.score}`);
+  return parts.join(' · ');
+}
+
 function summaryLine() {
-  const summary = feedback?.summary;
-  if (!summary?.requested) return '';
-  const averages = (summary.averages || [])
+  const text = summaryText(feedback?.summary);
+  if (!text) return '';
+  const averages = (feedback?.summary?.final?.averages || [])
     .filter((a) => a.value !== null && a.value !== undefined)
-    .map((a) => `${esc(a.label)} ${esc(String(a.value))}/5`)
+    .map((a) => `${esc(a.label)} ${esc(String(a.value))}/10`)
     .join(' · ');
-  const nps =
-    summary.nps?.score !== null && summary.nps?.score !== undefined
-      ? ` · NPS ${esc(String(summary.nps.score))}`
-      : '';
   return `
     <p class="feedback-summary">
-      ${summary.submitted} of ${summary.requested} requests answered${nps}
+      ${esc(text)}
       ${averages ? `<span class="detail-muted"> — ${averages}</span>` : ''}
     </p>`;
 }

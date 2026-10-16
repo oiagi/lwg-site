@@ -103,6 +103,9 @@
     feedbackOtherPlaceholder: { en: 'please tell us', de: 'Sagen Sie uns gerne, was' },
     feedbackSubmitting: { en: 'sending...', de: 'Wird gesendet...' },
     feedbackOptional: { en: 'optional', de: 'optional' },
+    feedbackAnonymous: { en: 'anonymous', de: 'anonym' },
+    feedbackEstimated: { en: 'about {minutes}', de: 'ca. {minutes}' },
+    feedbackStepOf: { en: 'step {n} of {total}', de: 'Schritt {n} von {total}' },
     groupCoursesLoading: { en: 'loading courses...', de: 'Kurse werden geladen...' },
     groupCoursesLoadError: {
       en: 'Could not load group courses right now.',

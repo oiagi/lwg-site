@@ -1,46 +1,112 @@
 /* ── Course feedback form additions over enquiry.css ──────────────── */
 
-.feedback-time {
-  margin: -0.6rem 0 2rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+/* The page title keeps the brand serif; everything the student has to
+   read quickly or click on — questions, options, scale numbers, buttons —
+   is set in a plain sans-serif for legibility. */
+:root {
+  --feedback-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.feedback-form,
+.feedback-form input,
+.feedback-form textarea,
+.feedback-form button,
+.feedback-meta,
+.feedback-step-label,
+.feedback-required-note,
+.form-actions button,
+#feedback-course {
+  font-family: var(--feedback-sans);
+  font-weight: 400;
+}
+
+.feedback-meta {
+  margin: -1.6rem 0 1.8rem;
+  text-align: center;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink-mute);
+  color: var(--ink-soft);
+}
+
+/* ── Progress ─────────────────────────────────────────────────────── */
+.feedback-progress {
+  height: 4px;
+  background: var(--rule);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--ink);
+  transition: width 0.3s ease;
+}
+
+.feedback-step-label {
+  margin: 0 0 1.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+/* ── One card per question, so stacked scales never blur together ── */
+.question-card {
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper) 55%, #fff);
+  padding: 1.1rem 1rem 1rem;
+  margin-bottom: 0.9rem;
 }
 
 .rating-field,
 .choice-field {
   border: none;
   padding: 0;
-  margin: 0 0 2.2rem;
+  margin: 0;
+  min-width: 0;
 }
 
 .field-legend {
   padding: 0;
   margin-bottom: 0.9rem;
-  font-size: 0.95rem;
-  font-weight: 300;
+  font-size: 0.98rem;
+  font-weight: 500;
   color: var(--ink);
   line-height: 1.5;
 }
 
+.required-mark {
+  color: #b0413e;
+  margin-left: 0.2rem;
+}
+
+.feedback-required-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.feedback-required-note::first-letter {
+  color: #b0413e;
+}
+
+/* ── 1-10 scales ──────────────────────────────────────────────────────
+   Ten boxes: two rows of five on a phone, one row from tablet width.  */
 .rating-scale {
   display: flex;
-  gap: 0.5rem;
-}
-
-/* The 0-10 recommendation scale: eleven boxes need to wrap on a phone. */
-.rating-scale--wide {
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
-.rating-scale--wide .rating-option {
-  flex: 0 0 calc((100% - 5 * 0.35rem) / 6);
+.rating-scale .rating-option {
+  flex: 0 0 calc((100% - 4 * 0.4rem) / 5);
 }
 
 @media (min-width: 30rem) {
-  .rating-scale--wide .rating-option {
+  .rating-scale .rating-option {
     flex: 1;
   }
 }
@@ -74,9 +140,10 @@
   align-items: center;
   justify-content: center;
   padding: 0.7rem 0;
-  border: 1px solid var(--rule);
-  color: var(--ink-soft);
-  font-size: 0.95rem;
+  border: 1px solid var(--ink-mute);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1rem;
   line-height: 1;
   transition:
     background-color 0.2s,
@@ -96,20 +163,19 @@
 }
 
 html[data-touch='false'] .rating-option:hover .rating-box {
-  border-color: var(--ink-soft);
+  border-color: var(--ink);
 }
 
 .rating-endpoints {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
-  font-size: 0.72rem;
-  color: var(--ink-mute);
-  letter-spacing: 0.02em;
+  gap: 1rem;
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
 }
 
 /* ── Single and multiple choice ───────────────────────────────────── */
-
 .choice-list {
   display: flex;
   flex-direction: column;
@@ -147,14 +213,62 @@ html[data-touch='false'] .choice-option:hover .choice-label {
   margin-top: 0.6rem;
 }
 
-.comment-field {
-  margin-bottom: 2.2rem;
-}
-
+/* ── Free text ────────────────────────────────────────────────────── */
 .comment-field label {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
   color: var(--ink);
   line-height: 1.5;
+}
+
+.feedback-form .hint {
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* ── Step navigation ──────────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.6rem;
+}
+
+/* The id outranks enquiry.css's device-specific `button.submit` margins. */
+#feedback-content .form-actions .submit,
+#feedback-content .step-btn {
+  margin-top: 0;
+  flex: 1;
+}
+
+.step-btn {
+  padding: 0.9rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.step-btn--back {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--ink);
+}
+
+.step-btn:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.step-btn--back:hover {
+  background: var(--ink);
+  color: var(--paper);
 }

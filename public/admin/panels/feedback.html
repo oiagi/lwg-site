@@ -1,12 +1,14 @@
 <div class="dashboard-header students-header">
   <div class="feedback-filter">
-    <button class="filter-btn active" data-action="filterFeedback" data-args="submitted" id="feedback-filter-submitted">responses</button>
-    <button class="filter-btn" data-action="filterFeedback" data-args="awaiting" id="feedback-filter-awaiting">awaiting</button>
-    <button class="filter-btn" data-action="filterFeedback" data-args="all" id="feedback-filter-all">all</button>
+    <button class="filter-btn active" data-action="filterFeedback" data-args="all" id="feedback-filter-all">all</button>
+    <button class="filter-btn" data-action="filterFeedback" data-args="midterm" id="feedback-filter-midterm">mid-course</button>
+    <button class="filter-btn" data-action="filterFeedback" data-args="final" id="feedback-filter-final">end of course</button>
   </div>
 </div>
 <p class="reviews-note">
-  Feedback is requested per course from the course overview. Each student gets a private link
-  that stays valid for 90 days and accepts one submission.
+  Feedback is requested per course from the course overview, as a mid-course or an end-of-course
+  form. Each student gets a private link that stays valid for 90 days and accepts one submission.
+  Responses are anonymous: nothing links an answer to a student, and the admin only ever sees how
+  many people responded. In a course with a single participant that is naturally not the case.
 </p>
 <div id="feedback-list"><div class="loading-state">loading…</div></div>
