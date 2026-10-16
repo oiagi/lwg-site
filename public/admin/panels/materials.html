@@ -1,0 +1,57 @@
+<section class="crm-section">
+  <h3 class="crm-heading">pdf library</h3>
+  <p class="crm-note">
+    Books and worksheets used in lessons. When logging a session you reference a PDF with the
+    chapter and pages you used. PDFs in use can be archived but not deleted.
+  </p>
+
+  <div class="crm-upload">
+    <div class="modal-field modal-field--compact">
+      <label for="mat-file">pdf (max. 50 MB)</label>
+      <input type="file" id="mat-file" accept="application/pdf,.pdf" />
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="mat-title">title</label>
+      <input type="text" id="mat-title" maxlength="200" placeholder="e.g. Menschen A2 Kursbuch" />
+    </div>
+    <div class="modal-field modal-field--compact">
+      <label for="mat-description">description (optional)</label>
+      <input type="text" id="mat-description" maxlength="2000" />
+    </div>
+    <div class="crm-upload-actions">
+      <button class="modal-submit" id="mat-upload-btn" data-action="uploadMaterial">upload</button>
+      <span class="crm-msg" id="mat-upload-msg" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <div class="crm-toolbar">
+    <input type="search" id="mat-search" class="crm-search" placeholder="search materials…" />
+    <label class="crm-toggle">
+      <input type="checkbox" id="mat-show-archived" data-action-change="toggleArchivedMaterials" />
+      show archived
+    </label>
+  </div>
+  <div id="materials-list"><div class="loading-state">loading…</div></div>
+</section>
+
+<section class="crm-section">
+  <h3 class="crm-heading">topics</h3>
+  <p class="crm-note">
+    Grammar and vocabulary tags for logging what a lesson covered. Tags can also be added directly
+    from the session log. Renaming a tag changes it on every lesson; archive tags you no longer use.
+  </p>
+  <div class="crm-toolbar">
+    <input type="text" id="topic-new-name" class="crm-search" maxlength="120" placeholder="new topic, e.g. Verben mit Dativ" />
+    <select id="topic-new-kind" class="crm-select">
+      <option value="grammar">grammar</option>
+      <option value="vocabulary">vocabulary</option>
+    </select>
+    <button class="action-btn" data-action="addTopic">add</button>
+    <label class="crm-toggle">
+      <input type="checkbox" id="topic-show-archived" data-action-change="toggleArchivedTopics" />
+      show archived
+    </label>
+  </div>
+  <span class="crm-msg" id="topic-msg" aria-live="polite"></span>
+  <div id="topics-list"><div class="loading-state">loading…</div></div>
+</section>

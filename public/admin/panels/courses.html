@@ -370,13 +370,35 @@
 <!-- ── Attendance modal ──────────────────────────────────────────────── -->
 <div class="modal-overlay" id="attendance-modal">
   <div class="modal">
-    <h2 id="att-title">mark attendance</h2>
+    <h2 id="att-title">log session</h2>
     <input type="hidden" id="att-session-id" value="">
     <input type="hidden" id="att-course-id" value="">
     <div id="att-students"></div>
+
+    <div id="att-crm" class="att-crm">
+      <div class="att-crm-block">
+        <h3 class="crm-subheading">topics</h3>
+        <div id="att-topics" class="crm-chips"></div>
+        <input type="text" id="att-topic-search" class="crm-search" maxlength="120" autocomplete="off" placeholder="type to find or add a topic…" />
+        <div id="att-topic-suggest" class="crm-suggest"></div>
+      </div>
+      <div class="att-crm-block">
+        <h3 class="crm-subheading">materials</h3>
+        <div id="att-materials"></div>
+        <select id="att-material-pick" class="crm-select crm-select--wide"></select>
+      </div>
+      <div class="att-crm-block">
+        <h3 class="crm-subheading">notes</h3>
+        <textarea id="att-notes" class="crm-notes" rows="3" maxlength="5000" placeholder="what happened in this lesson"></textarea>
+      </div>
+      <p class="crm-note" id="att-crm-unavailable" hidden>
+        Topics and materials are unavailable until the add_session_crm migration has been run.
+      </p>
+    </div>
+
     <div class="modal-actions">
       <button class="modal-cancel" data-action="closeAttendanceModal">cancel</button>
-      <button class="modal-submit" id="att-submit" data-action="submitAttendance">save attendance</button>
+      <button class="modal-submit" id="att-submit" data-action="submitAttendance">save session</button>
     </div>
     <p class="modal-msg" id="att-msg"></p>
   </div>

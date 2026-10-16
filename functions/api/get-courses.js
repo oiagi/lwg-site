@@ -112,6 +112,78 @@ export function annotateSessions(sessions, attendanceBySession, course, now = Da
   });
 }
 
+// Lesson content (topics, material references) per session, from
+// add_session_crm.sql. Tolerant like the attendance fetch: until that
+// migration has run, both queries fail and every session gets empty lists.
+const SESSION_TOPICS_SELECT = 'session_id,topic:topics(id,kind,name)';
+const SESSION_MATERIALS_SELECT =
+  'id,session_id,chapter,pages,position,material:materials(id,title,file_name)';
+
+async function fetchChunkedBySession(SUPABASE_URL, H, table, select, sessionIds) {
+  const chunks = [];
+  for (let i = 0; i < sessionIds.length; i += ATTENDANCE_CHUNK) {
+    chunks.push(sessionIds.slice(i, i + ATTENDANCE_CHUNK));
+  }
+  const results = await Promise.all(
+    chunks.map(async (ids) => {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${table}?session_id=in.(${ids.join(',')})&select=${select}`,
+        { headers: H }
+      );
+      if (!res.ok) {
+        console.error(`get-courses: ${table} fetch failed:`, res.status);
+        return [];
+      }
+      return res.json();
+    })
+  );
+  return results.flat();
+}
+
+async function fetchSessionCrm(SUPABASE_URL, H, sessionIds) {
+  const topics = {};
+  const materials = {};
+  if (!sessionIds.length) return { topics, materials };
+  const [topicRows, materialRows] = await Promise.all([
+    fetchChunkedBySession(SUPABASE_URL, H, 'session_topics', SESSION_TOPICS_SELECT, sessionIds),
+    fetchChunkedBySession(
+      SUPABASE_URL,
+      H,
+      'session_materials',
+      SESSION_MATERIALS_SELECT,
+      sessionIds
+    ),
+  ]);
+  for (const row of topicRows) {
+    if (row.topic) (topics[row.session_id] ||= []).push(row.topic);
+  }
+  for (const row of materialRows) {
+    if (!row.material) continue;
+    (materials[row.session_id] ||= []).push({
+      id: row.id,
+      material_id: row.material.id,
+      title: row.material.title,
+      file_name: row.material.file_name,
+      chapter: row.chapter,
+      pages: row.pages,
+      position: row.position ?? 0,
+    });
+  }
+  return { topics, materials };
+}
+
+// Attaches `topics` (sorted grammar first, then by name) and `materials`
+// (in the order they were logged) to each session.
+export function attachSessionCrm(sessions, crm) {
+  return sessions.map((session) => ({
+    ...session,
+    topics: [...(crm.topics[session.id] || [])].sort(
+      (a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name, 'de')
+    ),
+    materials: [...(crm.materials[session.id] || [])].sort((a, b) => a.position - b.position),
+  }));
+}
+
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
 }
@@ -340,11 +412,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
 
     // ── Batch fetch attendance for every listed session ───────────────
-    const attendanceBySession = await fetchAttendanceBySession(
-      SUPABASE_URL,
-      H,
-      allSessions.map((s) => s.id)
-    );
+    const allSessionIds = allSessions.map((s) => s.id);
+    const [attendanceBySession, crmBySession] = await Promise.all([
+      fetchAttendanceBySession(SUPABASE_URL, H, allSessionIds),
+      fetchSessionCrm(SUPABASE_URL, H, allSessionIds),
+    ]);
 
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
@@ -459,10 +531,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           };
         })
         .filter(Boolean);
-      const sessions = annotateSessions(
-        sessionsByCourse[course.id] || [],
-        attendanceBySession,
-        course
+      const sessions = attachSessionCrm(
+        annotateSessions(sessionsByCourse[course.id] || [], attendanceBySession, course),
+        crmBySession
       );
       return {
         ...course,

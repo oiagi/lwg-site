@@ -12,6 +12,7 @@ import {
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { loadGroupSlots } from './course-slots.js';
 import { KIND_LABELS as FEEDBACK_KIND_LABELS } from './feedback.js';
+import { firstPage, formatMaterialRef } from './materials.js';
 
 let currentCourseFilter = 'active';
 const courseListState = { search: '', sort: 'created_at', direction: 'desc' };
@@ -555,6 +556,43 @@ function sessionAttendanceLine(session, students) {
   return `<div class="session-attendance">${items.join('')}</div>`;
 }
 
+// What a logged session covered: topic chips, PDF references (each opens the
+// file at its first page) and the notes, truncated to one line.
+function sessionCrmLine(session) {
+  const topics = (session.topics || []).map(
+    (t) => `<span class="crm-chip crm-chip--${esc(t.kind)} crm-chip--small">${esc(t.name)}</span>`
+  );
+  const refs = (session.materials || []).map((ref) => {
+    const page = firstPage(ref.pages);
+    const remove = ref.id
+      ? `<button type="button" class="crm-remove" data-action="removeSessionMaterialRef" data-args="${esc(ref.id)}" title="remove from this session" aria-label="remove ${esc(ref.title)} from this session">×</button>`
+      : '';
+    return `<span class="crm-ref-item"><button type="button" class="crm-ref" data-action="openMaterial" data-args="${esc(ref.material_id)}${page ? ',' + page : ''}" title="open PDF">${esc(formatMaterialRef(ref))}</button>${remove}</span>`;
+  });
+  const notes = session.notes
+    ? `<span class="crm-session-notes" title="${esc(session.notes)}">${esc(session.notes)}</span>`
+    : '';
+  if (!topics.length && !refs.length && !notes) return '';
+  return `<div class="session-crm">${topics.join('')}${refs.join('')}${notes}</div>`;
+}
+
+// Drops one material reference from a session without reopening the log.
+// The PDF itself stays in the library.
+export async function removeSessionMaterialRef(refId) {
+  if (!confirm('Remove this material from the session? The PDF stays in the library.')) return;
+  try {
+    const res = await apiFetch('/api/remove-session-material', {
+      method: 'POST',
+      body: { id: refId },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not remove material');
+    await loadCourses(getCurrentCourseFilter());
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
 function renderCourses(courses) {
   const list = document.getElementById('course-list');
   if (!courses.length) {
@@ -615,8 +653,9 @@ function renderCourses(courses) {
         <div class="session-date">${fmtDateWithEnd(s.scheduled_at, s.duration_minutes)}</div>
         <div class="session-status-label">${s.status}</div>
         ${s.unlogged ? '<span class="unlogged-flag">unlogged</span>' : ''}
-        <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">${s.logged ? 'edit attendance' : 'log attendance'}</button>
+        <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">${s.logged ? 'edit log' : 'log session'}</button>
         ${sessionAttendanceLine(s, c.students || [])}
+        ${sessionCrmLine(s)}
       </div>
     `
         )

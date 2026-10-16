@@ -20,11 +20,17 @@ const COURSE_ID = 'course-1';
  * In-memory PostgREST for the three tables the handler touches. Every request
  * is recorded so tests can assert on URLs and headers, not just on state.
  */
-function makeWorld(t, { session = {}, course = {}, failStudent = null } = {}) {
+function makeWorld(
+  t,
+  { session = {}, course = {}, failStudent = null, failTable = null, seed = {} } = {}
+) {
   const db = {
     sessions: [{ id: SESSION_ID, course_id: COURSE_ID, status: 'scheduled', ...session }],
     courses: [{ id: COURSE_ID, sessions_completed: 0, ...course }],
     attendance: [],
+    session_topics: [],
+    session_materials: [],
+    ...seed,
   };
   const calls = [];
   const json = (value, status = 200) =>
@@ -66,6 +72,18 @@ function makeWorld(t, { session = {}, course = {}, failStudent = null } = {}) {
       const row = { id: `att-${db.attendance.length + 1}`, ...body };
       db.attendance.push(row);
       return json([row]);
+    }
+    if (table === 'session_topics' || table === 'session_materials') {
+      if (failTable === table) return json({ error: 'boom' }, 500);
+      const sid = decodeURIComponent(query.match(/session_id=eq\.([^&]+)/)?.[1] || '');
+      if (method === 'DELETE') {
+        db[table] = db[table].filter((r) => r.session_id !== sid);
+        return new Response(null, { status: 204 });
+      }
+      if (method === 'POST') {
+        db[table].push(...body);
+        return new Response(null, { status: 201 });
+      }
     }
     if (method === 'GET') {
       let rows = db[table] || [];
@@ -221,4 +239,111 @@ test('a failed record leaves the session incomplete', async (t) => {
   assert.equal(res.body.newly_completed, false);
   assert.equal(db.sessions[0].status, 'scheduled');
   assert.equal(db.courses[0].sessions_completed, 0);
+});
+
+// ── Lesson content: topics, materials, notes ────────────────────────────
+
+test('topic_ids, materials and notes replace what was stored, then the session completes', async (t) => {
+  const { db, calls, run } = makeWorld(t, {
+    seed: {
+      session_topics: [
+        { session_id: SESSION_ID, topic_id: 'old' },
+        { session_id: 'other', topic_id: 'keep' },
+      ],
+      session_materials: [{ session_id: SESSION_ID, material_id: 'old-book' }],
+    },
+  });
+
+  const res = await run({
+    session_id: SESSION_ID,
+    records: [present('a')],
+    topic_ids: ['perfekt', 'dativ', 'perfekt'],
+    materials: [
+      { material_id: 'book', chapter: ' 3 ', pages: '45–52' },
+      { material_id: 'book', pages: '60' },
+    ],
+    notes: '  Hausaufgabe: S. 53  ',
+  });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.newly_completed, true);
+
+  assert.deepEqual(db.session_topics, [
+    { session_id: 'other', topic_id: 'keep' },
+    { session_id: SESSION_ID, topic_id: 'perfekt' },
+    { session_id: SESSION_ID, topic_id: 'dativ' },
+  ]);
+  assert.deepEqual(db.session_materials, [
+    { session_id: SESSION_ID, material_id: 'book', chapter: '3', pages: '45–52', position: 0 },
+    { session_id: SESSION_ID, material_id: 'book', chapter: null, pages: '60', position: 1 },
+  ]);
+  assert.equal(db.sessions[0].notes, 'Hausaufgabe: S. 53');
+  assert.equal(db.sessions[0].status, 'completed');
+
+  // Each list is deleted before it is re-inserted.
+  const crmCalls = calls
+    .filter((c) => /session_(topics|materials)/.test(c.url))
+    .map((c) => `${c.method} ${c.url.match(/session_\w+/)[0]}`);
+  assert.deepEqual(crmCalls, [
+    'DELETE session_topics',
+    'POST session_topics',
+    'DELETE session_materials',
+    'POST session_materials',
+  ]);
+});
+
+test('an empty list clears it; absent keys leave stored content untouched', async (t) => {
+  const { db, calls, run } = makeWorld(t, {
+    session: { notes: 'keep me' },
+    seed: { session_topics: [{ session_id: SESSION_ID, topic_id: 'old' }] },
+  });
+
+  await run({ session_id: SESSION_ID, records: [present('a')] });
+  assert.equal(calls.filter((c) => /session_(topics|materials)/.test(c.url)).length, 0);
+  assert.equal(db.session_topics.length, 1);
+  assert.equal(db.sessions[0].notes, 'keep me');
+
+  await run({ session_id: SESSION_ID, records: [present('a')], topic_ids: [], notes: '' });
+  assert.equal(db.session_topics.length, 0);
+  assert.equal(
+    calls.filter((c) => c.method === 'POST' && c.url.includes('session_topics')).length,
+    0,
+    'nothing to insert after clearing'
+  );
+  assert.equal(db.sessions[0].notes, null);
+});
+
+test('malformed lesson content is rejected with 400 before any write', async (t) => {
+  const { run, writes } = makeWorld(t);
+  const base = { session_id: SESSION_ID, records: [present('a')] };
+  const bad = [
+    [{ topic_ids: 'perfekt' }, /topic_ids/],
+    [{ topic_ids: ['ok', 7] }, /topic_ids/],
+    [{ topic_ids: Array.from({ length: 31 }, (_, i) => `t${i}`) }, /topic_ids/],
+    [{ materials: [{ chapter: '3' }] }, /material_id/],
+    [{ materials: ['book'] }, /materials/],
+    [{ materials: [{ material_id: 'b', pages: 'x'.repeat(101) }] }, /pages/],
+    [{ materials: Array.from({ length: 21 }, () => ({ material_id: 'b' })) }, /materials/],
+    [{ notes: 'x'.repeat(5001) }, /notes/],
+  ];
+  for (const [extra, pattern] of bad) {
+    const res = await run({ ...base, ...extra });
+    assert.equal(res.status, 400, JSON.stringify(extra).slice(0, 60));
+    assert.match(res.body.error, pattern);
+  }
+  assert.equal(writes().length, 0);
+});
+
+test('a failed topic write leaves the session incomplete', async (t) => {
+  const { db, run } = makeWorld(t, { failTable: 'session_topics' });
+  const res = await run({
+    session_id: SESSION_ID,
+    records: [present('a')],
+    topic_ids: ['perfekt'],
+    materials: [{ material_id: 'book' }],
+  });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.newly_completed, false);
+  assert.deepEqual(res.body.errors, [{ field: 'topic_ids', error: 'Database error' }]);
+  assert.equal(db.sessions[0].status, 'scheduled');
+  assert.equal(db.session_materials.length, 0, 'materials are not written after a topic failure');
 });

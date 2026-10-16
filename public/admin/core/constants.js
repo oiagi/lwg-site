@@ -9,6 +9,7 @@ export const TABS = [
   'companies',
   'reviews',
   'feedback',
+  'materials',
 ];
 
 /* UI timing */

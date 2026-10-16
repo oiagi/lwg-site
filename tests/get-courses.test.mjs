@@ -3,7 +3,11 @@
 // past sessions without it are flagged as unlogged.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequestGet as getCourses, annotateSessions } from '../functions/api/get-courses.js';
+import {
+  onRequestGet as getCourses,
+  annotateSessions,
+  attachSessionCrm,
+} from '../functions/api/get-courses.js';
 
 const ENV = {
   SUPABASE_URL: 'https://supabase.test',
@@ -16,7 +20,17 @@ const iso = (offsetMs) => new Date(Date.now() + offsetMs).toISOString();
 
 // `attendanceStatuses` is consumed one status per attendance request, so a
 // test can make the first select fail and the retry succeed.
-function makeWorld(t, { sessions = [], attendance = [], attendanceStatuses = [] } = {}) {
+function makeWorld(
+  t,
+  {
+    sessions = [],
+    attendance = [],
+    attendanceStatuses = [],
+    sessionTopics = [],
+    sessionMaterials = [],
+    crmStatus = 200,
+  } = {}
+) {
   const db = {
     courses: [{ id: 'c1', course_code: 'P-A1-001', status: 'active', session_length_minutes: 50 }],
     sessions,
@@ -54,6 +68,13 @@ function makeWorld(t, { sessions = [], attendance = [], attendanceStatuses = [] 
         return json(rows.map(({ mode: _mode, portion: _portion, ...rest }) => rest));
       }
       return json(rows);
+    }
+    if (table === 'session_topics' || table === 'session_materials') {
+      if (crmStatus !== 200) return json({ message: 'relation does not exist' }, crmStatus);
+      const inMatch = query.match(/session_id=in\.\(([^)]*)\)/);
+      const wanted = new Set(inMatch ? inMatch[1].split(',') : []);
+      const rows = table === 'session_topics' ? sessionTopics : sessionMaterials;
+      return json(rows.filter((r) => wanted.has(r.session_id)));
     }
     return json(db[table] || []);
   };
@@ -198,4 +219,83 @@ test('an attendance outage degrades to "nothing logged" instead of failing', asy
   const res = await run();
   assert.equal(res.status, 200);
   assert.equal(res.body[0].sessions[0].unlogged, true);
+});
+
+// ── Lesson content ───────────────────────────────────────────────────────
+
+test('attachSessionCrm sorts topics grammar-first and materials by position', () => {
+  const [s] = attachSessionCrm([{ id: 's1' }, { id: 's2' }], {
+    topics: {
+      s1: [
+        { id: 'v', kind: 'vocabulary', name: 'Essen' },
+        { id: 'g2', kind: 'grammar', name: 'Perfekt' },
+        { id: 'g1', kind: 'grammar', name: 'Dativ' },
+      ],
+    },
+    materials: {
+      s1: [
+        { material_id: 'b', position: 1 },
+        { material_id: 'a', position: 0 },
+      ],
+    },
+  });
+  assert.deepEqual(
+    s.topics.map((t) => t.id),
+    ['g1', 'g2', 'v']
+  );
+  assert.deepEqual(
+    s.materials.map((m) => m.material_id),
+    ['a', 'b']
+  );
+  const [, empty] = attachSessionCrm([{ id: 's1' }, { id: 's2' }], { topics: {}, materials: {} });
+  assert.deepEqual(empty.topics, []);
+  assert.deepEqual(empty.materials, []);
+});
+
+test('topics and material references are attached to their session', async (t) => {
+  const { calls, run } = makeWorld(t, {
+    sessions: [session('s1', -24 * HOUR, { notes: 'gut' }), session('s2', 24 * HOUR)],
+    sessionTopics: [{ session_id: 's1', topic: { id: 't1', kind: 'grammar', name: 'Perfekt' } }],
+    sessionMaterials: [
+      {
+        id: 'sm1',
+        session_id: 's1',
+        chapter: '3',
+        pages: '45–52',
+        position: 0,
+        material: { id: 'm1', title: 'Menschen A2', file_name: 'menschen.pdf' },
+      },
+    ],
+  });
+  const res = await run();
+  assert.equal(res.status, 200);
+  for (const table of ['session_topics', 'session_materials']) {
+    const tableCalls = calls.filter((u) => u.includes(`/rest/v1/${table}`));
+    assert.equal(tableCalls.length, 1, `one ${table} query`);
+    assert.match(tableCalls[0], /session_id=in\.\(s1,s2\)/);
+  }
+  const byId = Object.fromEntries(res.body[0].sessions.map((s) => [s.id, s]));
+  assert.deepEqual(byId.s1.topics, [{ id: 't1', kind: 'grammar', name: 'Perfekt' }]);
+  assert.deepEqual(byId.s1.materials, [
+    {
+      id: 'sm1',
+      material_id: 'm1',
+      title: 'Menschen A2',
+      file_name: 'menschen.pdf',
+      chapter: '3',
+      pages: '45–52',
+      position: 0,
+    },
+  ]);
+  assert.equal(byId.s1.notes, 'gut');
+  assert.deepEqual(byId.s2.topics, []);
+  assert.deepEqual(byId.s2.materials, []);
+});
+
+test('before the CRM migration, sessions still load with empty lesson content', async (t) => {
+  const { run } = makeWorld(t, { sessions: [session('s1', -24 * HOUR)], crmStatus: 404 });
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body[0].sessions[0].topics, []);
+  assert.deepEqual(res.body[0].sessions[0].materials, []);
 });

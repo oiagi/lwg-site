@@ -6,13 +6,20 @@
 //     { student_id, present: true/false, mode?: 'in_person'|'online',
 //       portion?: 'full'|'half', notes? },
 //     ...
-//   ]
+//   ],
+//   topic_ids?: [topic uuid, ...],
+//   materials?: [{ material_id, chapter?, pages? }, ...],
+//   notes?: string
 // }
 //
 // Upserts attendance records for a session. Each record maps a student to
 // present/absent, how they attended (in person or online) and how much of
 // the lesson (full or half). Re-submitting corrects the existing records
 // through the (session_id, student_id) unique index.
+//
+// The optional keys log what was taught. When a key is present, the stored
+// list is replaced with it (an empty array clears it); when it is absent the
+// stored data is left untouched. Notes are written with the completion patch.
 //
 // This is the only place a session becomes `completed`: the calendar sync
 // never decides that by date. When every record saves, the session is
@@ -48,6 +55,86 @@ const RECORD_SCHEMA = {
   notes: { type: 'string', maxLength: 2000 },
 };
 
+export const MAX_SESSION_TOPICS = 30;
+export const MAX_SESSION_MATERIALS = 20;
+
+const CRM_SCHEMA = {
+  topic_ids: { type: 'array' },
+  materials: { type: 'array' },
+  notes: { type: 'string', maxLength: 5000 },
+};
+
+const MATERIAL_REF_SCHEMA = {
+  material_id: { required: true, type: 'string' },
+  chapter: { type: 'string', maxLength: 100 },
+  pages: { type: 'string', maxLength: 100 },
+};
+
+// Validates the optional lesson-content keys. Returns { error } or the
+// normalised { topicIds, materials, notes } (undefined = leave untouched).
+export function parseSessionCrm(body) {
+  const err = validate(body, CRM_SCHEMA);
+  if (err) return { error: err };
+
+  let topicIds;
+  if (body.topic_ids !== undefined && body.topic_ids !== null) {
+    if (body.topic_ids.some((id) => typeof id !== 'string' || !id)) {
+      return { error: 'topic_ids must contain strings' };
+    }
+    topicIds = [...new Set(body.topic_ids)];
+    if (topicIds.length > MAX_SESSION_TOPICS) {
+      return { error: `topic_ids: at most ${MAX_SESSION_TOPICS}` };
+    }
+  }
+
+  let materials;
+  if (body.materials !== undefined && body.materials !== null) {
+    if (body.materials.length > MAX_SESSION_MATERIALS) {
+      return { error: `materials: at most ${MAX_SESSION_MATERIALS}` };
+    }
+    materials = [];
+    for (const ref of body.materials) {
+      if (!ref || typeof ref !== 'object') return { error: 'materials must contain objects' };
+      const refErr = validate(ref, MATERIAL_REF_SCHEMA);
+      if (refErr) return { error: `materials: ${refErr}` };
+      materials.push({
+        material_id: ref.material_id,
+        chapter: ref.chapter?.trim() || null,
+        pages: ref.pages?.trim() || null,
+      });
+    }
+  }
+
+  const notes = body.notes === undefined ? undefined : String(body.notes ?? '').trim() || null;
+  return { topicIds, materials, notes };
+}
+
+// Replace-all write for one join table: delete the session's rows, then
+// insert the new list. Returns an error label or null.
+async function replaceSessionRows(env, table, sessionId, rows) {
+  const H = supabaseHeaders(env.SUPABASE_SERVICE_KEY);
+  const sid = encodeURIComponent(sessionId);
+  const delRes = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?session_id=eq.${sid}`, {
+    method: 'DELETE',
+    headers: H,
+  });
+  if (!delRes.ok) {
+    console.error(`${table} delete error:`, await delRes.text());
+    return 'Database error';
+  }
+  if (!rows.length) return null;
+  const insRes = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: H,
+    body: JSON.stringify(rows),
+  });
+  if (!insRes.ok) {
+    console.error(`${table} insert error:`, await insRes.text());
+    return 'Database error';
+  }
+  return null;
+}
+
 // Mode and portion describe how a student attended, so an absent student
 // always carries the defaults regardless of what the client sent.
 export function normaliseRecord(sessionId, rec) {
@@ -80,6 +167,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     const recErr = validate(rec, RECORD_SCHEMA);
     if (recErr) return errorResponse(`records: ${recErr}`, 400);
   }
+  const crm = parseSessionCrm(body);
+  if (crm.error) return errorResponse(crm.error, 400);
 
   const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
 
@@ -125,16 +214,38 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     }
   }
 
+  // ── Lesson content (topics, materials) ───────────────────────────────
+  if (!errors.length && crm.topicIds) {
+    const topicErr = await replaceSessionRows(
+      env,
+      'session_topics',
+      session_id,
+      crm.topicIds.map((topic_id) => ({ session_id, topic_id }))
+    );
+    if (topicErr) errors.push({ field: 'topic_ids', error: topicErr });
+  }
+  if (!errors.length && crm.materials) {
+    const materialErr = await replaceSessionRows(
+      env,
+      'session_materials',
+      session_id,
+      crm.materials.map((ref, position) => ({ session_id, ...ref, position }))
+    );
+    if (materialErr) errors.push({ field: 'materials', error: materialErr });
+  }
+
   let completedSession = null;
   let newlyCompleted = false;
 
   if (!errors.length) {
+    const sessionPatch = { status: 'completed' };
+    if (crm.notes !== undefined) sessionPatch.notes = crm.notes;
     const updateRes = await fetch(
       `${SUPABASE_URL}/rest/v1/sessions?id=eq.${encodeURIComponent(session_id)}`,
       {
         method: 'PATCH',
         headers: { ...H, Prefer: 'return=representation' },
-        body: JSON.stringify({ status: 'completed' }),
+        body: JSON.stringify(sessionPatch),
       }
     );
 

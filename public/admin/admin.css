@@ -4011,3 +4011,305 @@ html[data-device='mobile'] .cert-prev-footer {
   max-width: none;
   padding: 10px 12px 8px;
 }
+
+/* ── Session CRM: topics, materials, notes ───────────────────────── */
+.att-crm {
+  margin-top: 1.4rem;
+}
+.att-crm.is-unavailable .att-crm-block {
+  display: none;
+}
+.att-crm-block {
+  margin-bottom: 1.2rem;
+}
+.crm-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.6rem;
+}
+.crm-subheading {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+}
+.crm-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+.crm-search,
+.crm-select,
+.crm-ref-input,
+.crm-notes {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #b8c7d4;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  outline: none;
+  padding: 0.35rem 0;
+}
+.crm-search:focus,
+.crm-select:focus,
+.crm-ref-input:focus,
+.crm-notes:focus {
+  border-bottom-color: var(--text);
+}
+.crm-search {
+  width: 100%;
+}
+.crm-select--wide,
+.crm-notes {
+  width: 100%;
+}
+.crm-notes {
+  resize: vertical;
+}
+.crm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+.crm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  background: #eef3f7;
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  padding: 0.1rem 0.4rem;
+}
+.crm-chip--vocabulary {
+  background: #f3f0f7;
+}
+.crm-chip--small {
+  font-size: 0.68rem;
+  padding: 0.02rem 0.35rem;
+}
+.crm-kind {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  margin-right: 0.25rem;
+}
+.crm-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--text-faint);
+  padding: 0 0.15rem;
+}
+.crm-remove:hover {
+  color: #c0392b;
+}
+.crm-suggest {
+  display: flex;
+  flex-direction: column;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+.crm-suggest-item {
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.2rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.crm-suggest-item:hover,
+.crm-suggest-item:focus {
+  background: #f4f8fb;
+}
+.crm-suggest-item--new {
+  color: var(--text-muted);
+}
+.crm-material-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6rem 8rem auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.3rem 0;
+}
+.crm-material-title {
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+.crm-msg {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.crm-msg.err {
+  color: #c0392b;
+}
+.crm-msg.success {
+  color: #27ae60;
+}
+
+/* Lesson content under a session row */
+.session-crm {
+  flex-basis: 100%;
+  padding-left: 2.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+.crm-ref {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  cursor: pointer;
+}
+.crm-ref:hover {
+  color: var(--text);
+}
+.crm-session-notes {
+  flex-basis: 100%;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Materials tab */
+.crm-section {
+  background: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.crm-upload {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0 1.2rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.crm-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+.crm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+.crm-toolbar .crm-search {
+  flex: 1 1 14rem;
+  width: auto;
+}
+.crm-toggle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+.crm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.crm-table th {
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.4rem 0.5rem 0.4rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.crm-table td {
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+}
+.crm-table tr.is-archived td,
+.crm-topic-row.is-archived .crm-topic-name {
+  color: var(--text-faint);
+}
+.crm-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.crm-file {
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+}
+.crm-actions {
+  white-space: nowrap;
+}
+.crm-actions .action-btn,
+.crm-actions .delete-btn {
+  margin-right: 0.3rem;
+}
+.crm-topic-group {
+  margin-top: 1rem;
+}
+.crm-topic-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.85rem;
+}
+.crm-topic-name {
+  flex: 1;
+}
+@media (max-width: 640px) {
+  .crm-material-row {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .crm-material-title {
+    grid-column: 1 / -1;
+  }
+  .crm-table thead {
+    display: none;
+  }
+  .crm-table tr {
+    display: block;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .crm-table td {
+    display: inline-block;
+    border: none;
+    padding: 0.1rem 0.6rem 0.1rem 0;
+  }
+  .crm-table td:first-child {
+    display: block;
+  }
+  .crm-actions {
+    white-space: normal;
+  }
+}
+.crm-ref-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+}

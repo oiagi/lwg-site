@@ -22,11 +22,16 @@ import {
   togglePublicBooking,
   toggleCompanyCodeBooking,
   handleCourseBooking,
+  removeSessionMaterialRef,
 } from './features/courses.js';
 import {
   openAttendanceModal,
   closeAttendanceModal,
   submitAttendance,
+  addSessionTopic,
+  removeSessionTopic,
+  createSessionTopic,
+  removeSessionMaterial,
 } from './features/attendance.js';
 import {
   openStartingSoonModal,
@@ -140,6 +145,19 @@ import {
   deleteReview,
 } from './features/reviews.js';
 import { loadFeedback, filterFeedback, loadCourseFeedback } from './features/feedback.js';
+import {
+  loadMaterialsTab,
+  openMaterial,
+  uploadMaterial,
+  editMaterial,
+  toggleMaterialArchived,
+  deleteMaterial,
+  toggleArchivedMaterials,
+  toggleArchivedTopics,
+  addTopic,
+  renameTopic,
+  toggleTopicArchived,
+} from './features/materials.js';
 
 /* ── Refresh availability banner after OAuth ─────────────────────── */
 setOnAuthoriseComplete(() => {
@@ -164,6 +182,10 @@ const actions = {
   openAttendanceModal,
   closeAttendanceModal,
   submitAttendance,
+  addSessionTopic,
+  removeSessionTopic,
+  createSessionTopic,
+  removeSessionMaterial,
   openAddParticipantModal,
   closeAddParticipantModal,
   submitAddParticipant,
@@ -273,6 +295,18 @@ const actions = {
   deleteReview,
   // Feedback
   filterFeedback,
+  // Materials
+  openMaterial,
+  removeSessionMaterialRef,
+  uploadMaterial,
+  editMaterial,
+  toggleMaterialArchived,
+  deleteMaterial,
+  toggleArchivedMaterials,
+  toggleArchivedTopics,
+  addTopic,
+  renameTopic,
+  toggleTopicArchived,
   // Tab switching
   switchTab,
 };
@@ -402,6 +436,7 @@ async function switchTab(tab, options = {}) {
   if (tab === 'companies') loadCompanies();
   if (tab === 'reviews') loadReviews();
   if (tab === 'feedback') loadFeedback();
+  if (tab === 'materials') loadMaterialsTab();
 }
 
 document.addEventListener('admin:switchTab', (e) => {
