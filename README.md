@@ -68,7 +68,7 @@ Language courses, exam preparation, and tutoring in Zurich.
 
 ## Admin dashboard
 
-Single-page app at `/admin/`. Login via Supabase Auth (email/password — users are managed in the Supabase dashboard, not in env vars).
+Single-page app at `/admin/`. Login via Supabase Auth (email/password — users are managed in the Supabase dashboard, not in env vars). Keep **Prevent use of leaked passwords** enabled under Authentication → Sign In / Providers → Email; it is a dashboard setting and cannot live in a migration.
 
 Covers: students, courses, enrolments, sessions, attendance, invoices, companies, teacher availability, 15-minute call windows and bookings, certificates, and course confirmations.
 
