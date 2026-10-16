@@ -236,7 +236,7 @@ const FEEDBACK_PREVIEW = {
       'How they study at home and how much time they have',
       'Their preferred frequency and lesson length (if the current frequency does not suit)',
       'Their own preference when the teacher is unavailable (if they picked "other")',
-      'Anything else for the second half of the course',
+      'Anything else for the remaining lessons',
     ],
   },
   final: {

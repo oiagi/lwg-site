@@ -657,8 +657,8 @@ const MIDTERM_FIELDS = [
     type: 'text',
     step: 3,
     short: { de: 'Sonstiges', en: 'anything else' },
-    de: 'Gibt es sonst etwas, das wir für die zweite Kurshälfte wissen sollten?',
-    en: 'Is there anything else we should know for the second half of the course?',
+    de: 'Gibt es sonst etwas, das wir für die verbleibenden Lektionen wissen sollten?',
+    en: 'Is there anything else we should know for the remaining lessons?',
   },
 ];
 
