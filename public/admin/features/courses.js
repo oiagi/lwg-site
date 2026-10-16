@@ -7,6 +7,7 @@ import {
   showMessage,
   queryString,
   attachListControls,
+  studentStartsBySession,
 } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { loadGroupSlots } from './course-slots.js';
@@ -520,6 +521,30 @@ function computeCourseMinutes(course) {
   return { doneMin, totalMin };
 }
 
+// One line under a logged session naming who was there. Absent students stay
+// in the list in a lighter font so a gap is visible at a glance; online and
+// half-lesson attendance get a small chip. Unlogged sessions render nothing —
+// the badge next to them already says so.
+function sessionAttendanceLine(session, students) {
+  if (!session.logged) return '';
+  const byStudent = {};
+  for (const rec of session.attendance || []) byStudent[rec.student_id] = rec;
+  const items = students
+    .filter((student) => studentStartsBySession(student, session))
+    .map((student) => {
+      const name = esc(student.first_name || student.last_name || student.email || '—');
+      const rec = byStudent[student.id];
+      if (!rec) return `<span class="att-name att-name--missing">${name}</span>`;
+      if (!rec.present) return `<span class="att-name att-name--absent">${name}</span>`;
+      const chips =
+        (rec.mode === 'online' ? '<span class="att-chip">online</span>' : '') +
+        (rec.portion === 'half' ? '<span class="att-chip">half</span>' : '');
+      return `<span class="att-name">${name}${chips}</span>`;
+    });
+  if (!items.length) return '';
+  return `<div class="session-attendance">${items.join('')}</div>`;
+}
+
 function renderCourses(courses) {
   const list = document.getElementById('course-list');
   if (!courses.length) {
@@ -554,6 +579,9 @@ function renderCourses(courses) {
         total && remaining !== null && remaining > 0 && remaining <= 3
           ? `<span class="rebook-flag">${remaining + ' session' + (remaining === 1 ? '' : 's') + ' left'}</span>`
           : '';
+      const unloggedFlag = c.unlogged_count
+        ? `<span class="unlogged-flag">${c.unlogged_count} unlogged</span>`
+        : '';
 
       const dropItems =
         ['active', 'paused', 'completed', 'cancelled']
@@ -571,19 +599,14 @@ function renderCourses(courses) {
         .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
         .map(
           (s, idx) => `
-      <div class="session-row" id="sess-${s.id}" data-duration="${s.duration_minutes ?? c.session_length_minutes ?? ''}">
+      <div class="session-row${s.unlogged ? ' session-row--unlogged' : ''}" id="sess-${s.id}">
         <div class="session-number">${idx + 1}.</div>
         <div class="session-status-dot ${s.status}"></div>
         <div class="session-date">${fmtDateWithEnd(s.scheduled_at, s.duration_minutes)}</div>
         <div class="session-status-label">${s.status}</div>
-        <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">attendance</button>
-        ${
-          s.status === 'scheduled'
-            ? `
-          <button class="cancel-btn" data-action="cancelSession" data-args="${s.id}">cancel</button>
-        `
-            : ''
-        }
+        ${s.unlogged ? '<span class="unlogged-flag">unlogged</span>' : ''}
+        <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">${s.logged ? 'edit attendance' : 'log attendance'}</button>
+        ${sessionAttendanceLine(s, c.students || [])}
       </div>
     `
         )
@@ -729,7 +752,7 @@ function renderCourses(courses) {
           <span class="course-code">${esc(c.course_code) || '—'}</span>
           <span class="course-participants">${names}</span>
           <div class="course-summary-actions">
-            <span class="course-sessions">${sessLine}${rebookFlag}</span>
+            <span class="course-sessions">${sessLine}${rebookFlag}${unloggedFlag}</span>
             <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown is-hidden" id="status-drop-${c.id}">${dropItems}</ul></div>
             <a class="edit-course-btn" href="/admin/pages/course-edit.html?id=${c.id}">edit</a>
           </div>
@@ -875,25 +898,6 @@ export async function syncCalendar(courseId) {
   }
 }
 
-export async function cancelSession(sessionId) {
-  if (!confirm('Cancel this session? The Google Calendar event and invite will be removed.'))
-    return;
-  try {
-    const res = await apiFetch('/api/cancel-session', {
-      method: 'DELETE',
-      body: { session_id: sessionId },
-    });
-    if (!res.ok) throw new Error();
-    // Re-read from the server rather than patching the counter by hand. The
-    // old shortcut decremented the booked total, which cancel-session never
-    // changes, so the row claimed a lesson had been deducted until the next
-    // reload put it back.
-    loadCourses(currentCourseFilter);
-  } catch {
-    alert('Could not cancel session. Please try again.');
-  }
-}
-
 export async function saveStudent(studentId, sourceEl) {
   const levelInput = sourceEl?.matches?.('[data-autosave-level]')
     ? sourceEl
@@ -1000,73 +1004,6 @@ document.addEventListener('keydown', (e) => {
   e.preventDefault();
   autosaveParticipantField(input);
 });
-
-export async function logSession(sessionId, courseId) {
-  try {
-    const res = await apiFetch('/api/log-session', {
-      method: 'PATCH',
-      body: { session_id: sessionId },
-    });
-    if (!res.ok) throw new Error();
-    const result = await res.json();
-    markSessionCompletedInList(sessionId, courseId, result.newly_completed);
-  } catch {
-    alert('Could not log session. Please try again.');
-  }
-}
-
-// Shared with attendance.js: saving attendance also completes the session.
-export function markSessionCompletedInList(sessionId, courseId, shouldIncrementCount) {
-  const row = document.getElementById('sess-' + sessionId);
-  const duration = row ? parseInt(row.dataset.duration, 10) : NaN;
-  if (row) {
-    const dot = row.querySelector('.session-status-dot');
-    if (dot) dot.className = 'session-status-dot completed';
-    const label = row.querySelector('.session-status-label');
-    if (label) label.textContent = 'completed';
-    const btn = row.querySelector('.log-btn');
-    if (btn) btn.remove();
-    const cancelBtn = row.querySelector('.cancel-btn');
-    if (cancelBtn) cancelBtn.remove();
-  }
-
-  if (!shouldIncrementCount) return;
-
-  const courseRow = document.getElementById('course-' + courseId);
-  if (!courseRow) return;
-
-  const countEl = courseRow.querySelector('.course-sessions');
-  if (!countEl) return;
-
-  const text = countEl.firstChild.textContent;
-
-  const slashMatch = text.match(/(\d+) \/ (\d+) sessions/);
-  if (slashMatch) {
-    const newDone = parseInt(slashMatch[1], 10) + 1;
-    const total = parseInt(slashMatch[2], 10);
-    let newText = newDone + ' / ' + total + ' sessions';
-    const minMatch = text.match(/(\d+) \/ (\d+) min/);
-    const soloMinMatch = text.match(/· (\d+) min/);
-    if (minMatch && !isNaN(duration)) {
-      newText += ' · ' + (parseInt(minMatch[1], 10) + duration) + ' / ' + minMatch[2] + ' min';
-    } else if (soloMinMatch && !isNaN(duration)) {
-      newText += ' · ' + (parseInt(soloMinMatch[1], 10) + duration) + ' min';
-    }
-    countEl.firstChild.textContent = newText;
-    return;
-  }
-
-  const openEndedMatch = text.match(/(\d+) sessions completed/);
-  if (openEndedMatch) {
-    const newDone = parseInt(openEndedMatch[1], 10) + 1;
-    let newText = newDone + ' sessions completed';
-    const minMatch = text.match(/· (\d+) min/);
-    if (minMatch && !isNaN(duration)) {
-      newText += ' · ' + (parseInt(minMatch[1], 10) + duration) + ' min';
-    }
-    countEl.firstChild.textContent = newText;
-  }
-}
 
 /* ── Shared student search autocomplete ────────────────────────── */
 function buildStudentSearch(inputEl, dropdownEl, onSelect) {

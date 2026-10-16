@@ -82,7 +82,7 @@ All endpoints live at `/api/*`. Shared helpers are prefixed with `_` and not rou
 | Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                                                              |
 | Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`                                                                       |
 | Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students`                                    |
-| Sessions      | `log-session`, `cancel-session`, `get-attendance`, `save-attendance`, `send-session-schedule`                                                  |
+| Sessions      | `get-attendance`, `save-attendance`, `send-session-schedule`                                                                                   |
 | Bookings      | `book-course`, `confirm-booking`, `handle-course-booking`, `group-course-slots`, `group-course-access-code`                                    |
 | Companies     | `get-companies`, `save-company`, `send-company-booking-code`, `company-intake`, `send-company-intake-link`                                     |
 | Teachers      | `get-teachers`, `get-teacher-availability`                                                                                                     |

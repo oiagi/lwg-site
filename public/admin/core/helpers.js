@@ -16,6 +16,16 @@ export function translateSubject(subject, lang) {
 }
 import { MESSAGE_TIMEOUT_MS, LOCALE_DATETIME } from './constants.js';
 
+/* A student who joined a course part-way through belongs only to the sessions
+   from their join date on. No join date means every session. */
+export function studentStartsBySession(student, session) {
+  if (!student?.joined_at || !session?.scheduled_at) return true;
+  const joined = new Date(student.joined_at + 'T00:00:00');
+  const scheduled = new Date(session.scheduled_at);
+  if (Number.isNaN(joined.getTime()) || Number.isNaN(scheduled.getTime())) return true;
+  return scheduled >= joined;
+}
+
 export function esc(str) {
   if (!str && str !== 0) return '';
   return String(str)

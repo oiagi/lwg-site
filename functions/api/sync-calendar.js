@@ -361,7 +361,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   );
 
   // ── Upsert active session records ────────────────────────────────────
-  const now = new Date();
   let updatedCount = 0;
   let createdCount = 0;
   let removedCount = 0;
@@ -369,8 +368,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
 
   // Statuses after this sync, so sessions_completed can be derived from the
   // whole course rather than from the fetch window. Pre-existing rows are
-  // keyed by id (they can still be updated or deleted below); rows created in
-  // this pass are collected separately since the insert returns no id.
+  // keyed by id (they can still be deleted below); rows created in this pass
+  // are collected separately since the insert returns no id.
+  //
+  // The sync never decides a status. A lesson is completed only once its
+  // attendance has been logged (save-attendance.js), so a past event whose
+  // row is still `scheduled` stays that way and is flagged as unlogged in the
+  // admin. Existing rows only take the event's date and duration — which is
+  // what lets a past lesson be moved in Google Calendar and follow here with
+  // its status and attendance intact.
   const statusById = new Map(allDbSessions.map((s) => [s.id, s.status]));
   const createdStatuses = [];
 
@@ -379,8 +385,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     const endAt = event.end?.dateTime || event.end?.date;
     const durationMinutes =
       scheduledAt && endAt ? Math.round((new Date(endAt) - new Date(scheduledAt)) / 60000) : 50;
-    const isPast = new Date(scheduledAt) < now;
-    const status = isPast ? 'completed' : 'scheduled';
 
     const existing = sessionsByCalendarId.get(event.id);
 
@@ -398,11 +402,9 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         body: JSON.stringify({
           scheduled_at: scheduledAt,
           duration_minutes: durationMinutes,
-          status,
         }),
       });
       if (!updateRes.ok) await expectSupabase(updateRes, 'Could not update synced session');
-      statusById.set(existing.id, status);
       updatedCount++;
     } else {
       const createRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
@@ -413,12 +415,12 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           teacher_id: course.teacher_id,
           scheduled_at: scheduledAt,
           duration_minutes: durationMinutes,
-          status,
+          status: 'scheduled',
           calendar_event_id: event.id,
         }),
       });
       if (!createRes.ok) await expectSupabase(createRes, 'Could not create synced session');
-      createdStatuses.push(status);
+      createdStatuses.push('scheduled');
       createdCount++;
     }
   }

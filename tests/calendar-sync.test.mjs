@@ -684,8 +684,87 @@ test('sessions_completed counts the whole course, cancelled rows excluded', asyn
   });
 
   const res = await run();
-  assert.equal(res.body.completed, 3, 'two historical plus the one just past');
-  assert.equal(db.courses[0].sessions_completed, 3);
+  assert.equal(
+    res.body.completed,
+    2,
+    'the two logged lessons; a past date alone completes nothing'
+  );
+  assert.equal(db.courses[0].sessions_completed, 2);
+  const justPast = db.sessions.find(
+    (s) => s.calendar_event_id === instanceId(addDays(today(), -7))
+  );
+  assert.equal(justPast.status, 'scheduled', 'unlogged past occurrence waits for attendance');
+});
+
+// ── Status belongs to attendance, not to the sync ───────────────────────
+
+/** A past series of three with its first occurrence moved two days later. */
+function movedPastSeries() {
+  const startDate = addDays(today(), -21);
+  const movedTo = addDays(startDate, 2);
+  const cal = makeCalendar({
+    startDate,
+    count: 3,
+    overrides: { [`${startDate}T${LESSON_TIME}`]: [movedTo, LESSON_TIME] },
+  });
+  return { startDate, movedTo, cal };
+}
+
+test('a logged past session moved in Google keeps its status and attendance', async (t) => {
+  const { startDate, movedTo, cal } = movedPastSeries();
+  const { db, run } = makeWorld(t, {
+    cal,
+    course: { sessions_completed: 1 },
+    sessions: [
+      {
+        id: 'done-1',
+        course_id: COURSE_ID,
+        calendar_event_id: instanceId(startDate),
+        scheduled_at: zurichToUtc(startDate, LESSON_TIME).toISOString(),
+        duration_minutes: 50,
+        status: 'completed',
+      },
+    ],
+    attendance: [{ id: 'att-1', session_id: 'done-1', student_id: 'stu-1', present: true }],
+  });
+
+  const res = await run();
+  const moved = db.sessions.find((s) => s.id === 'done-1');
+  assert.ok(moved, 'the row survives under its own id');
+  assert.equal(moved.scheduled_at, zurichToUtc(movedTo, LESSON_TIME).toISOString());
+  assert.equal(moved.status, 'completed');
+  assert.equal(db.attendance.length, 1, 'attendance still hangs off the same row');
+  assert.equal(res.body.completed, 1);
+  assert.equal(db.courses[0].sessions_completed, 1, 'the counter does not move');
+});
+
+test('an unlogged past session moved in Google stays scheduled', async (t) => {
+  const { startDate, movedTo, cal } = movedPastSeries();
+  const { db, run } = makeWorld(t, {
+    cal,
+    sessions: [
+      {
+        id: 'open-1',
+        course_id: COURSE_ID,
+        calendar_event_id: instanceId(startDate),
+        scheduled_at: zurichToUtc(startDate, LESSON_TIME).toISOString(),
+        duration_minutes: 50,
+        status: 'scheduled',
+      },
+    ],
+  });
+
+  const res = await run();
+  const moved = db.sessions.find((s) => s.id === 'open-1');
+  assert.equal(moved.scheduled_at, zurichToUtc(movedTo, LESSON_TIME).toISOString());
+  assert.equal(moved.status, 'scheduled');
+  assert.equal(res.body.completed, 0);
+  assert.equal(db.courses[0].sessions_completed, 0);
+  assert.equal(
+    db.sessions.every((s) => s.status === 'scheduled'),
+    true,
+    'nothing in the past is completed by date'
+  );
 });
 
 // ── Calendar titles ─────────────────────────────────────────────────────
