@@ -50,6 +50,68 @@ const ENROLMENT_SELECT_WITHOUT_CONFIRMATION =
   'student_id,course_id,schedule_sent_at,invoice_lesson_count,joined_at';
 const ENROLMENT_SELECT_COMPAT = 'student_id,course_id,schedule_sent_at';
 
+const ATTENDANCE_SELECT = 'session_id,student_id,present,mode,portion';
+// Before add_attendance_mode_portion.sql has been applied.
+const ATTENDANCE_SELECT_COMPAT = 'session_id,student_id,present';
+// Attendance is keyed by session, not course, so it is fetched by session id
+// in chunks that keep the query string well under proxy URL limits.
+const ATTENDANCE_CHUNK = 100;
+
+async function fetchAttendanceBySession(SUPABASE_URL, H, sessionIds) {
+  const bySession = {};
+  if (!sessionIds.length) return bySession;
+  const chunks = [];
+  for (let i = 0; i < sessionIds.length; i += ATTENDANCE_CHUNK) {
+    chunks.push(sessionIds.slice(i, i + ATTENDANCE_CHUNK));
+  }
+  const results = await Promise.all(
+    chunks.map(async (ids) => {
+      const filter = `session_id=in.(${ids.join(',')})`;
+      let res = await fetch(
+        `${SUPABASE_URL}/rest/v1/attendance?${filter}&select=${ATTENDANCE_SELECT}`,
+        { headers: H }
+      );
+      if (!res.ok && res.status === 400) {
+        res = await fetch(
+          `${SUPABASE_URL}/rest/v1/attendance?${filter}&select=${ATTENDANCE_SELECT_COMPAT}`,
+          { headers: H }
+        );
+      }
+      if (!res.ok) {
+        console.error('get-courses: attendance fetch failed:', res.status);
+        return [];
+      }
+      return res.json();
+    })
+  );
+  for (const rec of results.flat()) {
+    (bySession[rec.session_id] ||= []).push({
+      ...rec,
+      mode: rec.mode || 'in_person',
+      portion: rec.portion || 'full',
+    });
+  }
+  return bySession;
+}
+
+// Attaches `attendance`, `logged` and `unlogged` to each session.
+//
+// A session is logged once it has at least one attendance row. It is
+// unlogged when its end time has passed and nothing was logged — whatever
+// its status says, since older syncs marked past sessions completed by date
+// alone and those still need their attendance backfilled.
+export function annotateSessions(sessions, attendanceBySession, course, now = Date.now()) {
+  return sessions.map((session) => {
+    const attendance = attendanceBySession[session.id] || [];
+    const logged = attendance.length > 0;
+    const start = session.scheduled_at ? new Date(session.scheduled_at).getTime() : NaN;
+    const duration = session.duration_minutes ?? course.session_length_minutes ?? 0;
+    const end = start + duration * 60000;
+    const unlogged = !logged && session.status !== 'cancelled' && Number.isFinite(end) && end < now;
+    return { ...session, attendance, logged, unlogged };
+  });
+}
+
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
 }
@@ -277,6 +339,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const { requests: allFeedbackRequests, responses: allFeedbackResponses } =
       await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
 
+    // ── Batch fetch attendance for every listed session ───────────────
+    const attendanceBySession = await fetchAttendanceBySession(
+      SUPABASE_URL,
+      H,
+      allSessions.map((s) => s.id)
+    );
+
     // ── Index data by course_id for fast lookup ───────────────────────
     const sessionsByCourse = {};
     for (const s of allSessions) {
@@ -390,6 +459,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           };
         })
         .filter(Boolean);
+      const sessions = annotateSessions(
+        sessionsByCourse[course.id] || [],
+        attendanceBySession,
+        course
+      );
       return {
         ...course,
         company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
@@ -398,7 +472,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           feedbackRequestsByCourse[course.id] || [],
           feedbackResponsesByCourse[course.id] || []
         ),
-        sessions: sessionsByCourse[course.id] || [],
+        sessions,
+        unlogged_count: sessions.filter((s) => s.unlogged).length,
         pending_bookings: pendingBookingsByCourse[course.id] || [],
         participant_names: students.map(enrolmentDisplayName).filter(Boolean),
         students,

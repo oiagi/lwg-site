@@ -7,6 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequestPost as bookCall } from '../functions/api/book-call.js';
+import { zurichWallClockToMs } from '../functions/api/_call-slots.js';
 
 const ORIGIN = 'https://learningwithgioia.ch';
 const ENV = {
@@ -16,12 +17,14 @@ const ENV = {
   // never has to mock Resend to reach the response.
 };
 
-// A Monday 09:00 Zurich slot, comfortably beyond the 12h lead time.
+// A Monday 09:00 Zurich slot, comfortably beyond the 12h lead time. Derived
+// from the wall clock rather than a fixed UTC hour: 07:00 UTC is 09:00 in
+// Zurich only during summer time, so a UTC fixture drifted out of the
+// availability window for the first Monday after each clock change.
 function futureMonday() {
   const d = new Date(Date.now() + 9 * 24 * 60 * 60 * 1000);
-  d.setUTCHours(7, 0, 0, 0);
   while (d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1);
-  return d;
+  return new Date(zurichWallClockToMs(d.toISOString().slice(0, 10), '09:00'));
 }
 const START = futureMonday();
 const START_ISO = START.toISOString();

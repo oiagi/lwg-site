@@ -469,43 +469,6 @@ button.submit:hover {
 .session-status-dot.cancelled {
   background: #c0392b;
 }
-.log-btn {
-  font-family: inherit;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid #27ae60;
-  background: transparent;
-  color: #27ae60;
-  padding: 0.2rem 0.6rem;
-  cursor: pointer;
-  margin-left: auto;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.log-btn:hover {
-  background: #27ae60;
-  color: #fff;
-}
-.cancel-btn {
-  font-family: inherit;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid #c0392b;
-  background: transparent;
-  color: #c0392b;
-  padding: 0.2rem 0.6rem;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.cancel-btn:hover {
-  background: #c0392b;
-  color: #fff;
-}
 .course-filter-row {
   display: flex;
   gap: 0.5rem;
@@ -1908,6 +1871,23 @@ html[data-device='mobile'] .student-detail-pane {
   cursor: pointer;
   accent-color: var(--text);
 }
+.att-opts {
+  margin-left: auto;
+  display: flex;
+  gap: 0.8rem;
+}
+.att-row label.att-opt {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.att-row label.att-opt input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+}
+.att-row label.att-opt.is-disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
 .att-status {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
@@ -2669,6 +2649,39 @@ html[data-device='mobile'] .blocked-dates-range {
   letter-spacing: 0.08em;
   color: #e67e22;
   margin-left: 0.5rem;
+}
+.unlogged-flag {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c0392b;
+  margin-left: 0.5rem;
+}
+/* Attendance summary under a logged session row */
+.session-attendance {
+  flex-basis: 100%;
+  padding-left: 2.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+.att-name--absent {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+.att-name--missing {
+  color: var(--text-faint);
+}
+.att-chip {
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: #f0f0f0;
+  padding: 0.05rem 0.4rem;
+  border-radius: 2px;
+  margin-left: 0.3rem;
 }
 .session-status-label {
   font-size: 0.78rem;

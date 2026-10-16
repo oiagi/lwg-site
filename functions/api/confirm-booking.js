@@ -301,10 +301,10 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         calendarId: teacher.calendar_id,
         courseCode,
       });
-      const now = new Date();
+      // Every session starts out scheduled, even one dated in the past: it
+      // becomes completed only when its attendance is logged.
       for (const event of active) {
         const scheduledAt = event.start.dateTime || event.start.date;
-        const isPast = new Date(scheduledAt) < now;
         await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
           method: 'POST',
           headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
@@ -313,7 +313,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
             teacher_id,
             scheduled_at: scheduledAt,
             duration_minutes,
-            status: isPast ? 'completed' : 'scheduled',
+            status: 'scheduled',
             calendar_event_id: event.id,
           }),
         });
@@ -324,8 +324,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
 
   if (!calendarEventId) {
-    const now = new Date();
-    const isPast = new Date(first_session_at) < now;
     const sr = await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
       method: 'POST',
       headers: supabaseHeaders(SUPABASE_SERVICE_KEY),
@@ -334,7 +332,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         teacher_id,
         scheduled_at: first_session_at,
         duration_minutes,
-        status: isPast ? 'completed' : 'scheduled',
+        status: 'scheduled',
         calendar_event_id: null,
       }),
     });
