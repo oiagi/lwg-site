@@ -71,8 +71,8 @@ test('each kind has its own subject and framing', () => {
     feedbackEmailCopy('midterm', 'en', {}).subject,
     'How is your course going? — learning with gioia'
   );
-  assert.match(feedbackEmailCopy('midterm', 'de', course).intro, /zur Hälfte/);
-  assert.match(feedbackEmailCopy('midterm', 'en', course).intro, /halfway/);
+  assert.match(feedbackEmailCopy('midterm', 'de', course).intro, /Einige Lektionen/);
+  assert.match(feedbackEmailCopy('midterm', 'en', course).intro, /several lessons/);
   assert.throws(() => feedbackEmailCopy('weekly', 'de'), /Unknown feedback kind/);
 });
 

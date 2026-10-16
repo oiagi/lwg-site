@@ -48,12 +48,12 @@ const COPY = {
     en: {
       subject: (code) => `How is your course going?${code} — learning with gioia`,
       intro: (label) =>
-        `Your ${label} is now about halfway through! We would really appreciate it if you could take three minutes to let us know how things are going. The survey is anonymous, and your feedback will help us tailor the second half of the course to your needs.`,
+        `You have now completed several lessons of your ${label}! We would really appreciate it if you could take three minutes to give us some brief feedback. The survey is anonymous, and your answers will help us tailor the rest of the course to your needs.`,
     },
     de: {
       subject: (code) => `Wie läuft Ihr Kurs?${code} — learning with gioia`,
       intro: (label) =>
-        `Ihr ${label} ist ungefähr zur Hälfte abgeschlossen. Wir würden uns sehr freuen, wenn Sie sich drei Minuten Zeit nehmen, um uns eine kurze Rückmeldung zu geben. Die Umfrage ist anonym, und Ihre Antworten helfen uns, die zweite Kurshälfte optimal an Ihre Bedürfnisse anzupassen.`,
+        `Einige Lektionen von Ihrem ${label} sind nun bereits abgeschlossen. Wir würden uns sehr freuen, wenn Sie sich drei Minuten Zeit nehmen, um uns eine kurze Rückmeldung zu geben. Die Umfrage ist anonym, und Ihre Antworten helfen uns, den Rest des Kurses optimal an Ihre Bedürfnisse anzupassen.`,
     },
   },
 };
