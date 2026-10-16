@@ -459,7 +459,6 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           };
         })
         .filter(Boolean);
-      const feedbackSummary = summariseFeedback(feedbackByCourse[course.id] || []);
       const sessions = annotateSessions(
         sessionsByCourse[course.id] || [],
         attendanceBySession,
@@ -468,21 +467,13 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       return {
         ...course,
         company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
-        feedback_summary: {
-          ...feedbackSummary,
-          averages: labelledAverages(feedbackSummary.averages),
-        },
-        sessions,
-        unlogged_count: sessions.filter((s) => s.unlogged).length,
-      return {
-        ...course,
-        company_name: course.company_id ? companyNameMap[course.company_id] || null : null,
         // { midterm: { requested, submitted, averages, nps }, final: { ... } }
         feedback_summary: summariseByKind(
           feedbackRequestsByCourse[course.id] || [],
           feedbackResponsesByCourse[course.id] || []
         ),
-        sessions: sessionsByCourse[course.id] || [],
+        sessions,
+        unlogged_count: sessions.filter((s) => s.unlogged).length,
         pending_bookings: pendingBookingsByCourse[course.id] || [],
         participant_names: students.map(enrolmentDisplayName).filter(Boolean),
         students,
