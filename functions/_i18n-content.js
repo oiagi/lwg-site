@@ -34,6 +34,7 @@ export const ROUTES = {
   '/niveaus.html': { en: 'niveaus', de: 'niveaus' },
   '/intake.html': { en: 'intake', de: 'intake' },
   '/feedback.html': { en: 'feedback', de: 'feedback' },
+  '/questionnaire.html': { en: 'questionnaire', de: 'fragebogen' },
 };
 
 // One slug -> page lookup per language.
@@ -1461,6 +1462,55 @@ Object.assign(pages, {
       '#feedback-unavailable p': {
         en: 'We could not load your feedback form just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
         de: 'Wir konnten Ihr Feedback-Formular gerade nicht laden — Ihr Link ist weiterhin gültig. Bitte versuchen Sie es in ein paar Minuten noch einmal oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-error h2': {
+        en: 'link expired or invalid.',
+        de: 'Link abgelaufen oder ungültig.',
+      },
+      '#feedback-error p': {
+        en: 'Please contact your teacher for a new link, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Bitte kontaktieren Sie Ihre Lehrperson für einen neuen Link oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+    },
+  },
+  '/questionnaire.html': {
+    title: {
+      en: 'Pre-course Questionnaire — Learning with Gioia',
+      de: 'Fragebogen vor Kursbeginn — Learning with Gioia',
+    },
+    text: {
+      '#feedback-loading': { en: 'loading...', de: 'Wird geladen...' },
+      '#feedback-content h1': { en: 'before your course', de: 'Vor Ihrem Kurs' },
+      '#feedback-intro': {
+        en: 'A few questions so your teacher can plan the lessons around you. There are no right or wrong answers.',
+        de: 'Ein paar Fragen, damit Ihre Lehrperson den Unterricht auf Sie abstimmen kann. Es gibt keine richtigen oder falschen Antworten.',
+      },
+      // #feedback-meta ("about 5 minutes") is filled in by feedback.js.
+      '#feedback-required-note': { en: '* required', de: '* Pflichtfrage' },
+      '#feedback-back': { en: '← back', de: '← zurück' },
+      '#feedback-next': { en: 'next →', de: 'weiter →' },
+      '#feedback-submit-btn': { en: 'send answers →', de: 'Antworten senden →' },
+      '#submit-error': {
+        en: 'Something went wrong — please try again or email us at <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Etwas ist schiefgelaufen — bitte versuchen Sie es erneut oder schreiben Sie uns an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-thanks h2': { en: 'thank you.', de: 'Danke.' },
+      '#feedback-thanks p': {
+        en: 'Your teacher will read your answers before the course starts and plan the lessons with them in mind. We look forward to seeing you!',
+        de: 'Ihre Lehrperson liest Ihre Antworten vor Kursbeginn und plant den Unterricht entsprechend. Wir freuen uns auf Sie!',
+      },
+      '#feedback-done h2': { en: 'already answered.', de: 'Bereits beantwortet.' },
+      '#feedback-done p': {
+        en: 'This questionnaire has already been submitted — thank you. If you would like to add or change something, just email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Dieser Fragebogen wurde bereits abgeschickt — danke. Wenn Sie noch etwas ergänzen oder ändern möchten, schreiben Sie einfach an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+      },
+      '#feedback-unavailable h2': {
+        en: 'not right now.',
+        de: 'Gerade nicht möglich.',
+      },
+      '#feedback-unavailable p': {
+        en: 'We could not load your questionnaire just now — your link is still fine. Please try again in a few minutes, or email <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
+        de: 'Wir konnten Ihren Fragebogen gerade nicht laden — Ihr Link ist weiterhin gültig. Bitte versuchen Sie es in ein paar Minuten noch einmal oder schreiben Sie an <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.',
       },
       '#feedback-error h2': {
         en: 'link expired or invalid.',

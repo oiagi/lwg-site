@@ -1,4 +1,10 @@
 (function () {
+  /* Drives both token forms: course feedback (the default) and the
+     pre-course questionnaire, which sets data-form-api and
+     data-anonymous="false" on #main. */
+  const root = document.getElementById('main');
+  const formApi = root?.dataset.formApi || '/api/feedback';
+  const isAnonymous = root?.dataset.anonymous !== 'false';
   const token = new URLSearchParams(window.location.search).get('token');
   const loading = document.getElementById('feedback-loading');
   const content = document.getElementById('feedback-content');
@@ -93,12 +99,14 @@
     }
   }
 
-  /* "anonymous · about 3–5 minutes" */
+  /* "anonymous · about 3–5 minutes", or just "about 5 minutes" */
   function renderMeta() {
     const set = questionSet();
     if (!set) return;
     const minutes = t('feedbackEstimated', 'about {minutes}').replace('{minutes}', set.minutes);
-    metaLine.textContent = t('feedbackAnonymous', 'anonymous') + ' · ' + minutes;
+    metaLine.textContent = isAnonymous
+      ? t('feedbackAnonymous', 'anonymous') + ' · ' + minutes
+      : minutes;
   }
 
   /* ── Shared field chrome ────────────────────────────────────────── */
@@ -441,7 +449,7 @@
     submitBtn.textContent = t('feedbackSubmitting', 'sending…');
 
     try {
-      const res = await fetch('/api/feedback', {
+      const res = await fetch(formApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, answers, other: others }),
@@ -484,7 +492,7 @@
       return;
     }
     try {
-      const res = await fetch('/api/feedback?token=' + encodeURIComponent(token));
+      const res = await fetch(formApi + '?token=' + encodeURIComponent(token));
       if (!res.ok) {
         // 404/410 mean the token itself is no good; anything else is our
         // problem, so don't tell the student their link is invalid.

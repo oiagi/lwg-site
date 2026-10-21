@@ -15,6 +15,7 @@ import {
   errorResponse,
   withErrorHandling,
 } from './_utils.js';
+import { labelledAnswers, planningAnswers } from './_questionnaire.js';
 
 const UNTREATED_ENQUIRY_STATUSES = new Set([
   'new',
@@ -145,32 +146,38 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     if (courseIds.length) {
       const courseFilter = courseIds.map((cid) => `id.eq.${cid}`).join(',');
       const courseRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,course_type,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location`,
+        `${SUPABASE_URL}/rest/v1/courses?or=(${courseFilter})&select=id,course_code,course_type,subject,level,group_type,status,sessions_total,sessions_completed,session_length_minutes,price_per_session,price_per_person_per_60min,currency,location`,
         { headers: H }
       );
       courses = courseRes.ok ? await courseRes.json() : [];
     }
 
     // ── Load company name, enquiries, invoices, and contracts in parallel ──
-    const [compRes, enquiriesRes, invoicesRes, contractsRes] = await Promise.all([
-      student.company_id
-        ? fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${student.company_id}&select=id,name`, {
-            headers: H,
-          })
-        : Promise.resolve(null),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at,course_id,public_group_course_slot_id,booking_data,lead_first,lead_last,lead_email`,
-        { headers: H }
-      ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date,course_id`,
-        { headers: H }
-      ),
-      fetch(
-        `${SUPABASE_URL}/rest/v1/contracts?student_id=eq.${id}&order=sent_at.desc&select=id,contract_ref,course_id,language,sent_at,signed_uploaded_at,signed_file_name`,
-        { headers: H }
-      ),
-    ]);
+    const [compRes, enquiriesRes, invoicesRes, contractsRes, questionnairesRes] = await Promise.all(
+      [
+        student.company_id
+          ? fetch(`${SUPABASE_URL}/rest/v1/companies?id=eq.${student.company_id}&select=id,name`, {
+              headers: H,
+            })
+          : Promise.resolve(null),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/enquiries?student_id=eq.${id}&order=created_at.desc&select=id,status,service,created_at,course_id,public_group_course_slot_id,booking_data,lead_first,lead_last,lead_email`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/invoices?student_id=eq.${id}&order=issued_date.desc&select=id,invoice_number,total_amount,currency,status,issued_date,course_id`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/contracts?student_id=eq.${id}&order=sent_at.desc&select=id,contract_ref,course_id,language,sent_at,signed_uploaded_at,signed_file_name`,
+          { headers: H }
+        ),
+        fetch(
+          `${SUPABASE_URL}/rest/v1/course_questionnaires?student_id=eq.${id}&order=requested_at.desc&select=course_id,requested_at,submitted_at,answers`,
+          { headers: H }
+        ),
+      ]
+    );
 
     let company_name = null;
     if (compRes) {
@@ -181,6 +188,21 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     const enquiries = enquiriesRes.ok ? await enquiriesRes.json() : [];
     const invoices = invoicesRes.ok ? await invoicesRes.json() : [];
     const contracts = contractsRes.ok ? await contractsRes.json() : [];
+    // Missing table (migration not run yet) just means no questionnaires.
+    const questionnaireRows = questionnairesRes.ok ? await questionnairesRes.json() : [];
+    const coursesById = Object.fromEntries(courses.map((c) => [c.id, c]));
+    const questionnaires = questionnaireRows.map((q) => {
+      const course = coursesById[q.course_id] || null;
+      return {
+        course_id: q.course_id,
+        course_code: course?.course_code || null,
+        requested_at: q.requested_at,
+        submitted_at: q.submitted_at,
+        ...planningAnswers(q.answers),
+        // Display-ready, planning answers included, in form order.
+        answers: q.submitted_at ? labelledAnswers(q.answers, course, 'en') : [],
+      };
+    });
     const enquiryCourseIds = [...new Set(enquiries.map((e) => e.course_id).filter(Boolean))];
     let enquiryCourses = [];
     if (enquiryCourseIds.length) {
@@ -209,6 +231,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       pending_request_count: enrichedEnquiries.filter((enquiry) => enquiry.untreated).length,
       invoices,
       contracts,
+      questionnaires,
     });
   } catch (err) {
     console.error('Error:', err);

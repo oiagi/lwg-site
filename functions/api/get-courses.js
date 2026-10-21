@@ -13,6 +13,7 @@ import {
 } from './_utils.js';
 import { groupCourseInvoices } from './_invoices.js';
 import { DEFAULT_KIND, FEEDBACK_KINDS, isFeedbackKind, summariseByKind } from './_feedback.js';
+import { planningAnswers } from './_questionnaire.js';
 
 const DB_SORTS = {
   created_at: {
@@ -268,6 +269,22 @@ async function fetchCourseFeedback(supabaseUrl, headers, courseFilter) {
   return { requests, responses };
 }
 
+// Pre-course questionnaires: when each was sent and answered, plus the two
+// planning answers the overviews show at a glance (documents format and
+// planned absences). The full answers come with get-student-detail.js.
+// Returns [] when the add_course_questionnaires migration has not run yet.
+async function fetchCourseQuestionnaires(supabaseUrl, headers, courseFilter) {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/course_questionnaires?or=(${courseFilter})&select=student_id,course_id,requested_at,submitted_at,documents_format:answers->>documents_format,absences:answers->>absences,contact_channel:answers->>contact_channel,homework_delivery:answers->>homework_delivery`,
+    { headers }
+  );
+  if (!res.ok) {
+    console.error('get-courses questionnaire fetch failed:', await res.text());
+    return [];
+  }
+  return res.json();
+}
+
 async function fetchCourseInvoices(supabaseUrl, headers, courseIds) {
   const filter = courseIds.map((id) => `course_id.eq.${id}`).join(',');
   const url = `${supabaseUrl}/rest/v1/invoices?or=(${filter})`;
@@ -408,8 +425,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       : [];
 
     // ── Batch fetch feedback requests for these courses ───────────────
-    const { requests: allFeedbackRequests, responses: allFeedbackResponses } =
-      await fetchCourseFeedback(SUPABASE_URL, H, courseFilter);
+    const [{ requests: allFeedbackRequests, responses: allFeedbackResponses }, allQuestionnaires] =
+      await Promise.all([
+        fetchCourseFeedback(SUPABASE_URL, H, courseFilter),
+        fetchCourseQuestionnaires(SUPABASE_URL, H, courseFilter),
+      ]);
 
     // ── Batch fetch attendance for every listed session ───────────────
     const allSessionIds = allSessions.map((s) => s.id);
@@ -473,6 +493,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
     }
     const noFeedbackRequested = Object.fromEntries(FEEDBACK_KINDS.map((k) => [k, null]));
 
+    const questionnaireByCourseStudent = {};
+    for (const q of allQuestionnaires) {
+      (questionnaireByCourseStudent[q.course_id] ||= {})[q.student_id] = {
+        requested_at: q.requested_at || null,
+        submitted_at: q.submitted_at || null,
+        ...planningAnswers(q),
+      };
+    }
+
     const studentsById = {};
     for (const s of allStudents) {
       studentsById[s.id] = s;
@@ -505,6 +534,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const invoiceSentByStudent = invoiceSentByCourseStudent[course.id] || {};
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
       const feedbackRequestedByStudent = feedbackRequestedByCourseStudent[course.id] || {};
+      const questionnaireByStudent = questionnaireByCourseStudent[course.id] || {};
       const students = [...(studentIdsByCourse[course.id] || [])]
         .map((id) => {
           const s = studentsById[id];
@@ -528,6 +558,9 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             // When each form was requested from this student. Whether they
             // answered is not exposed: responses are anonymous.
             feedback_requested: { ...noFeedbackRequested, ...feedbackRequestedByStudent[id] },
+            // { requested_at, submitted_at, documents_format, absences,
+            //   contact_channel, homework_delivery } or null
+            questionnaire: questionnaireByStudent[id] || null,
           };
         })
         .filter(Boolean);
