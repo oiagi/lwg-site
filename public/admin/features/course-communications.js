@@ -341,6 +341,97 @@ export async function openFeedbackRequestModal(courseId, kind = 'final') {
   });
 }
 
+/* Mirrors QUESTIONNAIRE_FIELDS in functions/api/_questionnaire.js —
+   preview only; the email and the form build their copy server-side. */
+const QUESTIONNAIRE_PREVIEW = {
+  required: [
+    'Goals for the course',
+    'Correction style, coursebook or handouts from various sources, documents printed or electronic, contact outside class (WhatsApp / email / admin only), homework time and how to receive it',
+    'Language courses: prior experience, self-rated level, focus skills, explanations in the target language only or with English',
+  ],
+  optional: [
+    'Planned absences (with a note that lessons cannot be postponed)',
+    'What has not worked before, learning needs, anything else',
+    'Language courses: other languages spoken, exam, vocabulary topics, Swiss German (German courses)',
+  ],
+};
+
+export async function openQuestionnaireRequestModal(courseId) {
+  let course;
+  try {
+    course = await refreshCourseInCache(courseId);
+  } catch (err) {
+    alert(err.message || 'Could not refresh course data.');
+    return;
+  }
+
+  const withEmail = (course.students || []).filter((s) => s.email);
+  if (!withEmail.length) {
+    alert('No enrolled students with an email address.');
+    return;
+  }
+
+  // Not anonymous, so whoever already answered is shown and left unticked.
+  const recipients = withEmail.map((s) => ({
+    student_id: s.id,
+    name:
+      studentDisplayName(s) +
+      (s.questionnaire?.submitted_at ? ' (answered)' : s.questionnaire ? ' (sent before)' : ''),
+    email: s.email,
+    selected: !s.questionnaire?.submitted_at,
+  }));
+
+  const contentHtml = `
+    <p class="cs-section-label">required questions</p>
+    <ul class="cs-detail-list">
+      ${QUESTIONNAIRE_PREVIEW.required.map((q) => `<li>${esc(q)}</li>`).join('')}
+    </ul>
+    <p class="cs-section-label">optional questions</p>
+    <ul class="cs-detail-list">
+      ${QUESTIONNAIRE_PREVIEW.optional.map((q) => `<li>${esc(q)}</li>`).join('')}
+    </ul>
+    <p class="cs-section-label">also included</p>
+    <ul class="cs-detail-list">
+      <li>A private link per student, valid for 90 days, one submission each</li>
+      <li>Answers appear on the student page; documents and absences also in this course</li>
+      <li>Goals and level are copied to the student record if those are still empty</li>
+      <li>Students who were sent it before keep their original link; anyone who answered is skipped</li>
+    </ul>
+  `;
+
+  openConfirmSend({
+    title: 'send pre-course questionnaire',
+    recipients,
+    subject: `Vor Ihrem Kursbeginn / Before your course starts${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
+    contentHtml,
+    languageOptions: [
+      { value: 'de', label: 'Deutsch' },
+      { value: 'en', label: 'English' },
+    ],
+    defaultLanguage: 'de',
+    selectableRecipients: true,
+    onConfirm: async ({ language, recipients: selectedRecipients }) => {
+      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
+      const msg = document.getElementById(`questionnaire-msg-${courseId}`);
+      const res = await apiFetch('/api/send-questionnaire-request', {
+        method: 'POST',
+        body: {
+          course_id: courseId,
+          student_ids: selectedRecipients.map((r) => r.student_id),
+          language,
+        },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      const label =
+        `sent to ${body.sent || 0}` +
+        (body.already_answered ? ` · ${body.already_answered} already answered` : '') +
+        (body.failed ? ` · ${body.failed} failed` : '');
+      if (msg) showMessage(msg, label);
+    },
+  });
+}
+
 export function openCertificateModal(courseId) {
   return openCertificates(courseId, coursesCache);
 }

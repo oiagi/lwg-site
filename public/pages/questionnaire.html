@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pre-course Questionnaire — Learning with Gioia</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/enquiry.css">
+  <link rel="stylesheet" href="/intake.css">
+  <link rel="stylesheet" href="/feedback.css">
+  <script src="/device-detect.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">skip to content</a>
+
+  <div class="form-container" id="main" data-form-api="/api/questionnaire" data-anonymous="false">
+    <div id="feedback-loading" class="loading-state">loading…</div>
+
+    <div id="feedback-content" class="is-hidden">
+      <h1>before your course</h1>
+      <p class="feedback-meta" id="feedback-meta"></p>
+      <p class="feedback-intro" id="feedback-intro">A few questions so your teacher can plan the lessons
+        around you. There are no right or wrong answers.</p>
+
+      <div class="field-summary" id="feedback-course"></div>
+
+      <div class="feedback-progress" id="feedback-progress" role="progressbar" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
+        <span class="feedback-progress-bar" id="feedback-progress-bar"></span>
+      </div>
+      <p class="feedback-step-label" id="feedback-step-label"></p>
+
+      <div id="feedback-step" class="feedback-form"></div>
+
+      <p class="feedback-required-note" id="feedback-required-note">* required</p>
+
+      <div class="form-actions">
+        <button type="button" class="step-btn step-btn--back is-hidden" id="feedback-back">← back</button>
+        <button type="button" class="step-btn step-btn--next" id="feedback-next">next →</button>
+        <button type="button" class="submit is-hidden" id="feedback-submit-btn">send answers →</button>
+      </div>
+      <div class="error submit-error" id="submit-error">
+        Something went wrong — please try again or email us at
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </div>
+    </div>
+
+    <div id="feedback-thanks" class="is-hidden text-center">
+      <h2 class="state-title">thank you.</h2>
+      <p>Your teacher will read your answers before the course starts and plan the lessons with
+        them in mind. We look forward to seeing you!</p>
+    </div>
+
+    <div id="feedback-done" class="is-hidden text-center">
+      <h2 class="state-title">already answered.</h2>
+      <p>This questionnaire has already been submitted — thank you. If you would like to add or
+        change something, just email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+
+    <div id="feedback-unavailable" class="is-hidden text-center">
+      <h2 class="state-title">not right now.</h2>
+      <p>We could not load your questionnaire just now — your link is still fine. Please try
+        again in a few minutes, or email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+
+    <div id="feedback-error" class="is-hidden text-center">
+      <h2 class="state-title">link expired or invalid.</h2>
+      <p>Please contact your teacher for a new link, or email
+        <a href="mailto:info@learningwithgioia.ch">info@learningwithgioia.ch</a>.
+      </p>
+    </div>
+  </div>
+
+  <script src="/i18n.js"></script>
+  <script src="/nav.js"></script>
+  <script src="/feedback.js"></script>
+</body>
+</html>

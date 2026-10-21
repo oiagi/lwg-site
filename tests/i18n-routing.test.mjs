@@ -182,7 +182,12 @@ test('every routed page has a template file on disk', () => {
 
 test('every routed page has a title and description in both languages', () => {
   // Flow pages are noindex, so a description is optional there.
-  const noindex = new Set(['/intake.html', '/feedback.html', '/thankyou.html']);
+  const noindex = new Set([
+    '/intake.html',
+    '/feedback.html',
+    '/questionnaire.html',
+    '/thankyou.html',
+  ]);
   for (const page of Object.keys(ROUTES)) {
     const entry = pages[page];
     assert.ok(entry, `no dictionary entry for ${page}`);
@@ -439,7 +444,12 @@ test('company courses quote no price, priced courses always do', () => {
 
 test('the sitemap lists every indexable page in both languages', () => {
   const sitemap = buildSitemap();
-  const noindex = new Set(['/intake.html', '/feedback.html', '/thankyou.html']);
+  const noindex = new Set([
+    '/intake.html',
+    '/feedback.html',
+    '/questionnaire.html',
+    '/thankyou.html',
+  ]);
   for (const page of Object.keys(ROUTES)) {
     for (const lang of SUPPORTED) {
       const url = `https://learningwithgioia.ch${pagePath(page, lang)}`;
@@ -469,7 +479,8 @@ test('sitemap hreflang alternates are reciprocal — every alternate is also a l
 test('sitemap x-default agrees with the renderer', () => {
   const sitemap = buildSitemap();
   for (const page of Object.keys(ROUTES)) {
-    if (['/intake.html', '/feedback.html', '/thankyou.html'].includes(page)) continue;
+    if (['/intake.html', '/feedback.html', '/questionnaire.html', '/thankyou.html'].includes(page))
+      continue;
     const expected = `https://learningwithgioia.ch${pagePath(page, defaultLangFor(page))}`;
     const block = sitemap
       .split('<url>')
@@ -677,7 +688,12 @@ test('every page template has exactly one h1', () => {
 });
 
 test('descriptions are long enough to be used as a snippet, and not truncated', () => {
-  const noindex = new Set(['/intake.html', '/feedback.html', '/thankyou.html']);
+  const noindex = new Set([
+    '/intake.html',
+    '/feedback.html',
+    '/questionnaire.html',
+    '/thankyou.html',
+  ]);
   for (const page of Object.keys(ROUTES)) {
     if (noindex.has(page)) continue;
     for (const lang of SUPPORTED) {

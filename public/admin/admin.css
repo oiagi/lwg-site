@@ -2739,6 +2739,53 @@ html[data-device='mobile'] .blocked-dates-range {
   font-weight: 600;
 }
 
+/* ── Pre-course questionnaire: planning answers at a glance ──────── */
+.planning-row {
+  margin-top: 0.3rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+}
+.planning-tag {
+  font-size: 0.72rem;
+  color: #1f4e79;
+  background: #e3eef8;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+}
+.planning-tag--print {
+  color: #7a4b00;
+  background: #fdf0d5;
+  font-weight: 600;
+}
+.planning-absences {
+  margin: 0.35rem 0 0;
+  padding: 0.3rem 0.55rem;
+  border-left: 3px solid #e0a43a;
+  background: #fff8ea;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-line;
+}
+.planning-absences-label {
+  font-weight: 600;
+}
+.course-planning {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #7a4b00;
+}
+.planning-highlight {
+  margin: 0.4rem 0 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid #e0a43a;
+  background: #fff8ea;
+}
+
 /* ── Open invoices list inside student progress block ─────────────── */
 .course-invoice-list {
   margin-top: 0.5rem;

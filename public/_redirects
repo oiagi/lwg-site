@@ -136,6 +136,7 @@
 # the query string carries through the 301.
 /intake.html  /en/intake  301
 /feedback.html  /en/feedback  301
+/questionnaire.html  /en/questionnaire  301
 /thankyou.html  /en/thankyou  301
 
 # /en/* and /de/* are served by functions/en/[[path]].js and functions/de/[[path]].js,

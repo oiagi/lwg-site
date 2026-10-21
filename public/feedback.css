@@ -13,6 +13,7 @@
 .feedback-form textarea,
 .feedback-form button,
 .feedback-meta,
+.feedback-intro,
 .feedback-step-label,
 .feedback-required-note,
 .form-actions button,
@@ -27,6 +28,16 @@
   font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Pre-course questionnaire only: one line on why we ask. */
+.feedback-intro {
+  margin: 0 auto 1.8rem;
+  max-width: 34rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--ink-soft);
 }
 

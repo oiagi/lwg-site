@@ -183,13 +183,15 @@ export function courseDisplayName(course, language = 'de') {
      step      zero-based page of the form the question sits on; steps have
                no titles, they only paginate
      short     label used in the admin views and summaries
-     de / en   the question as the student reads it
+     de / en   the question as the student reads it; {subject} and {bridge}
+               (the language a teacher explains in) are filled per course
      hint      optional helper line under the question
-     options   for choice/multi: { value, de, en, profiles? }
+     options   for choice/multi: { value, de, en, profiles?, subjects? }
      other     for choice/multi: true when "other" has a free-text box,
                stored under `<id>_other`
      required  blocks submission when unanswered (and shown)
      profiles  course profiles this question (or option) applies to
+     subjects  normalised course subjects it applies to (e.g. ['german'])
      byProfile per-profile overrides of the de/en wording
      scale     custom endpoint labels for scale/nps questions
      showIf    { id, values } — only asked when an earlier answer matches.
@@ -705,21 +707,60 @@ function pick(value, lang) {
   return value[lang] ?? value.de ?? null;
 }
 
-/** Does this question or option belong to any of a course's profiles? */
-function inProfiles(entry, profiles) {
-  return !entry.profiles || entry.profiles.some((p) => profiles.includes(p));
+/**
+ * Does this question or option apply to a course? It has to belong to one
+ * of the course's profiles and, when it names `subjects`, the course has to
+ * be about one of them (e.g. a Swiss German question for German courses).
+ */
+function appliesTo(entry, profiles, course) {
+  if (entry.profiles && !entry.profiles.some((p) => profiles.includes(p))) return false;
+  return !entry.subjects || entry.subjects.includes(normalise(course?.subject));
+}
+
+/** The questions of any registry actually asked about a course, in form order. */
+export function askedFields(fields, course) {
+  const profiles = courseFeedbackProfiles(course);
+  return fields.filter((field) => appliesTo(field, profiles, course));
 }
 
 /** The questions actually asked about a course, in form order. */
 export function fieldsForCourse(kind, course) {
-  const profiles = courseFeedbackProfiles(course);
-  return feedbackFields(kind).filter((field) => inProfiles(field, profiles));
+  return askedFields(feedbackFields(kind), course);
 }
 
 /** The options actually offered for a course, in question order. */
 export function optionsForCourse(field, course) {
   const profiles = courseFeedbackProfiles(course);
-  return (field.options || []).filter((option) => inProfiles(option, profiles));
+  return (field.options || []).filter((option) => appliesTo(option, profiles, course));
+}
+
+/**
+ * The language a teacher falls back on to explain, as {bridge} reads in a
+ * question: German for an English course, English for everything else.
+ */
+const BRIDGE_LANGUAGE = {
+  english: { de: 'Deutsch', en: 'German' },
+  englisch: { de: 'Deutsch', en: 'German' },
+};
+const DEFAULT_BRIDGE_LANGUAGE = { de: 'Englisch', en: 'English' };
+
+/** Fill the {subject} and {bridge} placeholders of one string. */
+function wordingFiller(course, lang) {
+  const profile = courseFeedbackProfile(course);
+  const subject = subjectWord(course, profile, lang);
+  const bridge = (BRIDGE_LANGUAGE[normalise(course?.subject)] || DEFAULT_BRIDGE_LANGUAGE)[lang];
+  return (text) => String(text).replaceAll('{subject}', subject).replaceAll('{bridge}', bridge);
+}
+
+/** One string with the {subject} and {bridge} placeholders filled for a course. */
+export function fillWording(text, course, language = 'de') {
+  return wordingFiller(course, language === 'en' ? 'en' : 'de')(text);
+}
+
+/** A question's wording in one language, profile override and placeholders applied. */
+function questionText(field, course, lang) {
+  const profile = courseFeedbackProfile(course);
+  return wordingFiller(course, lang)(field.byProfile?.[profile]?.[lang] ?? field[lang]);
 }
 
 /** Is a conditional question shown, given the answers so far? */
@@ -729,27 +770,22 @@ export function conditionMet(field, answers) {
 }
 
 /**
- * The question set as it is sent to the public form, in one language and
- * tailored to one course, grouped into the steps the form pages through.
- * Steps carry no titles. Passing no course gives the default (language)
- * question set.
+ * The question set of any registry as it is sent to the public form, in one
+ * language and tailored to one course, grouped into the steps the form
+ * pages through. Steps carry no titles.
  */
-export function feedbackQuestionsForLanguage(kind, language, course = null) {
+export function buildQuestionSet(fields, { language, course = null, minutes = null }) {
   const lang = language === 'en' ? 'en' : 'de';
-  const profile = courseFeedbackProfile(course);
-  const profiles = courseFeedbackProfiles(course);
-  const subject = subjectWord(course, profile, lang);
-  const label = (field) =>
-    (field.byProfile?.[profile]?.[lang] ?? field[lang]).replace('{subject}', subject);
+  const fill = wordingFiller(course, lang);
 
   const question = (field) => {
     const out = {
       id: field.id,
       type: field.type,
-      label: label(field),
+      label: questionText(field, course, lang),
       required: Boolean(field.required),
     };
-    if (field.hint) out.hint = pick(field.hint, lang);
+    if (field.hint) out.hint = fill(pick(field.hint, lang));
     if (field.showIf) out.showIf = { id: field.showIf.id, values: [...field.showIf.values] };
     if (field.type === 'scale' || field.type === 'nps') {
       const scale = field.scale || RATING_SCALE_LABELS;
@@ -761,7 +797,7 @@ export function feedbackQuestionsForLanguage(kind, language, course = null) {
     if (field.options) {
       out.options = optionsForCourse(field, course).map((o) => ({
         value: o.value,
-        label: o[lang],
+        label: fill(o[lang]),
       }));
     }
     if (field.other) out.other = true;
@@ -769,8 +805,8 @@ export function feedbackQuestionsForLanguage(kind, language, course = null) {
     return out;
   };
 
-  const asked = fieldsForCourse(kind, course);
-  const stepCount = Math.max(...asked.map((f) => f.step)) + 1;
+  const asked = askedFields(fields, course);
+  const stepCount = asked.length ? Math.max(...asked.map((f) => f.step)) + 1 : 0;
   const steps = [];
   for (let i = 0; i < stepCount; i += 1) {
     const questions = asked.filter((f) => f.step === i).map(question);
@@ -778,12 +814,24 @@ export function feedbackQuestionsForLanguage(kind, language, course = null) {
   }
 
   return {
-    kind,
-    profiles,
+    profiles: courseFeedbackProfiles(course),
     steps,
-    minutes: FEEDBACK_FORMS[kind].minutes[lang],
+    minutes: minutes ? minutes[lang] : null,
     otherMaxLength: OTHER_MAX_LENGTH,
   };
+}
+
+/**
+ * The feedback question set in one language. Passing no course gives the
+ * default (language) question set.
+ */
+export function feedbackQuestionsForLanguage(kind, language, course = null) {
+  const set = buildQuestionSet(feedbackFields(kind), {
+    language,
+    course,
+    minutes: FEEDBACK_FORMS[kind].minutes,
+  });
+  return { kind, ...set };
 }
 
 /** The label of one option value, for the admin and the notification email. */
@@ -837,6 +885,11 @@ function validateNumeric(field, raw, min, max, label) {
  */
 export function validateFeedbackSubmission(kind, body, course = null) {
   if (!isFeedbackKind(kind)) return { error: 'Unknown feedback kind' };
+  return validateAnswers(feedbackFields(kind), body, course);
+}
+
+/** validateFeedbackSubmission for any question registry. */
+export function validateAnswers(fields, body, course = null) {
   if (!body || typeof body !== 'object') return { error: 'Request body must be a JSON object' };
 
   const isPlainObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -848,19 +901,17 @@ export function validateFeedbackSubmission(kind, body, course = null) {
   const posted = body.answers || {};
   const others = body.other || {};
 
-  const profile = courseFeedbackProfile(course);
   const profiles = courseFeedbackProfiles(course);
-  const subject = subjectWord(course, profile, 'en');
-  const ask = (field) => (field.byProfile?.[profile]?.en ?? field.en).replace('{subject}', subject);
+  const ask = (field) => questionText(field, course, 'en');
 
   const answers = {};
 
-  for (const field of feedbackFields(kind)) {
+  for (const field of fields) {
     // A question this course never asked, or one hidden by an earlier
     // answer, cannot carry an answer, even if the client posted one.
     // Conditions are checked against already-validated answers, so the
     // controlling question has to come earlier in the registry.
-    if (!inProfiles(field, profiles) || !conditionMet(field, answers)) {
+    if (!appliesTo(field, profiles, course) || !conditionMet(field, answers)) {
       answers[field.id] = null;
       if (field.other) answers[otherKey(field)] = null;
       continue;

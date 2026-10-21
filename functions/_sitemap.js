@@ -13,7 +13,12 @@ import { ROUTES, SUPPORTED, pagePath, defaultLangFor } from './_i18n-content.js'
 import { SITE_ORIGIN } from './_schema.js';
 
 // Flow pages: noindex, and Disallowed in robots.txt.
-const EXCLUDED = new Set(['/intake.html', '/feedback.html', '/thankyou.html']);
+const EXCLUDED = new Set([
+  '/intake.html',
+  '/feedback.html',
+  '/questionnaire.html',
+  '/thankyou.html',
+]);
 
 export function buildSitemap() {
   const entries = [];

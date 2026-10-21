@@ -30,6 +30,7 @@
     '/niveaus.html': { en: 'niveaus', de: 'niveaus' },
     '/intake.html': { en: 'intake', de: 'intake' },
     '/feedback.html': { en: 'feedback', de: 'feedback' },
+    '/questionnaire.html': { en: 'questionnaire', de: 'fragebogen' },
   };
   const PAGE_BY_ROUTE = SUPPORTED.reduce((byLang, lang) => {
     byLang[lang] = Object.entries(ROUTES).reduce((acc, [page, slugs]) => {

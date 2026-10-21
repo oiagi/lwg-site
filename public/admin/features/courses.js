@@ -12,6 +12,11 @@ import {
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { loadGroupSlots } from './course-slots.js';
 import { KIND_LABELS as FEEDBACK_KIND_LABELS } from './feedback.js';
+import {
+  coursePlanningLine,
+  participantPlanningHtml,
+  questionnaireSentTag,
+} from './questionnaire.js';
 import { firstPage, formatMaterialRef } from './materials.js';
 
 let currentCourseFilter = 'active';
@@ -729,6 +734,7 @@ function renderCourses(courses) {
                 : s.contract_sent_at
                   ? `<span class="sent-tag">contract sent · ${esc(fmtDate(s.contract_sent_at))}</span>`
                   : '',
+              questionnaireSentTag(s.questionnaire),
               // Only that a form was requested — responses are anonymous.
               ...Object.entries(FEEDBACK_KIND_LABELS).map(([kind, label]) =>
                 s.feedback_requested?.[kind]
@@ -754,6 +760,7 @@ function renderCourses(courses) {
             </button>
             ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
           </p>
+          ${participantPlanningHtml(s.questionnaire)}
           <div class="progress-row participant-controls">
             <label class="participant-inline-field">
               <span>level</span>
@@ -800,7 +807,7 @@ function renderCourses(courses) {
       <div class="course-row" id="course-${c.id}">
         <div class="course-summary" data-action="toggleCourse" data-args="${c.id}">
           <span class="course-code">${esc(c.course_code) || '—'}</span>
-          <span class="course-participants">${names}</span>
+          <span class="course-participants">${names}${coursePlanningLine(c.students)}</span>
           <div class="course-summary-actions">
             <span class="course-sessions">${sessLine}${rebookFlag}${unloggedFlag}</span>
             <div class="course-status-wrap"><button class="course-status ${esc(c.status)}" data-action="toggleStatusDropdown" data-args="${c.id}">${esc(c.status)}</button><ul class="status-dropdown is-hidden" id="status-drop-${c.id}">${dropItems}</ul></div>
@@ -861,6 +868,11 @@ function renderCourses(courses) {
                   <button class="save-btn"
                     data-action="openStartingSoonModal" data-args="${c.id}">send starting soon</button>
                   <span class="saved-msg" id="starting-soon-msg-${c.id}">sent</span>
+                </div>
+                <div class="detail-action-row">
+                  <button class="save-btn"
+                    data-action="openQuestionnaireRequestModal" data-args="${c.id}">send pre-course questionnaire</button>
+                  <span class="saved-msg" id="questionnaire-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"

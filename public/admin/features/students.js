@@ -4,6 +4,7 @@ import { esc, queryString, attachListControls } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { countryName } from '../core/countries.js';
 import { openConfirmSend } from './confirm-send.js';
+import { studentQuestionnaireSection } from './questionnaire.js';
 
 let currentStudentFilter = 'active';
 const studentListState = { search: '', sort: 'name', direction: 'asc' };
@@ -492,6 +493,7 @@ function renderStudentDetail(container, s) {
         ${enrolButton}
       </div>
     </div>
+    ${studentQuestionnaireSection(s.questionnaires)}
     <div class="detail-section">
       <p class="detail-meta">Requests</p>
       ${requestHtml}
