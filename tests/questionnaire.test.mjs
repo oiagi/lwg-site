@@ -50,10 +50,15 @@ function germanAnswers(overrides = {}) {
     contact_channel: 'whatsapp',
     homework_time: '30_60m',
     homework_delivery: 'email',
-    absences: '  3 and 10 March  ',
+    absences: [{ from: '2026-03-10' }, { from: '2026-03-03', to: '2026-03-03' }],
     ...overrides,
   };
 }
+
+/* The calendar only accepts dates around "today"; pin it so the fixtures
+   above stay valid. */
+const TODAY = '2026-03-01';
+const validateQ = (body, course) => validateQuestionnaire(body, course, { today: TODAY });
 
 test('question ids are unique', () => {
   const all = QUESTIONNAIRE_FIELDS.map((f) => f.id);
@@ -159,12 +164,50 @@ test('the form runs over four steps with the planning questions last', () => {
   assert.equal(set.minutes, '5 minutes');
 });
 
-test('a complete submission validates and trims text', () => {
-  const { error, answers } = validateQuestionnaire({ answers: germanAnswers() }, german);
+test('a complete submission validates, trims text and sorts the absence dates', () => {
+  const { error, answers } = validateQ({ answers: germanAnswers() }, german);
   assert.equal(error, undefined);
-  assert.equal(answers.absences, '3 and 10 March');
+  assert.deepEqual(answers.absences, [
+    { from: '2026-03-03', to: '2026-03-03' },
+    { from: '2026-03-10', to: '2026-03-10' },
+  ]);
   assert.equal(answers.documents_format, 'printed');
   assert.equal(answers.swiss_german, null);
+});
+
+test('absences are a calendar question: date ranges, merged, optional', () => {
+  const q = question(questionnaireForLanguage('en', german), 'absences');
+  assert.equal(q.type, 'dateranges');
+  assert.equal(q.maxRanges, 30);
+  assert.equal(q.maxLength, undefined);
+  assert.equal(q.required, false);
+
+  const merged = validateQ(
+    {
+      answers: germanAnswers({
+        absences: [
+          { from: '2026-04-01', to: '2026-04-05' },
+          { from: '2026-04-06', to: '2026-04-06' },
+          { from: '2026-04-03', to: '2026-04-04' },
+        ],
+      }),
+    },
+    german
+  );
+  assert.deepEqual(merged.answers.absences, [{ from: '2026-04-01', to: '2026-04-06' }]);
+
+  const none = validateQ({ answers: germanAnswers({ absences: [] }) }, german);
+  assert.equal(none.error, undefined);
+  assert.equal(none.answers.absences, null);
+
+  const text = validateQ({ answers: germanAnswers({ absences: '3 and 10 March' }) }, german);
+  assert.match(text.error, /^absences: /);
+
+  const past = validateQ(
+    { answers: germanAnswers({ absences: [{ from: '2025-12-01' }] }) },
+    german
+  );
+  assert.match(past.error, /between/);
 });
 
 test('required questions block submission', () => {
@@ -176,16 +219,13 @@ test('required questions block submission', () => {
     'homework_delivery',
     'instruction_language',
   ]) {
-    const { error } = validateQuestionnaire(
-      { answers: germanAnswers({ [id]: undefined }) },
-      german
-    );
+    const { error } = validateQ({ answers: germanAnswers({ [id]: undefined }) }, german);
     assert.match(error, /^Please answer/, id);
   }
 });
 
 test('language questions are neither required nor stored for a maths course', () => {
-  const { error, answers } = validateQuestionnaire(
+  const { error, answers } = validateQ(
     {
       answers: {
         goals: 'Pass the Gymi exam',
@@ -205,36 +245,40 @@ test('language questions are neither required nor stored for a maths course', ()
 });
 
 test('an option the course does not offer is rejected', () => {
-  const { error } = validateQuestionnaire({ answers: germanAnswers({ exam: 'goethe' }) }, english);
+  const { error } = validateQ({ answers: germanAnswers({ exam: 'goethe' }) }, english);
   assert.match(error, /exam is not a valid choice/);
 });
 
 test('prior_where is only kept when the student has learned before', () => {
-  const never = validateQuestionnaire(
+  const never = validateQ(
     { answers: germanAnswers({ prior_experience: 'never', prior_where: 'school' }) },
     german
   );
   assert.equal(never.answers.prior_where, null);
-  const some = validateQuestionnaire({ answers: germanAnswers({ prior_where: 'school' }) }, german);
+  const some = validateQ({ answers: germanAnswers({ prior_where: 'school' }) }, german);
   assert.equal(some.answers.prior_where, 'school');
 });
 
 test('planningAnswers picks out documents and absences, blank absences as null', () => {
+  const ranges = [{ from: '2026-05-01', to: '2026-05-03' }];
   assert.deepEqual(
     planningAnswers({
       documents_format: 'both',
-      absences: ' 1 May ',
+      absences: ranges,
       contact_channel: 'email',
       homework_delivery: 'whatsapp',
       goals: 'not a planning answer',
     }),
     {
       documents_format: 'both',
-      absences: '1 May',
+      absences: ranges,
       contact_channel: 'email',
       homework_delivery: 'whatsapp',
     }
   );
+  // Submissions from before the calendar typed the dates as text.
+  assert.equal(planningAnswers({ absences: ' 1 May ' }).absences, '1 May');
+  assert.equal(planningAnswers({ absences: [] }).absences, null);
   assert.deepEqual(planningAnswers({ documents_format: 'printed', absences: '   ' }), {
     documents_format: 'printed',
     absences: null,
@@ -250,7 +294,7 @@ test('planningAnswers picks out documents and absences, blank absences as null',
 });
 
 test('labelledAnswers reads stored values as the student saw them, skipping blanks', () => {
-  const { answers } = validateQuestionnaire(
+  const { answers } = validateQ(
     { answers: germanAnswers({ exam: 'other' }), other: { exam: 'TOEFL' } },
     german
   );
@@ -258,6 +302,9 @@ test('labelledAnswers reads stored values as the student saw them, skipping blan
   const byId = Object.fromEntries(rows.map((r) => [r.id, r.text]));
   assert.equal(byId.documents_format, 'Printed');
   assert.equal(byId.focus_skills, 'Speaking, Grammar');
+  assert.equal(byId.absences, '03.03.2026, 10.03.2026');
+  assert.equal(answerText('absences', { absences: '3 and 10 March' }), '3 and 10 March');
+  assert.equal(answerText('absences', { absences: [] }), null);
   assert.equal(byId.exam, 'Another exam (TOEFL)');
   assert.equal(
     byId.instruction_language,
@@ -311,17 +358,14 @@ test('the email escapes the first name', () => {
 });
 
 test('homework delivery is only asked, and only required, when there is homework time', () => {
-  const none = validateQuestionnaire(
+  const none = validateQ(
     { answers: germanAnswers({ homework_time: 'none', homework_delivery: 'email' }) },
     german
   );
   assert.equal(none.error, undefined);
   assert.equal(none.answers.homework_delivery, null);
 
-  const some = validateQuestionnaire(
-    { answers: germanAnswers({ homework_delivery: undefined }) },
-    german
-  );
+  const some = validateQ({ answers: germanAnswers({ homework_delivery: undefined }) }, german);
   assert.match(some.error, /^Please answer: How would you like to receive your homework/);
 });
 

@@ -107,6 +107,26 @@
     feedbackAnonymous: { en: 'anonymous', de: 'anonym' },
     feedbackEstimated: { en: 'about {minutes}', de: 'ca. {minutes}' },
     feedbackStepOf: { en: 'step {n} of {total}', de: 'Schritt {n} von {total}' },
+    feedbackCalendarPrev: { en: 'previous month', de: 'Vormonat' },
+    feedbackCalendarNext: { en: 'next month', de: 'Nächster Monat' },
+    feedbackCalendarPickStart: {
+      en: 'Tap the first day you will be away.',
+      de: 'Tippen Sie auf den ersten Tag Ihrer Abwesenheit.',
+    },
+    feedbackCalendarPickEnd: {
+      en: 'Now tap the last day, or the same day again for a single day.',
+      de: 'Tippen Sie nun auf den letzten Tag, oder nochmals auf denselben Tag für einen einzelnen Tag.',
+    },
+    feedbackCalendarLesson: { en: 'lesson day', de: 'Lektionstag' },
+    feedbackCalendarNone: { en: 'no dates chosen yet', de: 'Noch keine Daten gewählt' },
+    feedbackCalendarRemove: { en: 'remove', de: 'Entfernen' },
+    feedbackCalendarMax: {
+      en: 'You can add at most {n} periods.',
+      de: 'Sie können höchstens {n} Zeiträume angeben.',
+    },
+    feedbackDateFrom: { en: 'from', de: 'von' },
+    feedbackDateTo: { en: 'to', de: 'bis' },
+    feedbackDateRequired: { en: 'Please choose a date.', de: 'Bitte wählen Sie ein Datum.' },
     groupCoursesLoading: { en: 'loading courses...', de: 'Kurse werden geladen...' },
     groupCoursesLoadError: {
       en: 'Could not load group courses right now.',

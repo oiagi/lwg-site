@@ -88,7 +88,7 @@ for (const kind of FEEDBACK_KINDS) {
       assert.ok(field.short?.de && field.short?.en, `${field.id} is missing a short label`);
       assert.ok(Number.isInteger(field.step) && field.step >= 0, `${field.id} has no step`);
       assert.ok(
-        ['scale', 'nps', 'choice', 'multi', 'text'].includes(field.type),
+        ['scale', 'nps', 'choice', 'multi', 'text', 'daterange'].includes(field.type),
         `${field.id} has an unknown type`
       );
       if (field.type === 'choice' || field.type === 'multi') {
@@ -111,14 +111,29 @@ for (const kind of FEEDBACK_KINDS) {
       }
       if (field.showIf) {
         // The controlling question has to be validated first, so it must
-        // come earlier, and it must be able to produce the trigger values.
+        // come earlier, on the same page (the form only re-checks the
+        // current step), and it must be able to produce the trigger.
         assert.ok(seen.has(field.showIf.id), `${field.id} depends on a later question`);
         const controller = fields.find((f) => f.id === field.showIf.id);
-        for (const v of field.showIf.values) {
+        assert.equal(controller.step, field.step, `${field.id} is not on its controller's step`);
+        const { values, below, any } = field.showIf;
+        if (values) {
           assert.ok(
-            controller.options.some((o) => o.value === v),
-            `${field.id} waits for a value ${controller.id} cannot take`
+            ['choice', 'multi'].includes(controller.type),
+            `${field.id}: values need options`
           );
+          for (const v of values) {
+            assert.ok(
+              controller.options.some((o) => o.value === v),
+              `${field.id} waits for a value ${controller.id} cannot take`
+            );
+          }
+        } else if (below !== undefined) {
+          assert.ok(['scale', 'nps'].includes(controller.type), `${field.id}: below needs a scale`);
+          assert.ok(Number.isInteger(below) && below >= 2 && below <= 10, `${field.id}: below`);
+        } else {
+          assert.equal(any, true, `${field.id} has an empty condition`);
+          assert.equal(controller.type, 'multi', `${field.id}: any needs a multi controller`);
         }
       }
       seen.add(field.id);
@@ -198,6 +213,7 @@ for (const kind of FEEDBACK_KINDS) {
       ...labels.ratings.map((q) => q.id),
       ...labels.choices.map((q) => q.id),
       ...labels.comments.map((q) => q.id),
+      ...labels.dates.map((q) => q.id),
     ];
     assert.deepEqual(
       ids.sort(),
@@ -777,4 +793,211 @@ test('optionLabel resolves stored values in both languages', () => {
   assert.equal(optionLabel(progress, 'a_lot', 'de'), 'Sehr grosse Fortschritte');
   // an unknown value falls back to itself rather than throwing
   assert.equal(optionLabel(progress, 'mystery'), 'mystery');
+});
+
+/* ── Follow-up questions ─────────────────────────────────────────── */
+
+test('conditionMet handles the three condition forms', () => {
+  const below = { showIf: { id: 'satisfaction', below: 7 } };
+  assert.ok(conditionMet(below, { satisfaction: 6 }));
+  assert.ok(conditionMet(below, { satisfaction: 1 }));
+  assert.ok(!conditionMet(below, { satisfaction: 7 }));
+  // null < 7 is true in JS; a skipped controller must not show a follow-up
+  assert.ok(!conditionMet(below, { satisfaction: null }));
+  assert.ok(!conditionMet(below, {}));
+  assert.ok(!conditionMet(below, { satisfaction: '3' }));
+
+  const any = { showIf: { id: 'activities', any: true } };
+  assert.ok(conditionMet(any, { activities: ['games'] }));
+  assert.ok(!conditionMet(any, { activities: [] }));
+  assert.ok(!conditionMet(any, { activities: null }));
+  assert.ok(!conditionMet(any, {}));
+
+  assert.ok(conditionMet({ id: 'plain' }, {}));
+});
+
+for (const kind of FEEDBACK_KINDS) {
+  test(`${kind}: a satisfaction score below 7 asks for the main reason`, () => {
+    const low = validateFeedbackSubmission(kind, {
+      answers: requiredAnswers(kind, { satisfaction: 6, satisfaction_note: ' zu schnell ' }),
+    });
+    assert.equal(low.error, undefined);
+    assert.equal(low.answers.satisfaction_note, 'zu schnell');
+
+    const fine = validateFeedbackSubmission(kind, {
+      answers: requiredAnswers(kind, { satisfaction: 7, satisfaction_note: 'smuggled' }),
+    });
+    assert.equal(fine.answers.satisfaction_note, null);
+
+    // the reason stays optional: a low score alone must not block the form
+    const silent = validateFeedbackSubmission(kind, {
+      answers: requiredAnswers(kind, { satisfaction: 2 }),
+    });
+    assert.equal(silent.error, undefined);
+    assert.equal(silent.answers.satisfaction_note, null);
+
+    const q = askedQuestions(kind, null).find((x) => x.id === 'satisfaction_note');
+    assert.deepEqual(q.showIf, { id: 'satisfaction', below: 7 });
+    assert.equal(q.required, false);
+  });
+}
+
+test('midterm: ticking materials or a class style asks why', () => {
+  const ticked = validateFeedbackSubmission('midterm', {
+    answers: requiredAnswers('midterm', {
+      materials_liked: ['textbook'],
+      materials_why: ' klar strukturiert ',
+      class_style: ['pairs'],
+      class_style_why: 'mehr Sprechzeit',
+    }),
+  });
+  assert.equal(ticked.error, undefined);
+  assert.equal(ticked.answers.materials_why, 'klar strukturiert');
+  assert.equal(ticked.answers.class_style_why, 'mehr Sprechzeit');
+
+  const empty = validateFeedbackSubmission('midterm', {
+    answers: requiredAnswers('midterm', {
+      materials_liked: [],
+      materials_why: 'smuggled',
+      class_style_why: 'smuggled',
+    }),
+  });
+  assert.equal(empty.error, undefined);
+  assert.equal(empty.answers.materials_why, null);
+  assert.equal(empty.answers.class_style_why, null);
+
+  const q = askedQuestions('midterm', null).find((x) => x.id === 'materials_why');
+  assert.deepEqual(q.showIf, { id: 'materials_liked', any: true });
+});
+
+test('midterm: the PowerPoint question asks why after every answer', () => {
+  for (const value of ['yes', 'partly', 'no']) {
+    const { error, answers } = validateFeedbackSubmission('midterm', {
+      answers: requiredAnswers('midterm', { presentations: value, presentations_note: 'weil' }),
+    });
+    assert.equal(error, undefined);
+    assert.equal(answers.presentations, value);
+    assert.equal(answers.presentations_note, 'weil');
+  }
+  // no answer, no "why": the follow-up cannot carry a note on its own
+  const unanswered = validateFeedbackSubmission('midterm', {
+    answers: requiredAnswers('midterm', { presentations_note: 'smuggled' }),
+  });
+  assert.equal(unanswered.answers.presentations_note, null);
+
+  const bad = validateFeedbackSubmission('midterm', {
+    answers: requiredAnswers('midterm', { presentations: 'sometimes' }),
+  });
+  assert.match(bad.error, /not a valid choice/);
+
+  const skipped = validateFeedbackSubmission('midterm', { answers: requiredAnswers('midterm') });
+  assert.equal(skipped.error, undefined);
+  assert.equal(skipped.answers.presentations, null);
+
+  const q = askedQuestions('midterm', null, 'de').find((x) => x.id === 'presentations');
+  assert.deepEqual(
+    q.options.map((o) => o.value),
+    ['yes', 'partly', 'no']
+  );
+  assert.equal(q.label, 'Finden Sie die PowerPoint-Präsentationen hilfreich?');
+  assert.equal(q.options[1].label, 'Teils, teils');
+  assert.equal(q.required, false);
+  const note = askedQuestions('midterm', null, 'de').find((x) => x.id === 'presentations_note');
+  assert.equal(note.label, 'Warum?');
+});
+
+test('final: chosen activities ask why they helped', () => {
+  const chosen = validateFeedbackSubmission('final', {
+    answers: requiredAnswers('final', { activities: ['games'], activities_why: 'fun' }),
+  });
+  assert.equal(chosen.error, undefined);
+  assert.equal(chosen.answers.activities_why, 'fun');
+
+  const none = validateFeedbackSubmission('final', {
+    answers: requiredAnswers('final', { activities_why: 'smuggled' }),
+  });
+  assert.equal(none.answers.activities_why, null);
+
+  const q = askedQuestions('final', null).find((x) => x.id === 'activities_why');
+  assert.deepEqual(q.showIf, { id: 'activities', any: true });
+});
+
+test('final: a recommendation below 7 asks what would change it', () => {
+  const low = validateFeedbackSubmission('final', {
+    answers: requiredAnswers('final', { recommend: 6, recommend_note: 'cheaper' }),
+  });
+  assert.equal(low.error, undefined);
+  assert.equal(low.answers.recommend_note, 'cheaper');
+
+  const high = validateFeedbackSubmission('final', {
+    answers: requiredAnswers('final', { recommend: 7, recommend_note: 'smuggled' }),
+  });
+  assert.equal(high.answers.recommend_note, null);
+
+  const q = askedQuestions('final', null).find((x) => x.id === 'recommend_note');
+  assert.deepEqual(q.showIf, { id: 'recommend', below: 7 });
+});
+
+test('final: students who want to continue can name a start window', () => {
+  const options = { today: '2026-11-03' };
+  const submit = (overrides) =>
+    validateFeedbackSubmission(
+      'final',
+      { answers: requiredAnswers('final', { continue: 'yes', ...overrides }) },
+      null,
+      options
+    );
+
+  const window = submit({ continue_start: { from: '2027-01-10', to: '2027-01-31' } });
+  assert.equal(window.error, undefined);
+  assert.deepEqual(window.answers.continue_start, { from: '2027-01-10', to: '2027-01-31' });
+
+  // a reversed pair is swapped, a missing last day means one day
+  const reversed = submit({ continue_start: { from: '2027-01-31', to: '2027-01-10' } });
+  assert.deepEqual(reversed.answers.continue_start, { from: '2027-01-10', to: '2027-01-31' });
+  const single = submit({ continue_start: { from: '2027-01-10' } });
+  assert.deepEqual(single.answers.continue_start, { from: '2027-01-10', to: '2027-01-10' });
+  const todayItself = submit({ continue_start: { from: '2026-11-03', to: '2026-11-03' } });
+  assert.equal(todayItself.error, undefined);
+
+  // nothing given is fine, the question is optional
+  const blank = submit({ continue_start: {} });
+  assert.equal(blank.error, undefined);
+  assert.equal(blank.answers.continue_start, null);
+  const omitted = submit({});
+  assert.equal(omitted.answers.continue_start, null);
+
+  // the window has to lie ahead, within the horizon, and be real dates
+  assert.match(submit({ continue_start: { from: '2026-11-02' } }).error, /past/);
+  assert.match(submit({ continue_start: { from: '2026-01-01' } }).error, /continue_start/);
+  assert.match(submit({ continue_start: { from: '2029-01-01' } }).error, /between/);
+  assert.match(submit({ continue_start: { from: 'January' } }).error, /YYYY-MM-DD/);
+  assert.match(submit({ continue_start: 'January' }).error, /object/);
+  assert.match(submit({ continue_start: ['2027-01-10'] }).error, /object/);
+
+  // only for students who want (or might want) to continue
+  const no = validateFeedbackSubmission(
+    'final',
+    {
+      answers: requiredAnswers('final', {
+        continue: 'no',
+        continue_start: { from: '2027-01-10', to: '2027-01-31' },
+      }),
+    },
+    null,
+    options
+  );
+  assert.equal(no.answers.continue_start, null);
+
+  const q = askedQuestions('final', null).find((x) => x.id === 'continue_start');
+  assert.equal(q.type, 'daterange');
+  assert.deepEqual(q.showIf, { id: 'continue', values: ['yes', 'maybe'] });
+  assert.equal(q.hint, 'An approximate window is enough.');
+  assert.equal(q.required, false);
+
+  // the admin gets a label for it, and the mid-course form has none
+  assert.deepEqual(feedbackQuestionLabels('final').dates, [
+    { id: 'continue_start', label: 'preferred start' },
+  ]);
+  assert.deepEqual(feedbackQuestionLabels('midterm').dates, []);
 });

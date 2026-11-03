@@ -3,7 +3,8 @@
 // Body: { course_id, student_id }
 //
 // Removes one student from one course. Attendance rows for that student's
-// sessions in this course are cleaned up; invoices/certificates are retained.
+// sessions in this course and their planned absences are cleaned up;
+// invoices/certificates are retained.
 
 import {
   withErrorHandling,
@@ -64,6 +65,14 @@ export const onRequestDelete = withErrorHandling(async ({ request, env }) => {
     );
     if (!attendanceRes.ok) return errorResponse('Could not remove attendance records');
   }
+
+  // Planned absences belong to the enrolment. Best effort: the table may not
+  // exist yet, and get-courses only shows periods of enrolled students anyway.
+  const absenceRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/absence_periods?course_id=eq.${eq(course_id)}&student_id=eq.${eq(student_id)}`,
+    { method: 'DELETE', headers: H }
+  );
+  if (!absenceRes.ok) console.error('remove-enrolment: absence cleanup failed:', absenceRes.status);
 
   const deleteRes = await fetch(
     `${SUPABASE_URL}/rest/v1/enrolments?course_id=eq.${eq(course_id)}&student_id=eq.${eq(student_id)}`,

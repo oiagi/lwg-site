@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {
   onRequestGet as getCourses,
   annotateSessions,
+  attachPlannedAbsences,
   attachSessionCrm,
 } from '../functions/api/get-courses.js';
 
@@ -29,6 +30,8 @@ function makeWorld(
     sessionTopics = [],
     sessionMaterials = [],
     crmStatus = 200,
+    absencePeriods = [],
+    absenceStatus = 200,
   } = {}
 ) {
   const db = {
@@ -75,6 +78,10 @@ function makeWorld(
       const wanted = new Set(inMatch ? inMatch[1].split(',') : []);
       const rows = table === 'session_topics' ? sessionTopics : sessionMaterials;
       return json(rows.filter((r) => wanted.has(r.session_id)));
+    }
+    if (table === 'absence_periods') {
+      if (absenceStatus !== 200) return json({ message: 'relation does not exist' }, absenceStatus);
+      return json(absencePeriods);
     }
     return json(db[table] || []);
   };
@@ -298,4 +305,68 @@ test('before the CRM migration, sessions still load with empty lesson content', 
   assert.equal(res.status, 200);
   assert.deepEqual(res.body[0].sessions[0].topics, []);
   assert.deepEqual(res.body[0].sessions[0].materials, []);
+});
+
+// ── Planned absences ─────────────────────────────────────────────────────
+
+test('attachPlannedAbsences lists the students whose period covers the session day', () => {
+  const periods = [
+    { student_id: 'stu-1', start_date: '2026-11-03', end_date: '2026-11-10' },
+    { student_id: 'stu-2', start_date: '2026-11-10', end_date: '2026-11-10' },
+  ];
+  const [inside, after] = attachPlannedAbsences(
+    [
+      { id: 'a', scheduled_at: '2026-11-10T17:00:00Z' },
+      { id: 'b', scheduled_at: '2026-11-17T17:00:00Z' },
+    ],
+    periods
+  );
+  assert.deepEqual(inside.planned_absent, ['stu-1', 'stu-2']);
+  assert.deepEqual(after.planned_absent, []);
+});
+
+test('absence periods ride along on students and sessions, enrolled students only', async (t) => {
+  const { calls, run } = makeWorld(t, {
+    sessions: [session('s-covered', 24 * HOUR), session('s-free', 30 * 24 * HOUR)],
+    absencePeriods: [
+      {
+        id: 'p1',
+        student_id: 'stu-1',
+        course_id: 'c1',
+        start_date: iso(0).slice(0, 10),
+        end_date: iso(3 * 24 * HOUR).slice(0, 10),
+        source: 'questionnaire',
+        note: null,
+      },
+      // Not enrolled any more: must be ignored everywhere.
+      {
+        id: 'p2',
+        student_id: 'stu-gone',
+        course_id: 'c1',
+        start_date: '2000-01-01',
+        end_date: '2099-12-31',
+        source: 'admin',
+        note: null,
+      },
+    ],
+  });
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.equal(calls.filter((u) => u.includes('/rest/v1/absence_periods')).length, 1);
+  const [course] = res.body;
+  assert.deepEqual(
+    course.students[0].absence_periods.map((p) => p.id),
+    ['p1']
+  );
+  const byId = Object.fromEntries(course.sessions.map((s) => [s.id, s]));
+  assert.deepEqual(byId['s-covered'].planned_absent, ['stu-1']);
+  assert.deepEqual(byId['s-free'].planned_absent, []);
+});
+
+test('before the absence migration, students and sessions carry empty lists', async (t) => {
+  const { run } = makeWorld(t, { sessions: [session('s1', 24 * HOUR)], absenceStatus: 404 });
+  const res = await run();
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body[0].students[0].absence_periods, []);
+  assert.deepEqual(res.body[0].sessions[0].planned_absent, []);
 });

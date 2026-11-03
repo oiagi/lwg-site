@@ -8,6 +8,11 @@
 // one submission. Answers are stored on the request row: unlike feedback,
 // the questionnaire is not anonymous.
 //
+// The planned-absence ranges the student marks in the calendar are also
+// copied into absence_periods (source 'questionnaire'), where the admin
+// course view matches them against the lessons. GET hands the form the
+// course's lesson dates so the calendar can mark them.
+//
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY (optional, for the notification)
 
@@ -29,6 +34,7 @@ import {
 } from './_questionnaire.js';
 import { esc } from './_feedback-email.js';
 import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { absenceWindow, sessionDate, zurichToday } from './_absences.js';
 
 const REQUEST_SELECT = 'id,student_id,course_id,language,requested_at,submitted_at';
 
@@ -71,6 +77,30 @@ async function loadCourse(env, courseId) {
   return res.ok ? (await res.json())[0] || null : null;
 }
 
+/**
+ * The Zurich dates of the course's lessons (cancelled ones left out), for
+ * the calendar to mark. Best effort: a failure means no markers, not a
+ * broken form.
+ */
+async function loadLessonDates(env, courseId) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?course_id=eq.${encodeURIComponent(courseId)}&status=neq.cancelled&order=scheduled_at.asc&select=scheduled_at`,
+      { headers: supabaseHeaders(SUPABASE_SERVICE_KEY) }
+    );
+    if (!res.ok) {
+      console.error('questionnaire: sessions lookup failed:', await res.text());
+      return [];
+    }
+    const dates = (await res.json()).map(sessionDate).filter(Boolean);
+    return [...new Set(dates)];
+  } catch (err) {
+    console.error('questionnaire: sessions lookup error:', err?.message || err);
+    return [];
+  }
+}
+
 export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const rateLimitErr = await checkRateLimit(request, { maxRequests: 20, windowSeconds: 60 });
   if (rateLimitErr) return rateLimitErr;
@@ -81,7 +111,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
   const { row, error, status } = await loadByToken(env, token);
   if (error) return errorResponse(error, status);
 
-  const course = await loadCourse(env, row.course_id);
+  const [course, lessons] = await Promise.all([
+    loadCourse(env, row.course_id),
+    loadLessonDates(env, row.course_id),
+  ]);
+  const today = zurichToday();
 
   return jsonResponse({
     language: row.language === 'en' ? 'en' : 'de',
@@ -90,6 +124,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       course_code: course?.course_code || null,
       name: { de: courseDisplayName(course, 'de'), en: courseDisplayName(course, 'en') },
     },
+    // For the absence calendar: which days are lessons, and which days may
+    // be marked at all (the server checks the same window on submit).
+    lessons,
+    today,
+    window: absenceWindow(today),
     // Both languages: the page follows the site language switcher.
     questions: {
       de: questionnaireForLanguage('de', course),
@@ -118,6 +157,45 @@ async function storeAnswers(env, token, answers) {
     throw new Error('store failed');
   }
   return (await res.json()).length > 0;
+}
+
+/**
+ * Mirror the marked absence ranges into absence_periods: drop what an
+ * earlier questionnaire submission wrote for this (student, course), then
+ * insert the new ranges. Admin-added rows are left alone. Best effort — the
+ * ranges are also in the stored answers, and the add_absence_periods
+ * migration backfills from there.
+ */
+async function syncAbsencePeriods(env, studentId, courseId, ranges) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = env;
+  const H = supabaseHeaders(SUPABASE_SERVICE_KEY);
+  const filter = `student_id=eq.${encodeURIComponent(studentId)}&course_id=eq.${encodeURIComponent(courseId)}&source=eq.questionnaire`;
+  try {
+    const del = await fetch(`${SUPABASE_URL}/rest/v1/absence_periods?${filter}`, {
+      method: 'DELETE',
+      headers: H,
+    });
+    if (!del.ok) {
+      console.error('Questionnaire absence cleanup failed:', await del.text());
+      return;
+    }
+    if (!Array.isArray(ranges) || !ranges.length) return;
+    const rows = ranges.map((r) => ({
+      student_id: studentId,
+      course_id: courseId,
+      start_date: r.from,
+      end_date: r.to,
+      source: 'questionnaire',
+    }));
+    const ins = await fetch(`${SUPABASE_URL}/rest/v1/absence_periods`, {
+      method: 'POST',
+      headers: { ...H, Prefer: 'return=minimal' },
+      body: JSON.stringify(rows),
+    });
+    if (!ins.ok) console.error('Questionnaire absence insert failed:', await ins.text());
+  } catch (err) {
+    console.error('Questionnaire absence sync error:', err?.message || err);
+  }
 }
 
 /** Fill the student's goals / level where they are still empty. Best effort. */
@@ -175,6 +253,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
   if (!stored) return errorResponse('This questionnaire has already been submitted', 409);
 
+  await syncAbsencePeriods(env, row.student_id, row.course_id, answers.absences);
   const student = await syncStudent(env, row.student_id, answers);
 
   // Best-effort notification — never fails the submission.

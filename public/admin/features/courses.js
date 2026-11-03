@@ -13,6 +13,7 @@ import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { loadGroupSlots } from './course-slots.js';
 import { KIND_LABELS as FEEDBACK_KIND_LABELS } from './feedback.js';
 import {
+  absencePeriodsHtml,
   coursePlanningLine,
   participantPlanningHtml,
   questionnaireSentTag,
@@ -561,6 +562,63 @@ function sessionAttendanceLine(session, students) {
   return `<div class="session-attendance">${items.join('')}</div>`;
 }
 
+// Who said they will miss this lesson (planned absence periods covering its
+// date). Shown until the session is logged — from then on the attendance
+// line tells what actually happened.
+function sessionPlannedAbsentLine(session, students) {
+  if (session.logged || !session.planned_absent?.length) return '';
+  const planned = new Set(session.planned_absent);
+  const names = students
+    .filter((student) => planned.has(student.id) && studentStartsBySession(student, session))
+    .map((student) => esc(student.first_name || student.last_name || student.email || '—'));
+  if (!names.length) return '';
+  return `<div class="session-planned-absent"><span class="session-planned-absent-label">planned absence:</span> ${names.join(', ')}</div>`;
+}
+
+// Adds a planned absence for one participant from the two date inputs in
+// their block. The end date is optional (a single day).
+export async function addAbsencePeriod(courseId, studentId) {
+  const key = `${courseId}-${studentId}`;
+  const fromInput = document.getElementById(`absence-from-${key}`);
+  const toInput = document.getElementById(`absence-to-${key}`);
+  const errorEl = document.getElementById(`absence-error-${key}`);
+  const fail = (message) => {
+    if (errorEl) errorEl.textContent = message;
+  };
+  if (errorEl) errorEl.textContent = '';
+  const start = fromInput?.value || '';
+  const end = toInput?.value || start;
+  if (!start) return fail('Pick the first day.');
+  if (end < start) return fail('The last day is before the first.');
+  try {
+    const res = await apiFetch('/api/save-absence-period', {
+      method: 'POST',
+      body: { student_id: studentId, course_id: courseId, start_date: start, end_date: end },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not save absence');
+    await loadCourses(getCurrentCourseFilter());
+  } catch (err) {
+    fail(err.message);
+  }
+}
+
+// Drops one planned absence (from the questionnaire or added by hand).
+export async function removeAbsencePeriod(periodId) {
+  if (!confirm('Remove this planned absence?')) return;
+  try {
+    const res = await apiFetch('/api/delete-absence-period', {
+      method: 'POST',
+      body: { id: periodId },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not remove absence');
+    await loadCourses(getCurrentCourseFilter());
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
 // What a logged session covered: topic chips, PDF references (each opens the
 // file at its first page) and the notes, truncated to one line.
 function sessionCrmLine(session) {
@@ -660,6 +718,7 @@ function renderCourses(courses) {
         ${s.unlogged ? '<span class="unlogged-flag">unlogged</span>' : ''}
         <button class="action-btn" data-action="openAttendanceModal" data-args="${s.id},${c.id},${fmtDate(s.scheduled_at)}">${s.logged ? 'edit log' : 'log session'}</button>
         ${sessionAttendanceLine(s, c.students || [])}
+        ${sessionPlannedAbsentLine(s, c.students || [])}
         ${sessionCrmLine(s)}
       </div>
     `
@@ -761,6 +820,7 @@ function renderCourses(courses) {
             ${s.current_level ? '<span class="detail-muted"> · ' + esc(s.current_level) + '</span>' : ''}
           </p>
           ${participantPlanningHtml(s.questionnaire)}
+          ${absencePeriodsHtml(s, c.id)}
           <div class="progress-row participant-controls">
             <label class="participant-inline-field">
               <span>level</span>

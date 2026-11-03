@@ -1,7 +1,9 @@
 // functions/api/get-courses.js
 // GET /api/get-courses?status=active&q=<term>&sort=created_at|course_code|service|level|status|student_count|sessions_remaining&dir=asc|desc
 //
-// Returns courses with sessions and enrolled students.
+// Returns courses with sessions and enrolled students. Each student carries
+// their planned absence periods and each session the ids of the students
+// whose period covers its date (see _absences.js).
 // Uses batch queries instead of per-course fetching to avoid N+1.
 
 import {
@@ -14,6 +16,7 @@ import {
 import { groupCourseInvoices } from './_invoices.js';
 import { DEFAULT_KIND, FEEDBACK_KINDS, isFeedbackKind, summariseByKind } from './_feedback.js';
 import { planningAnswers } from './_questionnaire.js';
+import { plannedAbsentees } from './_absences.js';
 
 const DB_SORTS = {
   created_at: {
@@ -185,6 +188,16 @@ export function attachSessionCrm(sessions, crm) {
   }));
 }
 
+// Attaches `planned_absent` (sorted student ids) to each session: everyone
+// whose absence period covers the session's Zurich date. Computed here, not
+// stored, so sessions synced after the student answered are covered too.
+export function attachPlannedAbsences(sessions, periods) {
+  return sessions.map((session) => ({
+    ...session,
+    planned_absent: plannedAbsentees(session, periods),
+  }));
+}
+
 function cleanSearchTerm(value) {
   return (value || '').trim().replace(/[(),]/g, ' ').replace(/\s+/g, ' ').slice(0, 80);
 }
@@ -269,17 +282,33 @@ async function fetchCourseFeedback(supabaseUrl, headers, courseFilter) {
   return { requests, responses };
 }
 
-// Pre-course questionnaires: when each was sent and answered, plus the two
-// planning answers the overviews show at a glance (documents format and
-// planned absences). The full answers come with get-student-detail.js.
+// Pre-course questionnaires: when each was sent and answered, plus the
+// planning answers the overviews show at a glance. `absences` is taken as
+// JSON (->), not text (->>): the calendar stores a list of ranges, while
+// older submissions hold a string, and planningAnswers tells them apart.
+// The full answers come with get-student-detail.js.
 // Returns [] when the add_course_questionnaires migration has not run yet.
 async function fetchCourseQuestionnaires(supabaseUrl, headers, courseFilter) {
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/course_questionnaires?or=(${courseFilter})&select=student_id,course_id,requested_at,submitted_at,documents_format:answers->>documents_format,absences:answers->>absences,contact_channel:answers->>contact_channel,homework_delivery:answers->>homework_delivery`,
+    `${supabaseUrl}/rest/v1/course_questionnaires?or=(${courseFilter})&select=student_id,course_id,requested_at,submitted_at,documents_format:answers->>documents_format,absences:answers->absences,contact_channel:answers->>contact_channel,homework_delivery:answers->>homework_delivery`,
     { headers }
   );
   if (!res.ok) {
     console.error('get-courses questionnaire fetch failed:', await res.text());
+    return [];
+  }
+  return res.json();
+}
+
+// Planned absence periods (questionnaire calendar or added by the admin)
+// for these courses. Returns [] when add_absence_periods.sql has not run.
+async function fetchAbsencePeriods(supabaseUrl, headers, courseFilter) {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/absence_periods?or=(${courseFilter})&select=id,student_id,course_id,start_date,end_date,source,note&order=start_date.asc`,
+    { headers }
+  );
+  if (!res.ok) {
+    console.error('get-courses absence periods fetch failed:', res.status);
     return [];
   }
   return res.json();
@@ -425,11 +454,15 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       : [];
 
     // ── Batch fetch feedback requests for these courses ───────────────
-    const [{ requests: allFeedbackRequests, responses: allFeedbackResponses }, allQuestionnaires] =
-      await Promise.all([
-        fetchCourseFeedback(SUPABASE_URL, H, courseFilter),
-        fetchCourseQuestionnaires(SUPABASE_URL, H, courseFilter),
-      ]);
+    const [
+      { requests: allFeedbackRequests, responses: allFeedbackResponses },
+      allQuestionnaires,
+      allAbsencePeriods,
+    ] = await Promise.all([
+      fetchCourseFeedback(SUPABASE_URL, H, courseFilter),
+      fetchCourseQuestionnaires(SUPABASE_URL, H, courseFilter),
+      fetchAbsencePeriods(SUPABASE_URL, H, courseFilter),
+    ]);
 
     // ── Batch fetch attendance for every listed session ───────────────
     const allSessionIds = allSessions.map((s) => s.id);
@@ -502,6 +535,14 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       };
     }
 
+    // Only periods of students still enrolled count (a removed student's
+    // rows may linger until the cleanup catches up).
+    const absencePeriodsByCourseStudent = {};
+    for (const p of allAbsencePeriods) {
+      if (!studentIdsByCourse[p.course_id]?.has(p.student_id)) continue;
+      ((absencePeriodsByCourseStudent[p.course_id] ||= {})[p.student_id] ||= []).push(p);
+    }
+
     const studentsById = {};
     for (const s of allStudents) {
       studentsById[s.id] = s;
@@ -535,6 +576,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       const enrolmentByStudent = enrolmentByCourseStudent[course.id] || {};
       const feedbackRequestedByStudent = feedbackRequestedByCourseStudent[course.id] || {};
       const questionnaireByStudent = questionnaireByCourseStudent[course.id] || {};
+      const absencePeriodsByStudent = absencePeriodsByCourseStudent[course.id] || {};
+      const coursePeriods = Object.values(absencePeriodsByStudent).flat();
       const students = [...(studentIdsByCourse[course.id] || [])]
         .map((id) => {
           const s = studentsById[id];
@@ -543,6 +586,8 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
             ...s,
             invoice_lesson_count: enrolmentByStudent[id]?.invoice_lesson_count ?? null,
             joined_at: enrolmentByStudent[id]?.joined_at ?? null,
+            // [{ id, start_date, end_date, source, note }], see _absences.js
+            absence_periods: absencePeriodsByStudent[id] || [],
             open_invoices: invByStudent[id] || [],
             paid_invoices: paidInvByStudent[id] || [],
             cancelled_invoices: cancelledInvByStudent[id] || [],
@@ -564,9 +609,12 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
           };
         })
         .filter(Boolean);
-      const sessions = attachSessionCrm(
-        annotateSessions(sessionsByCourse[course.id] || [], attendanceBySession, course),
-        crmBySession
+      const sessions = attachPlannedAbsences(
+        attachSessionCrm(
+          annotateSessions(sessionsByCourse[course.id] || [], attendanceBySession, course),
+          crmBySession
+        ),
+        coursePeriods
       );
       return {
         ...course,

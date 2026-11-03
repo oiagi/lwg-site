@@ -18,12 +18,30 @@ export function kindLabel(kind) {
   return KIND_LABELS[kind] || kind || '—';
 }
 
+/** '2026-11-03' → '03.11.2026'; anything else is shown as it is. */
+function fmtIsoDate(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ''));
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : String(value ?? '');
+}
+
+/** A stored { from, to } window as text: one day, or 'from – to'. */
+function fmtRange(range) {
+  const from = range?.from;
+  const to = range?.to || from;
+  return from === to ? fmtIsoDate(from) : `${fmtIsoDate(from)} – ${fmtIsoDate(to)}`;
+}
+
 function responseCard(row, questionsByKind, options = {}) {
   const questions = questionsByKind?.[row.kind] || {};
   const answers = row.answers || {};
+  // "LWG-2026-14 · German B1 · end of course"
+  const courseName = [row.course_subject, row.course_level].filter(Boolean).join(' ');
   const heading = options.hideCourse
     ? esc(kindLabel(row.kind))
-    : `${esc(row.course_code || '—')} · ${esc(kindLabel(row.kind))}`;
+    : [row.course_code || '—', courseName, kindLabel(row.kind)]
+        .filter(Boolean)
+        .map((part) => esc(part))
+        .join(' · ');
 
   const ratings = (questions.ratings || [])
     .map((q) => {
@@ -51,6 +69,15 @@ function responseCard(row, questionsByKind, options = {}) {
     .filter(Boolean)
     .join('');
 
+  const dates = (questions.dates || [])
+    .map((q) => {
+      const range = answers[q.id];
+      if (!range?.from) return '';
+      return `<li>${esc(q.label)} · <span class="detail-muted">${esc(fmtRange(range))}</span></li>`;
+    })
+    .filter(Boolean)
+    .join('');
+
   const comments = (questions.comments || [])
     .map((q) => {
       const text = answers[q.id];
@@ -70,7 +97,7 @@ function responseCard(row, questionsByKind, options = {}) {
         <span class="feedback-card-title">${heading}</span>
         <span class="feedback-card-meta">${esc(fmtDate(row.submitted_on))}</span>
       </div>
-      <ul class="feedback-rating-list">${ratings}${choices}</ul>
+      <ul class="feedback-rating-list">${ratings}${choices}${dates}</ul>
       ${comments || '<p class="detail-muted">no written comments</p>'}
     </div>`;
 }

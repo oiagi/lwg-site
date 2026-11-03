@@ -2779,6 +2779,79 @@ html[data-device='mobile'] .blocked-dates-range {
   font-size: 0.75rem;
   color: #7a4b00;
 }
+
+/* ── Planned absences: per participant, and on the session rows ───── */
+.absence-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0;
+  padding: 0.3rem 0.55rem;
+  border-left: 3px solid #e0a43a;
+  background: #fff8ea;
+  font-size: 0.78rem;
+  color: #333;
+}
+.absence-label {
+  font-weight: 600;
+}
+.absence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.2rem 0.1rem 0.45rem;
+  background: #fdf0d5;
+  color: #7a4b00;
+  border-radius: 2px;
+}
+.absence-source {
+  font-size: 0.65rem;
+  color: #a06a10;
+  letter-spacing: 0.02em;
+}
+.absence-remove {
+  padding: 0 0.3rem;
+  border: none;
+  background: transparent;
+  color: #7a4b00;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.absence-remove:hover {
+  color: #b0413e;
+}
+.absence-add {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+.absence-add .participant-inline-field input[type='date'] {
+  font-size: 0.75rem;
+}
+.absence-error {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  color: #b0413e;
+}
+.absence-error:empty {
+  display: none;
+}
+.session-planned-absent {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: #7a4b00;
+}
+.session-planned-absent-label {
+  font-weight: 600;
+}
+.att-chip--planned {
+  color: #7a4b00;
+  background: #fdf0d5;
+}
 .planning-highlight {
   margin: 0.4rem 0 0.6rem;
   padding: 0.4rem 0.6rem;

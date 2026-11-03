@@ -282,7 +282,10 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
       .map((s) => {
         const name = esc([s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || '—');
         const existing = attMap[s.id];
-        const present = existing ? existing.present : true;
+        // A planned absence (questionnaire or admin) pre-fills the box as
+        // absent until the lesson is actually logged; the log always wins.
+        const planned = !existing && (session?.planned_absent || []).includes(s.id);
+        const present = existing ? existing.present : !planned;
         const online = existing?.mode === 'online';
         const half = existing?.portion === 'half';
 
@@ -290,7 +293,7 @@ export async function openAttendanceModal(sessionId, courseId, dateLabel) {
       <div class="att-row">
         <label>
           <input type="checkbox" class="att-present" data-student-id="${s.id}" ${present ? 'checked' : ''}>
-          ${name}
+          ${name}${planned ? '<span class="att-chip att-chip--planned">planned absence</span>' : ''}
         </label>
         <span class="att-opts">
           <label class="att-opt">

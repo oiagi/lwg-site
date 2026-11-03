@@ -13,6 +13,8 @@
 //
 // Every German string is in the formal "Sie" form and Swiss spelling (ss).
 
+import { MAX_ABSENCE_RANGES, normaliseRanges, zurichToday } from './_absences.js';
+
 /** Feedback links stay valid for 90 days, same as the intake links. */
 export const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
@@ -180,6 +182,10 @@ export function courseDisplayName(course, language = 'de') {
      id        key in the stored answers JSON
      type      'scale' (1-10) | 'nps' (1-10, feeds the net promoter score)
                | 'choice' | 'multi' | 'text'
+               | 'dateranges' (a calendar; stored as [{ from, to }] of
+                 'YYYY-MM-DD', sorted and merged — see _absences.js)
+               | 'daterange' (one window, from today on; stored as
+                 { from, to } of 'YYYY-MM-DD')
      step      zero-based page of the form the question sits on; steps have
                no titles, they only paginate
      short     label used in the admin views and summaries
@@ -194,8 +200,11 @@ export function courseDisplayName(course, language = 'de') {
      subjects  normalised course subjects it applies to (e.g. ['german'])
      byProfile per-profile overrides of the de/en wording
      scale     custom endpoint labels for scale/nps questions
-     showIf    { id, values } — only asked when an earlier answer matches.
-               A hidden question is stored as null whatever was posted.   */
+     showIf    only asked when an earlier answer matches; a hidden question
+               is stored as null whatever was posted. Three forms:
+                 { id, values }    a choice answer is one of the values
+                 { id, below }     a scale/nps answer is lower than `below`
+                 { id, any: true } a multi answer has at least one tick    */
 
 const OTHER_OPTION = { value: 'other', de: 'Anderes', en: 'Other' };
 
@@ -207,6 +216,23 @@ const SATISFACTION_SCALE = {
 /** Shorthand for a required 1-10 statement. */
 function statement(id, step, short, de, en, extra) {
   return { id, type: 'scale', step, required: true, short, de, en, ...extra };
+}
+
+/* Scores from 1 to this (exclusive) get a neutral "why" follow-up. 7 is
+   the NPS detractor cut-off (6 and below), used for every scale here. */
+const LOW_SCORE_BELOW = 7;
+
+/** The optional follow-up to a low satisfaction score, same on both forms. */
+function satisfactionNote(step) {
+  return {
+    id: 'satisfaction_note',
+    type: 'text',
+    step,
+    showIf: { id: 'satisfaction', below: LOW_SCORE_BELOW },
+    short: { de: 'Grund', en: 'reason' },
+    de: 'Was ist der Hauptgrund für Ihre Bewertung?',
+    en: 'What is the main reason for your rating?',
+  };
 }
 
 /* ── End-of-course form ─────────────────────────────────────────────── */
@@ -222,6 +248,7 @@ const FINAL_FIELDS = [
     en: 'Overall, how satisfied are you with the lessons?',
     scale: SATISFACTION_SCALE,
   },
+  satisfactionNote(0),
   statement(
     'organisation',
     0,
@@ -358,6 +385,15 @@ const FINAL_FIELDS = [
       OTHER_OPTION,
     ],
   },
+  {
+    id: 'activities_why',
+    type: 'text',
+    step: 1,
+    showIf: { id: 'activities', any: true },
+    short: { de: 'Warum geholfen', en: 'why they helped' },
+    de: 'Warum haben Ihnen diese Aktivitäten besonders geholfen?',
+    en: 'Why did these activities help you most?',
+  },
 
   // step 2 — in your words
   {
@@ -396,6 +432,15 @@ const FINAL_FIELDS = [
     },
   },
   {
+    id: 'recommend_note',
+    type: 'text',
+    step: 3,
+    showIf: { id: 'recommend', below: LOW_SCORE_BELOW },
+    short: { de: 'Zur Weiterempfehlung', en: 'on recommending' },
+    de: 'Was würde Sie eher dazu bringen, uns weiterzuempfehlen?',
+    en: 'What would make you more likely to recommend us?',
+  },
+  {
     id: 'continue',
     type: 'choice',
     step: 3,
@@ -416,6 +461,16 @@ const FINAL_FIELDS = [
     short: { de: 'Als Nächstes', en: 'next course' },
     de: 'Was möchten Sie als Nächstes lernen?',
     en: 'What would you like to learn next?',
+  },
+  {
+    id: 'continue_start',
+    type: 'daterange',
+    step: 3,
+    showIf: { id: 'continue', values: ['yes', 'maybe'] },
+    short: { de: 'Wunschstart', en: 'preferred start' },
+    de: 'Wann möchten Sie mit dem Anschlusskurs beginnen?',
+    en: 'When would you like to start the continuation course?',
+    hint: { de: 'Ein ungefährer Zeitraum genügt.', en: 'An approximate window is enough.' },
   },
   {
     id: 'anything_else',
@@ -440,6 +495,7 @@ const MIDTERM_FIELDS = [
     en: 'How satisfied are you with the lessons so far?',
     scale: SATISFACTION_SCALE,
   },
+  satisfactionNote(0),
   statement(
     'pace',
     0,
@@ -485,12 +541,43 @@ const MIDTERM_FIELDS = [
     ],
   },
   {
+    id: 'materials_why',
+    type: 'text',
+    step: 1,
+    showIf: { id: 'materials_liked', any: true },
+    short: { de: 'Warum diese Materialien', en: 'why these materials' },
+    de: 'Warum helfen Ihnen diese Materialien besonders?',
+    en: 'Why do these materials help you in particular?',
+  },
+  {
     id: 'materials_wish',
     type: 'text',
     step: 1,
     short: { de: 'Materialwunsch', en: 'materials wanted' },
     de: 'Gibt es Materialien, die Sie sich zusätzlich wünschen?',
     en: 'Are there materials you would like us to add?',
+  },
+  {
+    id: 'presentations',
+    type: 'choice',
+    step: 1,
+    short: { de: 'Präsentationen', en: 'presentations' },
+    de: 'Finden Sie die PowerPoint-Präsentationen hilfreich?',
+    en: 'Do you find the PowerPoint presentations helpful?',
+    options: [
+      { value: 'yes', de: 'Ja', en: 'Yes' },
+      { value: 'partly', de: 'Teils, teils', en: 'Partly' },
+      { value: 'no', de: 'Nein', en: 'No' },
+    ],
+  },
+  {
+    id: 'presentations_note',
+    type: 'text',
+    step: 1,
+    showIf: { id: 'presentations', values: ['yes', 'partly', 'no'] },
+    short: { de: 'Präsentationen, warum', en: 'presentations, why' },
+    de: 'Warum?',
+    en: 'Why?',
   },
   {
     id: 'class_style',
@@ -528,6 +615,15 @@ const MIDTERM_FIELDS = [
       },
       OTHER_OPTION,
     ],
+  },
+  {
+    id: 'class_style_why',
+    type: 'text',
+    step: 1,
+    showIf: { id: 'class_style', any: true },
+    short: { de: 'Warum diese Arbeitsweise', en: 'why this class style' },
+    de: 'Warum passt diese Arbeitsweise gut zu Ihnen?',
+    en: 'Why does this way of working suit you?',
   },
 
   // step 2 — studying at home
@@ -697,6 +793,11 @@ export function choiceFields(kind) {
   return feedbackFields(kind).filter((f) => f.type === 'choice' || f.type === 'multi');
 }
 
+/** Date-window questions (stored as { from, to }). */
+export function dateFields(kind) {
+  return feedbackFields(kind).filter((f) => f.type === 'daterange');
+}
+
 /** The key an "other: ___" answer is stored under. */
 export function otherKey(field) {
   return field.id + '_other';
@@ -763,10 +864,27 @@ function questionText(field, course, lang) {
   return wordingFiller(course, lang)(field.byProfile?.[profile]?.[lang] ?? field[lang]);
 }
 
-/** Is a conditional question shown, given the answers so far? */
+/**
+ * Is a conditional question shown, given the answers so far? Mirrored in
+ * public/feedback.js. A controller stored as null (skipped for the profile,
+ * or left blank) never shows a follow-up: note that `null < 7` is true in
+ * JS, hence the type checks.
+ */
 export function conditionMet(field, answers) {
-  if (!field.showIf) return true;
-  return field.showIf.values.includes(answers?.[field.showIf.id]);
+  const condition = field.showIf;
+  if (!condition) return true;
+  const answer = answers?.[condition.id];
+  if (condition.values) return condition.values.includes(answer);
+  if (condition.below !== undefined) return typeof answer === 'number' && answer < condition.below;
+  if (condition.any) return Array.isArray(answer) && answer.length > 0;
+  return false;
+}
+
+/** The showIf condition as the client receives it: only the key that is set. */
+function serialiseCondition(condition) {
+  if (condition.values) return { id: condition.id, values: [...condition.values] };
+  if (condition.below !== undefined) return { id: condition.id, below: condition.below };
+  return { id: condition.id, any: true };
 }
 
 /**
@@ -786,7 +904,7 @@ export function buildQuestionSet(fields, { language, course = null, minutes = nu
       required: Boolean(field.required),
     };
     if (field.hint) out.hint = fill(pick(field.hint, lang));
-    if (field.showIf) out.showIf = { id: field.showIf.id, values: [...field.showIf.values] };
+    if (field.showIf) out.showIf = serialiseCondition(field.showIf);
     if (field.type === 'scale' || field.type === 'nps') {
       const scale = field.scale || RATING_SCALE_LABELS;
       out.min = field.type === 'nps' ? NPS_MIN : RATING_MIN;
@@ -802,6 +920,7 @@ export function buildQuestionSet(fields, { language, course = null, minutes = nu
     }
     if (field.other) out.other = true;
     if (field.type === 'text') out.maxLength = COMMENT_MAX_LENGTH;
+    if (field.type === 'dateranges') out.maxRanges = MAX_ABSENCE_RANGES;
     return out;
   };
 
@@ -883,13 +1002,36 @@ function validateNumeric(field, raw, min, max, label) {
  * as null whatever the client posted. Returns { error } or { answers } keyed
  * by question id, one entry per asked question, ready to store as JSON.
  */
-export function validateFeedbackSubmission(kind, body, course = null) {
+export function validateFeedbackSubmission(kind, body, course = null, options = {}) {
   if (!isFeedbackKind(kind)) return { error: 'Unknown feedback kind' };
-  return validateAnswers(feedbackFields(kind), body, course);
+  return validateAnswers(feedbackFields(kind), body, course, options);
 }
 
-/** validateFeedbackSubmission for any question registry. */
-export function validateAnswers(fields, body, course = null) {
+/**
+ * One future window { from, to? } → { value: { from, to } } (null when
+ * nothing was given) or { error }. Reuses the absence-range rules (ISO
+ * dates, reversed pairs swapped, far-future horizon) and then insists the
+ * window does not start in the past: it is about a course yet to begin.
+ */
+function validateDateRange(field, raw, today) {
+  if (raw === undefined || raw === null || raw === '') return { value: null };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { error: `${field.id} must be an object with from and to` };
+  }
+  if (!raw.from) return { value: null };
+  const { error, value } = normaliseRanges([raw], { today });
+  if (error) return { error: `${field.id}: ${error}` };
+  const range = value?.[0] || null;
+  if (range && range.from < today) return { error: `${field.id}: dates must not lie in the past` };
+  return { value: range };
+}
+
+/**
+ * validateFeedbackSubmission for any question registry. `today` (a Zurich
+ * 'YYYY-MM-DD') anchors the window a date-range question accepts; tests
+ * pass it in, production leaves the default.
+ */
+export function validateAnswers(fields, body, course = null, { today } = {}) {
   if (!body || typeof body !== 'object') return { error: 'Request body must be a JSON object' };
 
   const isPlainObject = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -903,6 +1045,7 @@ export function validateAnswers(fields, body, course = null) {
 
   const profiles = courseFeedbackProfiles(course);
   const ask = (field) => questionText(field, course, 'en');
+  const todayIso = today || zurichToday();
 
   const answers = {};
 
@@ -935,6 +1078,22 @@ export function validateAnswers(fields, body, course = null) {
 
     if (field.type === 'text') {
       const { error, value } = validateText(field, raw);
+      if (error) return { error };
+      if (field.required && value === null) return { error: `Please answer: ${ask(field)}` };
+      answers[field.id] = value;
+      continue;
+    }
+
+    if (field.type === 'dateranges') {
+      const { error, value } = normaliseRanges(raw, { today: todayIso });
+      if (error) return { error: `${field.id}: ${error}` };
+      if (field.required && value === null) return { error: `Please answer: ${ask(field)}` };
+      answers[field.id] = value;
+      continue;
+    }
+
+    if (field.type === 'daterange') {
+      const { error, value } = validateDateRange(field, raw, todayIso);
       if (error) return { error };
       if (field.required && value === null) return { error: `Please answer: ${ask(field)}` };
       answers[field.id] = value;
@@ -1108,5 +1267,6 @@ export function feedbackQuestionLabels(kind, language = 'en') {
       options: q.options.map((o) => ({ value: o.value, label: o[lang] })),
     })),
     comments: commentFields(kind).map((q) => ({ id: q.id, label: q.short[lang] })),
+    dates: dateFields(kind).map((q) => ({ id: q.id, label: q.short[lang] })),
   };
 }

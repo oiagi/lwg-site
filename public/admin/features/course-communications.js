@@ -231,8 +231,10 @@ const FEEDBACK_PREVIEW = {
       'Lesson frequency, breaks, substitute teacher',
     ],
     optional: [
-      'Which materials they like and what they would like added',
-      'How they prefer to work in class',
+      'The main reason behind a satisfaction score below 7',
+      'Which materials they like, why those help them, and what they would like added',
+      'Whether they find the PowerPoint presentations helpful, and why',
+      'How they prefer to work in class, and why that suits them',
       'How they study at home and how much time they have',
       'Their preferred frequency and lesson length (if the current frequency does not suit)',
       'Their own preference when the teacher is unavailable (if they picked "other")',
@@ -250,9 +252,11 @@ const FEEDBACK_PREVIEW = {
       'How likely they are to recommend us (1–10)',
     ],
     optional: [
-      'What would have helped (if progress was low) and which activities helped most',
+      'The main reason behind a satisfaction score below 7',
+      'What would have helped (if progress was low), which activities helped most and why',
       'What they enjoyed and what we could improve',
-      'Whether they want another course and what they would like to learn next',
+      'What would make them more likely to recommend us (if the score is below 7)',
+      'Whether they want another course, what they would like to learn next and when they would like to start',
     ],
   },
 };
@@ -350,7 +354,7 @@ const QUESTIONNAIRE_PREVIEW = {
     'Language courses: prior experience, self-rated level, focus skills, explanations in the target language only or with English',
   ],
   optional: [
-    'Planned absences (with a note that lessons cannot be postponed)',
+    'Planned absences, marked in a calendar (with a note that lessons cannot be postponed)',
     'What has not worked before, learning needs, anything else',
     'Language courses: other languages spoken, exam, vocabulary topics, Swiss German (German courses)',
   ],

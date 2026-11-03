@@ -31,6 +31,7 @@ import {
   choiceFields,
   commentFields,
   courseDisplayName,
+  dateFields,
   feedbackQuestionsForLanguage,
   isFeedbackKind,
   kindLabel,
@@ -40,8 +41,10 @@ import {
   ratingFields,
   validateFeedbackSubmission,
 } from './_feedback.js';
-import { esc } from './_feedback-email.js';
+import { courseLabel, esc } from './_feedback-email.js';
 import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { FUTURE_HORIZON_DAYS, formatRange, zurichToday } from './_absences.js';
+import { addDays } from './_blocked-dates.js';
 
 const REQUEST_SELECT = 'id,course_id,kind,language,requested_at,submitted_at';
 
@@ -101,6 +104,7 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
 
   const course = await loadCourse(env, row.course_id);
   const language = row.language === 'en' ? 'en' : 'de';
+  const today = zurichToday();
 
   return jsonResponse({
     language,
@@ -111,6 +115,11 @@ export const onRequestGet = withErrorHandling(async ({ request, env }) => {
       // The header names the course, so the form never asks which one it was.
       name: { de: courseDisplayName(course, 'de'), en: courseDisplayName(course, 'en') },
     },
+    // For the date-window question (when a continuation course should
+    // start): the days the form may offer. The server checks the same
+    // window on submit.
+    today,
+    window: { from: today, to: addDays(today, FUTURE_HORIZON_DAYS) },
     // Both languages: the page follows the site language switcher, which the
     // visitor can change after arriving from the email. Both are tailored to
     // the same course, so the question set does not change with the language.
@@ -224,18 +233,26 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         .filter(Boolean)
         .join('');
 
+      const dateRows = dateFields(kind)
+        .filter((q) => answers[q.id])
+        .map(
+          (q) => `<li>${esc(q.short.en)} — <strong>${esc(formatRange(answers[q.id]))}</strong></li>`
+        )
+        .join('');
+
       const commentRows = commentFields(kind)
         .filter((q) => answers[q.id])
         .map((q) => `<p><em>${esc(q.en)}</em><br>${esc(answers[q.id])}</p>`)
         .join('');
 
-      const code = course?.course_code || 'a course';
+      // "German B1 course LWG-2026-14", so the subject line names the course.
+      const label = courseLabel(course, 'en');
       await sendResendEmail(env.RESEND_API_KEY, {
         to: NOTIFY_EMAILS,
-        subject: `New ${kindLabel(kind, 'en')} feedback — ${course?.course_code || 'course'}`,
+        subject: `New ${kindLabel(kind, 'en')} feedback — ${label}`,
         html: `<!DOCTYPE html><html lang="en"><body style="font-family:Georgia,serif;color:#1a1a1a;">
-          <p>A student submitted ${esc(kindLabel(kind, 'en'))} feedback for ${esc(code)}. Responses are anonymous.</p>
-          <ul>${ratingRows}${choiceRows}</ul>
+          <p>A student submitted ${esc(kindLabel(kind, 'en'))} feedback for ${esc(label)}. Responses are anonymous.</p>
+          <ul>${ratingRows}${choiceRows}${dateRows}</ul>
           ${commentRows || '<p style="color:#aaa;">No written comments.</p>'}
           <p style="color:#aaa;font-size:13px;">See the feedback tab in the admin dashboard for the full list.</p>
         </body></html>`,

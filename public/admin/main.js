@@ -23,6 +23,8 @@ import {
   toggleCompanyCodeBooking,
   handleCourseBooking,
   removeSessionMaterialRef,
+  addAbsencePeriod,
+  removeAbsencePeriod,
 } from './features/courses.js';
 import {
   openAttendanceModal,

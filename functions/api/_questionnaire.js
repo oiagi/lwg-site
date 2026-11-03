@@ -11,6 +11,12 @@
 // question id), so the teacher can plan around each person. The rendering,
 // profile filtering and validation come from _feedback.js.
 //
+// Planned absences are marked in a calendar and stored as date ranges
+// ([{ from, to }], see _absences.js). questionnaire.js also copies them into
+// the absence_periods table, where the admin sees them against each lesson.
+// Submissions from before the calendar hold a free-text string instead; the
+// display helpers below accept both.
+//
 // Every German string is in the formal "Sie" form and Swiss spelling (ss).
 
 import {
@@ -20,6 +26,7 @@ import {
   otherKey,
   fillWording,
 } from './_feedback.js';
+import { formatRanges } from './_absences.js';
 
 /** Questionnaire links stay valid for 90 days, same as feedback and intake. */
 export const TOKEN_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
@@ -363,14 +370,14 @@ export const QUESTIONNAIRE_FIELDS = [
   // step 3 — planning
   {
     id: 'absences',
-    type: 'text',
+    type: 'dateranges',
     step: 3,
     short: { de: 'Geplante Abwesenheiten', en: 'planned absences' },
     de: 'Wissen Sie schon von Daten, an denen Sie nicht teilnehmen können?',
     en: 'Do you already know of any dates you will miss?',
     hint: {
-      de: 'Lektionen können wegen geplanter Abwesenheiten nicht verschoben werden. Wenn Ihre Lehrperson aber davon weiss, kann sie die Themen entsprechend planen.',
-      en: 'Lessons cannot be postponed because of planned absences, but knowing about them helps your teacher plan topics around them.',
+      de: 'Markieren Sie im Kalender die Tage oder Zeiträume, an denen Sie abwesend sind. Lektionen können wegen geplanter Abwesenheiten nicht verschoben werden. Wenn Ihre Lehrperson aber davon weiss, kann sie die Themen entsprechend planen.',
+      en: 'Mark the days or periods you will be away in the calendar. Lessons cannot be postponed because of planned absences, but knowing about them helps your teacher plan topics around them.',
     },
   },
   {
@@ -393,8 +400,8 @@ export function questionnaireForLanguage(language, course = null) {
 }
 
 /** Validate a submission; see validateAnswers in _feedback.js. */
-export function validateQuestionnaire(body, course = null) {
-  return validateAnswers(QUESTIONNAIRE_FIELDS, body, course);
+export function validateQuestionnaire(body, course = null, options = {}) {
+  return validateAnswers(QUESTIONNAIRE_FIELDS, body, course, options);
 }
 
 function fieldById(id) {
@@ -409,6 +416,10 @@ export function answerText(id, answers, course = null, language = 'en') {
   if (!field || stored === null || stored === undefined || stored === '') return null;
   if (Array.isArray(stored) && !stored.length) return null;
   if (field.type === 'text') return String(stored);
+  // Date ranges from the calendar; older submissions typed them as text.
+  if (field.type === 'dateranges') {
+    return Array.isArray(stored) ? formatRanges(stored) : String(stored);
+  }
 
   const label = (value) => {
     const option = (field.options || []).find((o) => o.value === value);
@@ -439,10 +450,15 @@ export function labelledAnswers(answers, course = null, language = 'en') {
 /**
  * The planning answers only (documents format, planned absences, contact
  * channel, how homework is handed out), so course and student overviews
- * can show them without the whole JSON.
+ * can show them without the whole JSON. `absences` is the stored list of
+ * { from, to } ranges, the trimmed free text of an older submission, or
+ * null when nothing was given.
  */
 export function planningAnswers(answers) {
-  const absences = typeof answers?.absences === 'string' ? answers.absences.trim() || null : null;
+  const raw = answers?.absences;
+  let absences = null;
+  if (Array.isArray(raw)) absences = raw.length ? raw : null;
+  else if (typeof raw === 'string') absences = raw.trim() || null;
   return {
     documents_format: answers?.documents_format || null,
     absences,

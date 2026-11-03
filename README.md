@@ -80,7 +80,7 @@ All endpoints live at `/api/*`. Shared helpers are prefixed with `_` and not rou
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Auth          | `auth-login`, `auth-callback`                                                                                                                             |
 | Courses       | `get-courses`, `update-course`, `delete-course`, `public-courses`                                                                                         |
-| Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`                                                                                  |
+| Enrolments    | `add-enrolment`, `update-enrolment`, `remove-enrolment`, `cancel-course`, `save-absence-period`, `delete-absence-period`                                  |
 | Students      | `get-students`, `get-student-detail`, `save-student`, `update-student`, `delete-student`, `import-students`                                               |
 | Sessions      | `get-attendance`, `save-attendance` (attendance, topics, material references, notes), `send-session-schedule`                                             |
 | Materials     | `get-materials`, `create-material-upload`, `save-material`, `get-material-file`, `delete-material`, `remove-session-material`, `get-topics`, `save-topic` |
