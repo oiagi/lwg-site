@@ -10,6 +10,7 @@ import {
   formatQrReference,
 } from '../core/swiss-qr-bill.js';
 import { drawQrBillPage } from './qr-bill-pdf.js';
+import { paymentTerms, defaultDueDate, PAYMENT_WINDOW_DAYS } from '../core/invoice-terms.js';
 
 const SENDER = {
   name: 'Birukoff World c/o Gioia Birukoff',
@@ -225,6 +226,10 @@ function bindInvoiceListeners() {
       updateInvoicePreview();
     });
   });
+  // Date inputs fire 'change' (not 'input') when picked from the calendar.
+  ['inv-date', 'inv-due-date'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('change', updateInvoicePreview);
+  });
   document.querySelectorAll('input[name="inv-language"]').forEach((el) => {
     el.addEventListener('change', () => {
       const lang = currentLang();
@@ -437,12 +442,6 @@ function formatDateInput(date) {
   return date.toISOString().slice(0, 10);
 }
 
-function addDays(date, days) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + days);
-  return copy;
-}
-
 function firstCourseDate(course) {
   const dates = (course.sessions || [])
     .filter((s) => s.status !== 'cancelled')
@@ -551,7 +550,13 @@ function currentLang() {
 
 function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   const today = new Date();
-  const due = firstCourseDate(currentCourse) || addDays(today, 14);
+  const invoiceDate = formatDateInput(today);
+  // Course start when it lies more than 30 days ahead, else invoice + 30 days.
+  const start = firstCourseDate(currentCourse);
+  const due = defaultDueDate({
+    issuedDate: invoiceDate,
+    courseStart: start ? formatDateInput(start) : null,
+  });
   const quantity = studentLessonCount(student);
   const unitPrice = defaultUnitPrice(currentCourse);
   const totalAmount = Number((quantity * unitPrice).toFixed(2));
@@ -560,8 +565,8 @@ function buildDefaultInvoiceData(invoiceNumber, student = currentStudent) {
   return {
     invoiceNumber,
     customerReference: student?.customer_reference || '',
-    invoiceDate: formatDateInput(today),
-    dueDate: formatDateInput(due),
+    invoiceDate,
+    dueDate: due,
     subject: formalCourseLabel(currentCourse, currentLang()) || courseCode,
     quantity,
     unitPrice: unitPrice.toFixed(2),
@@ -639,6 +644,32 @@ function money(value) {
   return Number(value || 0).toFixed(2);
 }
 
+// The payment sentence under the table, chosen by how far the course start
+// (= due date) lies beyond the invoice date. Shared by preview and PDF.
+function paymentSentence(data, s, lang) {
+  const { farAhead } = paymentTerms({ issuedDate: data.invoiceDate, dueDate: data.dueDate });
+  return s.paymentText(farAhead, chDate(data.dueDate, lang));
+}
+
+// Admin-only hint under the due-date input: when the system will flag the
+// invoice as overdue, and which rule produced that date.
+function updateDueDateHint() {
+  const hint = document.getElementById('inv-due-date-hint');
+  if (!hint) return;
+  const { farAhead, overdueFrom } = paymentTerms({
+    issuedDate: val('inv-date'),
+    dueDate: val('inv-due-date'),
+  });
+  if (!overdueFrom) {
+    hint.textContent = '';
+    return;
+  }
+  const rule = farAhead
+    ? 'course starts more than 30 days out: 1 week after course start'
+    : `invoice date + ${PAYMENT_WINDOW_DAYS} days`;
+  hint.textContent = `Overdue in system from ${chDate(overdueFrom, 'de')} (${rule})`;
+}
+
 function invoiceStrings(lang, isGroup = false) {
   const isEN = lang === 'en';
   return {
@@ -658,10 +689,16 @@ function invoiceStrings(lang, isGroup = false) {
     colSubject: isEN ? 'Subject' : 'Fach',
     colLessons: isEN ? 'No. of lessons' : 'Anzahl Lektionen',
     colAmount: isEN ? 'Amount CHF' : 'Betrag CHF',
-    paymentText: () =>
-      isEN
-        ? 'Please transfer the amount before the start of the course, at the latest within 30 days.'
-        : 'Wir bedanken uns für Ihre Überweisung vor Kursbeginn, spätestens jedoch innerhalb von 30 Tagen.',
+    // `farAhead`: course starts more than 30 days after the invoice date, so
+    // the due date is the course start; otherwise the 30-day window applies.
+    paymentText: (farAhead, startDate) =>
+      farAhead && startDate
+        ? isEN
+          ? `Please transfer the amount by the start of the course on ${startDate}.`
+          : `Wir bedanken uns für Ihre Überweisung bis zum Kursbeginn am ${startDate}.`
+        : isEN
+          ? 'Please transfer the amount within 30 days.'
+          : 'Wir bedanken uns für Ihre Überweisung innert 30 Tagen.',
     closing: isEN ? 'Kind regards,' : 'Herzliche Grüsse',
     stornoTitle: isEN ? 'Credit Note' : 'Stornorechnung',
     stornoTotalLabel: isEN ? 'Credit note total' : 'Storno-Rechnungsbetrag',
@@ -758,7 +795,7 @@ function buildPreviewHtml(data) {
           </tr>
         </tbody>
       </table>
-      <p>${esc(data.isStorno ? s.stornoClosing(data.originalPaid) : s.paymentText())}</p>
+      <p>${esc(data.isStorno ? s.stornoClosing(data.originalPaid) : paymentSentence(data, s, lang))}</p>
       <p>${esc(s.closing)}<br>Gioia Birukoff</p>
       ${qrBillPreviewNote(data)}
       ${data.isStorno ? '' : `<p class="inv-prev-note">${esc(s.footnote)}</p>`}
@@ -798,6 +835,7 @@ function qrBillPreviewNote(data) {
 }
 
 function updateInvoicePreview() {
+  updateDueDateHint();
   const container = document.getElementById('invoice-preview');
   if (!container || !currentCourse) return;
   const selected = selectedBulkRecipients();
@@ -968,7 +1006,9 @@ async function buildInvoicePdf(data) {
   const subjectLines = doc.splitTextToSize(String(data.subject || ''), widths[0] - 5);
   const itemH = Math.max(8, subjectLines.length * 5.2 + 3);
   setFont(10.5);
-  const afterTableText = data.isStorno ? s.stornoClosing(data.originalPaid) : s.paymentText();
+  const afterTableText = data.isStorno
+    ? s.stornoClosing(data.originalPaid)
+    : paymentSentence(data, s, lang);
   const paymentLines = doc.splitTextToSize(String(afterTableText || ''), contentW);
   const blockH =
     9 +
