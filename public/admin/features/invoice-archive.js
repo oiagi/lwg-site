@@ -1,6 +1,7 @@
 /* ── Invoice Archive ─────────────────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
 import { esc } from '../core/helpers.js';
+import { paymentTerms, isPastDeadline } from '../core/invoice-terms.js';
 import { openStornoModal } from './invoices.js';
 
 const ARCHIVE_START_YEAR = 2024;
@@ -44,15 +45,21 @@ function isInert(file) {
   return INERT_STATUSES.includes(file.status);
 }
 
-// Past its due date and still owed. Cancelled/storno rows are never overdue,
-// and 'overdue' rows already carry the status so they are not double-flagged.
+// The day the system starts chasing: the letter's due date (course start)
+// plus the grace the payment terms grant — see core/invoice-terms.js.
+function overdueFrom(file) {
+  return paymentTerms({ issuedDate: file.issued_date, dueDate: file.due_date }).overdueFrom;
+}
+
+// Past its payment deadline and still owed. Cancelled/storno rows are never
+// overdue, and 'overdue' rows already carry the status so they are not
+// double-flagged.
 function isOverdue(file) {
   return Boolean(
     !isInert(file) &&
     file.status !== 'paid' &&
     file.status !== 'overdue' &&
-    file.due_date &&
-    new Date(file.due_date) < new Date()
+    isPastDeadline(overdueFrom(file))
   );
 }
 
@@ -176,7 +183,14 @@ function renderFiles(files) {
     .map((f) => {
       const name = esc(f.name.replace(/\.pdf$/i, ''));
       const date = esc(formatDate(f.created_at));
-      const dueDate = f.due_date ? `due ${formatDate(f.due_date)}` : '';
+      const inert = isInert(f);
+      // Paid/inert rows are no longer chased, so only show the deadline on
+      // rows that still owe something, and only when it differs from due.
+      const deadline = inert || f.status === 'paid' ? null : overdueFrom(f);
+      const showDeadline = deadline && deadline !== String(f.due_date).slice(0, 10);
+      const dueDate = f.due_date
+        ? `due ${formatDate(f.due_date)}${showDeadline ? ` · overdue from ${formatDate(deadline)}` : ''}`
+        : '';
       const student = esc(f.student_name || '—');
       const courseParts = [f.course_code, f.course_subject, f.course_level].filter(Boolean);
       const course = esc(courseParts.join(' - ') || '—');
@@ -184,7 +198,6 @@ function renderFiles(files) {
         f.total_amount !== null && f.total_amount !== undefined
           ? esc(`${Number(f.total_amount).toFixed(2)} ${f.currency || 'CHF'}`)
           : '';
-      const inert = isInert(f);
       const knownStatusClasses = ['draft', 'sent', 'paid', 'cancelled', 'storno', 'overdue'];
       const statusClass = knownStatusClasses.includes(f.status) ? f.status : 'draft';
       const statusLabel = esc(f.status || '—');

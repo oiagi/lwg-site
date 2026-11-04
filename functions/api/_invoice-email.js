@@ -144,10 +144,13 @@ export function buildInvoiceEmail({
   const invoiceLine = isEN
     ? `Attached you will find the invoice for ${courseLabel}.`
     : `Anbei finden Sie die Rechnung für ${courseLabel}.`;
+  // The due date already encodes the payment rule (course start when more
+  // than 30 days out, otherwise invoice + 30 days), so one sentence serves
+  // both cases. See public/admin/core/invoice-terms.js.
   const paymentLine = dueDate
     ? isEN
-      ? `You can pay it easily with the QR bill in the PDF. The payment is due by ${dueDate}.`
-      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Fällig ist die Rechnung bis zum ${dueDate}.`
+      ? `You can pay it easily with the QR bill in the PDF. We kindly ask you to transfer the invoice amount to our bank account by ${dueDate}. Thank you for placing your trust in us.`
+      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Wir bitten Sie, den Rechnungsbetrag bis zum ${dueDate} auf unser Bankkonto zu überweisen. Vielen Dank für Ihr Vertrauen.`
     : isEN
       ? 'You will find the payment details directly in the attached PDF.'
       : 'Die Zahlungsdetails finden Sie direkt im angehängten PDF.';
@@ -155,8 +158,8 @@ export function buildInvoiceEmail({
     ? 'Below you will find all the important information about your course.'
     : 'Unten finden Sie alle wichtigen Infos zu Ihrem Kurs.';
   const questionLine = isEN
-    ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
+    ? 'Should you have any questions, please reply to this email.'
+    : 'Bei Fragen antworten Sie gerne direkt auf diese E-Mail.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
   const bodyHtml = [
@@ -234,9 +237,9 @@ export function buildCancellationEmail({
     ? 'You will receive the new invoice in a separate email.'
     : 'Die neue Rechnung erhalten Sie in einer separaten E-Mail.';
   const questionLine = isEN
-    ? 'If anything looks unclear, just reply to this email.'
-    : 'Falls etwas unklar ist, antworten Sie einfach direkt auf diese E-Mail.';
-  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
+    ? 'Should you have any questions, please reply to this email.'
+    : 'Bei Fragen antworten Sie gerne direkt auf diese E-Mail.';
+  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüse';
 
   const bodyHtml = [
     `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>`,

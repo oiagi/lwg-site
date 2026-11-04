@@ -42,7 +42,10 @@ const invoice = {
   subject: 'Deutsch · B1 · LWG-2026-14',
   total_amount: 450,
   currency: 'CHF',
-  due_date: '2026-08-03',
+  // Course starts 2026-08-03, two weeks after the invoice date → the due
+  // date is the 30-day window, not the course start.
+  invoice_date: '2026-07-20',
+  due_date: '2026-08-19',
 };
 
 function buildInvoice(overrides = {}) {
@@ -138,8 +141,29 @@ test('invoice email keeps its subject, greeting, amount and due date', () => {
   assert.ok(html.includes('Liebe Anna'));
   assert.ok(html.includes('Anbei finden Sie die Rechnung für Deutsch · B1 · LWG-2026-14.'));
   assert.ok(html.includes('Betrag: <strong>450.00 CHF</strong>'));
-  assert.ok(html.includes('Fällig ist die Rechnung bis zum 03.08.2026.'));
+  assert.ok(
+    html.includes(
+      'Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Wir bitten Sie, den Rechnungsbetrag bis zum 19.08.2026 auf unser Bankkonto zu überweisen. Vielen Dank für Ihr Vertrauen.'
+    )
+  );
   assert.ok(html.includes('Herzliche Grüsse'));
+});
+
+test('the English email mirrors the payment request', () => {
+  const { html } = buildInvoice({ language: 'en' });
+  assert.ok(
+    html.includes(
+      'You can pay it easily with the QR bill in the PDF. We kindly ask you to transfer the invoice amount to our bank account by 19/08/2026. Thank you for placing your trust in us.'
+    )
+  );
+});
+
+test('a course more than 30 days out simply carries the course start as the date', () => {
+  const far = { ...invoice, invoice_date: '2026-06-01', due_date: '2026-08-03' };
+  const de = buildInvoice({ invoice: far }).html;
+  assert.ok(de.includes('den Rechnungsbetrag bis zum 03.08.2026 auf unser Bankkonto'));
+  const en = buildInvoice({ language: 'en', invoice: far }).html;
+  assert.ok(en.includes('to our bank account by 03/08/2026.'));
 });
 
 test('invoice email carries the course details, lessons, cancellation policy and AGB', () => {
