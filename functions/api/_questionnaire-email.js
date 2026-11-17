@@ -9,8 +9,8 @@ const COPY = {
   en: {
     subject: (code) => `Before your course starts${code} — learning with gioia`,
     greeting: (name) => `Hello${name ? ' ' + name : ''} :)`,
-    intro: (label) =>
-      `We are looking forward to your ${label}! So that we can plan the lessons around you, we would be grateful if you could take about five minutes before the course starts to tell us about your goals and how you like to learn.`,
+    welcome: (label) => `We are looking forward to your ${label}!`,
+    ask: 'So that we can plan the lessons around you, we would be grateful if you could take about five minutes before the course starts to tell us about your goals and how you like to learn.',
     btn: 'Fill in the questionnaire →',
     note: 'This link is personal, can be used once and remains valid for 90 days. Only your teacher sees your answers.',
     footer: 'If you have any questions, simply reply to this email or write to us at',
@@ -18,8 +18,8 @@ const COPY = {
   de: {
     subject: (code) => `Vor Ihrem Kursbeginn${code} — learning with gioia`,
     greeting: (name) => `Guten Tag${name ? ' ' + name : ''} :)`,
-    intro: (label) =>
-      `Wir freuen uns auf Ihren ${label}! Damit wir den Unterricht auf Sie abstimmen können, würden wir uns freuen, wenn Sie sich vor Kursbeginn etwa fünf Minuten Zeit nehmen, um uns von Ihren Zielen und Ihrer Art zu lernen zu erzählen.`,
+    welcome: (label) => `Wir freuen uns auf Ihren ${label}!`,
+    ask: 'Damit wir den Unterricht auf Sie abstimmen können, würden wir uns freuen, wenn Sie sich vor Kursbeginn etwa fünf Minuten Zeit nehmen, um uns von Ihren Zielen und Ihrer Art zu lernen zu erzählen.',
     btn: 'Fragebogen ausfüllen →',
     note: 'Dieser Link ist persönlich, kann einmalig verwendet werden und ist 90 Tage lang gültig. Nur Ihre Lehrperson sieht Ihre Antworten.',
     footer: 'Falls Sie Fragen haben, antworten Sie einfach auf diese E-Mail oder schreiben Sie an',
@@ -34,7 +34,11 @@ export function questionnaireEmailCopy(language, course = {}, firstName = '') {
   return {
     subject: copy.subject(code),
     greeting: copy.greeting(String(firstName || '').trim()),
-    intro: copy.intro(courseLabel(course, lang)),
+    // The intro is two sentences; the combined course letter
+    // (_course-letter-email.js) uses them separately.
+    welcome: copy.welcome(courseLabel(course, lang)),
+    ask: copy.ask,
+    intro: `${copy.welcome(courseLabel(course, lang))} ${copy.ask}`,
     btn: copy.btn,
     note: copy.note,
     footer: copy.footer,

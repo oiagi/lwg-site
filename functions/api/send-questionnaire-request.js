@@ -1,12 +1,15 @@
 // functions/api/send-questionnaire-request.js
 // POST /api/send-questionnaire-request
-// Body: { course_id, student_ids?, language? }
+// Body: { course_id, student_ids?, language?, preview? }
 //
 // Asks enrolled students of a course to fill in the pre-course questionnaire.
 // Each recipient gets a course_questionnaires row with its own token and a
 // private link to /<lang>/questionnaire (EN) or /<lang>/fragebogen (DE).
 // Students who were asked before keep their original token, so an earlier
 // email stays valid; students who already answered are skipped and counted.
+// With `preview: true` nothing is sent or stored: the response is the exact
+// email for the first selected student, with their real link when they have
+// one and a placeholder otherwise.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY, SITE_URL (optional)
@@ -20,70 +23,14 @@ import {
   parseJsonBody,
   normalizePageLanguage,
 } from './_utils.js';
-import { ROUTES } from '../_i18n-content.js';
 import { buildQuestionnaireEmail } from './_questionnaire-email.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
-
-/**
- * Ensure every recipient has a course_questionnaires row. Existing rows keep
- * their token. Returns { tokensByStudent, answered } where answered is the
- * set of student ids who have already submitted.
- */
-async function ensureRows({ SUPABASE_URL, H, courseId, recipients, language }) {
-  const idFilter = recipients.map((s) => `student_id.eq.${s.id}`).join(',');
-  const existingRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/course_questionnaires?course_id=eq.${encodeURIComponent(courseId)}&or=(${idFilter})&select=student_id,token,submitted_at`,
-    { headers: H }
-  );
-  if (!existingRes.ok) {
-    console.error('Could not read course_questionnaires:', await existingRes.text());
-    const err = new Error('Questionnaire storage unavailable');
-    err.statusCode = 500;
-    err.userMessage =
-      'Questionnaire table not available. Run the add_course_questionnaires migration.';
-    throw err;
-  }
-
-  const tokensByStudent = {};
-  const answered = new Set();
-  for (const row of await existingRes.json()) {
-    if (row.submitted_at) answered.add(String(row.student_id));
-    else tokensByStudent[String(row.student_id)] = row.token;
-  }
-
-  const newRows = recipients
-    .filter(
-      (s) =>
-        !answered.has(String(s.id)) &&
-        !Object.prototype.hasOwnProperty.call(tokensByStudent, String(s.id))
-    )
-    .map((s) => ({
-      student_id: s.id,
-      course_id: courseId,
-      token: crypto.randomUUID(),
-      language,
-    }));
-
-  if (newRows.length) {
-    const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/course_questionnaires`, {
-      method: 'POST',
-      headers: { ...H, Prefer: 'return=representation' },
-      body: JSON.stringify(newRows),
-    });
-    if (!insertRes.ok) {
-      console.error('Could not create course_questionnaires rows:', await insertRes.text());
-      const err = new Error('Questionnaire storage failed');
-      err.statusCode = 500;
-      err.userMessage = 'Could not create the questionnaire requests.';
-      throw err;
-    }
-    for (const row of await insertRes.json()) {
-      tokensByStudent[String(row.student_id)] = row.token;
-    }
-  }
-
-  return { tokensByStudent, answered };
-}
+import {
+  ensureQuestionnaireRows,
+  questionnaireLink,
+  markQuestionnaireRequested,
+  PREVIEW_TOKEN,
+} from './_questionnaire-requests.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
 
 export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const { SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY } = env;
@@ -91,13 +38,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+  const preview = body.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
     console.error('RESEND_API_KEY not configured');
     return errorResponse('Email service not configured', 500);
   }
-
-  const { body, error } = await parseJsonBody(request);
-  if (error) return error;
 
   const { course_id } = body;
   if (!course_id) return errorResponse('Missing course_id', 400);
@@ -150,21 +98,43 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('No enrolled students with an email address', 400);
   }
 
-  const { tokensByStudent, answered } = await ensureRows({
+  if (preview) recipients = recipients.slice(0, 1);
+
+  const { tokensByStudent, answered } = await ensureQuestionnaireRows({
     SUPABASE_URL,
     H,
     courseId: course_id,
     recipients,
     language,
+    create: !preview,
   });
+
+  if (preview) {
+    const student = recipients[0];
+    const hasAnswered = answered.has(String(student.id));
+    const email = buildQuestionnaireEmail({
+      course,
+      firstName: student.first_name,
+      questionnaireUrl: questionnaireLink({
+        env,
+        request,
+        language,
+        token: tokensByStudent[String(student.id)] || PREVIEW_TOKEN,
+      }),
+      language,
+    });
+    return previewResponse({
+      to: student.email,
+      subject: email.subject,
+      html: email.html,
+      note: hasAnswered ? 'Already answered: this student will be skipped.' : null,
+    });
+  }
 
   const toEmail = recipients.filter((s) => tokensByStudent[String(s.id)]);
   if (!toEmail.length) {
     return errorResponse('Nobody left to ask: the selected students have already answered', 400);
   }
-
-  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
-  const slug = ROUTES['/questionnaire.html'][language];
 
   const results = await Promise.all(
     toEmail.map(async (student) => {
@@ -172,8 +142,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
       const email = buildQuestionnaireEmail({
         course,
         firstName: student.first_name,
-        // ?lang is part of i18n.js's language resolution.
-        questionnaireUrl: `${base}/${language}/${slug}?token=${encodeURIComponent(token)}&lang=${language}`,
+        questionnaireUrl: questionnaireLink({ env, request, language, token }),
         language,
       });
       try {
@@ -198,21 +167,13 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const failed = results.length - sent;
 
   const sentStudentIds = results.filter((r) => r.ok).map((r) => r.student_id);
-  if (sentStudentIds.length) {
-    const idFilter = sentStudentIds.map((id) => `student_id.eq.${id}`).join(',');
-    try {
-      await fetch(
-        `${SUPABASE_URL}/rest/v1/course_questionnaires?course_id=eq.${encodedCourseId}&or=(${idFilter})`,
-        {
-          method: 'PATCH',
-          headers: { ...H, Prefer: 'return=minimal' },
-          body: JSON.stringify({ requested_at: new Date().toISOString(), language }),
-        }
-      );
-    } catch (err) {
-      console.error('Failed to record questionnaire requested_at:', err?.message || err);
-    }
-  }
+  await markQuestionnaireRequested({
+    SUPABASE_URL,
+    H,
+    courseId: course_id,
+    studentIds: sentStudentIds,
+    language,
+  });
 
   return jsonResponse({
     success: failed === 0,

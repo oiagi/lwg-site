@@ -197,11 +197,13 @@
 <!-- ── Invoice modal ──────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="invoice-modal">
   <div class="modal modal-wide">
-    <h2 id="invoice-title">send invoice</h2>
+    <h2 id="invoice-title">send confirmation / invoice / questionnaire</h2>
     <input type="hidden" id="inv-course-id" value="">
     <input type="hidden" id="inv-student-id" value="">
 
-    <div class="modal-grid">
+    <div class="modal-field is-hidden" id="inv-bulk-recipients"></div>
+
+    <div class="modal-grid" id="inv-fields">
       <div class="modal-field">
         <label for="inv-number">Invoice number</label>
         <input type="text" id="inv-number">
@@ -241,8 +243,6 @@
       </div>
     </div>
 
-    <div class="modal-field is-hidden" id="inv-bulk-recipients"></div>
-
     <div class="modal-field cert-options">
       <div>
         <label>Language</label>
@@ -258,14 +258,24 @@
     </div>
 
     <div class="modal-field">
-      <label>Preview</label>
+      <label>Preview for</label>
+      <div id="inv-preview-nav" class="invoice-preview-nav"></div>
+    </div>
+
+    <div class="modal-field">
+      <label>Email preview</label>
+      <div id="inv-email-preview" class="email-previews"></div>
+    </div>
+
+    <div class="modal-field" id="inv-pdf-field">
+      <label>Invoice PDF preview</label>
       <div id="invoice-preview" class="invoice-preview"></div>
     </div>
 
     <div class="modal-actions">
       <button class="modal-cancel" data-action="closeInvoiceModal">cancel</button>
       <button class="modal-download" id="inv-download" data-action="downloadInvoice">download</button>
-      <button class="modal-submit" id="inv-submit" data-action="submitInvoice">send invoice</button>
+      <button class="modal-submit" id="inv-submit" data-action="submitInvoice">send</button>
     </div>
     <p class="modal-msg" id="inv-msg"></p>
   </div>
@@ -311,7 +321,12 @@
     </div>
 
     <div class="modal-field">
-      <label>Preview</label>
+      <label>Email preview</label>
+      <div id="cert-email-preview" class="email-previews"></div>
+    </div>
+
+    <div class="modal-field">
+      <label>Certificate preview</label>
       <div id="cert-preview" class="cert-preview"></div>
       <p class="label-hint mt-small">
         Each certificate has a unique ID and will be sent as a PDF attachment.
@@ -352,7 +367,12 @@
     </div>
 
     <div class="modal-field">
-      <label>Preview</label>
+      <label>Email preview</label>
+      <div id="con-email-preview" class="email-previews"></div>
+    </div>
+
+    <div class="modal-field">
+      <label>Contract preview</label>
       <div id="con-preview" class="cert-preview contract-preview"></div>
       <p class="label-hint mt-small">
         Each contract is sent as a pre-signed PDF attachment together with a personal

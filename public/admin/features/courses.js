@@ -921,18 +921,13 @@ function renderCourses(courses) {
                   data-action="openAddParticipantModal" data-args="${c.id}">+ add participant</button>
                 <div class="detail-action-row">
                   <button class="save-btn"
-                    data-action="openBulkInvoiceModal" data-args="${c.id}">send invoices</button>
+                    data-action="openBulkInvoiceModal" data-args="${c.id}">send confirmation / invoice / questionnaire</button>
                   <span class="saved-msg" id="bulk-invoice-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"
                     data-action="openStartingSoonModal" data-args="${c.id}">send starting soon</button>
                   <span class="saved-msg" id="starting-soon-msg-${c.id}">sent</span>
-                </div>
-                <div class="detail-action-row">
-                  <button class="save-btn"
-                    data-action="openQuestionnaireRequestModal" data-args="${c.id}">send pre-course questionnaire</button>
-                  <span class="saved-msg" id="questionnaire-msg-${c.id}">sent</span>
                 </div>
                 <div class="detail-action-row">
                   <button class="save-btn"

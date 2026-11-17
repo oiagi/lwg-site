@@ -1,18 +1,16 @@
 /* ── Course communications ────────────────────────────────────────────
-   Course-level send actions: starting-soon + schedule emails (through the
-   confirm-send modal) and the certificate / contract / invoice modal
-   openers. All of them read the shared coursesCache owned by courses.js;
+   Course-level send actions: starting-soon, schedule and feedback emails
+   (through the confirm-send modal, which shows the exact email) and the
+   certificate / contract / invoice modal openers. All of them read the shared coursesCache owned by courses.js;
    refreshCourseInCache mutates entries in place so the cache stays the
    single source of truth.                                              */
 import { apiFetch } from '../core/api.js';
-import { esc, fmtDateWithEnd, showMessage } from '../core/helpers.js';
+import { showMessage } from '../core/helpers.js';
 import { openConfirmSend } from './confirm-send.js';
+import { fetchEmailPreview } from './email-preview.js';
 import { openCertificateModal as openCertificates } from './certificates.js';
 import { openContractModal as openContracts } from './contracts.js';
-import {
-  openBulkInvoiceModal as openBulkInvoices,
-  openInvoiceModal as openInvoice,
-} from './invoices.js';
+import { openBulkInvoiceModal as openBulkInvoices } from './invoices.js';
 import { coursesCache } from './courses.js';
 
 function studentDisplayName(s) {
@@ -31,336 +29,25 @@ async function refreshCourseInCache(courseId) {
   return fresh;
 }
 
-function upcomingSessions(course) {
-  return (course.sessions || [])
-    .filter((s) => s.status !== 'cancelled')
-    .slice()
-    .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
-}
+const SEND_LANGUAGES = [
+  { value: 'de', label: 'Deutsch' },
+  { value: 'en', label: 'English' },
+];
 
-function fmtScheduleSession(session, course) {
-  const duration = session.duration_minutes ?? course.session_length_minutes ?? null;
-  const label = fmtDateWithEnd(session.scheduled_at, duration);
-  return duration ? `${label} (${duration} min)` : label;
-}
-
-/* The course-info emails run through /api/send-course-confirmation and differ
-   only in framing, so the modal is built once and the variant supplies the
-   wording. Only the 'starting_soon' variant is sent from here: the course
-   confirmation now travels with the invoice email. */
-async function openCourseOverviewSend({
+/* Every course-level send that runs through the confirm-send modal works the
+   same way: refresh the course, list the enrolled students with an email
+   address, show the exact email for one of them (the endpoint called with
+   `preview: true`) and post the same body for the ticked students. */
+async function openCourseSend({
   courseId,
-  variant,
   title,
-  subjectFor,
-  includedHtml,
+  endpoint,
   msgId,
+  extraBody = {},
+  hint = '',
+  hintFor = null,
+  resultLabel = null,
 }) {
-  let course = coursesCache.find((c) => String(c.id) === String(courseId));
-  if (!course) {
-    alert('Course not found. Please reload and try again.');
-    return;
-  }
-  try {
-    course = await refreshCourseInCache(courseId);
-  } catch (err) {
-    alert(err.message || 'Could not refresh course data.');
-    return;
-  }
-  const recipients = (course.students || [])
-    .filter((s) => s.email)
-    .map((s) => ({
-      student_id: s.id,
-      name: studentDisplayName(s),
-      email: s.email,
-      selected: true,
-    }));
-  if (!recipients.length) {
-    alert('No enrolled students with an email address.');
-    return;
-  }
-
-  const sessions = upcomingSessions(course);
-  const sessionListHtml = sessions.length
-    ? `<ol class="cs-session-list">${sessions
-        .map((s) => `<li>${esc(fmtScheduleSession(s, course))}</li>`)
-        .join('')}</ol>`
-    : '<p class="cs-empty">No lessons scheduled yet.</p>';
-
-  const contentHtml = `
-    <p class="cs-section-label">course overview</p>
-    <ul class="cs-detail-list">
-      <li>Code: ${esc(course.course_code || '—')}</li>
-      <li>Course type: ${esc(course.course_type || '—')}</li>
-      <li>Subject: ${esc(course.subject || '—')}</li>
-      <li>Level: ${esc(course.level || '—')}</li>
-      <li>Sessions: ${course.sessions_total ? esc(String(course.sessions_total)) : 'open-ended'}</li>
-      <li>Lesson duration: ${course.session_length_minutes ? esc(`${course.session_length_minutes} min`) : '—'}</li>
-      <li>Location: ${esc(course.location || '—')}</li>
-    </ul>
-    <p class="cs-section-label">scheduled lessons (${sessions.length})</p>
-    ${sessionListHtml}
-    <p class="cs-section-label">also included</p>
-    ${includedHtml}
-  `;
-
-  openConfirmSend({
-    title,
-    recipients,
-    subject: subjectFor(course),
-    contentHtml,
-    languageOptions: [
-      { value: 'de', label: 'Deutsch' },
-      { value: 'en', label: 'English' },
-    ],
-    defaultLanguage: 'de',
-    selectableRecipients: true,
-    onConfirm: async ({ language, recipients: selectedRecipients }) => {
-      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById(msgId + courseId);
-      const res = await apiFetch('/api/send-course-confirmation', {
-        method: 'POST',
-        body: {
-          course_id: courseId,
-          student_ids: selectedRecipients.map((r) => r.student_id),
-          language,
-          variant,
-        },
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
-      if (msg) showMessage(msg, label);
-    },
-  });
-}
-
-export function openStartingSoonModal(courseId) {
-  return openCourseOverviewSend({
-    courseId,
-    variant: 'starting_soon',
-    title: 'send course starting soon',
-    msgId: 'starting-soon-msg-',
-    subjectFor: (course) =>
-      `Dein Kurs startet bald / Your course starts soon - ${course.course_code || 'course'} · learning with gioia`,
-    includedHtml: `
-    <ul class="cs-detail-list">
-      <li>The date of the next lesson, named in the intro</li>
-      <li>24-hour cancellation policy</li>
-      <li>No AGB — they already came with the invoice</li>
-    </ul>`,
-  });
-}
-
-export async function openScheduleModal(courseId) {
-  let course = coursesCache.find((c) => String(c.id) === String(courseId));
-  if (!course) {
-    alert('Course not found. Please reload and try again.');
-    return;
-  }
-  try {
-    course = await refreshCourseInCache(courseId);
-  } catch (err) {
-    alert(err.message || 'Could not refresh course data.');
-    return;
-  }
-  const recipients = (course.students || [])
-    .filter((s) => s.email)
-    .map((s) => ({
-      student_id: s.id,
-      name: studentDisplayName(s),
-      email: s.email,
-      selected: true,
-    }));
-  if (!recipients.length) {
-    alert('No enrolled students with an email address.');
-    return;
-  }
-
-  const sessions = upcomingSessions(course);
-  const sessionListHtml = sessions.length
-    ? `<ol class="cs-session-list">${sessions
-        .map((s) => `<li>${esc(fmtScheduleSession(s, course))}</li>`)
-        .join('')}</ol>`
-    : '<p class="cs-empty">No upcoming lessons currently scheduled.</p>';
-
-  const contentHtml = `
-    <p class="cs-section-label">updated schedule for ${esc(course.course_code || 'course')} (${sessions.length})</p>
-    ${sessionListHtml}
-  `;
-
-  openConfirmSend({
-    title: 'send schedule update',
-    recipients,
-    subject: `Aktualisierter Lektionsplan / Updated lesson plan${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
-    contentHtml,
-    languageOptions: [
-      { value: 'de', label: 'Deutsch' },
-      { value: 'en', label: 'English' },
-    ],
-    defaultLanguage: 'de',
-    selectableRecipients: true,
-    onConfirm: async ({ language, recipients: selectedRecipients }) => {
-      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById('schedule-msg-' + courseId);
-      const res = await apiFetch('/api/send-session-schedule', {
-        method: 'POST',
-        body: {
-          course_id: courseId,
-          student_ids: selectedRecipients.map((r) => r.student_id),
-          language,
-        },
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
-      if (msg) showMessage(msg, label);
-    },
-  });
-}
-
-/* Mirrors the two forms in functions/api/_feedback.js — preview only; the
-   email and the form both build their copy server-side. */
-const FEEDBACK_PREVIEW = {
-  midterm: {
-    title: 'request mid-course feedback',
-    subject: 'Wie läuft Ihr Kurs? / How is your course going?',
-    minutes: '3 minutes',
-    required: [
-      'Satisfaction so far and pace (1–10)',
-      'Lesson frequency, breaks, substitute teacher',
-    ],
-    optional: [
-      'The main reason behind a satisfaction score below 7',
-      'Which materials they like, why those help them, and what they would like added',
-      'Whether they find the PowerPoint presentations helpful, and why',
-      'How they prefer to work in class, and why that suits them',
-      'How they study at home and how much time they have',
-      'Their preferred frequency and lesson length (if the current frequency does not suit)',
-      'Their own preference when the teacher is unavailable (if they picked "other")',
-      'Anything else for the remaining lessons',
-    ],
-  },
-  final: {
-    title: 'request final feedback',
-    subject: 'Wie war Ihr Kurs? / How was your course?',
-    minutes: '3–5 minutes',
-    required: [
-      'Overall satisfaction, organisation, explanations, comfort asking questions, pace, materials (1–10)',
-      'Speaking time and vocabulary for language courses, exam readiness for exam courses',
-      'Progress made',
-      'How likely they are to recommend us (1–10)',
-    ],
-    optional: [
-      'The main reason behind a satisfaction score below 7',
-      'What would have helped (if progress was low), which activities helped most and why',
-      'What they enjoyed and what we could improve',
-      'What would make them more likely to recommend us (if the score is below 7)',
-      'Whether they want another course, what they would like to learn next and when they would like to start',
-    ],
-  },
-};
-
-export async function openFeedbackRequestModal(courseId, kind = 'final') {
-  const preview = FEEDBACK_PREVIEW[kind];
-  if (!preview) {
-    alert('Unknown feedback form.');
-    return;
-  }
-  let course = coursesCache.find((c) => String(c.id) === String(courseId));
-  if (!course) {
-    alert('Course not found. Please reload and try again.');
-    return;
-  }
-  try {
-    course = await refreshCourseInCache(courseId);
-  } catch (err) {
-    alert(err.message || 'Could not refresh course data.');
-    return;
-  }
-
-  const withEmail = (course.students || []).filter((s) => s.email);
-  if (!withEmail.length) {
-    alert('No enrolled students with an email address.');
-    return;
-  }
-
-  // Everyone is listed and ticked: responses are anonymous, so there is no
-  // "already answered" to show. The server quietly skips students who have
-  // submitted this form and leaves earlier links valid.
-  const recipients = withEmail.map((s) => ({
-    student_id: s.id,
-    name: studentDisplayName(s),
-    email: s.email,
-    selected: true,
-  }));
-
-  const alreadyAsked = withEmail.filter((s) => s.feedback_requested?.[kind]).length;
-  const contentHtml = `
-    <p class="cs-section-label">required questions</p>
-    <ul class="cs-detail-list">
-      ${preview.required.map((q) => `<li>${esc(q)}</li>`).join('')}
-    </ul>
-    <p class="cs-section-label">optional questions</p>
-    <ul class="cs-detail-list">
-      ${preview.optional.map((q) => `<li>${esc(q)}</li>`).join('')}
-    </ul>
-    <p class="cs-section-label">also included</p>
-    <ul class="cs-detail-list">
-      <li>Anonymous: answers are stored without the student, only the number of responses is shown</li>
-      <li>A private link per student, valid for 90 days, one submission each</li>
-      <li>The form takes about ${esc(preview.minutes)}</li>
-      ${alreadyAsked ? `<li>${alreadyAsked} of these students were already asked — they keep their original link, and anyone who has answered is skipped</li>` : ''}
-    </ul>
-  `;
-
-  openConfirmSend({
-    title: preview.title,
-    recipients,
-    subject: `${preview.subject}${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
-    contentHtml,
-    languageOptions: [
-      { value: 'de', label: 'Deutsch' },
-      { value: 'en', label: 'English' },
-    ],
-    defaultLanguage: 'de',
-    selectableRecipients: true,
-    onConfirm: async ({ language, recipients: selectedRecipients }) => {
-      if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById(`feedback-msg-${kind}-${courseId}`);
-      const res = await apiFetch('/api/send-feedback-request', {
-        method: 'POST',
-        body: {
-          course_id: courseId,
-          student_ids: selectedRecipients.map((r) => r.student_id),
-          language,
-          kind,
-        },
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      const label = `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
-      if (msg) showMessage(msg, label);
-    },
-  });
-}
-
-/* Mirrors QUESTIONNAIRE_FIELDS in functions/api/_questionnaire.js —
-   preview only; the email and the form build their copy server-side. */
-const QUESTIONNAIRE_PREVIEW = {
-  required: [
-    'Goals for the course',
-    'Correction style, coursebook or handouts from various sources, documents printed or electronic, contact outside class (WhatsApp / email / admin only), homework time and how to receive it',
-    'Language courses: prior experience, self-rated level, focus skills, explanations in the target language only or with English',
-  ],
-  optional: [
-    'Planned absences, marked in a calendar (with a note that lessons cannot be postponed)',
-    'What has not worked before, learning needs, anything else',
-    'Language courses: other languages spoken, exam, vocabulary topics, Swiss German (German courses)',
-  ],
-};
-
-export async function openQuestionnaireRequestModal(courseId) {
   let course;
   try {
     course = await refreshCourseInCache(courseId);
@@ -368,70 +55,101 @@ export async function openQuestionnaireRequestModal(courseId) {
     alert(err.message || 'Could not refresh course data.');
     return;
   }
-
-  const withEmail = (course.students || []).filter((s) => s.email);
-  if (!withEmail.length) {
+  const recipients = (course.students || [])
+    .filter((s) => s.email)
+    .map((s) => ({
+      student_id: s.id,
+      name: studentDisplayName(s),
+      email: s.email,
+      selected: true,
+    }));
+  if (!recipients.length) {
     alert('No enrolled students with an email address.');
     return;
   }
 
-  // Not anonymous, so whoever already answered is shown and left unticked.
-  const recipients = withEmail.map((s) => ({
-    student_id: s.id,
-    name:
-      studentDisplayName(s) +
-      (s.questionnaire?.submitted_at ? ' (answered)' : s.questionnaire ? ' (sent before)' : ''),
-    email: s.email,
-    selected: !s.questionnaire?.submitted_at,
-  }));
-
-  const contentHtml = `
-    <p class="cs-section-label">required questions</p>
-    <ul class="cs-detail-list">
-      ${QUESTIONNAIRE_PREVIEW.required.map((q) => `<li>${esc(q)}</li>`).join('')}
-    </ul>
-    <p class="cs-section-label">optional questions</p>
-    <ul class="cs-detail-list">
-      ${QUESTIONNAIRE_PREVIEW.optional.map((q) => `<li>${esc(q)}</li>`).join('')}
-    </ul>
-    <p class="cs-section-label">also included</p>
-    <ul class="cs-detail-list">
-      <li>A private link per student, valid for 90 days, one submission each</li>
-      <li>Answers appear on the student page; documents and absences also in this course</li>
-      <li>Goals and level are copied to the student record if those are still empty</li>
-      <li>Students who were sent it before keep their original link; anyone who answered is skipped</li>
-    </ul>
-  `;
-
   openConfirmSend({
-    title: 'send pre-course questionnaire',
+    title,
     recipients,
-    subject: `Vor Ihrem Kursbeginn / Before your course starts${course.course_code ? ' (' + course.course_code + ')' : ''} — learning with gioia`,
-    contentHtml,
-    languageOptions: [
-      { value: 'de', label: 'Deutsch' },
-      { value: 'en', label: 'English' },
-    ],
+    hint: hintFor ? hintFor(course) : hint,
+    languageOptions: SEND_LANGUAGES,
     defaultLanguage: 'de',
     selectableRecipients: true,
+    loadPreview: ({ language, recipient }) =>
+      fetchEmailPreview(endpoint, {
+        course_id: courseId,
+        student_ids: [recipient.student_id],
+        language,
+        ...extraBody,
+      }),
     onConfirm: async ({ language, recipients: selectedRecipients }) => {
       if (!selectedRecipients.length) throw new Error('Select at least one recipient.');
-      const msg = document.getElementById(`questionnaire-msg-${courseId}`);
-      const res = await apiFetch('/api/send-questionnaire-request', {
+      const res = await apiFetch(endpoint, {
         method: 'POST',
         body: {
           course_id: courseId,
           student_ids: selectedRecipients.map((r) => r.student_id),
           language,
+          ...extraBody,
         },
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      const label =
-        `sent to ${body.sent || 0}` +
-        (body.already_answered ? ` · ${body.already_answered} already answered` : '') +
-        (body.failed ? ` · ${body.failed} failed` : '');
+      const label = resultLabel
+        ? resultLabel(body)
+        : `sent to ${body.sent || 0}` + (body.failed ? ` · ${body.failed} failed` : '');
+      const msg = document.getElementById(msgId);
       if (msg) showMessage(msg, label);
+    },
+  });
+}
+
+export function openStartingSoonModal(courseId) {
+  return openCourseSend({
+    courseId,
+    title: 'send course starting soon',
+    endpoint: '/api/send-course-confirmation',
+    extraBody: { variant: 'starting_soon' },
+    msgId: 'starting-soon-msg-' + courseId,
+  });
+}
+
+export function openScheduleModal(courseId) {
+  return openCourseSend({
+    courseId,
+    title: 'send schedule update',
+    endpoint: '/api/send-session-schedule',
+    msgId: 'schedule-msg-' + courseId,
+  });
+}
+
+const FEEDBACK_TITLES = {
+  midterm: 'request mid-course feedback',
+  final: 'request final feedback',
+};
+
+export function openFeedbackRequestModal(courseId, kind = 'final') {
+  if (!FEEDBACK_TITLES[kind]) {
+    alert('Unknown feedback form.');
+    return undefined;
+  }
+  // Everyone is listed and ticked: responses are anonymous, so there is no
+  // "already answered" to show. The server quietly skips students who have
+  // submitted this form and leaves earlier links valid.
+  return openCourseSend({
+    courseId,
+    title: FEEDBACK_TITLES[kind],
+    endpoint: '/api/send-feedback-request',
+    extraBody: { kind },
+    msgId: `feedback-msg-${kind}-${courseId}`,
+    hintFor: (course) => {
+      const asked = (course.students || []).filter(
+        (s) => s.email && s.feedback_requested?.[kind]
+      ).length;
+      return (
+        'Anonymous: each student gets a private link, valid for 90 days, one submission each. Anyone who has already answered is skipped.' +
+        (asked ? ` ${asked} of these students were asked before and keep their original link.` : '')
+      );
     },
   });
 }
@@ -444,10 +162,14 @@ export function openContractModal(courseId) {
   return openContracts(courseId, coursesCache);
 }
 
-export function openInvoiceModal(courseId, studentId) {
-  openInvoice(courseId, studentId, coursesCache);
-}
-
-export function openBulkInvoiceModal(courseId) {
+/* The combined dialog: confirmation, invoice and questionnaire, chosen per
+   student. Refreshed first so "already invoiced" / "answered" are current. */
+export async function openBulkInvoiceModal(courseId) {
+  try {
+    await refreshCourseInCache(courseId);
+  } catch (err) {
+    alert(err.message || 'Could not refresh course data.');
+    return;
+  }
   openBulkInvoices(courseId, coursesCache);
 }

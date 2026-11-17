@@ -23,14 +23,22 @@ import {
 } from './_utils.js';
 import { DEFAULT_KIND, isFeedbackKind } from './_feedback.js';
 import { buildFeedbackEmail } from './_feedback-email.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
 
 /**
  * Ensure every recipient has a course_feedback row for this kind. Existing
  * rows keep their token so links already in a student's inbox stay valid.
  * Returns a map of student_id -> token for the students still to be asked.
  */
-async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, kind, recipients, language }) {
+async function ensureFeedbackRows({
+  SUPABASE_URL,
+  H,
+  courseId,
+  kind,
+  recipients,
+  language,
+  create = true,
+}) {
   const idFilter = recipients.map((s) => `student_id.eq.${s.id}`).join(',');
   const existingRes = await fetch(
     `${SUPABASE_URL}/rest/v1/course_feedback?course_id=eq.${encodeURIComponent(courseId)}&kind=eq.${kind}&or=(${idFilter})&select=student_id,token,submitted_at`,
@@ -53,6 +61,8 @@ async function ensureFeedbackRows({ SUPABASE_URL, H, courseId, kind, recipients,
     if (row.submitted_at) alreadySubmitted.add(String(row.student_id));
     else tokensByStudent[String(row.student_id)] = row.token;
   }
+  // A preview only reads: it never creates a row.
+  if (!create) return tokensByStudent;
 
   const newRows = recipients
     .filter(
@@ -95,13 +105,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+  const preview = body?.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
     console.error('RESEND_API_KEY not configured');
     return errorResponse('Email service not configured', 500);
   }
-
-  const { body, error } = await parseJsonBody(request);
-  if (error) return error;
 
   const { course_id, student_id } = body;
   const kind = body.kind === undefined ? DEFAULT_KIND : body.kind;
@@ -162,6 +173,8 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     return errorResponse('No enrolled students with an email address', 400);
   }
 
+  if (preview) recipients = recipients.slice(0, 1);
+
   const tokensByStudent = await ensureFeedbackRows({
     SUPABASE_URL,
     H,
@@ -169,7 +182,24 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     kind,
     recipients,
     language,
+    create: !preview,
   });
+
+  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+
+  if (preview) {
+    // Shown for every student alike, with a placeholder link when there is no
+    // open one: saying "already answered" here would break the anonymity.
+    const student = recipients[0];
+    const token = tokensByStudent[String(student.id)] || 'preview';
+    const email = buildFeedbackEmail({
+      kind,
+      course,
+      feedbackUrl: `${base}/${language}/feedback?token=${encodeURIComponent(token)}&lang=${language}`,
+      language,
+    });
+    return previewResponse({ to: student.email, subject: email.subject, html: email.html });
+  }
 
   // Students who already answered are left out silently: naming them would
   // reveal who responded, which the anonymous form promises not to do.
@@ -177,8 +207,6 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!toEmail.length) {
     return errorResponse('Nobody left to ask: the selected students have already answered', 400);
   }
-
-  const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
 
   const results = await Promise.all(
     toEmail.map(async (student) => {

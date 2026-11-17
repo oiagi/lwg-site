@@ -4,7 +4,12 @@
 //   student_id, course_id, email, name, language,
 //   invoice: { invoice_number, customer_reference, subject, quantity, unit_price,
 //              total_amount, currency, invoice_date, due_date },
-//   pdf_base64
+//   pdf_base64,
+//   include_course_info?   (default true)  — add the course confirmation blocks
+//   include_questionnaire? (default false) — add the pre-course questionnaire link
+//   for_payer?             (default false) — recipient pays but is not the learner
+//   preview?               — return { subject, html, … } instead of sending;
+//                            no PDF needed, nothing is stored
 // }
 //
 // Sends one invoice email with a PDF attachment and logs the invoice in
@@ -13,11 +18,13 @@
 // from /api/get-qr-bill-config, and is page 2 of the PDF by the time this
 // endpoint is called.
 //
-// The email doubles as the course confirmation: besides the amount and due
-// date it carries the course details, the lesson list, the cancellation
-// policy and the full AGB, loaded here from the course, its sessions and the
-// student's enrolment (joined_at greys out lessons held before a late joiner
-// joined).
+// The email is the course letter (_course-letter-email.js). With
+// include_course_info it doubles as the course confirmation: course details,
+// lesson list, cancellation policy and the full AGB, loaded here from the
+// course, its sessions and the student's enrolment (joined_at greys out
+// lessons held before a late joiner joined). With include_questionnaire it
+// also carries the student's personal questionnaire link, unless they have
+// already answered.
 
 import {
   requireAdminAuth,
@@ -36,8 +43,13 @@ import {
   archiveInvoicePdf,
   logInvoice,
 } from './_invoices.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
-import { cleanFilenamePart, buildInvoiceEmail } from './_invoice-email.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
+import { cleanFilenamePart } from './_invoice-email.js';
+import { buildCourseLetterEmail } from './_course-letter-email.js';
+import {
+  questionnaireLinkForStudent,
+  markQuestionnaireRequested,
+} from './_questionnaire-requests.js';
 
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
@@ -75,7 +87,9 @@ function validate(body) {
   if (!body.course_id) return 'Missing course_id';
   if (!body.email || typeof body.email !== 'string') return 'Missing email';
   if (!ALLOWED_LANGUAGES.includes(body.language)) return 'language must be one of: de, en';
-  if (!body.pdf_base64 || typeof body.pdf_base64 !== 'string') return 'pdf_base64 is required';
+  if (!body.preview && (!body.pdf_base64 || typeof body.pdf_base64 !== 'string')) {
+    return 'pdf_base64 is required';
+  }
   const inv = body.invoice || {};
   if (!inv.invoice_number) return 'Missing invoice_number';
   if (!INVOICE_NUMBER_RE.test(inv.invoice_number)) {
@@ -91,21 +105,22 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not configured');
-    return errorResponse('Email service not configured', 500);
-  }
-
   const { body, error } = await parseJsonBody(request);
   if (error) return error;
 
   const invalid = validate(body || {});
   if (invalid) return errorResponse(invalid, 400);
+  const preview = body.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not configured');
+    return errorResponse('Email service not configured', 500);
+  }
 
   // Reuse a record that was previously logged when the PDF was downloaded, so
   // downloading and then sending the same invoice does not create a duplicate.
   // A genuine duplicate (already emailed/paid) is still refused.
-  const existing = await findInvoiceByNumber(env, body.invoice.invoice_number);
+  const existing = preview ? null : await findInvoiceByNumber(env, body.invoice.invoice_number);
   if (existing && FINALISED_STATUSES.has(existing.status)) {
     return errorResponse('Invoice number already exists. Please reopen the invoice modal.', 409);
   }
@@ -113,10 +128,33 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const context = await loadCourseContext(env, body.course_id, body.student_id);
   if (context.error) return context.error;
 
-  const invoiceRecord = existing || (await logInvoice(env, body, PENDING_STATUS_CANDIDATES));
+  // The questionnaire row is made before anything is logged or sent, so a
+  // missing table stops the send cleanly instead of half-way.
+  const H = supabaseHeaders(env.SUPABASE_SERVICE_KEY);
+  const questionnaireUrl =
+    body.include_questionnaire === true
+      ? await questionnaireLinkForStudent({
+          env,
+          request,
+          H,
+          courseId: body.course_id,
+          studentId: body.student_id,
+          language: body.language,
+          preview,
+        })
+      : null;
 
-  const { subject, html } = buildInvoiceEmail({
+  const {
+    subject,
+    html,
+    parts: sentParts,
+  } = buildCourseLetterEmail({
     language: body.language,
+    parts: {
+      invoice: true,
+      confirmation: body.include_course_info !== false,
+      questionnaire: body.include_questionnaire === true,
+    },
     name: body.name || '',
     first_name: body.first_name || '',
     last_name: body.last_name || '',
@@ -125,11 +163,28 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     course: context.course,
     sessions: context.sessions,
     joinedAt: context.joinedAt,
+    questionnaireUrl,
+    forPayer: body.for_payer === true,
   });
   const filename = `${body.language === 'en' ? 'invoice' : 'rechnung'}-${cleanFilenamePart(
     body.invoice.invoice_number,
     'lwg'
   )}.pdf`;
+
+  if (preview) {
+    return previewResponse({
+      to: body.email,
+      subject,
+      html,
+      attachment: filename,
+      note:
+        body.include_questionnaire === true && !sentParts.questionnaire
+          ? 'Questionnaire already answered, so it is left out.'
+          : null,
+    });
+  }
+
+  const invoiceRecord = existing || (await logInvoice(env, body, PENDING_STATUS_CANDIDATES));
 
   const res = await sendResendEmail(RESEND_API_KEY, {
     to: [body.email],
@@ -156,5 +211,15 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
     console.error('Invoice archive unexpected error:', err);
   });
 
-  return jsonResponse({ success: true, invoice: invoiceRecord });
+  if (sentParts.questionnaire) {
+    await markQuestionnaireRequested({
+      SUPABASE_URL: env.SUPABASE_URL,
+      H,
+      courseId: body.course_id,
+      studentIds: [body.student_id],
+      language: body.language,
+    });
+  }
+
+  return jsonResponse({ success: true, invoice: invoiceRecord, parts: sentParts });
 }, 'send-invoice');

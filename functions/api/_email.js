@@ -10,6 +10,18 @@ export const FROM_EMAIL = `learning with gioia <${CONTACT_EMAIL}>`;
 export const NOTIFY_EMAILS = [CONTACT_EMAIL];
 
 /**
+ * The response of a send endpoint called with `preview: true`: the exact
+ * subject and HTML the recipient would get, built by the same code as the
+ * real send. Nothing is sent or stored for a preview.
+ */
+export function previewResponse({ to, subject, html, attachment = null, note = null }) {
+  return new Response(JSON.stringify({ preview: true, to, subject, html, attachment, note }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+/**
  * POST a message to the Resend API.
  *
  * @param {string} apiKey  - env.RESEND_API_KEY

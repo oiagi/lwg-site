@@ -1,5 +1,6 @@
 /* ── Certificates of attendance ───────────────────────────────────── */
 import { apiFetch } from '../core/api.js';
+import { fetchEmailPreview, showEmailPreviews, clearEmailPreviews } from './email-preview.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
 import { foreignCountryLine } from '../core/countries.js';
@@ -367,7 +368,34 @@ function buildPreviewHtml(data) {
   `;
 }
 
+/* The exact email the first ticked recipient will get, from the endpoint's
+   preview mode (no PDF, nothing stored). */
+function updateEmailPreview() {
+  const container = document.getElementById('cert-email-preview');
+  const recipient = currentRecipients.find((r) => r.selected);
+  if (!container) return;
+  if (!currentCourse || !recipient) {
+    clearEmailPreviews(container, 'Select at least one recipient to preview.');
+    return;
+  }
+  const { language } = getOptions();
+  showEmailPreviews(container, () =>
+    fetchEmailPreview('/api/send-certificates', {
+      course_id: currentCourse.id,
+      language,
+      recipients: [
+        {
+          student_id: recipient.student_id,
+          email: recipient.email,
+          name: [recipient.first_name, recipient.last_name].filter(Boolean).join(' '),
+        },
+      ],
+    })
+  );
+}
+
 function updatePreview() {
+  updateEmailPreview();
   const container = document.getElementById('cert-preview');
   const opts = getOptions();
   const selectedRecipients = currentRecipients.filter((r) => r.selected);

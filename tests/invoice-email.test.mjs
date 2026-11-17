@@ -9,55 +9,8 @@ import {
   invoiceGreeting,
   emailShell,
   bodyParagraph,
-  buildInvoiceEmail,
   buildCancellationEmail,
 } from '../functions/api/_invoice-email.js';
-
-const AGB_MARKER_DE = 'Allgemeine Geschäftsbedingungen';
-const AGB_MARKER_EN = 'Terms & Conditions';
-
-const course = {
-  course_code: 'LWG-2026-14',
-  subject: 'Deutsch',
-  level: 'B1',
-  group_type: 'einzel',
-  sessions_total: 3,
-  session_length_minutes: 90,
-  price_per_person_per_60min: 100,
-  currency: 'CHF',
-  location_street: 'Bahnhofstrasse',
-  location_street_number: '4',
-  location_postal_code: '8001',
-  location_city: 'Zürich',
-};
-
-const sessions = [
-  { scheduled_at: '2026-08-03T16:00:00Z', duration_minutes: 90, status: 'scheduled' },
-  { scheduled_at: '2026-08-10T16:00:00Z', duration_minutes: 90, status: 'scheduled' },
-  { scheduled_at: '2026-08-17T16:00:00Z', duration_minutes: 90, status: 'scheduled' },
-];
-
-const invoice = {
-  invoice_number: 'LWG-2026-0007',
-  subject: 'Deutsch · B1 · LWG-2026-14',
-  total_amount: 450,
-  currency: 'CHF',
-  // Course starts 2026-08-03, two weeks after the invoice date → the due
-  // date is the 30-day window, not the course start.
-  invoice_date: '2026-07-20',
-  due_date: '2026-08-19',
-};
-
-function buildInvoice(overrides = {}) {
-  return buildInvoiceEmail({
-    language: 'de',
-    first_name: 'Anna',
-    invoice,
-    course,
-    sessions,
-    ...overrides,
-  });
-}
 
 test('esc escapes HTML special characters and handles nullish', () => {
   assert.equal(
@@ -87,6 +40,14 @@ test('invoiceGreeting branches on language, first name, and gender', () => {
   assert.equal(invoiceGreeting({ language: 'en', first_name: 'Anna' }), 'Hello Anna,');
   assert.equal(invoiceGreeting({ language: 'en' }), 'Hello there,');
   assert.equal(invoiceGreeting({ language: 'de', first_name: 'Anna' }), 'Liebe Anna');
+  assert.equal(
+    invoiceGreeting({ language: 'de', first_name: 'Tom', gender: 'male' }),
+    'Lieber Tom'
+  );
+  assert.equal(
+    invoiceGreeting({ language: 'de', first_name: 'Anna', gender: 'female' }),
+    'Liebe Anna'
+  );
   assert.equal(
     invoiceGreeting({ language: 'de', last_name: 'Muster', gender: 'female' }),
     'Liebe Frau Muster'
@@ -134,121 +95,6 @@ test('emailShell places extra sections before the footer and names the contact o
   );
 });
 
-test('invoice email keeps its subject, greeting, amount and due date', () => {
-  const { subject, html } = buildInvoice();
-  assert.equal(subject, 'Rechnung LWG-2026-0007 · learning with gioia');
-  assert.ok(html.includes('Rechnung LWG-2026-0007'));
-  assert.ok(html.includes('Liebe Anna'));
-  assert.ok(html.includes('Anbei finden Sie die Rechnung für Deutsch · B1 · LWG-2026-14.'));
-  assert.ok(html.includes('Betrag: <strong>450.00 CHF</strong>'));
-  assert.ok(
-    html.includes(
-      'Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Wir bitten Sie, den Rechnungsbetrag bis zum 19.08.2026 auf unser Bankkonto zu überweisen. Vielen Dank für Ihr Vertrauen.'
-    )
-  );
-  assert.ok(html.includes('Herzliche Grüsse'));
-});
-
-test('the English email mirrors the payment request', () => {
-  const { html } = buildInvoice({ language: 'en' });
-  assert.ok(
-    html.includes(
-      'You can pay it easily with the QR bill in the PDF. We kindly ask you to transfer the invoice amount to our bank account by 19/08/2026. Thank you for placing your trust in us.'
-    )
-  );
-});
-
-test('a course more than 30 days out simply carries the course start as the date', () => {
-  const far = { ...invoice, invoice_date: '2026-06-01', due_date: '2026-08-03' };
-  const de = buildInvoice({ invoice: far }).html;
-  assert.ok(de.includes('den Rechnungsbetrag bis zum 03.08.2026 auf unser Bankkonto'));
-  const en = buildInvoice({ language: 'en', invoice: far }).html;
-  assert.ok(en.includes('to our bank account by 03/08/2026.'));
-});
-
-test('invoice email carries the course details, lessons, cancellation policy and AGB', () => {
-  const { html } = buildInvoice();
-  assert.ok(html.includes('Unten finden Sie alle wichtigen Infos zu Ihrem Kurs.'));
-  assert.match(html, /Kursdetails/);
-  assert.match(html, /Kurscode/);
-  assert.match(html, /LWG-2026-14/);
-  assert.match(html, /Preis für die gesamte Buchung/);
-  assert.match(html, /450\.00 CHF/);
-  assert.match(html, /Anzahl Lektionen<\/td>\s*<td[^>]*>3</);
-  assert.match(html, /Bahnhofstrasse 4, 8001 Zürich/);
-  assert.match(html, /Geplante Lektionen/);
-  assert.match(html, /Montag, 03.08.2026, 18:00 - 19:30 \(90 min\)/);
-  assert.match(html, /Montag, 17.08.2026, 18:00 - 19:30 \(90 min\)/);
-  assert.match(html, /Absage und Verschiebung/);
-  assert.ok(html.includes(AGB_MARKER_DE));
-  assert.ok(html.includes('Bei Fragen erreichen Sie uns unter'));
-  // The course blocks sit below the sign-off.
-  assert.ok(html.indexOf('>Gioia</p>') < html.indexOf('Kursdetails'));
-});
-
-test('English invoice email carries English labels and both AGB versions', () => {
-  const { subject, html } = buildInvoice({ language: 'en' });
-  assert.equal(subject, 'Invoice LWG-2026-0007 · learning with gioia');
-  assert.ok(html.includes('Hello Anna,'));
-  assert.ok(html.includes('Amount: <strong>450.00 CHF</strong>'));
-  assert.match(html, /Course details/);
-  assert.match(html, /Scheduled lessons/);
-  assert.match(html, /Monday, 03\/08\/2026, 18:00 - 19:30 \(90 min\)/);
-  assert.match(html, /Cancellation and postponement/);
-  assert.ok(html.includes(AGB_MARKER_EN));
-  assert.ok(html.includes(AGB_MARKER_DE));
-});
-
-test('invoice email greys out lessons held before a late joiner joined', () => {
-  const { html } = buildInvoice({ joinedAt: '2026-08-10' });
-  const first = html.indexOf('Montag, 03.08.2026');
-  const second = html.indexOf('Montag, 10.08.2026');
-  const firstCell = html.lastIndexOf('<td', first);
-  const secondCell = html.lastIndexOf('<td', second);
-  assert.ok(html.slice(firstCell, first).includes('line-through'));
-  assert.ok(!html.slice(secondCell, second).includes('line-through'));
-  assert.ok(
-    html.includes('Grau durchgestrichen: Lektionen, die vor Ihrem Einstieg stattgefunden haben.')
-  );
-
-  const regular = buildInvoice().html;
-  assert.ok(!regular.includes('line-through'));
-  assert.ok(!regular.includes('Grau durchgestrichen'));
-
-  const en = buildInvoice({ joinedAt: '2026-08-10', language: 'en' }).html;
-  assert.ok(en.includes('Greyed out: lessons held before you joined.'));
-});
-
-test('invoice email details show the billed lesson count and total, not the course-level ones', () => {
-  const { html } = buildInvoice({
-    joinedAt: '2026-08-10',
-    invoice: { ...invoice, quantity: 2, total_amount: 300 },
-  });
-  assert.match(html, /Anzahl Lektionen<\/td>\s*<td[^>]*>2</);
-  assert.match(html, /Preis für die gesamte Buchung<\/td>\s*<td[^>]*>300\.00 CHF</);
-  assert.ok(!html.includes('450.00 CHF'));
-  assert.ok(html.includes('Betrag: <strong>300.00 CHF</strong>'));
-
-  // Without invoice figures the table falls back to the course-level numbers.
-  const fallback = buildInvoice({ invoice: { ...invoice, quantity: undefined } }).html;
-  assert.match(fallback, /Anzahl Lektionen<\/td>\s*<td[^>]*>3</);
-});
-
-test('invoice email without a course renders no course blocks', () => {
-  const { html } = buildInvoice({ course: null, sessions: [] });
-  assert.ok(html.includes('Betrag: <strong>450.00 CHF</strong>'));
-  assert.ok(!html.includes('Kursdetails'));
-  assert.ok(!html.includes('Unten finden Sie alle wichtigen Infos'));
-  assert.ok(!html.includes(AGB_MARKER_DE));
-  assert.ok(!html.includes('Bei Fragen erreichen Sie uns unter'));
-});
-
-test('invoice email falls back when the invoice has no subject or due date', () => {
-  const { html } = buildInvoice({ invoice: { ...invoice, subject: '', due_date: '' } });
-  assert.ok(html.includes('Anbei finden Sie die Rechnung für Ihren Kurs.'));
-  assert.ok(html.includes('Die Zahlungsdetails finden Sie direkt im angehängten PDF.'));
-});
-
 test('bodyParagraph escapes text and applies the margin', () => {
   assert.equal(
     bodyParagraph('a<b', '0'),
@@ -272,6 +118,8 @@ test('cancellation email (de, unpaid): storno subject, no-payment line', () => {
   assert.ok(html.includes('es ist keine Zahlung erforderlich'));
   assert.ok(html.includes('Die neue Rechnung erhalten Sie in einer separaten E-Mail.'));
   assert.ok(!html.includes('überweisen'));
+  assert.ok(html.includes('Herzliche Grüsse'));
+  assert.ok(html.includes('>Gioia Birukoff</p>'));
 });
 
 test('cancellation email omits the new-invoice line unless requested', () => {
