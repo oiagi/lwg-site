@@ -1,13 +1,14 @@
 // functions/api/send-session-schedule.js
 // POST /api/send-session-schedule
-// Body: { course_id, student_id?, student_ids?, language? }
+// Body: { course_id, student_id?, student_ids?, language?, preview? }
 //
 // Sends a schedule update to each enrolled student with an email
 // address — the list of upcoming (non-cancelled) sessions plus the
 // 24-hour cancellation policy reminder, without course confirmation
 // boilerplate or AGB. Use this when sessions have been rescheduled
 // mid-course. If `student_id` or `student_ids` is provided, only those
-// students are emailed.
+// students are emailed. With `preview: true` nothing is sent or stored: the
+// response is the exact email for the first matching student.
 //
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
@@ -22,7 +23,7 @@ import {
   normalizePageLanguage,
 } from './_utils.js';
 import { getCancellationPolicy, getGroupCancellationPolicy } from './_agb.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -176,13 +177,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+  const preview = body?.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
     console.error('RESEND_API_KEY not configured');
     return errorResponse('Email service not configured', 500);
   }
-
-  const { body, error } = await parseJsonBody(request);
-  if (error) return error;
 
   const { course_id, student_id } = body;
   const hasStudentIds = Object.prototype.hasOwnProperty.call(body, 'student_ids');
@@ -245,6 +247,17 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   }
   if (!recipients.length) {
     return errorResponse('No enrolled students with an email address', 400);
+  }
+
+  if (preview) {
+    const student = recipients[0];
+    const email = buildScheduleEmail({
+      course,
+      sessions,
+      studentFirstName: student.first_name || '',
+      language,
+    });
+    return previewResponse({ to: student.email, subject: email.subject, html: email.html });
   }
 
   const results = await Promise.all(

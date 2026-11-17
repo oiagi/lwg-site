@@ -1,12 +1,11 @@
 // functions/api/_course-confirmation-email.js
-// Shared template for the two consolidated course-info emails:
-//   'confirmation'   — course overview with the full AGB. No longer sent from
-//                      the admin: the invoice email (send-invoice.js) carries
-//                      the same blocks via courseInfoSectionsHtml and acts as
-//                      the confirmation. The variant stays for the endpoint.
-//   'starting_soon'  — sent shortly before the first lesson, no AGB repeat
-// Both share the course details table, lesson list and cancellation callout;
-// only the subject, title and intro differ.
+// The course-info blocks (details table, lesson list, cancellation callout,
+// AGB) and the 'starting_soon' email built from them, sent shortly before the
+// first lesson without the AGB repeat.
+// The course confirmation itself is the course letter in
+// _course-letter-email.js, which uses courseInfoSectionsHtml from here. The
+// 'confirmation' variant of buildConfirmationEmail below is the earlier
+// stand-alone wording; send-course-confirmation.js no longer sends it.
 
 import { getCancellationPolicy, getGroupCancellationPolicy, renderAgbEmailHtml } from './_agb.js';
 

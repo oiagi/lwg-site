@@ -1,11 +1,12 @@
 // functions/api/_invoice-email.js
 // Shared building blocks for invoice-related emails (send-invoice.js,
 // cancel-invoice.js): HTML escaping, date formatting, the recipient greeting,
-// the outer email layout, the invoice email itself and the cancellation
-// (Storno) email template.
+// the outer email layout and the cancellation (Storno) email template. The
+// invoice email itself is the course letter in _course-letter-email.js.
 // Everything here is pure — covered by tests/invoice-email.test.mjs.
 
-import { courseInfoSectionsHtml } from './_course-confirmation-email.js';
+// The name every signed email closes with.
+export const SIGNATURE_NAME = 'Gioia Birukoff';
 
 export function esc(str) {
   if (str === null || str === undefined) return '';
@@ -50,7 +51,7 @@ function fullNameFromParts(firstName, lastName, fallbackName = '') {
 
 export function invoiceGreeting({ language, name, first_name, last_name, gender }) {
   if (language === 'en') return `Hello ${first_name || name || 'there'},`;
-  if (first_name) return `Liebe ${first_name}`;
+  if (first_name) return `${gender === 'male' ? 'Lieber' : 'Liebe'} ${first_name}`;
   const surname = last_name || surnameFromName(name);
   if (gender === 'female' && surname) return `Liebe Frau ${surname}`;
   if (gender === 'male' && surname) return `Lieber Herr ${surname}`;
@@ -61,7 +62,7 @@ export function invoiceGreeting({ language, name, first_name, last_name, gender 
 // Wraps already-escaped body paragraphs in the shared branded email layout
 // (dark header band, white card, footer link). `title` is escaped here.
 // `sectionsHtml` holds optional extra <tr> rows for the card table (the course
-// info blocks of the invoice email); when present, the footer also names the
+// info blocks of the course letter); when present, the footer also names the
 // contact address, like the course-info emails do.
 export function emailShell({ language, title, bodyHtml, sectionsHtml = '' }) {
   const isEN = language === 'en';
@@ -113,93 +114,6 @@ export function bodyParagraph(text, margin = '0 0 18px') {
   return `<p style="margin:${margin};font-size:15px;line-height:1.7;color:#333;">${esc(text)}</p>`;
 }
 
-// The invoice email: PDF (with QR bill) attached, amount and due date in the
-// body, followed by the same course blocks as the course-info emails (details
-// table, lesson list, cancellation callout, full AGB). It doubles as the course
-// confirmation, so the recipient sees exactly what they are paying for.
-// `joinedAt` (YYYY-MM-DD) greys out lessons held before a late joiner joined,
-// and the lesson count / total in the details table come from the invoice.
-export function buildInvoiceEmail({
-  language,
-  name,
-  first_name,
-  last_name,
-  gender,
-  invoice,
-  course = null,
-  sessions = [],
-  joinedAt = null,
-}) {
-  const isEN = language === 'en';
-  const invoiceNo = invoice.invoice_number || '';
-  const amount = `${Number(invoice.total_amount || 0).toFixed(2)} ${invoice.currency || 'CHF'}`;
-  const subject = isEN
-    ? `Invoice ${invoiceNo} · learning with gioia`
-    : `Rechnung ${invoiceNo} · learning with gioia`;
-
-  const greeting = invoiceGreeting({ language, name, first_name, last_name, gender });
-  const courseLabel = invoice.subject || (isEN ? 'your course' : 'Ihren Kurs');
-  const dueDate = invoice.due_date ? formatDate(invoice.due_date, isEN ? 'en' : 'de') : '';
-  const intro = isEN ? 'Thank you for learning with us.' : 'Danke, dass Sie mit uns lernen.';
-  const invoiceLine = isEN
-    ? `Attached you will find the invoice for ${courseLabel}.`
-    : `Anbei finden Sie die Rechnung für ${courseLabel}.`;
-  // The due date already encodes the payment rule (course start when more
-  // than 30 days out, otherwise invoice + 30 days), so one sentence serves
-  // both cases. See public/admin/core/invoice-terms.js.
-  const paymentLine = dueDate
-    ? isEN
-      ? `You can pay it easily with the QR bill in the PDF. We kindly ask you to transfer the invoice amount to our bank account by ${dueDate}. Thank you for placing your trust in us.`
-      : `Sie können sie bequem mit dem QR-Zahlteil im PDF begleichen. Wir bitten Sie, den Rechnungsbetrag bis zum ${dueDate} auf unser Bankkonto zu überweisen. Vielen Dank für Ihr Vertrauen.`
-    : isEN
-      ? 'You will find the payment details directly in the attached PDF.'
-      : 'Die Zahlungsdetails finden Sie direkt im angehängten PDF.';
-  const detailsLine = isEN
-    ? 'Below you will find all the important information about your course.'
-    : 'Unten finden Sie alle wichtigen Infos zu Ihrem Kurs.';
-  const questionLine = isEN
-    ? 'Should you have any questions, please reply to this email.'
-    : 'Bei Fragen antworten Sie gerne direkt auf diese E-Mail.';
-  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
-
-  const bodyHtml = [
-    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>`,
-    bodyParagraph(intro),
-    bodyParagraph(invoiceLine),
-    `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#333;">
-      ${isEN ? 'Amount' : 'Betrag'}: <strong>${esc(amount)}</strong><br>
-      ${esc(paymentLine)}
-    </p>`,
-    ...(course ? [bodyParagraph(detailsLine)] : []),
-    bodyParagraph(questionLine, '0 0 24px'),
-    bodyParagraph(sign, '0 0 4px'),
-    bodyParagraph('Gioia', '0'),
-  ].join('\n');
-
-  const sectionsHtml = course
-    ? courseInfoSectionsHtml({
-        course,
-        sessions,
-        language,
-        includeAgb: true,
-        joinedAt,
-        // The details table shows what this student is billed for, not the
-        // course-level booking, so it always agrees with the PDF.
-        booking: { lessons: invoice.quantity, total: invoice.total_amount },
-      })
-    : '';
-
-  return {
-    subject,
-    html: emailShell({
-      language,
-      title: `${isEN ? 'Invoice' : 'Rechnung'} ${invoiceNo}`,
-      bodyHtml,
-      sectionsHtml,
-    }),
-  };
-}
-
 // Notification email for a cancelled invoice: storno PDF attached, states that
 // the original invoice is void and — unless it was already paid — that no
 // payment is required. Paid originals are refunded within 7 working days.
@@ -239,7 +153,7 @@ export function buildCancellationEmail({
   const questionLine = isEN
     ? 'Should you have any questions, please reply to this email.'
     : 'Bei Fragen antworten Sie gerne direkt auf diese E-Mail.';
-  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüse';
+  const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
 
   const bodyHtml = [
     `<p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#1a1a1a;">${esc(greeting)}</p>`,
@@ -248,7 +162,7 @@ export function buildCancellationEmail({
     ...(new_invoice_follows ? [bodyParagraph(newInvoiceLine)] : []),
     bodyParagraph(questionLine, '0 0 24px'),
     bodyParagraph(sign, '0 0 4px'),
-    bodyParagraph('Gioia', '0'),
+    bodyParagraph(SIGNATURE_NAME, '0'),
   ].join('\n');
 
   return { subject, html: emailShell({ language, title, bodyHtml }) };

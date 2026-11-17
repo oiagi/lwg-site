@@ -11,6 +11,10 @@
 // plus a personalised link where the student can upload the printed and
 // signed copy. Logs each contract in the `contracts` Supabase table.
 //
+// With `preview: true` nothing is sent or stored and no PDF or contract
+// reference is needed: the response is the exact email for the first
+// recipient, with a placeholder upload link.
+//
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY, SITE_URL (optional)
 
@@ -23,7 +27,7 @@ import {
   parseJsonBody,
 } from './_utils.js';
 import { getOrCreateStudentToken } from './_student-utils.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -153,6 +157,12 @@ async function logContract(env, course_id, r) {
   return true;
 }
 
+// The reference is drawn when the contracts are sent, so a preview shows a stand-in.
+function contractFilename(language, contractRef) {
+  const ref = contractRef || 'LWG-V-XXXX-XXXX';
+  return language === 'en' ? `course-contract-${ref}.pdf` : `kursvertrag-${ref}.pdf`;
+}
+
 const CONTRACT_REF_RE = /^LWG-V-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
@@ -172,13 +182,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+  const preview = body?.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
     console.error('RESEND_API_KEY not configured');
     return errorResponse('Email service not configured', 500);
   }
-
-  const { body, error } = await parseJsonBody(request);
-  if (error) return error;
 
   const { course_id, language, recipients } = body || {};
   if (!course_id) return errorResponse('Missing course_id', 400);
@@ -188,15 +199,33 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!Array.isArray(recipients) || !recipients.length) {
     return errorResponse('recipients must be a non-empty array', 400);
   }
-  for (const r of recipients) {
-    const e = validateRecipient(r);
-    if (e) return errorResponse(e, 400);
+  if (!preview) {
+    for (const r of recipients) {
+      const e = validateRecipient(r);
+      if (e) return errorResponse(e, 400);
+    }
   }
 
   const course = await loadCourse(SUPABASE_URL, SUPABASE_SERVICE_KEY, course_id);
   if (!course) return errorResponse('Course not found', 404);
 
   const base = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+
+  if (preview) {
+    const r = recipients[0] || {};
+    const { subject, html } = buildEmail({
+      language,
+      name: r.name || '',
+      courseCode: course.course_code || '',
+      uploadUrl: `${base}/contract-upload?token=preview`,
+    });
+    return previewResponse({
+      to: r.email || '',
+      subject,
+      html,
+      attachment: contractFilename(language, r.contract_ref),
+    });
+  }
 
   const results = await Promise.all(
     recipients.map(async (r) => {
@@ -224,10 +253,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
           uploadUrl,
         });
 
-        const filename =
-          language === 'en'
-            ? `course-contract-${r.contract_ref}.pdf`
-            : `kursvertrag-${r.contract_ref}.pdf`;
+        const filename = contractFilename(language, r.contract_ref);
 
         const res = await sendResendEmail(RESEND_API_KEY, {
           to: [r.email],

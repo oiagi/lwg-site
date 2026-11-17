@@ -1021,12 +1021,74 @@ button.course-status::after {
 .cs-detail-list li {
   padding: 0.1rem 0;
 }
-.cs-session-list {
-  margin: 0;
-  padding-left: 1.2rem;
+.cs-preview-for {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-left: 0.4rem;
+  text-transform: none;
 }
-.cs-session-list li {
+.cs-preview-for select {
+  font-family: inherit;
+  font-size: 0.78rem;
+  margin-left: 0.2rem;
+  max-width: 16rem;
+  padding: 0.1rem 0.3rem;
+}
+
+/* ── Exact email preview (features/email-preview.js) ─────────── */
+.email-previews {
+  display: grid;
+  gap: 0.8rem;
+}
+.email-preview {
+  border: 1px solid var(--border-soft);
+}
+.email-preview-meta {
+  background: #edf2f7;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.8rem;
+  padding: 0.5rem 0.8rem;
+}
+.email-preview-meta-row {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0;
   padding: 0.1rem 0;
+  overflow-wrap: anywhere;
+}
+.email-preview-meta-label {
+  color: var(--text-muted);
+  flex: 0 0 5.5rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding-top: 0.12rem;
+  text-transform: uppercase;
+}
+.email-preview-note {
+  background: #fff9e6;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.78rem;
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+}
+.email-preview-frame {
+  background: #f4f8fb;
+  max-height: 30rem;
+  overflow: auto;
+}
+.email-preview-status {
+  background: #f4f8fb;
+  border: 1px solid var(--border-soft);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+}
+.email-preview-status.err {
+  color: #b3261e;
+}
+.invoice-preview-nav .invoice-carousel-nav {
+  border: 1px solid var(--border-soft);
 }
 .cs-empty {
   margin: 0;
@@ -3675,11 +3737,10 @@ html[data-device='mobile'] .blocked-dates-range {
 .invoice-recipient-row {
   align-items: center;
   color: var(--text);
-  cursor: pointer;
   display: grid;
   font-size: 0.82rem;
   column-gap: 0.8rem;
-  grid-template-columns: 2.2rem minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) repeat(3, 6.4rem);
   letter-spacing: 0;
   margin-bottom: 0;
   padding: 0.3rem 0;
@@ -3693,7 +3754,29 @@ html[data-device='mobile'] .blocked-dates-range {
   cursor: pointer;
   height: 15px;
   width: 15px;
-  justify-self: start;
+  justify-self: center;
+}
+.invoice-recipient-row input[type='checkbox']:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.invoice-recipient-head {
+  background: #f4f8fb;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  position: sticky;
+  text-transform: uppercase;
+  top: -0.45rem;
+  z-index: 1;
+}
+.invoice-part-head {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
 }
 .invoice-recipient-name {
   display: block;
@@ -3785,8 +3868,13 @@ html[data-device='mobile'] .cert-options {
   grid-template-columns: 1fr;
 }
 html[data-device='mobile'] .invoice-recipient-row {
-  grid-template-columns: 1.6rem minmax(0, 1fr);
+  column-gap: 0.3rem;
+  grid-template-columns: minmax(0, 1fr) repeat(3, 3.6rem);
   row-gap: 0.35rem;
+}
+html[data-device='mobile'] .invoice-part-head {
+  font-size: 0.55rem;
+  letter-spacing: 0;
 }
 html[data-device='mobile'] .cert-prev-footer {
   flex-direction: column;

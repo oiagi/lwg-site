@@ -14,6 +14,9 @@
 // (rendered client-side) as an attachment, then logs each issued
 // certificate in the `certificates` Supabase table.
 //
+// With `preview: true` nothing is sent or stored and no PDF or certificate id
+// is needed: the response is the exact email for the first recipient.
+//
 // Environment variables:
 //   SUPABASE_URL, SUPABASE_SERVICE_KEY, RESEND_API_KEY
 
@@ -25,7 +28,7 @@ import {
   withErrorHandling,
   parseJsonBody,
 } from './_utils.js';
-import { sendResendEmail, NOTIFY_EMAILS } from './_email.js';
+import { sendResendEmail, previewResponse, NOTIFY_EMAILS } from './_email.js';
 
 function esc(str) {
   if (str === null || str === undefined) return '';
@@ -59,7 +62,7 @@ function buildEmail({ language, name, courseCode, level }) {
     ? 'It has been a pleasure learning with you! Thank you for participating in the course, and maybe see you again soon.'
     : 'Es hat uns Spass gemacht, mit Ihnen zu lernen! Danke, dass Sie dabei waren und vielleicht bis bald wieder.';
   const sign = isEN ? 'Warm regards,' : 'Herzliche Grüsse';
-  const teamLine = 'Gioia';
+  const teamLine = 'Gioia Birukoff';
 
   const html = `<!DOCTYPE html>
 <html lang="${isEN ? 'en' : 'de'}">
@@ -135,6 +138,14 @@ async function logCertificate(env, course_id, r) {
   }
 }
 
+// The id is drawn when the certificates are sent, so a preview shows a stand-in.
+function certificateFilename(language, certificateId) {
+  const id = certificateId || 'LWG-XXXX-XXXX';
+  return language === 'en'
+    ? `certificate-of-attendance-${id}.pdf`
+    : `teilnahmebestaetigung-${id}.pdf`;
+}
+
 const CERT_ID_RE = /^LWG-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 const ALLOWED_LANGUAGES = ['de', 'en'];
 
@@ -154,13 +165,14 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   const authErr = await requireAdminAuth(request, env);
   if (authErr) return authErr;
 
-  if (!RESEND_API_KEY) {
+  const { body, error } = await parseJsonBody(request);
+  if (error) return error;
+  const preview = body?.preview === true;
+
+  if (!preview && !RESEND_API_KEY) {
     console.error('RESEND_API_KEY not configured');
     return errorResponse('Email service not configured', 500);
   }
-
-  const { body, error } = await parseJsonBody(request);
-  if (error) return error;
 
   const { course_id, language, recipients } = body || {};
   if (!course_id) return errorResponse('Missing course_id', 400);
@@ -170,13 +182,31 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
   if (!Array.isArray(recipients) || !recipients.length) {
     return errorResponse('recipients must be a non-empty array', 400);
   }
-  for (const r of recipients) {
-    const e = validateRecipient(r);
-    if (e) return errorResponse(e, 400);
+  if (!preview) {
+    for (const r of recipients) {
+      const e = validateRecipient(r);
+      if (e) return errorResponse(e, 400);
+    }
   }
 
   const course = await loadCourse(SUPABASE_URL, SUPABASE_SERVICE_KEY, course_id);
   if (!course) return errorResponse('Course not found', 404);
+
+  if (preview) {
+    const r = recipients[0] || {};
+    const { subject, html } = buildEmail({
+      language,
+      name: r.name || '',
+      courseCode: course.course_code || '',
+      level: course.level || '',
+    });
+    return previewResponse({
+      to: r.email || '',
+      subject,
+      html,
+      attachment: certificateFilename(language, r.certificate_id),
+    });
+  }
 
   const results = await Promise.all(
     recipients.map(async (r) => {
@@ -187,10 +217,7 @@ export const onRequestPost = withErrorHandling(async ({ request, env }) => {
         level: course.level || '',
       });
 
-      const filename =
-        language === 'en'
-          ? `certificate-of-attendance-${r.certificate_id}.pdf`
-          : `teilnahmebestaetigung-${r.certificate_id}.pdf`;
+      const filename = certificateFilename(language, r.certificate_id);
 
       try {
         const res = await sendResendEmail(RESEND_API_KEY, {

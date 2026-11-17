@@ -1,4 +1,7 @@
-/* ── Invoices ───────────────────────────────────────────────────── */
+/* ── Invoices ─────────────────────────────────────────────────────
+   The invoice modal is the combined course-start dialog: per student it
+   sends any mix of course confirmation, invoice and pre-course
+   questionnaire, as one email wherever the parts share an address.   */
 import { apiFetch } from '../core/api.js';
 import { esc, showMessage, translateSubject } from '../core/helpers.js';
 import { MESSAGE_TIMEOUT_MS } from '../core/constants.js';
@@ -11,6 +14,7 @@ import {
 } from '../core/swiss-qr-bill.js';
 import { drawQrBillPage } from './qr-bill-pdf.js';
 import { paymentTerms, defaultDueDate, PAYMENT_WINDOW_DAYS } from '../core/invoice-terms.js';
+import { fetchEmailPreview, showEmailPreviews, clearEmailPreviews } from './email-preview.js';
 
 const SENDER = {
   name: 'Birukoff World c/o Gioia Birukoff',
@@ -25,7 +29,6 @@ let currentCourse = null;
 let currentStudent = null;
 let currentBulkRecipients = [];
 let bulkPreviewIndex = 0;
-let _singleOpenQuantity = null;
 
 // Creditor side of the Swiss QR-bill (IBAN + address), served by the Worker
 // from environment variables. Loaded whenever the modal opens; while it is
@@ -60,74 +63,6 @@ async function confirmWithoutQrBill(action) {
   return confirm(`QR-bill not available (${reason}). ${action} without a payment part?`);
 }
 
-export async function openInvoiceModal(courseId, studentId, coursesCache) {
-  const course = coursesCache.find((c) => String(c.id) === String(courseId));
-  const student = course?.students?.find((s) => String(s.id) === String(studentId));
-  if (!course || !student) {
-    alert('Course or student not found. Please reload and try again.');
-    return;
-  }
-  if (!student.email && !student.billing_email) {
-    alert('This student has no email address.');
-    return;
-  }
-
-  currentCourse = course;
-  currentStudent = student;
-  currentBulkRecipients = [];
-  loadQrBillConfig();
-
-  const titleEl = document.getElementById('invoice-title');
-  titleEl.textContent = `send invoice — ${studentName(student)}`;
-  renderBulkInvoiceRecipients([]);
-
-  const msg = document.getElementById('inv-msg');
-  msg.classList.remove('is-visible-block');
-  msg.textContent = '';
-  const btn = document.getElementById('inv-submit');
-  btn.textContent = 'send invoice';
-  btn.disabled = false;
-
-  document.getElementById('inv-quantity').disabled = false;
-  document.getElementById('inv-total').disabled = false;
-  _singleOpenQuantity = studentLessonCount(student);
-  const data = buildDefaultInvoiceData('', student);
-  setVal('inv-course-id', course.id);
-  setVal('inv-student-id', student.id);
-  setVal('inv-number', data.invoiceNumber);
-  setVal('inv-customer-reference', data.customerReference);
-  setVal('inv-date', data.invoiceDate);
-  setVal('inv-due-date', data.dueDate);
-  setVal('inv-subject', data.subject);
-  setVal('inv-quantity', data.quantity);
-  setVal('inv-unit-price', data.unitPrice);
-  setVal('inv-total', data.totalAmount);
-  setVal('inv-recipient-email', data.email);
-  document.querySelector('input[name="inv-language"][value="de"]').checked = true;
-
-  btn.textContent = 'send invoice';
-  btn.disabled = false;
-  resetDownloadButton('download');
-
-  bindInvoiceListeners();
-  updateInvoicePreview();
-  document.getElementById('invoice-modal').classList.add('open');
-
-  loadNextInvoiceNumber().then((invoiceNumber) => {
-    if (invoiceNumber && !val('inv-number')) {
-      setVal('inv-number', invoiceNumber);
-      updateInvoicePreview();
-    }
-  });
-}
-
-function resetDownloadButton(label) {
-  const dlBtn = document.getElementById('inv-download');
-  if (!dlBtn) return;
-  dlBtn.textContent = label;
-  dlBtn.disabled = false;
-}
-
 export async function openBulkInvoiceModal(courseId, coursesCache) {
   const course = coursesCache.find((c) => String(c.id) === String(courseId));
   if (!course) {
@@ -149,9 +84,15 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
     const alreadyInvoiced = Boolean(
       (s.open_invoices || []).length || (s.paid_invoices || []).length
     );
+    // Invoice and confirmation default to on for anyone not yet invoiced; the
+    // questionnaire for anyone who has never been sent it.
     return {
       ...s,
-      selected: !alreadyInvoiced,
+      parts: {
+        confirmation: !alreadyInvoiced,
+        invoice: !alreadyInvoiced,
+        questionnaire: !s.questionnaire,
+      },
       alreadyInvoiced,
       _originalLessonCount: s.invoice_lesson_count,
       _invoiceNumber: null,
@@ -160,15 +101,11 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
   loadQrBillConfig();
 
   const titleEl = document.getElementById('invoice-title');
-  titleEl.textContent = `send invoices — ${course.course_code || 'course'}`;
+  titleEl.textContent = `send confirmation / invoice / questionnaire — ${course.course_code || 'course'}`;
 
   const msg = document.getElementById('inv-msg');
   msg.classList.remove('is-visible-block');
   msg.textContent = '';
-  const btn = document.getElementById('inv-submit');
-  btn.textContent = `send ${currentBulkRecipients.length} invoices`;
-  btn.disabled = false;
-
   document.getElementById('inv-quantity').disabled = true;
   document.getElementById('inv-total').disabled = true;
   const data = buildDefaultInvoiceData('', currentStudent);
@@ -200,8 +137,8 @@ export async function openBulkInvoiceModal(courseId, coursesCache) {
 
 export function closeInvoiceModal() {
   document.getElementById('invoice-modal').classList.remove('open');
-  document.getElementById('inv-quantity').disabled = false;
-  document.getElementById('inv-total').disabled = false;
+  clearTimeout(emailPreviewTimer);
+  clearEmailPreviews(document.getElementById('inv-email-preview'));
   currentBulkRecipients = [];
   renderBulkInvoiceRecipients([]);
 }
@@ -347,6 +284,76 @@ function formalGreeting(data) {
   return fullName ? `Guten Tag ${fullName}` : 'Guten Tag';
 }
 
+const PARTS = ['confirmation', 'invoice', 'questionnaire'];
+
+function hasAnyPart(student) {
+  return PARTS.some((part) => student.parts?.[part]);
+}
+
+/* The invoice goes to the billing address. When that is not the student's own
+   address, someone else pays: they get the invoice alone, and confirmation and
+   questionnaire go to the student in a second email, so the personal
+   questionnaire link never reaches the payer. */
+function payerDiffers(student) {
+  const own = String(student.email || '')
+    .trim()
+    .toLowerCase();
+  const billing = String(billingEmail(student)).trim().toLowerCase();
+  return Boolean(own && billing && own !== billing);
+}
+
+/* The emails one student gets for the parts ticked: one, or two when the
+   payer differs. Used for the preview and for the send alike. */
+function planEmails(student) {
+  const parts = student.parts || {};
+  const mails = [];
+  const split = payerDiffers(student);
+  const extras = parts.confirmation || parts.questionnaire;
+  if (parts.invoice) {
+    mails.push({
+      kind: 'invoice',
+      to: billingEmail(student),
+      confirmation: !split && Boolean(parts.confirmation),
+      questionnaire: !split && Boolean(parts.questionnaire),
+      forPayer: split,
+    });
+    if (!split || !extras) return mails;
+  }
+  if (parts.confirmation) {
+    mails.push({
+      kind: 'confirmation',
+      to: student.email || '',
+      questionnaire: Boolean(parts.questionnaire),
+    });
+  } else if (parts.questionnaire) {
+    mails.push({ kind: 'questionnaire', to: student.email || '' });
+  }
+  return mails;
+}
+
+function mailLabel(mail) {
+  const parts = [
+    mail.kind === 'confirmation' || mail.confirmation ? 'confirmation' : null,
+    mail.kind === 'invoice' ? 'invoice' : null,
+    mail.kind === 'questionnaire' || mail.questionnaire ? 'questionnaire' : null,
+  ].filter(Boolean);
+  return parts.join(' + ');
+}
+
+function recipientFlags(s) {
+  return [
+    s.alreadyInvoiced ? 'already invoiced' : null,
+    s.questionnaire?.submitted_at
+      ? 'questionnaire answered'
+      : s.questionnaire
+        ? 'questionnaire sent before'
+        : null,
+  ]
+    .filter(Boolean)
+    .map((flag) => ` <span class="invoice-recipient-flag">${esc(flag)}</span>`)
+    .join('');
+}
+
 function renderBulkInvoiceRecipients(recipients) {
   const wrap = document.getElementById('inv-bulk-recipients');
   if (!wrap) return;
@@ -355,49 +362,67 @@ function renderBulkInvoiceRecipients(recipients) {
     wrap.innerHTML = '';
     return;
   }
-  const hasAlreadyInvoiced = recipients.some((s) => s.alreadyInvoiced);
-  const alreadyInvoicedHint = hasAlreadyInvoiced
-    ? '<p class="label-hint">Students who already have an invoice for this course are unchecked by default — check them to preview, download, or send again.</p>'
-    : '';
+  const partBox = (s, i, part) => {
+    // Already answered: the server would leave the link out anyway.
+    const locked = part === 'questionnaire' && Boolean(s.questionnaire?.submitted_at);
+    return `<input type="checkbox" data-invoice-part="${part}" data-invoice-recipient="${i}"
+      ${s.parts[part] && !locked ? 'checked' : ''}${locked ? ' disabled' : ''}
+      aria-label="${esc(part)} for ${esc(studentName(s))}">`;
+  };
   wrap.classList.remove('is-hidden');
   wrap.innerHTML = `
     <label>Recipients <span class="cs-meta" id="inv-bulk-count"></span></label>
-    <p class="label-hint">Each recipient gets their own invoice number and QR-bill with their address as payer.</p>
+    <p class="label-hint">Tick what each student receives. Everything ticked for a student goes out as one email. Each invoice gets its own number and QR-bill.</p>
     <div class="invoice-recipient-list">
+      <div class="invoice-recipient-row invoice-recipient-head">
+        <span>Student</span>
+        ${PARTS.map(
+          (part) =>
+            `<label class="invoice-part-head"><input type="checkbox" data-invoice-part-all="${part}" aria-label="${esc(part)} for everyone">${esc(part)}</label>`
+        ).join('')}
+      </div>
       ${recipients
         .map(
           (s, i) => `
             <div class="invoice-recipient-row">
-              <input type="checkbox" data-invoice-recipient="${i}" ${s.selected ? 'checked' : ''}>
               <span class="invoice-recipient-person">
-                <span class="invoice-recipient-name">${esc(studentName(s))}${
-                  s.alreadyInvoiced
-                    ? ' <span class="invoice-recipient-flag">already invoiced</span>'
-                    : ''
+                <span class="invoice-recipient-name">${esc(studentName(s))}${recipientFlags(s)}</span>
+                <span class="invoice-recipient-email">${esc(s.email || billingEmail(s))}${
+                  payerDiffers(s) ? ` · invoice to ${esc(billingEmail(s))} as a separate email` : ''
                 }</span>
-                <span class="invoice-recipient-email">${esc(billingEmail(s))}</span>
                 <input class="invoice-recipient-lessons" type="number" min="1" step="1"
                   value="${esc(String(studentLessonCount(s)))}"
                   data-invoice-recipient-lessons="${i}"
                   aria-label="Lessons for ${esc(studentName(s))}">
               </span>
+              ${PARTS.map((part) => partBox(s, i, part)).join('')}
             </div>`
         )
         .join('')}
-    </div>
-    ${alreadyInvoicedHint}`;
+    </div>`;
 
-  updateBulkInvoiceCount();
-
-  wrap.querySelectorAll('input[data-invoice-recipient]').forEach((cb) => {
+  const afterChange = () => {
+    syncBulkInvoicePreviewRecipient();
+    updateBulkInvoiceCount();
+    updateInvoicePreview();
+  };
+  wrap.querySelectorAll('input[data-invoice-part]').forEach((cb) => {
     cb.addEventListener('change', () => {
-      const idx = parseInt(cb.dataset.invoiceRecipient, 10);
-      if (currentBulkRecipients[idx]) {
-        currentBulkRecipients[idx].selected = cb.checked;
-        syncBulkInvoicePreviewRecipient();
-        updateBulkInvoiceCount();
-        updateInvoicePreview();
-      }
+      const student = currentBulkRecipients[parseInt(cb.dataset.invoiceRecipient, 10)];
+      if (!student) return;
+      student.parts[cb.dataset.invoicePart] = cb.checked;
+      afterChange();
+    });
+  });
+  wrap.querySelectorAll('input[data-invoice-part-all]').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const part = cb.dataset.invoicePartAll;
+      wrap.querySelectorAll(`input[data-invoice-part="${part}"]:not(:disabled)`).forEach((box) => {
+        box.checked = cb.checked;
+        const student = currentBulkRecipients[parseInt(box.dataset.invoiceRecipient, 10)];
+        if (student) student.parts[part] = cb.checked;
+      });
+      afterChange();
     });
   });
   wrap.querySelectorAll('input[data-invoice-recipient-lessons]').forEach((input) => {
@@ -410,10 +435,18 @@ function renderBulkInvoiceRecipients(recipients) {
       }
     });
   });
+
+  updateBulkInvoiceCount();
 }
 
+// Everyone who receives at least one part.
 function selectedBulkRecipients() {
-  return currentBulkRecipients.filter((s) => s.selected);
+  return currentBulkRecipients.filter(hasAnyPart);
+}
+
+// Those who get an invoice: the only ones numbered, rendered to PDF or downloaded.
+function invoiceRecipients() {
+  return currentBulkRecipients.filter((s) => s.parts?.invoice);
 }
 
 function syncBulkInvoicePreviewRecipient() {
@@ -421,20 +454,45 @@ function syncBulkInvoicePreviewRecipient() {
   if (bulkPreviewIndex >= selected.length) bulkPreviewIndex = Math.max(0, selected.length - 1);
 }
 
+function plural(count, word) {
+  return `${count} ${word}${count === 1 ? '' : 's'}`;
+}
+
 function updateBulkInvoiceCount() {
-  const selected = selectedBulkRecipients().length;
-  const countEl = document.getElementById('inv-bulk-count');
-  if (countEl) countEl.textContent = `(${selected} selected)`;
   if (!currentBulkRecipients.length) return;
+  const selected = selectedBulkRecipients();
+  const invoices = invoiceRecipients().length;
+  const emails = selected.reduce((sum, s) => sum + planEmails(s).length, 0);
+
+  const countEl = document.getElementById('inv-bulk-count');
+  if (countEl) countEl.textContent = `(${selected.length} selected)`;
+
+  // The column boxes mirror their column: ticked when every row is.
+  document.querySelectorAll('input[data-invoice-part-all]').forEach((cb) => {
+    const boxes = Array.from(
+      document.querySelectorAll(
+        `input[data-invoice-part="${cb.dataset.invoicePartAll}"]:not(:disabled)`
+      )
+    );
+    const ticked = boxes.filter((box) => box.checked).length;
+    cb.checked = boxes.length > 0 && ticked === boxes.length;
+    cb.indeterminate = ticked > 0 && ticked < boxes.length;
+  });
+
+  // Invoice fields and the PDF only matter while someone gets an invoice.
+  document.getElementById('inv-fields')?.classList.toggle('is-hidden', invoices === 0);
+  document.getElementById('inv-pdf-field')?.classList.toggle('is-hidden', invoices === 0);
+
   const btn = document.getElementById('inv-submit');
   if (btn) {
-    btn.disabled = selected === 0;
-    btn.textContent = selected === 1 ? 'send 1 invoice' : `send ${selected} invoices`;
+    btn.disabled = emails === 0;
+    btn.textContent = `send ${plural(emails, 'email')}`;
   }
   const dlBtn = document.getElementById('inv-download');
   if (dlBtn) {
-    dlBtn.disabled = selected === 0;
-    dlBtn.textContent = selected === 1 ? 'download 1' : `download ${selected}`;
+    dlBtn.disabled = invoices === 0;
+    dlBtn.classList.toggle('is-hidden', invoices === 0);
+    dlBtn.textContent = `download ${plural(invoices, 'invoice')}`;
   }
 }
 
@@ -834,36 +892,143 @@ function qrBillPreviewNote(data) {
   return `<div class="inv-prev-qr">${lines.filter(Boolean).map(esc).join('<br>')}</div>`;
 }
 
+/* The number a student's invoice will carry: the one already assigned (after a
+   download), otherwise the base number plus their place among the invoiced. */
+function previewInvoiceNumber(student) {
+  if (student._invoiceNumber) return student._invoiceNumber;
+  const position = invoiceRecipients()
+    .filter((s) => !s._invoiceNumber)
+    .indexOf(student);
+  return incrementInvoiceNumber(val('inv-number'), Math.max(0, position));
+}
+
 function updateInvoicePreview() {
   updateDueDateHint();
   const container = document.getElementById('invoice-preview');
   if (!container || !currentCourse) return;
   const selected = selectedBulkRecipients();
-  if (currentBulkRecipients.length) {
-    if (!selected.length) {
-      container.innerHTML = '';
-      return;
-    }
-    if (bulkPreviewIndex >= selected.length) bulkPreviewIndex = selected.length - 1;
-    const student = selected[bulkPreviewIndex];
-    currentStudent = student;
-    setVal('inv-recipient-email', billingEmail(student));
-    const data = getInvoiceData(student);
-    setVal('inv-quantity', data.quantity);
-    setVal('inv-total', money(data.totalAmount));
-    const canPrev = bulkPreviewIndex > 0;
-    const canNext = bulkPreviewIndex < selected.length - 1;
-    container.innerHTML = `
+  if (!selected.length) {
+    container.innerHTML = '';
+    scheduleEmailPreview(null);
+    return;
+  }
+  if (bulkPreviewIndex >= selected.length) bulkPreviewIndex = selected.length - 1;
+  const student = selected[bulkPreviewIndex];
+  currentStudent = student;
+  setVal('inv-recipient-email', billingEmail(student));
+  const data = getInvoiceData(student, previewInvoiceNumber(student));
+  setVal('inv-quantity', data.quantity);
+  setVal('inv-total', money(data.totalAmount));
+  const canPrev = bulkPreviewIndex > 0;
+  const canNext = bulkPreviewIndex < selected.length - 1;
+  const nav = `
       <div class="invoice-carousel-nav">
         <button class="invoice-carousel-btn" data-action="prevBulkPreview"${canPrev ? '' : ' disabled'} aria-label="Previous">&#8249;</button>
         <span class="invoice-carousel-counter">${bulkPreviewIndex + 1} / ${selected.length} &mdash; ${esc(studentName(student))}</span>
         <button class="invoice-carousel-btn" data-action="nextBulkPreview"${canNext ? '' : ' disabled'} aria-label="Next">&#8250;</button>
-      </div>
-      ${buildPreviewHtml(data)}`;
-  } else {
-    if (!currentStudent) return;
-    container.innerHTML = buildPreviewHtml(getInvoiceData());
+      </div>`;
+  // The same student leads both previews: the PDF here, their emails above it.
+  document.getElementById('inv-preview-nav').innerHTML = nav;
+  container.innerHTML = student.parts.invoice
+    ? buildPreviewHtml(data)
+    : '<p class="email-preview-status">No invoice for this student.</p>';
+  scheduleEmailPreview(student);
+}
+
+/* ── Email preview ───────────────────────────────────────────────── */
+// Typing in the invoice fields changes the email (number, due date, amount),
+// so the preview is debounced instead of fetched on every keystroke.
+let emailPreviewTimer = null;
+
+function scheduleEmailPreview(student) {
+  const container = document.getElementById('inv-email-preview');
+  if (!container) return;
+  clearTimeout(emailPreviewTimer);
+  if (!student) {
+    clearEmailPreviews(container, 'Tick at least one part for a student.');
+    return;
   }
+  emailPreviewTimer = setTimeout(() => {
+    const mails = planEmails(student);
+    showEmailPreviews(container, () =>
+      Promise.all(mails.map((mail) => fetchEmailPreview(...mailRequest(student, mail))))
+    );
+  }, 350);
+}
+
+// Who a letter greets: the payer on a payer-only invoice, else the student.
+function greetingFields(student, data, forPayer) {
+  if (forPayer) {
+    return {
+      name: data.recipientName,
+      first_name: data.recipientFirstName,
+      last_name: data.recipientLastName,
+      gender: data.recipientGender,
+      gender_note: data.recipientGenderNote,
+    };
+  }
+  return {
+    name: studentName(student),
+    first_name: student.first_name || '',
+    last_name: student.last_name || '',
+    gender: student.gender || '',
+    gender_note: student.gender_note || '',
+  };
+}
+
+/* [endpoint, body] for one planned email. The preview posts the same body
+   with `preview: true`; the real send adds the PDF. */
+function mailRequest(student, mail, { invoiceNumber, pdfBase64 } = {}) {
+  const data = getInvoiceData(student, invoiceNumber || previewInvoiceNumber(student));
+  if (mail.kind === 'invoice') {
+    return [
+      '/api/send-invoice',
+      {
+        student_id: student.id,
+        course_id: currentCourse.id,
+        email: mail.to,
+        ...greetingFields(student, data, mail.forPayer),
+        language: data.language,
+        invoice: invoicePayloadFields(data),
+        include_course_info: mail.confirmation,
+        include_questionnaire: mail.questionnaire,
+        for_payer: mail.forPayer,
+        ...(pdfBase64 ? { pdf_base64: pdfBase64 } : {}),
+      },
+    ];
+  }
+  if (mail.kind === 'confirmation') {
+    return [
+      '/api/send-course-confirmation',
+      {
+        course_id: currentCourse.id,
+        student_ids: [student.id],
+        language: data.language,
+        variant: 'confirmation',
+        include_questionnaire: mail.questionnaire,
+        // What this student is billed, so the details table matches the invoice.
+        bookings: { [student.id]: { lessons: data.quantity, total: data.totalAmount } },
+      },
+    ];
+  }
+  return [
+    '/api/send-questionnaire-request',
+    { course_id: currentCourse.id, student_ids: [student.id], language: data.language },
+  ];
+}
+
+async function sendMail(student, mail, options) {
+  const [endpoint, body] = mailRequest(student, mail, options);
+  const res = await apiFetch(endpoint, { method: 'POST', body });
+  const result = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(result.error || `HTTP ${res.status}`);
+  // The list endpoints answer 200 with a per-recipient count.
+  if (mail.kind !== 'invoice' && !result.sent) {
+    throw new Error(
+      result.already_answered ? 'questionnaire already answered' : 'email could not be sent'
+    );
+  }
+  return result;
 }
 
 export function prevBulkPreview() {
@@ -1136,97 +1301,101 @@ async function persistLessonCount(courseId, studentId, count) {
   }
 }
 
+function showInvoiceMsg(text, kind) {
+  const msg = document.getElementById('inv-msg');
+  msg.textContent = text;
+  msg.className = `modal-msg ${kind}`;
+  msg.classList.add('is-visible-block');
+}
+
+const INVOICE_NUMBER_PATTERN = /^(LWG-\d{4}-)(\d{4})$/;
+
 export async function submitInvoice() {
   const btn = document.getElementById('inv-submit');
-  const msg = document.getElementById('inv-msg');
-  msg.classList.remove('is-visible-block');
+  document.getElementById('inv-msg').classList.remove('is-visible-block');
 
-  const data = getInvoiceData();
-  const isBulk = currentBulkRecipients.length > 0;
-  const bulkRecipients = isBulk ? selectedBulkRecipients() : [];
-  if (isBulk && !bulkRecipients.length) {
-    msg.textContent = 'Select at least one recipient.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+  const recipients = selectedBulkRecipients();
+  const invoiced = invoiceRecipients();
+  if (!recipients.length) {
+    showInvoiceMsg('Tick at least one part for a student.', 'err');
     return;
   }
-  if (!data.invoiceNumber || !data.recipientEmail || !data.totalAmount) {
-    msg.textContent = 'Please fill invoice number, email, and amount.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+  const noAddress = recipients.find((s) => planEmails(s).some((mail) => !mail.to));
+  if (noAddress) {
+    showInvoiceMsg(
+      `${studentName(noAddress)} has no email address of their own for the confirmation or questionnaire.`,
+      'err'
+    );
     return;
   }
-  if (!(await confirmWithoutQrBill(isBulk ? 'Send the invoices' : 'Send the invoice'))) return;
-
-  btn.textContent = 'preparing pdf…';
-  btn.disabled = true;
-
-  try {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      throw new Error('PDF library not loaded — please reload the page.');
-    }
-    if (isBulk) {
-      const invoiceNumberPattern = /^(LWG-\d{4}-)(\d{4})$/;
-      if (!invoiceNumberPattern.test(data.invoiceNumber)) {
-        throw new Error('Invoice number must use the format LWG-YYYY-0001.');
-      }
-
-      assignBulkInvoiceNumbers(data.invoiceNumber, bulkRecipients);
-      let sent = 0;
-      const failed = [];
-      for (let i = 0; i < bulkRecipients.length; i += 1) {
-        const student = bulkRecipients[i];
-        const invoiceNumber = student._invoiceNumber;
-        const studentData = getInvoiceData(student, invoiceNumber);
-        btn.textContent = `sending ${i + 1}/${bulkRecipients.length}…`;
-        const pdfBase64 = await buildInvoicePdf(studentData);
-        try {
-          await sendInvoiceRequest(studentData, student, pdfBase64);
-          sent += 1;
-          const rowMsg = document.getElementById(`invoice-msg-${currentCourse.id}-${student.id}`);
-          if (rowMsg) showMessage(rowMsg, 'sent');
-          if (student.invoice_lesson_count !== student._originalLessonCount) {
-            persistLessonCount(currentCourse.id, student.id, student.invoice_lesson_count);
-          }
-        } catch (err) {
-          failed.push(`${studentName(student)}: ${err.message || err}`);
-        }
-      }
-
-      msg.textContent = failed.length
-        ? `Sent ${sent}; failed ${failed.length}. ${failed.join(' | ')}`
-        : `Sent ${sent} invoices.`;
-      msg.className = failed.length ? 'modal-msg err' : 'modal-msg success';
-      msg.classList.add('is-visible-block');
-      btn.textContent = failed.length ? 'send invoices' : 'sent';
-      btn.disabled = failed.length ? false : true;
-      if (failed.length) updateBulkInvoiceCount();
-      if (!failed.length) setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
+  const base = getInvoiceData();
+  if (invoiced.length) {
+    if (!INVOICE_NUMBER_PATTERN.test(base.invoiceNumber)) {
+      showInvoiceMsg('Invoice number must use the format LWG-YYYY-0001.', 'err');
       return;
     }
-
-    const pdfBase64 = await buildInvoicePdf(data);
-    btn.textContent = 'sending…';
-    await sendInvoiceRequest(data, currentStudent, pdfBase64);
-
-    const rowMsg = document.getElementById(`invoice-msg-${currentCourse.id}-${currentStudent.id}`);
-    if (rowMsg) showMessage(rowMsg, 'sent');
-    const sentQuantity = numVal('inv-quantity');
-    if (sentQuantity !== _singleOpenQuantity) {
-      persistLessonCount(currentCourse.id, currentStudent.id, sentQuantity || null);
+    if (!base.unitPrice) {
+      showInvoiceMsg('Please fill the price per lesson.', 'err');
+      return;
     }
-    msg.textContent = 'Invoice sent.';
-    msg.className = 'modal-msg success';
-    msg.classList.add('is-visible-block');
-    btn.textContent = 'sent';
-    setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
-  } catch (err) {
-    msg.textContent = 'Error: ' + (err.message || err);
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
-    btn.textContent = isBulk ? 'send invoices' : 'send invoice';
-    btn.disabled = false;
+    if (!(await confirmWithoutQrBill('Send the invoices'))) return;
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      showInvoiceMsg('Error: PDF library not loaded — please reload the page.', 'err');
+      return;
+    }
+    assignBulkInvoiceNumbers(base.invoiceNumber, invoiced);
   }
+
+  btn.disabled = true;
+  const jobs = recipients.flatMap((student) =>
+    planEmails(student).map((mail) => ({ student, mail }))
+  );
+  let sent = 0;
+  const failed = [];
+  for (let i = 0; i < jobs.length; i += 1) {
+    const { student, mail } = jobs[i];
+    btn.textContent = `sending ${i + 1}/${jobs.length}…`;
+    try {
+      const options = {};
+      if (mail.kind === 'invoice') {
+        options.invoiceNumber = student._invoiceNumber;
+        options.pdfBase64 = await buildInvoicePdf(getInvoiceData(student, student._invoiceNumber));
+      }
+      await sendMail(student, mail, options);
+      sent += 1;
+      // Untick what has gone out, so a retry after a failure only sends the rest.
+      if (mail.kind === 'invoice') {
+        student.parts.invoice = false;
+        student.alreadyInvoiced = true;
+        if (student.invoice_lesson_count !== student._originalLessonCount) {
+          persistLessonCount(currentCourse.id, student.id, student.invoice_lesson_count);
+        }
+      }
+      if (mail.kind === 'confirmation' || mail.confirmation) student.parts.confirmation = false;
+      if (mail.kind === 'questionnaire' || mail.questionnaire) {
+        student.parts.questionnaire = false;
+        student.questionnaire ||= { requested_at: new Date().toISOString() };
+      }
+    } catch (err) {
+      failed.push(`${studentName(student)} (${mailLabel(mail)}): ${err.message || err}`);
+    }
+  }
+
+  if (failed.length) {
+    showInvoiceMsg(
+      `Sent ${plural(sent, 'email')}; ${failed.length} failed. ${failed.join(' | ')}`,
+      'err'
+    );
+    bulkPreviewIndex = 0;
+    renderBulkInvoiceRecipients(currentBulkRecipients);
+    updateInvoicePreview();
+    return;
+  }
+  showInvoiceMsg(`Sent ${plural(sent, 'email')}.`, 'success');
+  btn.textContent = 'sent';
+  const rowMsg = document.getElementById(`bulk-invoice-msg-${currentCourse.id}`);
+  if (rowMsg) showMessage(rowMsg, `sent ${plural(sent, 'email')}`);
+  setTimeout(() => closeInvoiceModal(), MESSAGE_TIMEOUT_MS);
 }
 
 function invoicePayloadFields(data) {
@@ -1241,28 +1410,6 @@ function invoicePayloadFields(data) {
     invoice_date: data.invoiceDate,
     due_date: data.dueDate,
   };
-}
-
-async function sendInvoiceRequest(data, student, pdfBase64) {
-  const res = await apiFetch('/api/send-invoice', {
-    method: 'POST',
-    body: {
-      student_id: student.id,
-      course_id: currentCourse.id,
-      email: data.recipientEmail,
-      name: data.recipientName,
-      first_name: data.recipientFirstName,
-      last_name: data.recipientLastName,
-      gender: data.recipientGender,
-      gender_note: data.recipientGenderNote,
-      language: data.language,
-      invoice: invoicePayloadFields(data),
-      pdf_base64: pdfBase64,
-    },
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-  return body;
 }
 
 // Records a downloaded invoice (status 'downloaded') and archives its PDF so it
@@ -1332,28 +1479,23 @@ function downloadPdfFromBase64(base64, filename) {
 export async function downloadInvoice() {
   const btn = document.getElementById('inv-download');
   const sendBtn = document.getElementById('inv-submit');
-  const msg = document.getElementById('inv-msg');
-  msg.classList.remove('is-visible-block');
+  document.getElementById('inv-msg').classList.remove('is-visible-block');
 
-  const data = getInvoiceData();
-  const isBulk = currentBulkRecipients.length > 0;
-  const bulkRecipients = isBulk ? selectedBulkRecipients() : [];
-  if (isBulk && !bulkRecipients.length) {
-    msg.textContent = 'Select at least one recipient.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+  const recipients = invoiceRecipients();
+  const base = getInvoiceData();
+  if (!recipients.length) {
+    showInvoiceMsg('Tick the invoice for at least one student.', 'err');
     return;
   }
-  if (!data.invoiceNumber || !data.totalAmount) {
-    msg.textContent = 'Please fill invoice number and amount.';
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+  if (!INVOICE_NUMBER_PATTERN.test(base.invoiceNumber)) {
+    showInvoiceMsg('Invoice number must use the format LWG-YYYY-0001.', 'err');
     return;
   }
-
-  if (!(await confirmWithoutQrBill(isBulk ? 'Download the invoices' : 'Download the invoice'))) {
+  if (!base.unitPrice) {
+    showInvoiceMsg('Please fill the price per lesson.', 'err');
     return;
   }
+  if (!(await confirmWithoutQrBill('Download the invoices'))) return;
 
   const originalLabel = btn.textContent;
   btn.disabled = true;
@@ -1363,22 +1505,13 @@ export async function downloadInvoice() {
     if (!window.jspdf || !window.jspdf.jsPDF) {
       throw new Error('PDF library not loaded — please reload the page.');
     }
-
-    const recipients = isBulk ? bulkRecipients : [currentStudent];
-    if (isBulk) {
-      const invoiceNumberPattern = /^(LWG-\d{4}-)(\d{4})$/;
-      if (!invoiceNumberPattern.test(data.invoiceNumber)) {
-        throw new Error('Invoice number must use the format LWG-YYYY-0001.');
-      }
-      assignBulkInvoiceNumbers(data.invoiceNumber, bulkRecipients);
-    }
+    assignBulkInvoiceNumbers(base.invoiceNumber, recipients);
 
     let done = 0;
     const failed = [];
     for (let i = 0; i < recipients.length; i += 1) {
       const student = recipients[i];
-      const invoiceNumber = isBulk ? student._invoiceNumber : data.invoiceNumber;
-      const studentData = isBulk ? getInvoiceData(student, invoiceNumber) : data;
+      const studentData = getInvoiceData(student, student._invoiceNumber);
       btn.textContent =
         recipients.length > 1 ? `preparing ${i + 1}/${recipients.length}…` : 'preparing…';
       const pdfBase64 = await buildInvoicePdf(studentData);
@@ -1392,24 +1525,24 @@ export async function downloadInvoice() {
     }
 
     if (failed.length) {
-      msg.textContent = `Downloaded ${recipients.length}; ${failed.length} not recorded in overview. ${failed.join(' | ')}`;
-      msg.className = 'modal-msg err';
+      showInvoiceMsg(
+        `Downloaded ${recipients.length}; ${failed.length} not recorded in overview. ${failed.join(' | ')}`,
+        'err'
+      );
     } else {
-      msg.textContent =
+      showInvoiceMsg(
         done === 1
           ? 'Invoice downloaded and added to the overview.'
-          : `Downloaded ${done} invoices and added them to the overview.`;
-      msg.className = 'modal-msg success';
+          : `Downloaded ${done} invoices and added them to the overview.`,
+        'success'
+      );
     }
-    msg.classList.add('is-visible-block');
   } catch (err) {
-    msg.textContent = 'Error: ' + (err.message || err);
-    msg.className = 'modal-msg err';
-    msg.classList.add('is-visible-block');
+    showInvoiceMsg('Error: ' + (err.message || err), 'err');
   } finally {
     btn.textContent = originalLabel;
     btn.disabled = false;
-    if (sendBtn) sendBtn.disabled = isBulk ? selectedBulkRecipients().length === 0 : false;
+    updateBulkInvoiceCount();
   }
 }
 
