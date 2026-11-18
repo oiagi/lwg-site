@@ -32,8 +32,8 @@ const SECTIONS = [
         anchor: 'tutoring',
         title: { en: 'Tutoring', de: 'Nachhilfe' },
         description: {
-          en: 'Tutoring in every subject taught in Swiss schools: primary school, secondary school, Gymnasium and BMS, in Zürich or online. Group (3–7) CHF 80 per person per 60 min, one-to-one CHF 120 per 60 min.',
-          de: 'Nachhilfe in allen Fächern, die an Schweizer Schulen unterrichtet werden: Primarschule, Sekundarschule, Gymnasium und BMS, in Zürich oder online. Gruppe (3–7) CHF 80 pro Person pro 60 Min., Einzelunterricht CHF 120 pro 60 Min.',
+          en: 'Tutoring in every subject taught in Swiss schools: primary school, secondary school, Gymnasium and BMS, in Zürich or online. Group (3–7) CHF 80 per person per 60 min, group of 2 CHF 100 per person per 60 min, one-to-one CHF 150 per 60 min.',
+          de: 'Nachhilfe in allen Fächern, die an Schweizer Schulen unterrichtet werden: Primarschule, Sekundarschule, Gymnasium und BMS, in Zürich oder online. Gruppe (3–7) CHF 80 pro Person pro 60 Min., Zweiergruppe CHF 100 pro Person pro 60 Min., Einzelunterricht CHF 150 pro 60 Min.',
         },
       },
       {
@@ -133,9 +133,9 @@ export function buildLlmsTxt(lang = 'en') {
     '',
     '## Prices',
     '',
-    '- Standard language courses (German, Swiss German, English, exam preparation): CHF 50 per person per 60 minutes in a group of 3–5, CHF 120 per 60 minutes one-to-one.',
+    '- Standard language courses (German, Swiss German, English, exam preparation): CHF 50 per person per 60 minutes in a group of 3–5, CHF 90 per person per 60 minutes in a group of 2, CHF 120 per 60 minutes one-to-one.',
     '- A regular group block is 32 lessons of 60 minutes over 4 months (CHF 1600 per person); an exam preparation block is 40 lessons over 5 months.',
-    '- Tutoring in school subjects: CHF 80 per person per 60 minutes in a group of 3–7, CHF 120 per 60 minutes one-to-one.',
+    '- Tutoring in school subjects: CHF 80 per person per 60 minutes in a group of 3–7, CHF 100 per person per 60 minutes in a group of 2, CHF 150 per 60 minutes one-to-one.',
     '- Gymivorbereitung: CHF 80 per person per 60 minutes in a group of 3–7 children, CHF 150 per 60 minutes one-to-one. Taught in Mathematics and German over 12 or 20 teaching days of 3 hours (36 or 60 lessons), once or twice a week, in Zürich Seefeld or online.',
     '- Company courses and fully tailored programmes: on request. Around 100 lessons per level, commonly 2 × 60 minutes per week.',
     '- Online lessons cost the same as in-person lessons.',

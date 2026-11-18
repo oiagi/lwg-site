@@ -278,10 +278,6 @@ export const pages = {
       // ── Language courses: what, in which format, where, and the rate ──
       '#language-courses .kicker': { en: 'what we offer', de: 'Unser Angebot' },
       '#language-courses .section-title': { en: 'Language courses', de: 'Sprachkurse' },
-      '#lc-intro': {
-        en: 'Our language courses take place in a personal setting in our classrooms, at your offices, at your home or online. They are taught exclusively by native-speaking teachers.',
-        de: 'Unsere Sprachkurse finden in einem persönlichen Umfeld statt, entweder in unseren Kursräumlichkeiten, direkt bei Ihnen im Büro, bei Ihnen zu Hause oder online. Sprachkurse werden bei uns ausschliesslich von muttersprachlichen Lehrpersonen unterrichtet.',
-      },
       '#lc-languages-title': { en: 'Languages', de: 'Sprachen' },
       '#lc-lang-german': { en: '<strong>German</strong>', de: '<strong>Deutsch</strong>' },
       '#lc-lang-swiss': {
@@ -299,58 +295,58 @@ export const pages = {
       },
       '#lc-format-title': { en: 'Format', de: 'Format' },
       '#lc-format-group': {
-        en: '<strong>Group</strong> <span>Our group classes have between three and five participants, so that everybody gets to actively apply the target language during lessons.</span>',
-        de: '<strong>Gruppe</strong> <span>In unseren Gruppenkursen sind zwischen drei und fünf Personen. So haben alle die Möglichkeit, die Zielsprache bereits im Unterricht aktiv anzuwenden.</span>',
+        en: '<strong>Group</strong> <span>3-5 students</span>',
+        de: '<strong>Gruppe</strong> <span>3-5 Schüler</span>',
       },
       '#lc-format-private': {
-        en: '<strong>One-to-one</strong> <span>More flexibility and more time to apply the target language during lessons.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Mehr Flexibilität und noch mehr Zeit, um die Zielsprache im Unterricht anzuwenden.</span>',
-      },
-      '#lc-format-company': {
-        en: '<strong>Company courses</strong> <span>Our company courses take place at your offices. Ideal for anyone short of time who has to work around a busy schedule.</span>',
-        de: '<strong>Firmenkurse</strong> <span>Unsere Firmenkurse finden direkt bei Ihnen im Büro statt. Ideal für diejenigen, die nur wenig Zeit haben und sich nach einem vollen Terminkalender richten müssen.</span>',
-      },
-      '#lc-format-tailored': {
-        en: '<strong>Build your own</strong> <span>Get in touch and we will find the right option for you.</span>',
-        de: '<strong>Build your own</strong> <span>Wenn Sie einen bestimmten Wunsch haben, melden Sie sich und wir finden eine passende Lösung.</span>',
+        en: '<strong>One-to-one</strong>',
+        de: '<strong>Einzelunterricht</strong>',
       },
       '#lc-location-title': { en: 'Location', de: 'Ort' },
       '#lc-location-inperson': {
-        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Message us to find out about our locations.</span>',
-        de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
+        en: '<strong>In person</strong> <span>@Coworking Seefeld</span>',
+        de: '<strong>Vor Ort</strong> <span>@Coworking Seefeld</span>',
       },
       '#lc-location-online': {
-        en: '<strong>Online</strong> <span>You prefer to learn from home or mix in-person lessons with online classes? No problem, all courses are also offered online.</span>',
-        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse werden auch online angeboten.</span>',
+        en: '<strong>Online</strong>',
+        de: '<strong>Online</strong>',
+      },
+      '#lc-location-choice': {
+        en: '<strong>Location of your choice*</strong>',
+        de: '<strong>Ort Ihrer Wahl*</strong>',
+      },
+      '#lc-location-note': {
+        en: '<span>*travel fees may apply</span>',
+        de: '<span>*Bitte beachten Sie, dass Anreisekosten anfallen</span>',
       },
       '#lc-facts-title': {
-        en: 'Prices for standard language courses',
-        de: 'Preise für reguläre Sprachkurse',
+        en: 'Prices',
+        de: 'Preise',
       },
       '#lc-fact-group-label': { en: 'group (3-5)', de: 'Gruppe (3-5)' },
       '#lc-fact-group-value': { en: 'CHF 50', de: 'CHF 50' },
       '#lc-fact-group-unit': { en: 'per person per 60 min', de: 'pro Person pro 60 Min.' },
+      '#lc-fact-pair-label': {
+        en: 'group (2)',
+        de: 'Gruppe (2)',
+      },
+      '#lc-fact-pair-value': {
+        en: 'CHF 90',
+        de: 'CHF 90',
+      },
+      '#lc-fact-pair-unit': {
+        en: 'per person per 60 min',
+        de: 'pro Person pro 60 Min.',
+      },
       '#lc-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
       '#lc-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
       '#lc-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-      '#lc-standard-note': {
-        en: 'A standard language course runs 32 × 60 min.',
-        de: 'Ein regulärer Sprachkurs umfasst 32 × 60 Min.',
-      },
-      '#lc-note': {
-        en: 'Company courses and tailored programmes are priced on request.',
-        de: 'Firmenkurse und massgeschneiderte Programme: Preis auf Anfrage.',
-      },
       '#lc-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#lc-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
       // ── Tutoring ──
       '#tutoring .kicker': { en: 'tutoring', de: 'Nachhilfe' },
       '#tutoring .section-title': { en: 'Tutoring', de: 'Nachhilfe' },
-      '#tu-intro': {
-        en: 'We offer tutoring in every subject taught in Swiss schools.',
-        de: 'Wir bieten Nachhilfe in allen Fächern an, die an Schweizer Schulen unterrichtet werden.',
-      },
       '#tu-levels-title': { en: 'Levels', de: 'Stufen' },
       '#tu-level-primary': {
         en: '<strong>Primary school</strong>',
@@ -364,33 +360,52 @@ export const pages = {
       '#tu-level-bms': { en: '<strong>BMS</strong>', de: '<strong>BMS</strong>' },
       '#tu-format-title': { en: 'Format', de: 'Format' },
       '#tu-format-group': {
-        en: '<strong>Group</strong> <span>Taught in groups of three to seven pupils. Where the levels differ widely, a smaller group works better, so that every pupil gets the attention they need. Where levels and tasks are similar, a larger group works well.</span>',
-        de: '<strong>Gruppe</strong> <span>Gruppen von drei bis sieben Lernenden. Unterscheiden sich die Niveaus stark, eignet sich eine kleinere Gruppe. So kommt jeder Schülerin und jedem Schüler die nötige Aufmerksamkeit zugute. Bei ähnlichen Niveaus und Aufgabenstellungen eignet sich eine grössere Gruppe.</span>',
+        en: '<strong>Group</strong> <span>3-7 students</span>',
+        de: '<strong>Gruppe</strong> <span>3-7 Schüler</span>',
       },
       '#tu-format-private': {
-        en: '<strong>One-to-one</strong> <span>One-to-one lessons offer the most flexibility and allow for an individual pace of learning.</span>',
-        de: '<strong>Einzelunterricht</strong> <span>Einzelunterricht bietet am meisten Flexibilität und ermöglicht ein individuelles Lerntempo.</span>',
+        en: '<strong>One-to-one</strong>',
+        de: '<strong>Einzelunterricht</strong>',
       },
       '#tu-location-title': { en: 'Location', de: 'Ort' },
       '#tu-location-inperson': {
-        en: '<strong>In person</strong> <span>Our courses take place in Zürich. Message us to find out about our locations.</span>',
-        de: '<strong>Vor Ort</strong> <span>Unsere Kurse finden in Zürich statt. Fragen Sie nach unseren Standorten.</span>',
+        en: '<strong>In person</strong> <span>@Coworking Seefeld</span>',
+        de: '<strong>Vor Ort</strong> <span>@Coworking Seefeld</span>',
       },
       '#tu-location-online': {
-        en: '<strong>Online</strong> <span>You prefer to learn from home or mix in-person lessons with online classes? No problem, all courses are also offered online.</span>',
-        de: '<strong>Online</strong> <span>Sie wollen lieber von zu Hause aus lernen oder Präsenzunterricht mit Onlinelektionen mischen? Kein Problem, alle unsere Kurse werden auch online angeboten.</span>',
+        en: '<strong>Online</strong>',
+        de: '<strong>Online</strong>',
+      },
+      '#tu-location-choice': {
+        en: '<strong>Location of your choice*</strong>',
+        de: '<strong>Ort Ihrer Wahl*</strong>',
+      },
+      '#tu-location-note': {
+        en: '<span>*travel fees may apply</span>',
+        de: '<span>*Bitte beachten Sie, dass Anreisekosten anfallen</span>',
       },
       '#tu-facts-title': { en: 'Prices', de: 'Preise' },
       '#tu-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
       '#tu-fact-group-value': { en: 'CHF 80', de: 'CHF 80' },
       '#tu-fact-group-unit': { en: 'per person per 60 min', de: 'pro Person pro 60 Min.' },
-      '#tu-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
-      '#tu-fact-solo-value': { en: 'CHF 120', de: 'CHF 120' },
-      '#tu-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
-      '#tu-note': {
-        en: 'Message us to find out about ongoing tutoring group courses.',
-        de: 'Kontaktieren Sie uns, um mehr über Gruppennachhilfekurse zu erfahren.',
+      '#tu-fact-pair-label': {
+        en: 'group (2)',
+        de: 'Gruppe (2)',
       },
+      '#tu-fact-pair-value': {
+        en: 'CHF 100',
+        de: 'CHF 100',
+      },
+      '#tu-fact-pair-unit': {
+        en: 'per person per 60 min',
+        de: 'pro Person pro 60 Min.',
+      },
+      '#tu-fact-solo-label': { en: 'private', de: 'Einzelunterricht' },
+      '#tu-fact-solo-value': {
+        en: 'CHF 150',
+        de: 'CHF 150',
+      },
+      '#tu-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       '#tu-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#tu-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
@@ -399,10 +414,6 @@ export const pages = {
       '#gymivorbereitung .section-title': {
         en: 'Gymivorbereitung',
         de: 'Gymivorbereitung',
-      },
-      '#gy-intro': {
-        en: 'Step by step to the Gymiprüfung.',
-        de: 'Schritt für Schritt zur Gymiprüfung.',
       },
       '#gy-details-title': { en: 'Course details', de: 'Kursdetails' },
       '#gy-fact-duration-label': { en: 'lesson length', de: 'Unterrichtsdauer' },
@@ -428,7 +439,10 @@ export const pages = {
         de: 'Einzelunterricht möglich',
       },
       '#gy-fact-place-label': { en: 'location', de: 'Kursort' },
-      '#gy-fact-place-value': { en: 'Zürich Seefeld', de: 'Zürich Seefeld' },
+      '#gy-fact-place-value': {
+        en: '@Coworking Seefeld',
+        de: '@Coworking Seefeld',
+      },
       '#gy-fact-place-unit': { en: 'online available', de: 'Online möglich' },
       '#gy-facts-title': { en: 'Prices', de: 'Preise' },
       '#gy-fact-group-label': { en: 'group (3-7)', de: 'Gruppe (3-7)' },
@@ -438,10 +452,6 @@ export const pages = {
       '#gy-fact-solo-value': { en: 'CHF 150', de: 'CHF 150' },
       '#gy-fact-solo-unit': { en: 'per 60 min', de: 'pro 60 Min.' },
       // Stated in teaching days of 3 h, the same units as the facts grid above.
-      '#gy-note': {
-        en: 'Standard Gymivorbereitung group course packages include 12 × 3 h or 20 × 3 h, depending on how soon you start and the weekly frequency.',
-        de: 'Standard Gruppenkurspakete für Gymivorbereitung umfassen 12 × 3 Std. oder 20 × 3 Std., je nachdem, wie früh Sie mit der Vorbereitung beginnen möchten und wie häufig pro Woche Sie Zeit haben.',
-      },
       '#gy-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#gy-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
 
@@ -453,8 +463,8 @@ export const pages = {
         de: 'Welches Niveau passt zu Ihnen?',
       },
       '.levels-text': {
-        en: 'Not sure where to start? Our interactive self-assessment helps you find your current level.',
-        de: 'Sie wissen nicht, wo Sie anfangen sollen? Unser interaktives Selbsteinschätzungsraster hilft Ihnen, Ihr aktuelles Niveau zu finden.',
+        en: 'The six CEFR levels, A1 to C2, describe what you can do in a language. Our interactive self-assessment helps you find your current level.',
+        de: 'Die sechs GER-Niveaus, A1 bis C2, beschreiben, was Sie in einer Sprache können. Unser interaktives Selbsteinschätzungsraster hilft Ihnen, Ihr aktuelles Niveau zu finden.',
       },
       '#levels-cta': { en: 'find your level', de: 'Niveau herausfinden' },
       '#materials .kicker': { en: 'materials', de: 'Materialien' },
@@ -520,8 +530,8 @@ export const pages = {
       '#about .section-title': { en: 'About us', de: 'Über uns' },
       // Opens the section, and the whole argument the school rests on.
       '#about-opening': {
-        en: 'We have all learnt a language once before, and we have the capacity to do so time and time again.',
-        de: 'Alle haben schon einmal eine Sprache gelernt und alle besitzen die Fähigkeit, das jederzeit wieder zu tun.',
+        en: 'We believe in the motto that all humans have learnt a language once before, and therefore everybody can learn to do so time and time again!',
+        de: 'Unser Motto: Alle Menschen haben schon einmal eine Sprache gelernt, und deshalb können alle es immer wieder tun!',
       },
       // Labels the personal answers below, the way #faq-heading labels the
       // questions block further down. Same style, same job.
@@ -543,10 +553,6 @@ export const pages = {
       '#faq-company-title': { en: 'Company courses', de: 'Firmenkurse' },
       // The Q&A lists themselves are added below, once FAQ is declared.
       '#enquiry .section-title': { en: 'Ready to get started?', de: 'Bereit loszulegen?' },
-      '.closing-text': {
-        en: 'We want to give you confidence and motivation to use your knowledge beyond the classroom.',
-        de: 'Wir wollen Sie dabei unterstützen, Ihr Wissen auch ausserhalb des Unterrichts anzuwenden.',
-      },
       '#closing-cta-enquiry': { en: 'make an enquiry', de: 'Anfrage senden' },
       '#closing-cta-courses': { en: 'open group courses', de: 'Offene Gruppenkurse' },
       '#closing-cta-call': { en: 'book a 15min call', de: 'Kurzgespräch buchen (15 Min.)' },
@@ -1048,6 +1054,16 @@ export const FAQ = {
   ],
 
   courses: [
+    {
+      q: {
+        en: 'Why should I take classes and not just study on my own or with AI?',
+        de: 'Warum sollte ich einen Kurs besuchen, statt allein oder mit KI zu lernen?',
+      },
+      a: {
+        en: 'You can absolutely study on your own. It is not necessary for everybody to attend a group or private class. Exposure outside of formal dedicated studying remains most important. So why take a class? Many of our students find that the interaction with someone who can provide guidance on what to learn and how to practise positively supports their learning process. Classes with qualified teachers also support students in achieving correct pronunciation and speech due to the immediate correction of errors.',
+        de: 'Sie können durchaus selbständig lernen. Nicht alle müssen einen Sprachkurs besuchen. Am wichtigsten bleibt der Kontakt mit der Sprache ausserhalb der Schule. Warum also einen Kurs besuchen? Viele unserer Schülerinnen und Schüler stellen fest, dass der Austausch mit jemandem, der ihnen zeigt, was sie lernen und wie sie üben sollen, ihren Lernprozess positiv unterstützt. Qualifizierte Lehrpersonen unterstützen Schüler ausserdem dabei, eine korrekte Aussprache und Ausdrucksweise zu erreichen, indem sie Fehler sofort korrigieren können.',
+      },
+    },
     {
       q: {
         en: 'Which courses do you offer?',
